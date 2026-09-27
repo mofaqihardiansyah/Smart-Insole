@@ -1,4 +1,4 @@
-# 🦶 Smart Insole IoT — Plantar Pressure Monitoring System
+# 🦶 `Smart Insole IoT — Plantar Pressure Monitoring System
 
 > **Rancang Bangun Smart Insole Berbasis IoT Menggunakan Metode Fuzzy Logic untuk Monitoring Tekanan Plantar Pasien Diabetes Mellitus Menggunakan Platform Web**
 
@@ -12,26 +12,27 @@
 
 ## 📌 Deskripsi Proyek
 
-**Smart Insole IoT** adalah sistem pemantauan tekanan telapak kaki (*plantar pressure*) secara *real-time* berbasis perangkat lunak web dan sistem tertanam (*embedded system*). Sistem ini dirancang untuk membantu penderita **Diabetes Mellitus (DM)** yang mengalami *Diabetic Peripheral Neuropathy* (DPN) atau hilangnya *loss of protective sensation* dalam mencegah terjadinya **Ulkus Kaki Diabetik (*Diabetic Foot Ulcer* / DFU)**.
+**Smart Insole IoT** adalah sistem pemantauan tekanan telapak kaki (_plantar pressure_) secara _real-time_ berbasis perangkat lunak web dan sistem tertanam (_embedded system_). Sistem ini dirancang untuk membantu penderita **Diabetes Mellitus (DM)** yang mengalami _Diabetic Peripheral Neuropathy_ (DPN) atau hilangnya _loss of protective sensation_ dalam mencegah terjadinya **Ulkus Kaki Diabetik (_Diabetic Foot Ulcer_ / DFU)**.
 
-Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada titik anatomis kritis (*forefoot*, *midfoot*, *heel*) dan dikendalikan oleh mikrokontroler **ESP32**. Algoritma **Fuzzy Logic Inference System** ditanamkan langsung pada ESP32 untuk mengevaluasi kombinasi besaran tekanan (kPa) dan durasi tumpuan (*sustained pressure duration*) ke dalam 3 kategori tingkat risiko: **Aman**, **Waspada**, dan **Bahaya**. Data ditransmisikan nirkabel ke **Google Firebase Realtime Database** dan ditayangkan pada **Web Dashboard Multiplatform (*Mobile-First Responsive Design*)**.
+Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada titik anatomis kritis (_forefoot_, _midfoot_, _heel_) dan dikendalikan oleh mikrokontroler **ESP32**. Algoritma **Fuzzy Logic Inference System** ditanamkan langsung pada ESP32 untuk mengevaluasi kombinasi besaran tekanan (kPa) dan durasi tumpuan (_sustained pressure duration_) ke dalam 3 kategori tingkat risiko: **Aman**, **Waspada**, dan **Bahaya**. Data ditransmisikan nirkabel ke **Google Firebase Realtime Database** dan ditayangkan pada **Web Dashboard Multiplatform (_Mobile-First Responsive Design_)**.
 
 ---
 
 ## ✨ Fitur Utama
 
-- ⚡ **Real-time Plantar Heatmap** — visualisasi gradasi warna kontur tekanan telapak kaki secara langsung pada layar *browser* HP maupun PC.
-- 🧠 **Embedded Fuzzy Logic Assessment** — klasifikasi risiko adaptif langsung di tingkat mikro (*Aman*, *Waspada*, *Bahaya*) tanpa ketergantungan pemrosesan *server-side*.
+- ⚡ **Real-time Plantar Heatmap** — visualisasi gradasi warna kontur tekanan telapak kaki secara langsung pada layar _browser_ HP maupun PC.
+- 🧠 **Embedded Fuzzy Logic Assessment** — klasifikasi risiko adaptif langsung di tingkat mikro (_Aman_, _Waspada_, _Bahaya_) tanpa ketergantungan pemrosesan _server-side_.
 - ⏱️ **Sustained Pressure Monitoring** — mengukur akumulasi durasi waktu tumpuan berulang untuk mencegah pembentukan lesi jaringan lunak.
-- 🚨 **Early Warning System (EWS)** — pemicuan notifikasi web (*Web Notification API*) dan peringatan alarm audio/getar pada ponsel saat risiko mencapai kategori *Waspada* atau *Bahaya*.
-- 📊 **Histori & Analytics** — rekam medis kuantitatif pola tumpuan harian pasien untuk membantu rekomendasi terapi dokter/*orthotics*.
-- 📱 **Cross-Platform Responsive Web** — antarmuka web yang ringan, cepat, dan ramah akses melalui *browser* perangkat apa pun (Android, iOS, Windows, Mac) tanpa perlu instalasi APK.
+- 🚨 **Early Warning System (EWS)** — pemicuan notifikasi web (_Web Notification API_) dan peringatan alarm audio/getar pada ponsel saat risiko mencapai kategori _Waspada_ atau _Bahaya_.
+- 📊 **Histori & Analytics** — rekam medis kuantitatif pola tumpuan harian pasien untuk membantu rekomendasi terapi dokter/_orthotics_.
+- 📱 **Cross-Platform Responsive Web** — antarmuka web yang ringan, cepat, dan ramah akses melalui _browser_ perangkat apa pun (Android, iOS, Windows, Mac) tanpa perlu instalasi APK.
 
 ---
 
 ## 🛠️ Tech Stack & Komponen
 
 ### Hardware & Firmware
+
 - **Mikrokontroler**: ESP32 Dev Module / WROOM-32
 - **Sensor**: 3x Force Sensitive Resistor (FSR 402 Series)
 - **Power Management**: Baterai LiPo 3.7V + Modul TP4056 Charger + Step-Up Boost Converter 5V
@@ -39,14 +40,16 @@ Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada t
 - **Pustaka Utama**: `WiFi.h`, `FirebaseESP32.h`
 
 ### Cloud & Backend
+
 - **Cloud Database**: Google Firebase Realtime Database
 - **Format Data**: JSON
 - **Protokol Komunikasi**: Wi-Fi (HTTP REST API / WebSockets)
 
 ### Frontend Web Dashboard
+
 - **Framework**: React.js
-- **Styling**: Tailwind CSS (*Mobile-First Responsive Design*)
-- **Visualisasi**: HTML5 Canvas / Custom CSS Gradients (*plantar heatmap*), Chart.js / Recharts
+- **Styling**: Tailwind CSS (_Mobile-First Responsive Design_)
+- **Visualisasi**: HTML5 Canvas / Custom CSS Gradients (_plantar heatmap_), Chart.js / Recharts
 - **Notifikasi**: Web Notification API & Web Audio API
 - **Deployment / Hosting**: Vercel / Netlify / Firebase Hosting
 - **Version Control**: Git & GitHub
@@ -152,7 +155,7 @@ smart-insole-ta/
    ```bash
    npm run dev
    ```
-5. Buka *browser* di `http://localhost:5173`.
+5. Buka _browser_ di `http://localhost:5173`.
 
 ### 3. Deployment
 
@@ -161,16 +164,16 @@ cd web-dashboard
 npm run build      # output statis di dist/
 ```
 
-Deploy folder `dist/` ke **Vercel**, **Netlify**, atau **Firebase Hosting** (free tier). Tidak ada *backend* tambahan yang perlu di-*deploy* — ESP32 menulis langsung ke Firebase.
+Deploy folder `dist/` ke **Vercel**, **Netlify**, atau **Firebase Hosting** (free tier). Tidak ada _backend_ tambahan yang perlu di-_deploy_ — ESP32 menulis langsung ke Firebase.
 
 ---
 
 ## 🔐 Catatan Keamanan
 
-- `firmware/include/config.h` dan `web-dashboard/.env.local` **tidak** di-*commit* ke repositori (sudah masuk `.gitignore`).
-- Yang di-*commit* hanya berkas `.example` sebagai templat.
-- Kredensial Firebase untuk *web* (`VITE_FIREBASE_*`) bersifat *public by design* — andalkan proteksi lewat **Firebase Realtime Database Rules**, bukan dengan menyembunyikan *API key*.
-- Aturan *database* minimum yang disarankan:
+- `firmware/include/config.h` dan `web-dashboard/.env.local` **tidak** di-_commit_ ke repositori (sudah masuk `.gitignore`).
+- Yang di-_commit_ hanya berkas `.example` sebagai templat.
+- Kredensial Firebase untuk _web_ (`VITE_FIREBASE_*`) bersifat _public by design_ — andalkan proteksi lewat **Firebase Realtime Database Rules**, bukan dengan menyembunyikan _API key_.
+- Aturan _database_ minimum yang disarankan:
   ```json
   {
     "rules": {
