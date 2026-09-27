@@ -1,4 +1,4 @@
-# 🦶 `Smart Insole IoT — Plantar Pressure Monitoring System
+# `Smart Insole IoT — Plantar Pressure Monitoring System
 
 > **Rancang Bangun Smart Insole Berbasis IoT Menggunakan Metode Fuzzy Logic untuk Monitoring Tekanan Plantar Pasien Diabetes Mellitus Menggunakan Platform Web**
 
@@ -10,7 +10,7 @@
 
 ---
 
-## 📌 Deskripsi Proyek
+## Deskripsi Proyek
 
 **Smart Insole IoT** adalah sistem pemantauan tekanan telapak kaki (_plantar pressure_) secara _real-time_ berbasis perangkat lunak web dan sistem tertanam (_embedded system_). Sistem ini dirancang untuk membantu penderita **Diabetes Mellitus (DM)** yang mengalami _Diabetic Peripheral Neuropathy_ (DPN) atau hilangnya _loss of protective sensation_ dalam mencegah terjadinya **Ulkus Kaki Diabetik (_Diabetic Foot Ulcer_ / DFU)**.
 
@@ -18,18 +18,18 @@ Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada t
 
 ---
 
-## ✨ Fitur Utama
+## Fitur Utama
 
-- ⚡ **Real-time Plantar Heatmap** — visualisasi gradasi warna kontur tekanan telapak kaki secara langsung pada layar _browser_ HP maupun PC.
-- 🧠 **Embedded Fuzzy Logic Assessment** — klasifikasi risiko adaptif langsung di tingkat mikro (_Aman_, _Waspada_, _Bahaya_) tanpa ketergantungan pemrosesan _server-side_.
-- ⏱️ **Sustained Pressure Monitoring** — mengukur akumulasi durasi waktu tumpuan berulang untuk mencegah pembentukan lesi jaringan lunak.
-- 🚨 **Early Warning System (EWS)** — pemicuan notifikasi web (_Web Notification API_) dan peringatan alarm audio/getar pada ponsel saat risiko mencapai kategori _Waspada_ atau _Bahaya_.
-- 📊 **Histori & Analytics** — rekam medis kuantitatif pola tumpuan harian pasien untuk membantu rekomendasi terapi dokter/_orthotics_.
-- 📱 **Cross-Platform Responsive Web** — antarmuka web yang ringan, cepat, dan ramah akses melalui _browser_ perangkat apa pun (Android, iOS, Windows, Mac) tanpa perlu instalasi APK.
+- **Real-time Plantar Heatmap** — visualisasi gradasi warna kontur tekanan telapak kaki secara langsung pada layar _browser_ HP maupun PC.
+- **Embedded Fuzzy Logic Assessment** — klasifikasi risiko adaptif langsung di tingkat mikro (_Aman_, _Waspada_, _Bahaya_) tanpa ketergantungan pemrosesan _server-side_.
+- **Sustained Pressure Monitoring** — mengukur akumulasi durasi waktu tumpuan berulang untuk mencegah pembentukan lesi jaringan lunak.
+- **Early Warning System (EWS)** — pemicuan notifikasi web (_Web Notification API_) dan peringatan alarm audio/getar pada ponsel saat risiko mencapai kategori _Waspada_ atau _Bahaya_.
+- **Histori & Analytics** — rekam medis kuantitatif pola tumpuan harian pasien untuk membantu rekomendasi terapi dokter/_orthotics_.
+- **Cross-Platform Responsive Web** — antarmuka web yang ringan, cepat, dan ramah akses melalui _browser_ perangkat apa pun (Android, iOS, Windows, Mac) tanpa perlu instalasi APK.
 
 ---
 
-## 🛠️ Tech Stack & Komponen
+## Tech Stack & Komponen
 
 ### Hardware & Firmware
 
@@ -56,7 +56,7 @@ Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada t
 
 ---
 
-## 🏗️ Arsitektur & Alur Data
+## Arsitektur & Alur Data
 
 ```text
 [ 3x FSR Sensors ] ──(Analog ADC)──> [ ESP32 (Embedded Fuzzy Logic) ]
@@ -74,7 +74,7 @@ Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada t
 
 ---
 
-## 📁 Struktur Folder Repositori
+## Struktur Folder Repositori
 
 ```text
 smart-insole-ta/
@@ -113,7 +113,7 @@ smart-insole-ta/
 
 ---
 
-## 🚀 Panduan Memulai (Quick Start)
+## Panduan Memulai (Quick Start)
 
 ### 1. Hardware & Firmware Setup
 
@@ -168,7 +168,7 @@ Deploy folder `dist/` ke **Vercel**, **Netlify**, atau **Firebase Hosting** (fre
 
 ---
 
-## 🔐 Catatan Keamanan
+## Catatan Keamanan
 
 - `firmware/include/config.h` dan `web-dashboard/.env.local` **tidak** di-_commit_ ke repositori (sudah masuk `.gitignore`).
 - Yang di-_commit_ hanya berkas `.example` sebagai templat.
@@ -189,20 +189,6 @@ Deploy folder `dist/` ke **Vercel**, **Netlify**, atau **Firebase Hosting** (fre
 
 ---
 
-## 👨‍💻 Tim Pengembang & Institusi
-
-Proyek Tugas Akhir ini disusun oleh mahasiswa Program Studi **D3 Teknik Informatika**, **Politeknik Negeri Semarang (POLINES)**:
-
-- **M. Haikal Zacki Al Awaly** — NIM. 3.34.24.2.14
-- **Mochamad Faqih Ardiansyah** — NIM. 3.34.24.2.16
-
-**Dosen Pembimbing:**
-
-1. **Dr. Sukamto, S.Kom., M.T.** — NIP. 197101172003121001
-2. **Slamet Handoko, S.Kom., M.Kom.** — NIP. 197501302001121001
-
----
-
-## 📄 Lisensi
+## Lisensi
 
 Proyek ini dilisensikan di bawah [MIT License](LICENSE) — bebas digunakan dan dikembangkan untuk kepentingan akademis dan riset non-komersial.
