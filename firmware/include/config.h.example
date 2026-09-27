@@ -1,0 +1,43 @@
+// ============================================================
+// config.h — KONFIGURASI PERANGKAT KERAS ESP32 (Smart Insole)
+// ============================================================
+// CARA PAKAI:
+//   1. Salin berkas ini menjadi  : include/config.h
+//   2. Isi nilai di bawah sesuai jaringan & proyek Firebase Anda
+//   3. JANGAN commit config.h yang asli (sudah di-ignore .gitignore)
+//
+//   Salin: cp include/config.h.example include/config.h
+// ============================================================
+#pragma once
+
+// ---------- Wi-Fi ----------
+#define WIFI_SSID     "NAMA_WIFI_ANDA"
+#define WIFI_PASSWORD "PASSWORD_WIFI_ANDA"
+
+// ---------- Firebase Realtime Database ----------
+#define FIREBASE_HOST "smart-insole-ta-default-rtdb.firebaseio.com"
+#define FIREBASE_AUTH "FIREBASE_DATABASE_SECRET_ANDA"
+
+// ---------- Konfigurasi Perangkat ----------
+// ID unik per alat, dipakai sebagai key di Firebase
+#define DEVICE_ID     "insole-01"
+
+// ---------- Pin FSR 402 (3 sensor) ----------
+//   - Forefoot  -> GPIO 34 (ADC1_CH6)
+//   - Midfoot   -> GPIO 35 (ADC1_CH7)
+//   - Heel      -> GPIO 32 (ADC1_CH4)
+#define PIN_FSR_FOREFOOT 34
+#define PIN_FSR_MIDFOOT  35
+#define PIN_FSR_HEEL     32
+
+// ---------- Kalibrasi Sensor ----------
+// Nilai ADC saat tidak ditekan (dengan berat tubuh)
+#define FSR_IDLE_ADC   4095
+// Nilai ADC saat tekanan maksimum
+#define FSR_SAT_ADC    0
+// Batas atas tekanan yang dianggap valid (kPa)
+#define FSR_MAX_KPA    200.0f
+
+// ---------- Interval Pengambilan Data ----------
+#define SAMPLE_INTERVAL_MS   1000   // 1 detik
+#define FIREBASE_PUSH_MS     2000   // 2 detik
