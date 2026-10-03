@@ -81,20 +81,25 @@ smart-insole-ta/
 ├── firmware/                   # Kode C++/PlatformIO untuk ESP32
 │   ├── platformio.ini
 │   ├── include/
-│   │   └── config.h            # Kredensial Wi-Fi & Firebase (tidak di-commit)
+│   │   ├── config.h            # Kredensial Wi-Fi & Firebase (tidak di-commit)
+│   │   └── config.h.example    # Templat kredensial
 │   ├── lib/
-│   └── src/
-│       ├── main.cpp            # Program utama, Wi-Fi, & Firebase Sync
-│       ├── FuzzyLogic.cpp      # Fuzzifikasi, Rules, & Defuzzifikasi
-│       └── FuzzyLogic.h
+│   ├── src/
+│   │   ├── main.cpp            # Program utama, Wi-Fi, & Firebase Sync
+│   │   ├── FuzzyLogic.cpp      # Fuzzifikasi, Rules, & Defuzzifikasi
+│   │   ├── FuzzyLogic.h
+│   │   ├── SensorFSR.cpp       # Pembacaan ADC & kalibrasi ke kPa
+│   │   └── FirebaseHandler.cpp # Transmisi data ke Firebase
 │   └── README.md
 │
 ├── web-dashboard/              # Frontend React.js & Tailwind CSS
 │   ├── public/
 │   ├── src/
 │   │   ├── components/         # Heatmap, StatusCard, AlertModal
-│   │   ├── config/             # Konfigurasi Firebase SDK
 │   │   ├── pages/              # Dashboard, History, Settings
+│   │   ├── config/             # Konfigurasi Firebase SDK
+│   │   ├── hooks/              # useInsoleData (listener realtime)
+│   │   ├── utils/              # Helper kalkulasi & formatting
 │   │   ├── App.jsx
 │   │   └── main.jsx
 │   ├── .env.example
@@ -102,9 +107,10 @@ smart-insole-ta/
 │   ├── tailwind.config.js
 │   └── vite.config.js
 │
-├── docs/                       # Diagram blok, skematik hardware, & dokumentasi
-│   ├── block-diagram.png
-│   └── schematic.png
+├── docs/                       # Aset visual & dokumentasi
+│   ├── schematics/             # Skematik rangkaian (FSR, ESP32, TP4056)
+│   ├── 3d-enclosure/           # Desain 3D wadah (.STL / CAD)
+│   └── diagrams/               # Diagram blok & flowchart sistem
 │
 ├── .gitignore
 ├── LICENSE

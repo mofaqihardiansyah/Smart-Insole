@@ -2,10 +2,13 @@
 
 Folder ini menampung aset visual dan dokumen pendukung Tugas Akhir.
 
-## Daftar Dokumen
+## Struktur Folder
 
-| Berkas | Keterangan |
+| Path | Keterangan |
 | --- | --- |
+| `schematics/` | Skematik rangkaian (FSR 402, ESP32, TP4056, pinout) |
+| `3d-enclosure/` | File desain 3D (.STL / CAD) wadah pergelangan kaki |
+| `diagrams/` | Diagram blok & flowchart sistem |
 | `block-diagram.png` | Diagram blok sistem (sensor → ESP32 → Firebase → web) |
 | `schematic.png` | Skematik wiring ESP32 + 3x FSR 402 + power management |
 | `fuzzy-rule-base.png` | Visualisasi *rule base* Fuzzy Logic |
