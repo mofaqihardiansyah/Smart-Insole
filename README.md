@@ -20,12 +20,15 @@ Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada t
 
 ## Fitur Utama
 
-- **Real-time Plantar Heatmap** — visualisasi gradasi warna kontur tekanan telapak kaki secara langsung pada layar _browser_ HP maupun PC.
-- **Embedded Fuzzy Logic Assessment** — klasifikasi risiko adaptif langsung di tingkat mikro (_Aman_, _Waspada_, _Bahaya_) tanpa ketergantungan pemrosesan _server-side_.
+- **Real-time Plantar Heatmap** — visualisasi gradasi warna kontur tekanan telapak kaki secara langsung pada layar _browser_ HP maupun PC (komponen SVG dari Task 5).
+- **Embedded Fuzzy Logic Assessment** — klasifikasi risiko adaptif langsung di tingkat mikro (_Aman_, _Waspada_, _Bahaya_) tanpa ketergantungan pemrosesan _server-side_ (firmware ESP32).
 - **Sustained Pressure Monitoring** — mengukur akumulasi durasi waktu tumpuan berulang untuk mencegah pembentukan lesi jaringan lunak.
-- **Early Warning System (EWS)** — pemicuan notifikasi web (_Web Notification API_) dan peringatan alarm audio/getar pada ponsel saat risiko mencapai kategori _Waspada_ atau _Bahaya_.
-- **Histori & Analytics** — rekam medis kuantitatif pola tumpuan harian pasien untuk membantu rekomendasi terapi dokter/_orthotics_.
+- **Early Warning System (EWS)** — pemicuan notifikasi web (_Web Notification API_) dan peringatan alarm audio/getar pada ponsel saat risiko mencapai kategori _Waspada_ atau _Bahaya_ (Web Audio API Synthesizer dari Task 3).
+- **Histori & Analytics** — rekam medis kuantitatif pola tumpuan harian pasien untuk membantu rekomendasi terapi dokter/_orthotics_ (halaman Riwayat).
 - **Cross-Platform Responsive Web** — antarmuka web yang ringan, cepat, dan ramah akses melalui _browser_ perangkat apa pun (Android, iOS, Windows, Mac) tanpa perlu instalasi APK.
+- **Bilingual Support (ID/EN)** — toggle bahasa instan untuk presentasi akademis dan evaluasi klinis.
+- **Floating Navigation** — navigasi mobile floating di atas konten dengan 6 item utama (Task 6–9).
+- **Bento Grid Layout** — layout grid asymmetris untuk dashboard berbasis "bento box" design pattern (Task 6).
 
 ---
 
@@ -71,8 +74,7 @@ Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada t
                                                    │
                                        (Web Notification & Alarm)
 ```
-
----
+```
 
 ## Struktur Folder Repositori
 
@@ -92,30 +94,39 @@ smart-insole-ta/
 │   │   └── FirebaseHandler.cpp # Transmisi data ke Firebase
 │   └── README.md
 │
-├── web-dashboard/              # Frontend React.js & Tailwind CSS
+├── web-dashboard/              # Frontend React.js + Tailwind CSS (Mobile-First / PWA)
 │   ├── public/
+│   │   ├── index.html          # Halaman utama + PWA manifest (link manifest, icons)
+│   │   ├── manifest.json       # Konfigurasi PWA (name, short_name, start_url, display, theme_color)
+│   │   └── favicon.ico
 │   ├── src/
-│   │   ├── components/         # Heatmap, StatusCard, AlertModal
-│   │   ├── pages/              # Dashboard, History, Settings
-│   │   ├── config/             # Konfigurasi Firebase SDK
-│   │   ├── hooks/              # useInsoleData (listener realtime)
-│   │   ├── utils/              # Helper kalkulasi & formatting
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── .env.example
-│   ├── package.json
-│   ├── tailwind.config.js
-│   └── vite.config.js
-│
-├── docs/                       # Aset visual & dokumentasi
+│   │   ├── App.jsx             # Root dengan Router + Auth guard + FloatingNavbar
+│   │   ├── main.jsx
+│   │   ├── index.css
+│   │   ├── setupTests.js
+│ │   ├── routes/
+│ │   │   └── route.js        # Semua rute didefinisikan sini
+│ │   ├── components/
+│ │   │   ├── layout/
+│ │   │   │   ├── FloatingNavbar.jsx    # Navigasi floating di atas konten
+│ │   │   │   └── TopBar.jsx            # Header dengan title + logout (mobile)
+│ │   │   ├── components/
+│ │   │   │   ├── auth/
+│ │   │   │   │   ├── LoginForm.jsx
+│ │   │   │   │   └── RegisterForm.jsx
+│ │   │   │   ├── dashboard/
+│ │   │   │   │   ├── PlantarHeatmap.jsx          # dari Task 5 (SVG heatmap)
+│ │   │   │   ├── StatusCard.jsx                  # Kartu status risiko
+│ │   │   │   ├── MetricCards.jsx                 # Kartu metrik instan
+│ │   │   │   ├── EarlyWarningAlert.jsx           # Modal alarm + audio\n│ │   │   │   ├── BentoGrid.jsx                   # Layout grid asymmetris\n│ │   │   │   ├── GlassButton.jsx                 # Tombol glassmorphism\n│ │   │   │   └── GlassInput.jsx                  # Input field glassmorphism\n│ │   │   ├── pages/
+│ │   │   ├── LandingPage.jsx         # Halaman publik (Landing)\n│ │   │   ├── LoginPage.jsx           # Halaman masuk akun\n│ │   │   ├── RegisterPage.jsx        # Halaman daftar akun\n│ │   │   ├── DashboardPage.jsx       # Halaman dashboard real-time\n│ │   │   ├── MonitoringPage.jsx      # Halaman grafik tren\n│ │   │   ├── HistoryPage.jsx         # Halaman riwayat sesi\n│ │   │   ├── DevicePage.jsx          # Halaman status perangkat\n│ │   │   ├── SettingsPage.jsx        # Halaman pengaturan\n│ │   │   └── ProfilePage.jsx         # Halaman profil pengguna\n│ │   ├── hooks/
+│ │   │   └── useAuth.jsx             # Firebase Auth state manager\n│ │   ├── services/
+│ │   │   ├── firebaseConfig.js       # Konfigurasi Firebase (env vars)\n│ │   │   └── firebaseRealTimeDB.js   # Real-time DB listener\n│ │   ├── utils/
+│ │   │   └── i18n.js                 # Kamus bilingual ID/EN (dari Task 2)\n│ │   └── ui/
+│ │       └── GlassButton.jsx         # Tombol glassmorphism\n│ │       └── GlassInput.jsx          # Input field glassmorphism\n│   ├── .env.example\n│   ├── package.json\n│   ├── tailwind.config.js\n│   └── vite.config.js\n│\n├── docs/
 │   ├── schematics/             # Skematik rangkaian (FSR, ESP32, TP4056)
-│   ├── 3d-enclosure/           # Desain 3D wadah (.STL / CAD)
-│   └── diagrams/               # Diagram blok & flowchart sistem
-│
-├── .gitignore
-├── LICENSE
-└── README.md                   # Penjelasan projek, setup guide, & tech stack
-```
+│   ├── 3d-enclosure/           # Desain 3D wadah (.STL / CAD)\n│   ├── diagrams/               # Diagram blok & flowchart sistem\n│   └── superpowers/
+│       ├── specs/                # Design specification docs\n│       │   └── 2026-10-06-smart-insole-web-dashboard-design.md\n│       └── plans/                # Implementation plans\n│           └── 2026-10-06-smart-insole-web-dashboard.md\n│\n├── .gitignore\n├── LICENSE\n└── README.md                   # Penjelasan projek, setup guide, & tech stack\n
 
 ---
 

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Smart Insole IoT - Plantar Pressure Monitoring System for Diabetes Mellitus">
+    <title>Smart Insole — Monitoring Tekanan Plantar</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/logo192.png" sizes="192x192" type="image/png" />
+    <link rel="apple-touch-icon" href="/logo512.png" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+
+    <!-- Google Fonts: Inter & Manrope -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Material Symbols Outlined for icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@FILL,GRADIENT,opsz@20..2000&display=swap" />
+
+    <!-- Swiper for slides/carousel (if needed) -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              bg: "#0a0a0f",
+              fg: "#e5e2e3",
+              muted: "#8f8fa1",
+              card: "#111119",
+              border: "#2a2a2d",
+              primary: "#5E6BFF",
+              secondary: "#50D8E9",
+              accent: "#FFB689",
+              safe: "#10B981",
+              warning: "#F59E0B",
+              danger: "#EF4444",
+            },
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+              heading: ["Manrope", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-bg fg antialiased" role="application">
+    <!-- Root App -->
+    <div id="root"></div>
+
+    <!-- Analytics (placeholder) -->
+    <script>(function(g,c,d,l){g['GoogleAnalyticsObject']=l;g[l]=g[l]||function(){ (g[l].q=g[l].q||[]).push([arguments,g[l].p,l]) } ,l='ga',ga=g[l]=g[l]||function(){ga.q.push(arguments)};ga.l=+new Date() })(window,document,'script','ga');</script>
+  </body>
+</html>
