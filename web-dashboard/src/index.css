@@ -1,0 +1,343 @@
+/* ============================================================
+   Theme layer: Smart Insole IoT Dashboard
+   ============================================================
+   Two themes from one set of CSS variables. Every value is
+   measured; the ratio in the comment is the real figure against
+   the surface named. Change a value and you must re-measure.
+
+   Dark is the product's default and carries the Romer
+   instrument-panel language. Light is the clinical counterpart
+   for daylight and for anyone who needs dark ink on paper.
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------
+   LIGHT THEME
+   ------------------------------------------------------------------ */
+:root {
+  color-scheme: light;
+
+  --bg: 247 248 250; /* #F7F8FA page canvas */
+  --surface: 255 255 255; /* #FFFFFF card */
+  --surface-2: 241 243 246; /* #F1F3F6 raised panel */
+  --surface-3: 233 236 241; /* #E9ECF1 inset well */
+  --sidebar: 250 251 252; /* #FAFBFC nav rail */
+
+  --border: 230 233 237; /* 1.1:1 hairline, decoration only */
+  --border-strong: 220 224 230; /* card edge */
+  --border-control: 124 134 149; /* 3.47:1 on bg. Inputs and outlines. */
+
+  --fg: 20 22 26; /* 18.11:1 on surface, 17.04:1 on bg */
+  --fg-2: 42 47 56; /* 13.44:1 on surface */
+  --muted: 90 98 112; /* 6.15:1 on surface, 5.79:1 on bg */
+
+  --primary: 29 78 216; /* 6.70:1 on surface */
+  --primary-btn: 29 78 216;
+  --primary-on: 255 255 255; /* 6.70:1 on primary-btn */
+
+  --secondary: 14 116 144; /* 5.36:1 on surface */
+  --tertiary: 180 83 9; /* 5.02:1 on surface */
+
+  --safe: 4 120 87; /* 5.48:1 on surface */
+  --warning: 180 83 9; /* 5.02:1 on surface */
+  --danger: 185 28 28; /* 6.47:1 on surface */
+
+  --focus: 29 78 216; /* 6.70:1, focus indicator */
+
+  /* Chart series. Okabe-Ito in light, where these were measured at 5.19, 3.87
+     and 3.42 against white: all clear the 3:1 a graphical object needs. */
+  --series-1: 0 114 178;
+  --series-2: 213 94 0;
+  --series-3: 0 158 115;
+
+  /* Structural tints */
+  --inner-glow: 255 255 255; /* inset highlight, kept subtle in light */
+  --inner-glow-a: 0.7;
+  --grid: 20 22 26; /* plot grid ink */
+  --scrim: 20 22 26;
+
+  /* Landing page variant (SprintForge-adapted, light only, theme
+     independent). Measured against #F4F5F5 raised:
+     ink 11.3:1, body 6.62:1, caption 5.64:1, accent-deep 4.70:1,
+     white on accent-deep 5.13:1. `accent` (#E34A32, 3.98:1) is
+     graphics-only: it clears the 3:1 graphical-object bar but fails
+     text AA, so it never carries a label. It replaces the reference
+     export's #8a8c91 caption, which measured 3.1:1 and failed. */
+  --warm-canvas: 236 237 238; /* #ECEDEE */
+  --warm-raised: 244 245 245; /* #F4F5F5 */
+  --warm-card: 255 255 255; /* #FFFFFF */
+  --warm-ink: 46 48 52; /* #2E3034 */
+  --warm-body: 85 87 92; /* #55575c */
+  --warm-caption: 90 98 112; /* #5A6270 */
+  --warm-accent: 227 74 50; /* #E34A32, graphics only */
+  --warm-accent-deep: 201 58 36; /* #C93A24 */
+  --warm-dark: 23 23 25; /* #171719 */
+  --warm-line: 216 219 222; /* #D8DBDE hairline */
+  /* Dark panel shades for the landing capabilities section. */
+  --warm-panel: 32 32 36; /* #202024 */
+  --warm-panel-2: 38 38 43; /* #26262b */
+  --warm-panel-3: 44 44 49; /* #2c2c31 */
+  --warm-panel-4: 52 52 58; /* #34343a */
+  --warm-accent-2: 240 90 60; /* #F05A3C */
+}
+
+/* ------------------------------------------------------------------
+   DARK THEME (default)
+   ------------------------------------------------------------------ */
+.dark {
+  color-scheme: dark;
+
+  --bg: 7 7 8; /* #070708 canvas */
+  --surface: 16 17 18; /* #101112 card */
+  --surface-2: 21 22 23; /* #151617 raised panel */
+  --surface-3: 14 14 15; /* #0E0E0F inset well */
+  --sidebar: 13 14 15; /* #0D0E0F nav rail */
+
+  --border: 27 28 30; /* 1.2:1 hairline, decoration only */
+  --border-strong: 35 36 38; /* card edge */
+  --border-control: 107 111 128; /* 3.79:1 on surface. Inputs and outlines. */
+
+  --fg: 229 226 227; /* 14.69:1 on surface, 15.65:1 on bg */
+  --fg-2: 198 197 216; /* 11.14:1 on surface */
+  --muted: 154 157 163; /* 6.95:1 on surface, 7.41:1 on bg */
+
+  --primary: 190 194 255; /* 11.12:1 on surface */
+  --primary-btn: 61 74 224; /* #3D4AE0 */
+  --primary-on: 240 241 242; /* 5.71:1 on primary-btn */
+
+  --secondary: 80 216 233; /* 11.11:1 on surface */
+  --tertiary: 255 182 137; /* 11.08:1 on surface */
+
+  --safe: 91 233 185; /* 12.42:1 on surface */
+  --warning: 255 182 137; /* 11.08:1 on surface */
+  --danger: 255 180 171; /* 11.13:1 on surface */
+
+  --focus: 190 194 255; /* 11.12:1, focus indicator */
+
+  /* Chart series, taken from the panel accents so the plots belong to the same
+     world as the chrome. Measured at 11.1, 11.1 and 11.1 against the surface.
+     These three hues are separated further by stroke pattern (solid, dashed,
+     dotted) so series identity survives colour vision deficiency. */
+  --series-1: 80 216 233;
+  --series-2: 255 182 137;
+  --series-3: 190 194 255;
+
+  --inner-glow: 255 255 255;
+  --inner-glow-a: 0.1;
+  --grid: 255 255 255;
+  --scrim: 0 0 0;
+}
+
+/* ------------------------------------------------------------------
+   Base
+   ------------------------------------------------------------------ */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The mobile navigation is a sticky top bar; reserve its height for scroll
+   anchoring so a deep link never lands under it. */
+@media (max-width: 1023.98px) {
+  html {
+    scroll-padding-top: 5rem;
+  }
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  background-color: rgb(var(--bg));
+  color: rgb(var(--fg));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ------------------------------------------------------------------
+   Instrument surface treatment
+   ------------------------------------------------------------------
+   `inner-glow` is the single shared surface treatment across the whole
+   application: a one pixel inset highlight along the top edge of a panel,
+   which is what makes a card read as a raised instrument plate against a
+   near black canvas instead of as a flat rectangle.
+
+   It is deliberately ONE treatment applied everywhere, rather than a
+   different border, shadow and gradient per component. A page where every
+   panel is decorated differently has no consistent material at all.
+   ------------------------------------------------------------------ */
+.inner-glow {
+  box-shadow: inset 0 1px 0 0 rgb(var(--inner-glow) / var(--inner-glow-a));
+}
+
+/* Pressure values update every second. Tabular figures stop the layout
+   twitching as digits change. */
+.tabular-data {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Plot surface: the measured instrument background behind charts and the
+   pressure map. Scoped to data areas only, never behind body copy. */
+.plot-surface {
+  background-image: linear-gradient(
+      to right,
+      rgb(var(--grid) / 0.06) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgb(var(--grid) / 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Visible focus for keyboard users, in both themes. Never remove this. */
+:focus-visible {
+  outline: 2px solid rgb(var(--focus));
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Skip link: invisible until focused. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -100%;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: rgb(var(--primary-btn));
+  color: rgb(var(--primary-on));
+  border-radius: 3px;
+  font-weight: 600;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}
+
+/* Scrollbars follow the theme. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border-control) / 0.5);
+  border-radius: 6px;
+  border: 2px solid rgb(var(--bg));
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--border-control) / 0.8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode overrides our palette, so keep the shapes that matter. */
+@media (forced-colors: active) {
+  .status-chip,
+  .force-border {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* The landing page is light-only by design (SprintForge-adapted).
+   This scope re-declares the light semantic tokens so in-app
+   components (GlassCard, StatusChip, GlassButton focus rings)
+   render in their measured light form on the warm surface no
+   matter which theme the visitor picked elsewhere. The scope is
+   closed at the landing root, so the app pages are untouched. */
+.landing-scope {
+  color-scheme: light;
+  --bg: 247 248 250;
+  --surface: 255 255 255;
+  --surface-2: 241 243 246;
+  --surface-3: 233 236 241;
+  --sidebar: 250 251 252;
+  --border: 230 233 237;
+  --border-strong: 220 224 230;
+  --border-control: 124 134 149;
+  --fg: 20 22 26;
+  --fg-2: 42 47 56;
+  --muted: 90 98 112;
+  --primary: 29 78 216;
+  --primary-btn: 29 78 216;
+  --primary-on: 255 255 255;
+  --secondary: 14 116 144;
+  --tertiary: 180 83 9;
+  --safe: 4 120 87;
+  --warning: 180 83 9;
+  --danger: 185 28 28;
+  --focus: 29 78 216;
+  --series-1: 0 114 178;
+  --series-2: 213 94 0;
+  --series-3: 0 158 115;
+  --inner-glow: 255 255 255;
+  --inner-glow-a: 0.7;
+  --grid: 20 22 26;
+  --scrim: 20 22 26;
+}
+
+/* ------------------------------------------------------------------
+   LANDING ENTRY MOTION
+   One rise-in per element, never looped, and only when the visitor
+   has not asked for reduced motion. No scroll listeners, no rAF
+   loops, no parallax: the instrument pages stay at MOTION 1 and the
+   landing stays within the same budget.
+   ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+  .rise {
+    animation: rise-in 420ms ease-out both;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Landing scroll reveal (SprintForge-adapted): elements start hidden only
+   when motion is allowed, and are revealed once by the IntersectionObserver
+   mounted in LandingPage. Under reduced motion everything is visible. */
+.landing-scope [data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 700ms ease-out,
+    transform 700ms ease-out;
+}
+
+.landing-scope [data-reveal].revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* The landing nav pill deepens its shadow once the page scrolls. */
+.landing-scope .nav-scrolled {
+  box-shadow: 0 18px 44px -14px rgb(35 36 39 / 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-scope [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

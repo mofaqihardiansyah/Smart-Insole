@@ -1,24 +1,36 @@
 <!doctype html>
+<!--
+  `class="dark"` is set here, not by JavaScript, so the first paint is already
+  the default theme. If it were applied on mount the page would flash light
+  before switching.
+
+  The runtime sets a Content Security Policy compatible theme class only; the
+  theme itself lives in src/index.css.
+-->
 <html lang="id" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Smart Insole IoT Dashboard</title>
-    <!-- Google Fonts: Manrope & Inter -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="Pemantauan tekanan telapak kaki berbasis IoT untuk pencegahan ulkus kaki diabetik."
+    />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    <title>Smart Insole IoT - Pemantauan Tekanan Telapak Kaki</title>
+
+    <!-- Google Fonts: Manrope (headings and display numerals), Inter (body and
+         tabular data). -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
       rel="stylesheet"
-    />
-    <!-- Material Symbols Outlined -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     />
   </head>
-  <body class="bg-background text-on-background">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

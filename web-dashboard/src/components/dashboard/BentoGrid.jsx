@@ -1,103 +1,97 @@
 import React from "react";
-import { Card, Icon, Label } from "lucide-react";
 
 /**
- * BentoGrid — Layout grid asymmetris (seperti bento box japanese).
- * - Isi setiap cell bervariasi: ikon + judul + angka/statistik
- * - Grid otomatis mengisi baris dari kiri ke kanan, height cell disamakan minimal
- * - Responsive: 1 column di hp, 2 di tablet, 3 di desktop
- * - Semua card memiliki elevation (shadow) dan hover effect
- * - Diukung oleh nilai dari context/props, bebas isi (statistik, grafik, widget)
+ * BentoGrid — the metric tile grid, in the Romer instrument style.
+ *
+ * `cards[].icon` must be a React element, not a string: an earlier version
+ * accepted icon names and rendered the literal text "Speed".
+ *
+ * Columns are whole literal class strings on purpose. Tailwind cannot see a
+ * class built by interpolation, so the previous `grid-cols-${n}` produced no
+ * multi column layout at all on desktop.
+ *
+ * A tile is only focusable and hoverable when it has something to do. A tile
+ * that looks clickable and does nothing is a dead control.
  */
-const BentoGrid = ({
-  columns = 3,
-  gutters = "lg:gap-6 md:gap-4",
-  cards = [],
-  className,
-}) => {
-  // Menghitung kolom aktif berdasarkan lebar viewport
-  const [colCount, setColCount] = React.useState(columns);
 
-  React.useEffect(() => {
-    const updateCols = () => {
-      if (window.innerWidth < 640) setColCount(1);
-      else if (window.innerWidth < 1024) setColCount(2);
-      else setColCount(columns);
-    };
-    updateCols();
-    window.addEventListener("resize", updateCols);
-    return () => window.removeEventListener("resize", updateCols);
-  }, [columns]);
+/** Whole literals on purpose: Tailwind must be able to see each class. */
+const COLUMN_CLASSES = {
+  1: "grid-cols-1",
+  2: "grid-cols-1 sm:grid-cols-2",
+  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+};
+
+const CELL_CLASSES =
+  "flex flex-col justify-between rounded-card border border-border-strong bg-surface inner-glow p-4 text-left transition-colors duration-150";
+
+const BentoCell = ({ card }) => {
+  const interactive = typeof card.onSelect === "function";
+
+  const body = (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-label uppercase text-muted">{card.title}</p>
+        {card.icon && (
+          <span className="shrink-0 text-muted" aria-hidden="true">
+            {card.icon}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-3">
+        <p className="tabular-data font-heading text-h3 font-semibold text-fg">
+          {card.value ?? "--"}
+          {card.unit && (
+            <span className="ml-1.5 text-body-sm font-medium text-muted">
+              {card.unit}
+            </span>
+          )}
+        </p>
+        {card.label && (
+          <p className="mt-1 text-body-sm text-muted">{card.label}</p>
+        )}
+        {card.footer}
+      </div>
+    </>
+  );
+
+  // Only give the cell button semantics when it actually does something.
+  if (!interactive) {
+    return (
+      <div className={`${CELL_CLASSES} ${card.className || ""}`.trim()}>
+        {body}
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={
-        "grid" +
-        (colCount > 1 ? " grid-cols-" + colCount : "") +
-        " " +
-        gutters +
-        " gap-4 " +
-        (className || "")
-      }
+    <button
+      type="button"
+      onClick={card.onSelect}
+      aria-label={card.actionLabel}
+      className={`${CELL_CLASSES} hover:border-border-control hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${card.className || ""}`.trim()}
     >
-      {cards.map((card, i) => (
-        <div
-          key={i}
-          className`
-            rounded-xl border border-border/50 bg-card
-            overflow-hidden hover:shadow-lg hover:transition-shadow duration-300
-            cursor-pointer
-            aria-roledescription="card"
-            tabindex="0"
-          `
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              // Trigger card action (focus management)
-              card.onSelect?.();
-            }
-          }}
-        >
-          {/* Header: ikon + badge */}
-          <div className="p-5 border-b border-border/50">
-            <div className="flex items-start gap-3">
-              <div className="shrink-0">{card.icon}</div>
-              <div className="flex-1 min-w-0">
-                {card.title && (
-                  <p className="text-xs font-medium text-muted capitalize">
-                    {card.title}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Content: angka utama + deskripsi */}
-          <div className="p-5 flex flex-col h-100">
-            <p className="text-3xl font-bold tracking-tighter">
-              {card.value}
-            </p>
-            {card.label && (
-              <p className="text-xs text-muted mt-1 line-clamp-1">
-                {card.label}
-              </p>
-            )}
-          </div>
-
-          {/* Action area (optional) */}
-          {card.action && (
-            <div className="p-3 border-t border-border/20">
-              <button
-                className="w-full text-sm font-medium text-primary"
-                onClick={card.onSelect}
-              >
-                Lihat Detail
-              </button>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
+      {body}
+    </button>
   );
 };
 
+const BentoGrid = ({ cards = [], columns = 3, className = "" }) => (
+  <div
+    className={[
+      "grid gap-3",
+      COLUMN_CLASSES[columns] || COLUMN_CLASSES[3],
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ")}
+  >
+    {cards.map((card, index) => (
+      <BentoCell key={card.id || index} card={card} />
+    ))}
+  </div>
+);
+
+export { BentoGrid, BentoCell };
 export default BentoGrid;

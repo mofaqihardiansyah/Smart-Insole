@@ -1,61 +1,86 @@
 import React from "react";
 
 /**
- * GlassInput — Input field dengan desain glassmorphism.
- - Transparan area + border subtLE
- - Label yang "float" ke atas saat focused (standar accessible pattern)
- - Support: placeholder, disabled, read-only, error state
- - Fokus: ring fokus primary, outline None
+ * GlassInput — text and number field.
+ *
+ * The name is historical (the brief forbids renaming exports).
+ *
+ * Decisions, each deliberate:
+ * - The label sits ABOVE the field and is a real <label htmlFor>, in the
+ *   uppercase micro style the design uses for structure. No placeholder-as-label.
+ * - The error renders BELOW as text, wired through `aria-describedby` and
+ *   flagged with `aria-invalid`. A red border is not an error message.
+ * - The border uses `border-control`, which is the one edge token measured to
+ *   clear 3:1 against the surface behind it (3.79:1 dark, 3.47:1 light). The
+ *   faint hairline token is deliberately NOT used here: a 1.2:1 edge is
+ *   invisible to a low-vision user looking for the field.
+ * - The field uses tabular figures, because most fields here hold a kPa or a
+ *   second count.
  */
 const GlassInput = ({
   type = "text",
-  placeholder,
-  value,
-  onChange,
   label,
   error,
+  hint,
+  id,
+  className = "",
+  suffix,
   ...props
 }) => {
-  const [focused, setFocused] = React.useState(false);
+  const inputId = id || React.useId();
+  const errorId = `${inputId}-error`;
+  const hintId = `${inputId}-hint`;
+  const describedBy = [error ? errorId : null, hint ? hintId : null]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div className="space-y-2">
-      {/* Label yang float */}
+    <div className="space-y-1.5">
       {label && (
         <label
-          className`
-            text-sm font-medium text-primary transition-colors
-            cursor-pointer focus-visible:outline-none focus-visible:ring-2
-            focus-visible:ring-primary focus-visible:ring-offset-2
-            duration-200 transform
-            ${focused ? "text-sm" : "text-xs"}
-            top-0 bottom-1/2 -translate-y-1/2 left-0 text-[--color-primary]"
-          role="presentation"
+          htmlFor={inputId}
+          className="block text-label uppercase text-muted"
         >
           {label}
         </label>
       )}
 
-      <input
-        className`
-          w-full rounded-xl bg-card/80 backdrop-blur-sm border border-border/50
-          px-4 py-2 pr-12 focus-visible:outline-none focus-visible:ring-2
-          focus-visible:ring-primary focus-visible:ring-offset-2 placeholder:text-muted
-          transition-colors focus:${focused ? "border-color: var(--primary)" : ""}
-          ${focused ? "bg-card" : "bg-transparent"}
-        `
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        {...props}
-        aria-invalid={!!error}
-        aria-describedby={error ? `error-${Math.random().toString(36).slice(2)}` : undefined}
-      />
+      <div className="relative">
+        <input
+          id={inputId}
+          type={type}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy || undefined}
+          className={[
+            "tabular-data w-full min-h-[44px] rounded-control border bg-surface-3 px-3 py-2",
+            "text-data text-fg placeholder:text-muted/70",
+            "transition-colors duration-150",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface",
+            error
+              ? "border-danger"
+              : "border-border-control focus:border-primary",
+            suffix ? "pr-12" : "",
+            className,
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          {...props}
+        />
+        {suffix && (
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-body-sm text-muted">
+            {suffix}
+          </span>
+        )}
+      </div>
+
+      {hint && !error && (
+        <p id={hintId} className="text-body-sm text-muted">
+          {hint}
+        </p>
+      )}
+
       {error && (
-        <p className="text-xs text-danger mt-1" id={`error-${Math.random().toString(36).slice(2)}`}>
+        <p id={errorId} className="text-body-sm font-medium text-danger">
           {error}
         </p>
       )}
@@ -65,4 +90,5 @@ const GlassInput = ({
 
 GlassInput.displayName = "GlassInput";
 
+export { GlassInput };
 export default GlassInput;

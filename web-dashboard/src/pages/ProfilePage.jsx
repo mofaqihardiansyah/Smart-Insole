@@ -1,0 +1,229 @@
+import React, { useEffect, useState } from "react";
+import { Activity, CalendarDays, Languages, Save, User } from "lucide-react";
+import { ThemeToggle } from "../components/layout/ThemeToggle";
+import { useAuth } from "../hooks/useAuth";
+import { useInsole } from "../context/InsoleContext";
+import { t, LANGUAGES } from "../utils/i18n";
+import {
+  GlassButton,
+  GlassCard,
+  GlassFormGroup,
+  GlassInput,
+  GlassLabel,
+  GlassSelect,
+  PageHeader,
+  PanelHeader,
+  StatePanel,
+  StatusBanner,
+  StatusChip,
+} from "../components/ui/GlassComponents";
+
+/**
+ * ProfilePage: account identity, the interface preferences, and the statistics
+ * that actually exist.
+ *
+ * Every figure is derived from InsoleContext's `incidentLogs`, which the context
+ * appends to only when a real reading changes the risk level. With nothing
+ * recorded yet the statistics panel says so rather than showing a placeholder
+ * count.
+ *
+ * This page also carries the labelled theme control, so both themes are
+ * reachable from inside the app and not only from the navigation bar.
+ */
+const ProfilePage = () => {
+  const { user, displayName, loading } = useAuth();
+  const { language, setLanguage, incidentLogs } = useInsole();
+
+  const [fullName, setFullName] = useState(displayName || "");
+  const [saved, setSaved] = useState(false);
+
+  // displayName arrives asynchronously from the auth listener, so the field
+  // follows it until the user starts typing.
+  useEffect(() => {
+    setFullName(displayName || "");
+  }, [displayName]);
+
+  const identity = displayName || user?.email || "";
+  const initial = identity.trim().charAt(0).toUpperCase();
+
+  const creationTime = user?.metadata?.creationTime;
+  const creationDate = creationTime ? new Date(creationTime) : null;
+  const memberSince =
+    creationDate && !Number.isNaN(creationDate.getTime())
+      ? creationDate.toLocaleDateString(language === "id" ? "id-ID" : "en-GB")
+      : t("common.notAvailable", language);
+
+  const dangerCount = incidentLogs.filter(
+    (log) => (log.type ?? log.risk) === "danger"
+  ).length;
+  const warningCount = incidentLogs.filter(
+    (log) => (log.type ?? log.risk) === "warning"
+  ).length;
+
+  const stats = [
+    { key: "history.totalIncidents", value: incidentLogs.length, level: null },
+    { key: "history.dangerCount", value: dangerCount, level: "danger" },
+    { key: "history.warningCount", value: warningCount, level: "warning" },
+  ];
+
+  return (
+    <section className="mx-auto w-full max-w-3xl space-y-4">
+      <PageHeader
+        title={t("profile.title", language)}
+        subtitle={t("profile.subtitle", language)}
+      />
+
+      {loading ? (
+        <StatePanel
+          variant="loading"
+          title={t("app.loading", language)}
+          rows={4}
+        />
+      ) : !user ? (
+        <StatePanel
+          variant="error"
+          title={t("profile.unavailable", language)}
+        />
+      ) : (
+        <>
+          <GlassCard className="p-4">
+            <div className="flex items-center gap-4">
+              <span
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 font-heading text-h4 text-primary"
+                aria-hidden="true"
+              >
+                {initial || <User className="h-6 w-6" />}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate font-heading text-h4 text-fg">
+                  {displayName || t("common.notAvailable", language)}
+                </p>
+                <p className="truncate text-body-sm text-muted">
+                  {user.email || t("common.notAvailable", language)}
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3 text-body-sm text-muted">
+              <CalendarDays className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{t("profile.memberSince", language)}</span>
+              <span className="tabular-data text-fg">{memberSince}</span>
+            </p>
+          </GlassCard>
+
+          <GlassCard className="space-y-4 p-4">
+            <GlassInput
+              id="profile-name"
+              label={t("profile.name", language)}
+              value={fullName}
+              onChange={(event) => {
+                setFullName(event.target.value);
+                setSaved(false);
+              }}
+              autoComplete="name"
+            />
+
+            <GlassInput
+              id="profile-email"
+              label={t("profile.email", language)}
+              value={user.email || ""}
+              readOnly
+              hint={t("profile.emailLocked", language)}
+            />
+
+            <GlassFormGroup>
+              <GlassLabel htmlFor="profile-language">
+                <span className="inline-flex items-center gap-2">
+                  <Languages className="h-4 w-4" aria-hidden="true" />
+                  {t("profile.language", language)}
+                </span>
+              </GlassLabel>
+              <GlassSelect
+                id="profile-language"
+                value={language}
+                onChange={(event) => {
+                  setSaved(false);
+                  setLanguage(event.target.value);
+                }}
+              >
+                {LANGUAGES.map((option) => (
+                  <option key={option.code} value={option.code}>
+                    {option.label}
+                  </option>
+                ))}
+              </GlassSelect>
+            </GlassFormGroup>
+
+            <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-label uppercase text-muted">
+                {t("theme.label", language)}
+              </p>
+              <ThemeToggle variant="labeled" />
+            </div>
+
+            {saved && (
+              <StatusBanner
+                tone="success"
+                title={t("profile.saved", language)}
+                onDismiss={() => setSaved(false)}
+                dismissLabel={t("common.dismiss", language)}
+              />
+            )}
+
+            <div className="flex justify-end">
+              <GlassButton
+                type="button"
+                variant="filled"
+                onClick={() => setSaved(true)}
+              >
+                <Save className="h-4 w-4" aria-hidden="true" />
+                {t("profile.save", language)}
+              </GlassButton>
+            </div>
+          </GlassCard>
+
+          <GlassCard flush>
+            <PanelHeader
+              label={t("profile.stats", language)}
+              icon={<Activity className="h-4 w-4" />}
+            />
+
+            <div className="p-4">
+              {incidentLogs.length === 0 ? (
+                <StatePanel
+                  variant="empty"
+                  title={t("profile.unavailable", language)}
+                  description={t("history.emptyBody", language)}
+                />
+              ) : (
+                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  {stats.map((stat) => (
+                    <div key={stat.key}>
+                      <dt className="text-label uppercase text-muted">
+                        {t(stat.key, language)}
+                      </dt>
+                      <dd className="mt-1.5 flex flex-wrap items-center gap-2">
+                        <span className="tabular-data font-heading text-h3 text-fg">
+                          {stat.value}
+                        </span>
+                        {stat.level && (
+                          <StatusChip
+                            level={stat.level}
+                            label={t(`risk.${stat.level}`, language)}
+                            size="sm"
+                          />
+                        )}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </div>
+          </GlassCard>
+        </>
+      )}
+    </section>
+  );
+};
+
+export default ProfilePage;

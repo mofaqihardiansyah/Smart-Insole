@@ -1,8 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useRoutes } from "react-router-dom";
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
+import { InsoleProvider, useInsole } from "./context/InsoleContext";
+import { t } from "./utils/i18n";
 import { FloatingNavbar } from "./components/layout/FloatingNavbar";
-import { BentoGrid } from "./components/dashboard/BentoGrid";
+import { AlertModal } from "./components/dashboard/AlertModal";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -13,100 +20,161 @@ import DevicePage from "./pages/DevicePage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
-import { useRoute } from "./hooks/useRoute";
 
-// Daftar navigasi floating navbar (mobile)
-const NAV_LINKS = [
-  { id: "dashboard", label: "Dashboard", icon: "Home", accessibilityLabel: "Dashboard" },
-  { id: "monitoring", label: "Monitoring", icon: "Chart", accessibilityLabel: "Monitoring" },
-  { id: "history", label: "Riwayat", icon: "History", accessibilityLabel: "Riwayat" },
-  { id: "device", label: "Device", icon: "Device", accessibilityLabel: "Device" },
-  { id: "settings", label: "Pengaturan", icon: "Settings", accessibilityLabel: "Pengaturan" },
-  { id: "profile", label: "Profile", icon: "User", accessibilityLabel: "Profile" },
+/**
+ * Navigation is built from the URL, not from component state, so the highlight
+ * can never disagree with the page you are on.
+ *
+ * The order is the order a carer actually uses it: read the pressure, watch the
+ * trend, review what happened, check the hardware, adjust the limits, then the
+ * account. Notifications sits last because it is a preference, not a place.
+ */
+const buildNavLinks = (language) => [
+  { id: "dashboard", to: "/", label: t("nav.dashboard", language), icon: "Home" },
+  { id: "monitoring", to: "/monitoring", label: t("nav.monitoring", language), icon: "Chart" },
+  { id: "history", to: "/history", label: t("nav.history", language), icon: "History" },
+  { id: "device", to: "/device", label: t("nav.device", language), icon: "Device" },
+  { id: "settings", to: "/settings", label: t("nav.settings", language), icon: "Settings" },
+  { id: "profile", to: "/profile", label: t("nav.profile", language), icon: "User" },
+  { id: "notifications", to: "/notifications", label: t("nav.notifications", language), icon: "Bell" },
 ];
 
 function App() {
-  const { user, loading, login, logout } = useAuth();
-  const [activeLink, setActiveLink] = useState("dashboard");
-  const [hasUnreadNotif, setHasUnreadNotif] = useState(false);
-
-  // Efek samping: cek unread notif setiap 10 detik
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // placeholder: ambil dari Firebase
-      setHasUnreadNotif(Math.random() > 0.7);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Jika loading, tutup dan arahkan ke login
-  if (loading) return <Navigate to="/login" replace />;
-
-  // Jika user BELUM login, hanya izinkan halaman publik
-  if (!user) {
-    return (
-      <Router>
-        {/* Navbar versi guest (hanya landing link) */}
-        <FloatingNavbar
-          links={[
-            { id: "landing", label: "Landing", icon: "Home", accessibilityLabel: "Landing Page" },
-          ]}
-          activeLink="landing"
-          onSelect={(id) => setActiveLink(id)}
-          hasUnreadNotif={false}
-        />
-        <main className="min-h-screen bg-bg p-4">
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/" element={<LandingPage />} />
-          </Routes>
-        </main>
-      </Router>
-    );
-  }
-
-  // Jika SUDAH login, tampilkan navbar + halaman protected
   return (
     <Router>
-      {/* Floating Navbar atas */}
+      <AppShell />
+    </Router>
+  );
+}
+
+/**
+ * The provider sits above the auth gate so language, theme and live data are
+ * shared by the public pages too: the landing page renders the real heatmap.
+ *
+ * `autoConnect` only becomes true once a user is signed in, so an anonymous
+ * visitor never opens a Realtime Database connection.
+ */
+function AppShell() {
+  const { user, loading } = useAuth();
+
+  return (
+    <InsoleProvider autoConnect={Boolean(user)}>
+      <div className="min-h-[100dvh] bg-bg">
+        <a href="#main-content" className="skip-link">
+          <SkipLabel />
+        </a>
+
+        {loading ? <Splash /> : user ? <ProtectedApp /> : <PublicApp />}
+      </div>
+    </InsoleProvider>
+  );
+}
+
+const SkipLabel = () => {
+  const { language } = useInsole();
+  return t("app.skipToContent", language);
+};
+
+const Splash = () => {
+  const { language } = useInsole();
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 px-4"
+    >
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-border-control border-t-primary" />
+      <p className="text-body-sm text-muted">{t("app.loading", language)}</p>
+    </div>
+  );
+};
+
+/* ========================= Public routes ========================= */
+
+function PublicApp() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/" element={<LandingPage />} />
+      {/* Anything unknown goes home rather than showing a blank screen. */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+/* ======================== Protected routes ======================= */
+
+function ProtectedApp() {
+  const {
+    language,
+    unreadIncidentCount,
+    alertOpen,
+    risk,
+    riskScore,
+    acknowledgeIncidents,
+    isMuted,
+    toggleMute,
+  } = useInsole();
+
+  const links = buildNavLinks(language);
+
+  return (
+    <>
       <FloatingNavbar
-        links={NAV_LINKS}
-        activeLink={activeLink}
-        onSelect={(id) => setActiveLink(id)}
-        hasUnreadNotif={hasUnreadNotif}
+        links={links}
+        hasUnread={unreadIncidentCount > 0}
+        unreadLabel={String(unreadIncidentCount)}
       />
 
-      <main className="mt-20 min-h-screen bg-bg p-4 overflow-x-hidden">
+      {/* The rail is fixed on desktop, so the content column is offset by its
+          width there and sits under the mobile top bar below lg. */}
+      <main
+        id="main-content"
+        className="mx-auto w-full max-w-[1600px] px-4 pb-12 pt-4 sm:px-6 lg:pl-72 lg:pr-8"
+      >
         <Routes>
-          {/* Halaman Publik (bisa diakses meski login) */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-
-          {/* Halaman Utama (Protected) */}
-          <Route
-            path="/"
-            element={
-              <DashboardPage
-                onLinkSelect={(id) => setActiveLink(id)}
-                hasUnreadNotif={hasUnreadNotif}
-              />
-            }
-          />
+          <Route path="/" element={<DashboardPage />} />
           <Route path="/monitoring" element={<MonitoringPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/device" element={<DevicePage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          {/* Login and register stay reachable while signed in for account
+              switching, but they are not linked from the navigation. */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+
+        <footer className="mt-12 border-t border-border pt-4 text-body-sm text-muted">
+          {t("app.footer", language)}
+        </footer>
       </main>
 
-      {/* Footer kecil di bawah */}
-      <footer className="mt-12 text-center text-xs text-muted">
-        <span>Smart Insole IoT &copy; {new Date().getFullYear()}</span>
-      </footer>
-    </Router>
+      {/* One early-warning dialog for the whole app, so an alert raised on the
+          dashboard is still present after navigating. */}
+      <AlertModal
+        open={alertOpen}
+        level={risk}
+        title={t(
+          risk === "danger" ? "alert.dangerTitle" : "alert.warningTitle",
+          language
+        )}
+        body={t(
+          risk === "danger" ? "alert.dangerBody" : "alert.warningBody",
+          language
+        )}
+        advice={`${t("risk.score", language)}: ${riskScore} / 100`}
+        dismissLabel={t("alert.dismiss", language)}
+        muteLabel={t("alert.mute", language)}
+        unmuteLabel={t("alert.unmute", language)}
+        isMuted={isMuted}
+        onToggleMute={toggleMute}
+        onDismiss={acknowledgeIncidents}
+      />
+    </>
   );
 }
 

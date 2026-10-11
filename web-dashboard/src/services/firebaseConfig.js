@@ -1,20 +1,37 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported as analyticsIsSupported } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
-import { getStorage } from "firebase/storage";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
+//
+// Note on these values being committed: the Firebase web config (apiKey,
+// authDomain, databaseURL, ...) is a public project identifier, not a secret.
+// It is shipped to every browser by design. Access control lives in the
+// Realtime Database security rules, which must require authentication:
+//
+//   {
+//     "rules": {
+//       "readings": {
+//         ".read": "auth != null",
+//         ".write": false
+//       }
+//     }
+//   }
+//
+// The ESP32 writes with its own credentials; the web client only reads.
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyA3qPDVxf-TMtkZtuUQG34cdN4DRUmlZfM",
   authDomain: "sole-3b2e8.firebaseapp.com",
-  databaseURL: "https://sole-3b2e8-default-rtdb.asia-southeast1.firebasatabase.app",
+  // Was `...firebasatabase.app` (missing the "d"), which made every Realtime
+  // Database call fail with an unresolvable host.
+  databaseURL: "https://sole-3b2e8-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "sole-3b2e8",
   storageBucket: "sole-3b2e8.firebasestorage.app",
   messagingSenderId: "460660331762",
@@ -24,13 +41,42 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// Analytics opsional. Diperiksa dulu apakah lingkungan mendukungnya (butuh
+// IndexedDB): di jsdom dan di peramban mode privat, memanggilnya akan
+// memunculkan peringatan atau gagal. Analytics bukan bagian dari fungsionalitas
+// inti, jadi kegagalannya tidak boleh mengganggu apa pun.
+let analytics = null;
+if (typeof window !== "undefined") {
+  analyticsIsSupported()
+    .then((supported) => {
+      if (supported) analytics = getAnalytics(app);
+    })
+    .catch(() => {
+      /* Analytics tidak tersedia; abaikan. */
+    });
+}
 
 // Export Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const realtimeDb = getDatabase(app);
-export const storage = getStorage(app);
+
+/**
+ * Cloud Storage is created on first use rather than at import time, so the
+ * Storage SDK stays out of the initial download. Only the optional profile
+ * photo upload needs it, and most sessions never call it.
+ *
+ * @returns {Promise<import('firebase/storage').FirebaseStorage>}
+ */
+let storageInstance = null;
+export async function getStorageInstance() {
+  if (!storageInstance) {
+    const { getStorage } = await import("firebase/storage");
+    storageInstance = getStorage(app);
+  }
+  return storageInstance;
+}
 
 // Export app for wider use
 export { app };
