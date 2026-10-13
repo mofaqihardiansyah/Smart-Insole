@@ -48,7 +48,7 @@ function App() {
 }
 
 /**
- * The provider sits above the auth gate so language, theme and live data are
+ * The provider sits above the auth gate so language and live data are
  * shared by the public pages too: the landing page renders the real heatmap.
  *
  * `autoConnect` only becomes true once a user is signed in, so an anonymous

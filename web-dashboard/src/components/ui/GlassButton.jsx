@@ -3,30 +3,24 @@ import React from "react";
 /**
  * GlassButton — the application's only button.
  *
- * The name is historical (the brief forbids renaming exports). The Romer
- * language is tight rectangles and uppercase tracked labels, not pills.
+ * The name is historical (the brief forbids renaming exports).
  *
- * Contrast note, and the reason the fill is `primary-btn` rather than the
- * brighter `primary`: the reference export puts near white text on #5E6BFF,
- * which measures 3.70:1 and fails AA. `primary-btn` is that same indigo
- * darkened, #3D4AE0 in dark and #1D4ED8 in light, measuring 5.71:1 and 6.70:1
- * with an identical label colour. Same look, one token.
+ * Verdana Health button spec:
+ * - Primary: navy #0F172A fill, white text, #020617 hover fill.
+ * - Secondary: transparent, navy text, 1px navy border, navy/5 hover fill.
+ * - Ghost: transparent, slate #475569 text, #F1F5F9 hover fill.
+ * - Destructive: red #EF4444 fill, white text, #DC2626 hover fill.
  *
- * Every size keeps a 44px minimum on touch and drops to a denser desktop
- * register only for `sm`, so a thumb always has something to hit while a table
- * row does not grow a 44px button.
+ * Every size keeps a 44px minimum on touch.
  */
 const VARIANTS = {
   filled:
-    "bg-primary-btn text-primary-on hover:opacity-90 border border-transparent",
-  outline: "border border-border-control bg-surface text-fg hover:bg-surface-2",
-  ghost: "text-primary hover:bg-primary/10 border border-transparent",
+    "bg-primary-btn text-primary-on hover:bg-primary-hover border border-transparent",
+  outline:
+    "border border-primary-btn bg-transparent text-primary-btn hover:bg-primary-btn/5",
+  ghost: "text-fg-2 hover:bg-surface-2 border border-transparent",
   quiet: "border border-border-strong bg-surface-2 text-fg hover:bg-surface-3",
-  danger: "bg-danger/15 text-danger border border-danger/50 hover:bg-danger/25",
-  // Landing page variant fills (warm palette, see DESIGN.md).
-  warm: "bg-warm-accent-deep text-white hover:opacity-90 border border-transparent",
-  warmOutline:
-    "border border-warm-line bg-warm-card text-warm-ink hover:bg-warm-raised",
+  danger: "bg-danger text-white hover:bg-danger-hover border border-transparent",
 };
 
 const SIZES = {

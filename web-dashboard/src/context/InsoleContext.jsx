@@ -180,15 +180,6 @@ const readStoredLanguage = () => {
  * design rather than whatever their operating system happens to prefer. The
  * choice is remembered from then on.
  */
-const readStoredTheme = () => {
-  try {
-    const stored = localStorage.getItem('theme');
-    return stored === 'light' || stored === 'dark' ? stored : 'dark';
-  } catch {
-    return 'dark';
-  }
-};
-
 /**
  * @param {object} props
  * @param {React.ReactNode} props.children
@@ -227,7 +218,6 @@ export const InsoleProvider = ({
     }
   });
   const [language, setLanguage] = useState(readStoredLanguage);
-  const [theme, setTheme] = useState(readStoredTheme);
   const [simulationScenario, setSimulationScenario] = useState('NORMAL_GAIT');
   const [history, setHistory] = useState([]);
   const [incidentLogs, setIncidentLogs] = useState([]);
@@ -265,24 +255,6 @@ export const InsoleProvider = ({
       document.documentElement.lang = language;
     }
   }, [language]);
-
-  // The whole theme hangs off this one class. Every colour token resolves
-  // through a CSS variable that `.dark` redefines, so there is not a single
-  // `dark:` utility anywhere in the codebase to drift out of sync.
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    try {
-      localStorage.setItem('theme', theme);
-    } catch {
-      /* ignore */
-    }
-  }, [theme]);
-
-  const toggleTheme = useCallback(
-    () => setTheme((previous) => (previous === 'dark' ? 'light' : 'dark')),
-    []
-  );
 
   useEffect(() => {
     try {
@@ -577,9 +549,6 @@ export const InsoleProvider = ({
     toggleMute,
     language,
     setLanguage,
-    theme,
-    setTheme,
-    toggleTheme,
     // Simulator
     simulationScenario,
     setSimulationScenario,

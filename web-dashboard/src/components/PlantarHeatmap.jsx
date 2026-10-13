@@ -23,8 +23,8 @@ const DANGER_KPA = 70;
  *
  * These resolve through the SAME risk variables the status chips and the legend
  * use, so "safe means green" is one colour everywhere, and so the map repaints
- * correctly when the theme switches. A literal hex here would silently pin the
- * map to one theme.
+ * correctly because there is only one theme. A literal hex here would silently
+ * pin the map to one palette.
  *
  * In light these resolve to the darkened risk forms, which measure 4.63, 4.24
  * and 5.46 against the sole fill, clearing the 3:1 a graphical object needs. In
@@ -57,7 +57,7 @@ const PULSE_CSS = `
 }
 `;
 
-/* Anatomical parts resolve through theme variables, so the figure reads as a
+/* Anatomical parts resolve through the palette variables, so the figure reads as a
    light diagram on dark and as a light diagram on light, without a second
    component. */
 const SOLE_FILL = 'rgb(var(--surface-3))';

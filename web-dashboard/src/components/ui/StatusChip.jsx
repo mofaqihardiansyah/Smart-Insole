@@ -12,23 +12,23 @@ import { CheckCircle2, AlertTriangle, AlertOctagon } from "lucide-react";
  *   2. a text label in the current language, in uppercase micro type;
  *   3. the colour.
  *
- * The tint is the accent at 12% alpha and the edge at 50%, which works in both
- * themes without a second set of tint tokens. The label sits at the full accent
- * colour, measured at 5.0:1 or better in light and 11:1 or better in dark, so
+ * The tint is the accent at 15% alpha, which works in the light theme
+ * without a second set of tint tokens. The label sits at the full accent
+ * colour, measured at 4.5:1 or better, so
  * the meaning is carried by text that is genuinely readable.
  */
 const LEVELS = {
   safe: {
     Icon: CheckCircle2,
-    tone: "bg-safe/12 text-safe border-safe/50",
+    tone: "bg-safe/15 text-safe",
   },
   warning: {
     Icon: AlertTriangle,
-    tone: "bg-warning/12 text-warning border-warning/50",
+    tone: "bg-warning/15 text-warning",
   },
   danger: {
     Icon: AlertOctagon,
-    tone: "bg-danger/12 text-danger border-danger/50",
+    tone: "bg-danger/15 text-danger",
   },
 };
 

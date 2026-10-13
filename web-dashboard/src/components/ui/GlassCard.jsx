@@ -4,24 +4,30 @@ import React from "react";
  * GlassCard — the application's surface primitive.
  *
  * The name is historical: the design brief forbids renaming exports and every
- * page imports these by name. There is no glass here. A panel is a solid
- * surface with a 1px edge plus the shared `inner-glow` inset, which is the
- * single material treatment used across the whole product.
+ * page imports these by name. There is no glass here.
+ *
+ * Verdana Health card spec:
+ * - Default: #FFFFFF fill, 1px #E2E8F0 border, no shadow, 8px radius.
+ * - Elevated: #FFFFFF fill, no border, md shadow, 8px radius.
+ * - 24px padding, optional tinted header strip (#0F172A) with white text.
  *
  * `flush` removes the default padding for panels that own a full bleed table or
  * chart and need the content to reach the edge.
+ * `elevated` applies the md shadow for cards that genuinely float.
  */
 const GlassCard = ({
   children,
   className = "",
   as: Tag = "div",
   flush = false,
+  elevated = false,
   ...props
 }) => (
   <Tag
     className={[
-      "rounded-card border border-border-strong bg-surface inner-glow",
-      flush ? "" : "p-4",
+      "rounded-card border bg-surface",
+      elevated ? "border-transparent shadow-md" : "border-border",
+      flush ? "" : "p-6",
       className,
     ]
       .filter(Boolean)

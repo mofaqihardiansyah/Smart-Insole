@@ -377,11 +377,6 @@ export const DICTIONARY = {
     'common.close': 'Tutup',
     'common.notAvailable': 'Tidak tersedia',
     'common.language': 'Bahasa',
-    'theme.label': 'Tema tampilan',
-    'theme.light': 'Terang',
-    'theme.dark': 'Gelap',
-    'theme.toLight': 'Ganti ke tema terang',
-    'theme.toDark': 'Ganti ke tema gelap',
   },
 
   en: {
@@ -742,11 +737,6 @@ export const DICTIONARY = {
     'common.close': 'Close',
     'common.notAvailable': 'Not available',
     'common.language': 'Language',
-    'theme.label': 'Interface theme',
-    'theme.light': 'Light',
-    'theme.dark': 'Dark',
-    'theme.toLight': 'Switch to light theme',
-    'theme.toDark': 'Switch to dark theme',
   },
 };
 

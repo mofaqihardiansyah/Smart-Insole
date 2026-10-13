@@ -9,7 +9,7 @@ import React, { useMemo } from "react";
  *
  * Design decisions with reasons:
  * - Series colours resolve through the `--series-*` variables, so the plot
- *   belongs to the same palette as the chrome and repaints with the theme. Each
+ *   belongs to the same palette as the chrome. Each
  *   series ALSO carries a distinct stroke pattern (solid, dashed, dotted),
  *   because three hues alone are not enough separation for every kind of colour
  *   vision deficiency, and a pressure trend is worth reading correctly.

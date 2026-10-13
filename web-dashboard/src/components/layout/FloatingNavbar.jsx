@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
-import { ThemeToggle } from "./ThemeToggle";
 
 /**
  * FloatingNavbar: the application shell's navigation.
@@ -27,7 +26,7 @@ import { ThemeToggle } from "./ThemeToggle";
  *   >= lg  a fixed left rail, 16rem wide, uppercase tracked items, with the
  *          active item marked by a cyan right edge (colour AND position, plus
  *          aria-current, so the state is not carried by colour alone).
- *   <  lg  a sticky top bar with the brand, the theme switch and a Menu button
+ *   <  lg  a sticky top bar with the brand and a Menu button
  *          that opens a drawer. A drawer rather than a bottom bar because the
  *          Romer reference uses a rail, and a 7 item rail has nowhere to go on
  *          a 360px screen.
@@ -225,10 +224,7 @@ const FloatingNavbar = ({ links = [], hasUnread = false, unreadLabel }) => {
 
         <div className="space-y-3 border-t border-border px-4 py-4">
           <SourceReadout />
-          <div className="flex items-center justify-between gap-2">
-            <ThemeToggle />
-            <LanguageToggle />
-          </div>
+          <LanguageToggle />
         </div>
       </nav>
 
@@ -242,7 +238,6 @@ const FloatingNavbar = ({ links = [], hasUnread = false, unreadLabel }) => {
         </div>
 
         <div className="flex items-center gap-1">
-          <ThemeToggle />
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
@@ -310,7 +305,6 @@ const FloatingNavbar = ({ links = [], hasUnread = false, unreadLabel }) => {
 
             <div className="space-y-3 border-t border-border p-4">
               <SourceReadout />
-              <ThemeToggle variant="labeled" className="w-full" />
               <LanguageToggle className="w-full" />
             </div>
           </div>

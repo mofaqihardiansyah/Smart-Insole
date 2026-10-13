@@ -5,17 +5,19 @@ import React from "react";
  *
  * The name is historical (the brief forbids renaming exports).
  *
- * Decisions, each deliberate:
- * - The label sits ABOVE the field and is a real <label htmlFor>, in the
- *   uppercase micro style the design uses for structure. No placeholder-as-label.
- * - The error renders BELOW as text, wired through `aria-describedby` and
- *   flagged with `aria-invalid`. A red border is not an error message.
- * - The border uses `border-control`, which is the one edge token measured to
- *   clear 3:1 against the surface behind it (3.79:1 dark, 3.47:1 light). The
- *   faint hairline token is deliberately NOT used here: a 1.2:1 edge is
- *   invisible to a low-vision user looking for the field.
- * - The field uses tabular figures, because most fields here hold a kPa or a
- *   second count.
+ * Verdana Health input spec:
+ * - Default: 1px #E2E8F0 border, #FFFFFF fill, no shadow.
+ * - Hover: 1px #0F172A border.
+ * - Focus: 2px #0F172A border, 3px ring #0F172A18.
+ * - Error: 2px #EF4444 border, 3px ring #EF444418.
+ * - Disabled: 1px #E2E8F0 border, #F1F5F9 fill.
+ * - Height 42px, padding 10px 14px, radius 8px.
+ * - Label above: DM Sans 14px/500, #0F172A, bottom margin 6px.
+ * - Helper text: DM Sans 12px/400, #475569, top margin 4px.
+ * - Error text: DM Sans 12px/400, #EF4444, top margin 4px.
+ *
+ * The field uses tabular figures, because most fields here hold a kPa or a
+ * second count.
  */
 const GlassInput = ({
   type = "text",
@@ -52,13 +54,13 @@ const GlassInput = ({
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy || undefined}
           className={[
-            "tabular-data w-full min-h-[44px] rounded-control border bg-surface-3 px-3 py-2",
+            "tabular-data w-full min-h-[42px] rounded-control border bg-surface px-3.5 py-2.5",
             "text-data text-fg placeholder:text-muted/70",
             "transition-colors duration-150",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface",
             error
               ? "border-danger"
-              : "border-border-control focus:border-primary",
+              : "border-border hover:border-primary focus:border-primary",
             suffix ? "pr-12" : "",
             className,
           ]

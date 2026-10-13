@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Activity, CalendarDays, Languages, Save, User } from "lucide-react";
-import { ThemeToggle } from "../components/layout/ThemeToggle";
 import { useAuth } from "../hooks/useAuth";
 import { useInsole } from "../context/InsoleContext";
 import { t, LANGUAGES } from "../utils/i18n";
@@ -153,13 +152,6 @@ const ProfilePage = () => {
                 ))}
               </GlassSelect>
             </GlassFormGroup>
-
-            <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-label uppercase text-muted">
-                {t("theme.label", language)}
-              </p>
-              <ThemeToggle variant="labeled" />
-            </div>
 
             {saved && (
               <StatusBanner

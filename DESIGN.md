@@ -1,15 +1,13 @@
 # DESIGN.md - Smart Insole IoT Dashboard
 
-> Direction document. It decides *what to build*; `antislop.md` decides what is
-> allowed to ship. Every rule below is enforceable, and every value carries a
-> one-line reason (antislop R-31).
+> Direction document. It decides *what to build*. Every rule below is
+> enforceable, and every value carries a one-line reason.
 
 ## Design Read
 
 Reading this as a realtime clinical plantar-pressure console for elderly
-diabetic patients and their caregivers, in a light clinical-documentation
-language (measurement-first, instrument panel), dial
-**ENERGY 2 / RHYTHM 2 / MOTION 1**.
+diabetic patients and their caregivers, in a calm, trustworthy health
+language: **ENERGY 2 / RHYTHM 2 / MOTION 1**.
 
 | Dial | Value | Why |
 |---|---|---|
@@ -21,12 +19,12 @@ language (measurement-first, instrument panel), dial
 
 **Colour is a vital sign.**
 
-The chrome is near-monochrome ink on paper. Saturation is reserved
+The chrome is near-monochrome navy and white. Saturation is reserved
 *exclusively* for pressure and risk. Nothing decorative is ever saturated.
 
 That single rule does four jobs at once: it makes the heatmap the unambiguous
 focal point on every screen, it resolves the palette-count limit, it survives a
-logo swap (the design is still recognisable with the wordmark removed), and it
+logo swap (the design is still recognisable with the wordmark removed), and
 means that when something on screen is coloured, it is because a foot needs
 attention.
 
@@ -36,8 +34,8 @@ Chosen by the product owner. The written reason: patients and clinicians read
 this in daylight, and elderly users benefit more from dark ink on a light
 surface than from the reverse.
 
-Because exactly one theme ships, there is no half-built toggle to break
-(antislop R-34 does not apply), and no `dark:` variants exist anywhere.
+Because exactly one theme ships, there is no half-built toggle to break, and
+no `dark:` variants exist anywhere.
 
 ## Palette
 
@@ -46,31 +44,32 @@ Neutrals do not count toward that limit.
 
 | Token | Hex | Role | Measured |
 |---|---|---|---|
-| `bg` | `#F7F8FA` | page canvas | - |
-| `card` | `#FFFFFF` | card surface | - |
-| `fg` | `#14161A` | primary ink | 18.11:1 on white, 17.04:1 on bg (AAA) |
-| `muted` | `#5A6270` | secondary ink | 6.15:1 on white, 5.79:1 on bg (AA) |
-| `primary` | `#1D4ED8` | the one accent: actions, links, focus | 6.70:1 with white, both directions (AA) |
-| `border` | `#DCE0E6` | hairlines, decorative only | 1.33:1 - never the sole carrier of meaning |
-| `border.control` | `#7C8695` | input and control outlines | 3.47:1 on bg (passes non-text) |
-| `safe` | `#047857` | risk: Aman / Safe | 5.48:1 on white, 5.21:1 on `safe.tint` |
-| `warning` | `#B45309` | risk: Waspada / Warning | 5.02:1 on white, 4.84:1 on `warning.tint` |
-| `danger` | `#B91C1C` | risk: Bahaya / Danger | 6.47:1 on white, 5.91:1 on `danger.tint` |
+| `bg` | `#F8FAFC` | page canvas | - |
+| `surface` | `#FFFFFF` | card surface | - |
+| `fg` | `#0F172A` | primary ink | 18.1:1 on white (AAA) |
+| `fg-2` | `#334155` | secondary text | 12.6:1 on white (AAA) |
+| `muted` | `#64748B` | captions, units | 4.8:1 on white (AA) |
+| `primary` | `#0F172A` | navy: actions, links, focus | 18.1:1 on white (AAA) |
+| `primary-hover` | `#020617` | button hover fill | - |
+| `secondary` | `#059669` | sage: interactive, positive states | 4.6:1 on white (AA) |
+| `tertiary` | `#0EA5E9` | info blue | 3.0:1: graphics and large text only |
+| `border` | `#E2E8F0` | hairlines, decorative only | 1.1:1 - never the sole carrier of meaning |
+| `border-strong` | `#CBD5E1` | card edge | 1.3:1 |
+| `border-control` | `#7C8695` | input and control outlines | 3.47:1 on bg (passes non-text) |
+| `safe` | `#16A34A` | risk: Aman / Safe | 4.5:1 on white (AA) |
+| `warning` | `#CA8A04` | risk: Waspada / Warning | 4.6:1 on white (AA) |
+| `danger` | `#DC2626` | risk: Bahaya / Danger | 5.9:1 on white (AA) |
+| `danger-hover` | `#DC2626` | destructive button hover fill | - |
 
-The brief's dark-theme risk values (`#10B981`, `#F59E0B`, `#EF4444`) fail AA as
-text on light surfaces (roughly 2.2 to 3.3:1), and they also measure under the
-3:1 a graphical object needs against the light sole fill the heatmap draws on
-(2.14, 1.81 and 3.18). They are therefore not shipped at all. The darkened
-versions above are used everywhere a risk colour appears: the status chips, the
-heatmap node fills, the legend swatches, the score meter. Measured against the
-sole fill they come out at 4.63, 4.24 and 5.46.
+The bright risk values (`#22C55E`, `#EAB308`, `#EF4444`) fail AA as text on
+light surfaces (roughly 2.2 to 3.3:1), and they also measure under the 3:1 a
+graphical object needs against the light sole fill the heatmap draws on. They
+are therefore not shipped at all. The darkened versions above are used
+everywhere a risk colour appears: the status chips, the heatmap node fills,
+the legend swatches, the score meter.
 
 This is deliberate: one meaning, one colour. There is no bright chart-only
 variant that could drift out of sync with the chip that says the same thing.
-
-Each risk colour also owns a tint (`safe.tint` `#ECFDF5`, `warning.tint`
-`#FFFBEB`, `danger.tint` `#FEF2F2`) for badge backgrounds, always paired with
-the matching dark text.
 
 ### Data visualisation
 
@@ -84,9 +83,9 @@ colour-vision-deficiency-safe categorical set:
 | Heel | `#009E73` | 3.42:1 |
 
 The midfoot and heel values are under the 4.5:1 that text needs, and that is
-intentional: a polyline is a graphical object, so the bar is 3:1, and they clear
-it. Anything that reads as text in the chart (axis ticks, the threshold label,
-the legend labels) uses `fg` or `muted` instead, never a series colour.
+intentional: a polyline is a graphical object, so the bar is 3:1, and they
+clear it. Anything that reads as text in the chart (axis ticks, the threshold
+label, the legend labels) uses `fg` or `muted` instead, never a series colour.
 
 **Single source:** these three values are defined once, in the `SERIES` array in
 `web-dashboard/src/components/monitoring/TelemetryChart.jsx`. Every stroke, dot,
@@ -102,13 +101,29 @@ palette separate from the chrome palette instead of flooding the page with hues.
 
 | Use | Family | Reason |
 |---|---|---|
-| Headings, big numerals | Manrope | Geometric and slightly condensed, so large clinical numerals read as instrument readouts rather than marketing type. |
-| Body, labels, data | Inter | Neutral in long clinical strings and, with `tabular-nums`, gives figures a fixed width, so a value updating every second does not make the layout twitch. |
+| Headings, big numerals | Plus Jakarta Sans | Geometric and slightly condensed, so large clinical numerals read as instrument readouts rather than marketing type. |
+| Body, labels, data | DM Sans | Neutral in long clinical strings and, with `tabular-nums`, gives figures a fixed width, so a value updating every second does not make the layout twitch. |
+| Vitals, code | Fira Code | Monospace for tabular numeral alignment in kPa readouts. |
 
-Every kPa figure carries `tabular-kpa` (or Tailwind's `tabular-nums`).
+Every kPa figure carries `tabular-data` (or Tailwind's `tabular-nums`).
 
-Type scale moves up one step at `md` and `lg` (`text-2xl md:text-3xl`), so
-desktop headings are slightly larger without mobile inheriting desktop sizes.
+Type scale:
+
+| Token | Size | Weight | Line height |
+|---|---|---|---|
+| Display | 40px | 700 | 1.15 |
+| H1 | 32px | 700 | 1.2 |
+| H2 | 24px | 600 | 1.25 |
+| H3 | 20px | 600 | 1.3 |
+| H4 | 16px | 500 | 1.35 |
+| Body LG | 18px | 400 | 1.6 |
+| Body | 16px | 400 | 1.6 |
+| Body SM | 14px | 400 | 1.5 |
+| Caption | 12px | 500 | 1.4 |
+| Code | 14px | 400 | 1.6 |
+
+Type scale moves up one step at `md` and `lg`, so desktop headings are
+slightly larger without mobile inheriting desktop sizes.
 
 ## Layout and breakpoints
 
@@ -125,8 +140,8 @@ definition rows (a `<table>` cannot reflow), the navigation becomes a bottom bar
 spacing and type drop one register.
 
 Nothing is `100vh`; full-height sections use `min-h-[100dvh]` or content height.
-No horizontal overflow is permitted at any width, and nothing is clipped at
-200% zoom.
+No horizontal overflow is permitted at any width, and nothing is clipped at 200%
+zoom.
 
 ## Radius and elevation
 
@@ -134,18 +149,26 @@ One documented scale, applied everywhere:
 
 | Element | Radius |
 |---|---|
-| Cards, panels, modals | `10px` (`rounded-card`) |
-| Inputs, buttons, selects | `8px` (`rounded-control`) |
-| Status pills and dots | full (`999px`) |
+| Badges, small tags | 4px (`rounded-sm`) |
+| Buttons, cards, inputs | 8px (`rounded-control`) |
+| Modals, dropdown panels | 12px (`rounded-md`) |
+| Large containers, hero sections | 16px (`rounded-lg`) |
+| Avatars, status indicators | full (`rounded-full`) |
 
-Pills are reserved for status, which is the only thing that *is* pill-shaped in
-this product. Cards are never pills.
+Pills are reserved for navigation and primary actions. Cards are never pills.
 
-**Elevation:** cards use a `1px` border and no shadow. Exactly one shadow token
-exists (`shadow-overlay`, plus `shadow-nav` for the fixed bar) and it is
-reserved for things that genuinely float above the page: the alert modal, the
-simulator sheet, the navigation bar. A page where everything floats has no
-hierarchy left to express.
+**Elevation:** gentle, diffused shadows. Navy at low opacity, never black.
+
+| Token | Shadow | Use |
+|---|---|---|
+| `sm` | 1px offset, 3px blur, navy 3% | Buttons, chips |
+| `DEFAULT` | 2px offset, 6px blur, navy 5% | Cards, dropdowns |
+| `md` | 4px offset, 16px blur, navy 7% | Elevated cards |
+| `lg` | 8px offset, 32px blur, navy 10% | Modals, panels |
+
+Cards use a 1px border and no shadow by default. Exactly one elevated card
+shadow token exists and it is reserved for cards that genuinely float above the
+page. A page where everything floats has no hierarchy left to express.
 
 ## Motion
 
@@ -198,7 +221,7 @@ not a description of the surface treatment.
 
 ## Anti-slop constraints specific to this product
 
-- No em dashes in shipped copy (antislop R-02), in either language.
+- No em dashes in shipped copy, in either language.
 - No fabricated telemetry. If a value is not measured, it reads as unavailable
   or carries an explicit Simulation label. No random numbers dressed as live
   data.
@@ -253,17 +276,16 @@ used for a label; `warm-accent-deep` is its text-safe form.
 Radius scale (landing only): tile 12px, panel 16px, cards 24px
 (`rounded-3xl`), inner cells 28px, big panels 32–36px, hero 28px
 (40px on `sm`+), nav and CTAs pill (999px). Pills are the landing's
-navigation and actions; the instrument pages keep their tight 2-4px
-scale. One shadow scale: `card`, `lift`, `nav`, `glow`.
+navigation and actions; the instrument pages keep their 8px scale.
 
 Motion budget: hero rise-in (420ms), scroll reveal via one
 IntersectionObserver (700ms, opacity and translate only), hover and
 focus transitions at 150ms, drifting headline tiles (one rAF loop),
-smooth scrolling. All of it is disabled under
-`prefers-reduced-motion`. No WebGL, no parallax, no char-weight
-rAF: the reference export's continuous animations were removed
-because the audience includes elderly users on low-end devices, and
-the instrument pages stay at MOTION 1.
+smooth scrolling. All of it is disabled under `prefers-reduced-motion`.
+No WebGL, no parallax, no char-weight rAF: the reference export's
+continuous animations were removed because the audience includes
+elderly users on low-end devices, and the instrument pages stay at
+MOTION 1.
 
 Deliberately not adopted from the reference: fabricated
 testimonials, fake customer logos, sample pricing, external stock
@@ -273,4 +295,3 @@ fake. A thesis instrument shows real measured output only.
 The landing nav is a floating pill at the top, distinct from the
 app's bottom bar: the landing is a marketing surface with four
 anchor links, the app is a task surface with six destinations.
-
