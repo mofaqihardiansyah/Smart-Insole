@@ -23,17 +23,15 @@ const SimulatorControl = ({
   className = "",
 }) => (
   <div
-    className={`rounded-card border border-border-strong bg-surface inner-glow ${className}`.trim()}
+    className={`rounded-card border border-border bg-surface shadow-panel ${className}`.trim()}
   >
-    <PanelHeader label={title} icon={<FlaskConical className="h-4 w-4" />} as="h3" />
+    <PanelHeader title={title} subtitle={body} icon={<FlaskConical className="h-5 w-5" />} as="h3" />
 
-    <div className="p-4">
-      {body && <p className="text-body-sm text-muted">{body}</p>}
-
-      <fieldset className="mt-3">
+    <div className="px-6 pb-6 pt-2">
+      <fieldset>
         <legend className="text-label uppercase text-muted">{scenarioLabel}</legend>
 
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {options.map((option) => {
             const active = option.value === value;
             return (
@@ -44,8 +42,8 @@ const SimulatorControl = ({
                   "transition-colors duration-150",
                   "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-surface",
                   active
-                    ? "border-secondary/60 bg-secondary/12 font-medium text-secondary"
-                    : "border-border-control bg-surface-3 text-fg hover:bg-surface-2",
+                    ? "border-secondary/60 bg-secondary/15 font-semibold text-secondary-ink"
+                    : "border-border-control bg-surface text-fg hover:bg-surface-2",
                 ].join(" ")}
               >
                 <input

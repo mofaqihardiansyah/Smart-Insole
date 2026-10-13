@@ -11,18 +11,34 @@ import React from "react";
  * the page sideways, which is the one place a horizontal scroll container is
  * legitimate.
  *
+ * `bare` drops the outer frame for tables that already sit inside a card, which
+ * is how the dashboard and the history page use it: one card, one edge, rather
+ * than a card drawn inside a card.
+ *
  * The header uses the uppercase micro style so the column labels read as
  * structure rather than as data, and the numbers below use tabular figures so
  * columns line up.
  */
-const GlassTable = ({ children, className = "", caption, ...props }) => (
-  <div className="w-full overflow-x-auto rounded-card border border-border-strong bg-surface">
+const GlassTable = ({
+  children,
+  className = "",
+  caption,
+  bare = false,
+  ...props
+}) => (
+  <div
+    className={
+      bare
+        ? "w-full overflow-x-auto"
+        : "w-full overflow-x-auto rounded-card border border-border bg-surface shadow-panel"
+    }
+  >
     <table
       className={`w-full min-w-[40rem] border-collapse text-left ${className}`}
       {...props}
     >
       {caption && (
-        <caption className="px-4 py-3 text-left text-body-sm text-muted">
+        <caption className="px-6 py-3 text-left text-body-sm text-muted">
           {caption}
         </caption>
       )}
@@ -33,7 +49,7 @@ const GlassTable = ({ children, className = "", caption, ...props }) => (
 
 const GlassTableRow = ({ children, className = "", ...props }) => (
   <tr
-    className={`border-b border-border transition-colors last:border-b-0 hover:bg-surface-2 ${className}`}
+    className={`border-b border-border-strong transition-colors last:border-b-0 hover:bg-surface-2 ${className}`}
     {...props}
   >
     {children}
@@ -48,10 +64,11 @@ const GlassTableCell = ({
 }) => (
   <Tag
     className={[
-      "px-4 py-2.5 align-middle",
+      Tag === "th" ? "px-6 py-3.5" : "px-6 py-4",
+      "align-middle",
       Tag === "th"
         ? "bg-surface-2 text-label uppercase text-muted whitespace-nowrap"
-        : "tabular-data text-body-sm text-fg",
+        : "tabular-data text-body-base text-fg-2",
       className,
     ]
       .filter(Boolean)

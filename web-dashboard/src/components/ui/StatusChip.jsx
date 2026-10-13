@@ -12,30 +12,29 @@ import { CheckCircle2, AlertTriangle, AlertOctagon } from "lucide-react";
  *   2. a text label in the current language, in uppercase micro type;
  *   3. the colour.
  *
- * The tint is the accent at 15% alpha, which works in the light theme
- * without a second set of tint tokens. The label sits at the full accent
- * colour, measured at 4.5:1 or better, so
- * the meaning is carried by text that is genuinely readable.
+ * It is a pill because it carries a state, which is the one job the radius
+ * scale reserves a pill for. The tint is the accent at 15%, and the label sits
+ * at the full accent colour, measured at 4.5:1 or better on white.
  */
 const LEVELS = {
   safe: {
     Icon: CheckCircle2,
-    tone: "bg-safe/15 text-safe",
+    tone: "bg-safe/15 text-safe-ink",
   },
   warning: {
     Icon: AlertTriangle,
-    tone: "bg-warning/15 text-warning",
+    tone: "bg-warning/15 text-warning-ink",
   },
   danger: {
     Icon: AlertOctagon,
-    tone: "bg-danger/15 text-danger",
+    tone: "bg-danger/15 text-danger-ink",
   },
 };
 
 const SIZES = {
-  sm: { box: "gap-1.5 px-2 py-0.5 text-chip", icon: "h-3.5 w-3.5" },
-  md: { box: "gap-2 px-2.5 py-1 text-chip", icon: "h-4 w-4" },
-  lg: { box: "gap-2 px-3 py-1.5 text-label", icon: "h-5 w-5" },
+  sm: { box: "gap-1.5 px-2.5 py-1 text-chip", icon: "h-3.5 w-3.5" },
+  md: { box: "gap-2 px-3 py-1 text-chip", icon: "h-4 w-4" },
+  lg: { box: "gap-2 px-3.5 py-1.5 text-chip", icon: "h-5 w-5" },
 };
 
 /**
@@ -51,7 +50,7 @@ const StatusChip = ({ level = "safe", label, size = "md", className = "" }) => {
   return (
     <span
       className={[
-        "status-chip inline-flex items-center rounded-control border font-semibold uppercase",
+        "status-chip inline-flex items-center rounded-full font-semibold uppercase",
         config.tone,
         sizing.box,
         className,
@@ -65,5 +64,5 @@ const StatusChip = ({ level = "safe", label, size = "md", className = "" }) => {
   );
 };
 
-export { StatusChip };
+export { StatusChip, LEVELS as STATUS_LEVELS };
 export default StatusChip;

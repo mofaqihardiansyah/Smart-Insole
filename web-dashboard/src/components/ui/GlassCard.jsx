@@ -6,14 +6,13 @@ import React from "react";
  * The name is historical: the design brief forbids renaming exports and every
  * page imports these by name. There is no glass here.
  *
- * Verdana Health card spec:
- * - Default: #FFFFFF fill, 1px #E2E8F0 border, no shadow, 8px radius.
- * - Elevated: #FFFFFF fill, no border, md shadow, 8px radius.
- * - 24px padding, optional tinted header strip (#0F172A) with white text.
+ * The treatment is one rule everywhere: white fill, a 16px corner, a hairline
+ * edge, and the shallowest lift in the shadow scale. That is how the reference
+ * console separates a panel from the canvas, and it is why every card on a page
+ * reads at the same elevation instead of each one inventing its own.
  *
  * `flush` removes the default padding for panels that own a full bleed table or
  * chart and need the content to reach the edge.
- * `elevated` applies the md shadow for cards that genuinely float.
  */
 const GlassCard = ({
   children,
@@ -25,8 +24,8 @@ const GlassCard = ({
 }) => (
   <Tag
     className={[
-      "rounded-card border bg-surface",
-      elevated ? "border-transparent shadow-md" : "border-border",
+      "rounded-card border border-border bg-surface",
+      elevated ? "shadow-md" : "shadow-panel",
       flush ? "" : "p-6",
       className,
     ]
@@ -41,32 +40,50 @@ const GlassCard = ({
 GlassCard.displayName = "GlassCard";
 
 /**
- * PanelHeader — the standard header strip for a panel.
+ * PanelHeader — the standard header for a panel.
  *
- * It separates the STRUCTURAL layer from the DATA layer: the header says what
- * the panel is, in uppercase micro type, and everything below is numbers. That
- * is the reason uppercase tracked labels appear here at all, which is the rule
- * antislop R-06 asks about: it is a hierarchy device, not decoration.
+ * It separates the STRUCTURAL layer from the DATA layer: the header names what
+ * the panel is and what it measures, everything below it is numbers. The
+ * subtitle is not decoration; on a data panel "peak pressure per second" is the
+ * unit of the thing being shown, and without it the chart is unreadable.
  */
 const PanelHeader = ({
   label,
+  title,
+  subtitle,
   icon,
   action,
+  divided = false,
+  padded = true,
   className = "",
   as: Tag = "h2",
 }) => (
   <div
-    className={`flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 ${className}`.trim()}
+    className={[
+      "flex flex-wrap items-start justify-between gap-3",
+      padded ? (action ? "px-6 pb-3 pt-5" : "px-6 pb-2 pt-5") : "",
+      padded && divided ? "border-b border-border pb-4" : "",
+      !padded && divided ? "border-b border-border pb-3" : "",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ")}
   >
-    <Tag className="flex items-center gap-2 text-label uppercase text-muted">
-      {icon && (
-        <span className="shrink-0" aria-hidden="true">
-          {icon}
-        </span>
+    <div className="min-w-0">
+      <Tag className="flex items-center gap-2 font-heading text-card-title text-fg">
+        {icon && (
+          <span className="shrink-0 text-muted" aria-hidden="true">
+            {icon}
+          </span>
+        )}
+        {label || title}
+      </Tag>
+      {subtitle && (
+        <p className="mt-1 max-w-prose text-body-sm text-muted">{subtitle}</p>
       )}
-      {label}
-    </Tag>
-    {action}
+    </div>
+
+    {action && <div className="shrink-0">{action}</div>}
   </div>
 );
 

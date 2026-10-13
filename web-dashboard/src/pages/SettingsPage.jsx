@@ -8,6 +8,8 @@ import {
   GlassTable,
   GlassTableRow,
   GlassTableCell,
+  PanelHeader,
+  PageHeader,
   StatusBanner,
   StatusChip,
   StatePanel,
@@ -25,6 +27,11 @@ import { t } from "../utils/i18n";
  * the risk level on the dashboard without a reload. The preview table below
  * runs the same inferRisk() against the active thresholds, which lets a
  * clinician see the effect of an edit before trusting it.
+ *
+ * Every panel opens with a PanelHeader, the same structural layer the dashboard
+ * uses. The preview renders a real table from `md` up, wrapped in thead/tbody,
+ * and the same rows as stacked definitions below that, because a table cannot
+ * reflow onto a phone.
  */
 
 const FIELDS = [
@@ -92,12 +99,12 @@ const PreferenceRow = ({
 }) => (
   <div className="flex items-start justify-between gap-4">
     <div className="min-w-0">
-      <p className="flex items-center gap-2 text-sm font-medium text-fg">
+      <p className="flex items-center gap-2 text-body-sm font-medium text-fg">
         <Icon className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
         {title}
       </p>
-      <p className="mt-0.5 text-xs text-muted">{body}</p>
-      <p className="mt-1 text-xs text-muted">
+      <p className="mt-0.5 text-caption text-muted">{body}</p>
+      <p className="mt-1 text-caption text-muted">
         {checked ? t("settings.on") : t("settings.off")}
       </p>
     </div>
@@ -190,102 +197,96 @@ const SettingsPage = () => {
   const unitSeconds = t("metrics.unit.seconds", language);
 
   return (
-    <section className="mx-auto w-full max-w-3xl space-y-5">
-      <header>
-        <h1 className="font-heading text-2xl font-bold tracking-tight text-fg md:text-3xl">
-          {t("settings.title", language)}
-        </h1>
-        <p className="mt-1 max-w-prose text-sm text-muted">
-          {t("settings.subtitle", language)}
-        </p>
-      </header>
+    <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
+      <PageHeader
+        title={t("settings.title", language)}
+        subtitle={t("settings.subtitle", language)}
+      />
 
-      <GlassCard className="p-5 md:p-6">
-        <h2 className="font-heading text-base font-semibold text-fg">
-          {t("settings.thresholds", language)}
-        </h2>
-        <p className="mt-1 text-sm text-muted">
-          {t("settings.thresholdsBody", language)}
-        </p>
+      <GlassCard flush>
+        <PanelHeader
+          title={t("settings.thresholds", language)}
+          subtitle={t("settings.thresholdsBody", language)}
+        />
 
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {FIELDS.map((field) => (
-            <GlassInput
-              key={field.key}
-              id={`threshold-${field.key}`}
-              type="number"
-              inputMode="numeric"
-              min={field.min}
-              max={field.max}
-              step={field.step}
-              label={t(field.labelKey, language)}
-              value={draft[field.key]}
-              onChange={(event) => {
-                setSaveState(null);
-                setDraft((prev) => ({
-                  ...prev,
-                  [field.key]: event.target.value,
-                }));
-              }}
+        <div className="px-6 pb-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {FIELDS.map((field) => (
+              <GlassInput
+                key={field.key}
+                id={`threshold-${field.key}`}
+                type="number"
+                inputMode="numeric"
+                min={field.min}
+                max={field.max}
+                step={field.step}
+                label={t(field.labelKey, language)}
+                value={draft[field.key]}
+                onChange={(event) => {
+                  setSaveState(null);
+                  setDraft((prev) => ({
+                    ...prev,
+                    [field.key]: event.target.value,
+                  }));
+                }}
+              />
+            ))}
+          </div>
+
+          {invalid && (
+            <StatusBanner
+              tone="danger"
+              className="mt-4"
+              title={t("settings.invalidOrder", language)}
             />
-          ))}
-        </div>
+          )}
 
-        {invalid && (
-          <StatusBanner
-            tone="danger"
-            className="mt-4"
-            title={t("settings.invalidOrder", language)}
-          />
-        )}
+          {saveState === "saved" && (
+            <StatusBanner
+              tone="success"
+              className="mt-4"
+              title={t("settings.saved", language)}
+              onDismiss={() => setSaveState(null)}
+              dismissLabel={t("common.dismiss", language)}
+            />
+          )}
 
-        {saveState === "saved" && (
-          <StatusBanner
-            tone="success"
-            className="mt-4"
-            title={t("settings.saved", language)}
-            onDismiss={() => setSaveState(null)}
-            dismissLabel={t("common.dismiss", language)}
-          />
-        )}
+          {saveState === "reset" && (
+            <StatusBanner
+              tone="success"
+              className="mt-4"
+              title={t("settings.resetDone", language)}
+              onDismiss={() => setSaveState(null)}
+              dismissLabel={t("common.dismiss", language)}
+            />
+          )}
 
-        {saveState === "reset" && (
-          <StatusBanner
-            tone="success"
-            className="mt-4"
-            title={t("settings.resetDone", language)}
-            onDismiss={() => setSaveState(null)}
-            dismissLabel={t("common.dismiss", language)}
-          />
-        )}
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <GlassButton
-            type="button"
-            variant="filled"
-            onClick={handleSave}
-            disabled={invalid}
-          >
-            <Save className="h-4 w-4" aria-hidden="true" />
-            {t("settings.save", language)}
-          </GlassButton>
-          <GlassButton type="button" variant="quiet" onClick={handleReset}>
-            <RotateCcw className="h-4 w-4" aria-hidden="true" />
-            {t("settings.reset", language)}
-          </GlassButton>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <GlassButton
+              type="button"
+              variant="filled"
+              onClick={handleSave}
+              disabled={invalid}
+            >
+              <Save className="h-4 w-4" aria-hidden="true" />
+              {t("settings.save", language)}
+            </GlassButton>
+            <GlassButton type="button" variant="quiet" onClick={handleReset}>
+              <RotateCcw className="h-4 w-4" aria-hidden="true" />
+              {t("settings.reset", language)}
+            </GlassButton>
+          </div>
         </div>
       </GlassCard>
 
-      <GlassCard className="p-5 md:p-6">
-        <h2 className="font-heading text-base font-semibold text-fg">
-          {t("settings.preview", language)}
-        </h2>
-        <p className="mt-1 text-sm text-muted">
-          {t("settings.previewBody", language)}
-        </p>
+      <GlassCard flush>
+        <PanelHeader
+          title={t("settings.preview", language)}
+          subtitle={t("settings.previewBody", language)}
+        />
 
-        <div className="mt-4">
-          {previewResult.failed ? (
+        {previewResult.failed ? (
+          <div className="px-6 pb-6">
             <StatePanel
               variant="error"
               title={t("settings.preview", language)}
@@ -296,39 +297,36 @@ const SettingsPage = () => {
                 />
               }
             />
-          ) : previewResult.rows.length === 0 ? (
+          </div>
+        ) : previewResult.rows.length === 0 ? (
+          <div className="px-6 pb-6">
             <StatePanel
               variant="empty"
               title={t("settings.preview", language)}
               description={t("settings.previewBody", language)}
             />
-          ) : (
-            <>
-              <div className="hidden md:block">
-                <GlassTable aria-label={t("settings.preview", language)}>
+          </div>
+        ) : (
+          <>
+            <div className="hidden border-t border-border md:block">
+              <GlassTable bare aria-label={t("settings.preview", language)}>
+                <thead>
                   <GlassTableRow>
                     <GlassTableCell as="th" scope="col">
-                      <span className="text-sm font-semibold text-muted">
-                        {t("metrics.peakPressure", language)}
-                      </span>
+                      {t("metrics.peakPressure", language)}
                     </GlassTableCell>
                     <GlassTableCell as="th" scope="col">
-                      <span className="text-sm font-semibold text-muted">
-                        {t("metrics.sustainedDuration", language)}
-                      </span>
+                      {t("metrics.sustainedDuration", language)}
                     </GlassTableCell>
                     <GlassTableCell as="th" scope="col">
-                      <span className="text-sm font-semibold text-muted">
-                        {t("risk.status", language)}
-                      </span>
+                      {t("risk.status", language)}
                     </GlassTableCell>
                     <GlassTableCell as="th" scope="col">
-                      <span className="text-sm font-semibold text-muted">
-                        {t("risk.score", language)}
-                      </span>
+                      {t("risk.score", language)}
                     </GlassTableCell>
                   </GlassTableRow>
-
+                </thead>
+                <tbody>
                   {previewResult.rows.map((row) => (
                     <GlassTableRow
                       key={`${row.peakPressure}-${row.sustainedDuration}`}
@@ -355,42 +353,40 @@ const SettingsPage = () => {
                       </GlassTableCell>
                     </GlassTableRow>
                   ))}
-                </GlassTable>
-              </div>
+                </tbody>
+              </GlassTable>
+            </div>
 
-              <ul className="space-y-2 md:hidden">
-                {previewResult.rows.map((row) => (
-                  <li
-                    key={`${row.peakPressure}-${row.sustainedDuration}`}
-                    className="rounded-card border border-border bg-card p-3"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="tabular-kpa text-sm font-medium text-fg">
-                        {`${row.peakPressure} ${unitKpa} / ${row.sustainedDuration} ${unitSeconds}`}
-                      </span>
-                      <StatusChip
-                        level={row.level}
-                        label={t(`risk.${row.level}`, language)}
-                        size="sm"
-                      />
-                    </div>
-                    <p className="mt-1 text-xs text-muted">
-                      {`${t("risk.score", language)}: ${row.score}`}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
+            <ul className="divide-y divide-border-strong border-t border-border md:hidden">
+              {previewResult.rows.map((row) => (
+                <li
+                  key={`${row.peakPressure}-${row.sustainedDuration}`}
+                  className="p-4"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="tabular-kpa text-body-sm font-medium text-fg">
+                      {`${row.peakPressure} ${unitKpa} / ${row.sustainedDuration} ${unitSeconds}`}
+                    </span>
+                    <StatusChip
+                      level={row.level}
+                      label={t(`risk.${row.level}`, language)}
+                      size="sm"
+                    />
+                  </div>
+                  <p className="mt-1 text-caption text-muted">
+                    {`${t("risk.score", language)}: ${row.score}`}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </GlassCard>
 
-      <GlassCard className="p-5 md:p-6">
-        <h2 className="font-heading text-base font-semibold text-fg">
-          {t("settings.notifications", language)}
-        </h2>
+      <GlassCard flush>
+        <PanelHeader title={t("settings.notifications", language)} />
 
-        <div className="mt-4 space-y-5">
+        <div className="space-y-5 px-6 pb-6">
           <PreferenceRow
             id="settings-alarm-sound"
             icon={soundEnabled ? Volume2 : VolumeX}

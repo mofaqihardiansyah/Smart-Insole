@@ -261,7 +261,7 @@ const TelemetryChart = ({
         </thead>
         <tbody>
           {history.map((record, index) => (
-            <tr key={record.timestamp ?? index}>
+            <tr key={`${record.timestamp ?? 't'}-${index}`}>
               <th scope="row">{index + 1}</th>
               {SERIES.map((entry) => (
                 <td key={entry.key}>

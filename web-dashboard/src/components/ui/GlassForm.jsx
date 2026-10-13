@@ -19,7 +19,7 @@ const GlassFormGroup = ({ children, className = "" }) => (
 const GlassLabel = ({ children, htmlFor, className = "" }) => (
   <label
     htmlFor={htmlFor}
-    className={`block text-label uppercase text-muted ${className}`.trim()}
+    className={`block text-body-sm font-medium text-fg ${className}`.trim()}
   >
     {children}
   </label>
@@ -36,7 +36,7 @@ const GlassSelect = ({ children, className = "", id, ...props }) => {
       id={selectId}
       className={[
         "w-full min-h-[44px] rounded-control border border-border-control",
-        "bg-surface-3 px-3 py-2 text-data text-fg",
+        "bg-surface px-3 py-2 text-data text-fg",
         "transition-colors duration-150",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface",
         className,

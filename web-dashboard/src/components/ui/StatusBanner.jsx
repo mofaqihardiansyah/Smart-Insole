@@ -21,18 +21,18 @@ const TONES = {
   },
   success: {
     Icon: CheckCircle2,
-    tone: "border-safe/50 bg-safe/12",
-    icon: "text-safe",
+    tone: "border-safe/50 bg-safe/15",
+    icon: "text-safe-ink",
   },
   warning: {
     Icon: AlertTriangle,
-    tone: "border-warning/50 bg-warning/12",
-    icon: "text-warning",
+    tone: "border-warning/50 bg-warning/15",
+    icon: "text-warning-ink",
   },
   danger: {
     Icon: AlertOctagon,
-    tone: "border-danger/50 bg-danger/12",
-    icon: "text-danger",
+    tone: "border-danger/50 bg-danger/15",
+    icon: "text-danger-ink",
   },
 };
 
@@ -51,7 +51,7 @@ const StatusBanner = ({
   return (
     <div
       role={tone === "danger" ? "alert" : "status"}
-      className={`flex items-start gap-3 rounded-card border p-3 ${config.tone} ${className}`.trim()}
+      className={`flex items-start gap-3 rounded-card border p-4 ${config.tone} ${className}`.trim()}
     >
       <Icon
         className={`mt-0.5 h-5 w-5 shrink-0 ${config.icon}`}

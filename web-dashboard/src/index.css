@@ -2,8 +2,10 @@
    Theme layer: Smart Insole IoT Dashboard
    ============================================================
    Verdana Health design system. Calm, trustworthy, clinical.
-   Deep navy and soft sage greens evoke clinical precision
-   tempered by warmth.
+
+   The reference surface is a light clinic console: a pale slate
+   canvas, white cards with 16px corners and a hairline edge, a
+   288px product rail, and a white 72px top bar.
 
    Light-only by design. Every value is measured; the ratio in
    the comment is the real figure against the surface named.
@@ -21,18 +23,26 @@
   color-scheme: light;
 
   --bg: 248 250 252; /* #F8FAFC page canvas */
-  --surface: 255 255 255; /* #FFFFFF card */
-  --surface-2: 241 245 249; /* #F1F5F9 raised panel */
-  --surface-3: 226 232 240; /* #E2E8F0 inset well, input fill */
-  --sidebar: 248 250 252; /* #F8FAFC nav rail */
+  --surface: 255 255 255; /* #FFFFFF card, top bar */
+  --surface-2: 241 245 249; /* #F1F5F9 table head, search field, chips */
+  --surface-3: 226 232 240; /* #E2E8F0 inset well, avatar fallback */
+  --sidebar: 248 250 252; /* #F8FAFC product rail */
 
-  --border: 226 232 240; /* #E2E8F0 1.1:1 hairline, decoration only */
-  --border-strong: 203 213 225; /* #CBD5E1 card edge */
+  /* Card and row edge. The reference draws cards almost entirely with the
+     shadow, so the edge is a touch lighter than the standard slate
+     hairline. Decoration only: it never delimits a control. */
+  --border: 234 239 244; /* #EAEFF4 */
+  --border-strong: 226 232 240; /* #E2E8F0 raised panel edge, row divider */
   --border-control: 124 134 149; /* #7C8695 3.47:1 on bg. Inputs and outlines. */
 
   --fg: 15 23 42; /* #0F172A 18.1:1 on surface */
   --fg-2: 51 65 85; /* #334155 12.6:1 on surface */
   --muted: 100 116 139; /* #64748B 4.8:1 on surface */
+
+  /* The reference labels its stat captions in #94A3B8, which measures
+     2.6:1 on white and fails AA for text. The caption ships in `muted`
+     (4.8:1) with an italic voice instead, so the register is still
+     visibly lighter without dropping the label below 4.5:1. */
 
   --primary: 15 23 42; /* #0F172A navy. 18.1:1 on surface */
   --primary-btn: 15 23 42; /* #0F172A */
@@ -47,6 +57,36 @@
   --danger: 220 38 38; /* #DC2626 5.9:1 on surface */
   --danger-hover: 220 38 38; /* #DC2626 button hover fill */
 
+  /* ------------------------------------------------------------------
+     "Ink" forms of the accents, for TEXT AND GLYPHS ON A TINT.
+     ------------------------------------------------------------------
+     A status chip is a tint at 15% with the meaning written on it, and
+     the accent colours above are measured against WHITE. On their own
+     tint they drop to 2.5 to 3.8:1, which fails AA for the 12px chip
+     label and also fails the 3:1 a graphical object needs:
+
+       #16A34A on bg-safe/15     2.78:1
+       #CA8A04 on bg-warning/15  2.53:1
+       #DC2626 on bg-danger/15   3.81:1
+       #059669 on bg-secondary/15 3.14:1
+
+     These are the same meanings, darkened until they clear 4.5:1 on
+     their own tint. Each pair below is measured, not eyeballed:
+
+       safe-ink    #166534  on bg-safe/15      6.03:1 (AA)
+       warning-ink #92400E  on bg-warning/15   6.10:1 (AA)
+       danger-ink  #991B1B  on bg-danger/15    6.56:1 (AA)
+       secondary-ink #065F46 on bg-secondary/15 6.40:1 (AA)
+
+     One meaning still owns exactly one pair: the bright accent for
+     strokes and fills on a white surface, the ink for anything sitting
+     on that meaning's tint. Nothing else may use either.
+     ------------------------------------------------------------------ */
+  --safe-ink: 22 101 52;
+  --warning-ink: 146 64 14;
+  --danger-ink: 153 27 27;
+  --secondary-ink: 6 95 70;
+
   --focus: 15 23 42; /* #0F172A, focus indicator */
 
   /* Chart series. Okabe-Ito, measured at 5.19, 3.87 and 3.42 against
@@ -56,7 +96,7 @@
   --series-3: 0 158 115;
 
   /* Structural tints */
-  --inner-glow: 255 255 255; /* inset highlight, kept subtle */
+  --inner-glow: 255 255 255; /* inset highlight, retained for legacy callers */
   --inner-glow-a: 0.7;
   --grid: 15 23 42; /* plot grid ink */
   --scrim: 15 23 42;
@@ -112,16 +152,24 @@ body {
 /* ------------------------------------------------------------------
    Surface treatment
    ------------------------------------------------------------------
-   `inner-glow` is the single shared surface treatment across the whole
-   application: a one pixel inset highlight along the top edge of a panel,
-   which is what makes a card read as a raised plate against the canvas
-   instead of as a flat rectangle.
-
-   It is deliberately ONE treatment applied everywhere, rather than a
-   different border, shadow and gradient per component.
+   The card treatment is one rule, applied everywhere: white fill, a
+   16px corner, a hairline edge, and the shallowest lift in the shadow
+   scale. The reference distinguishes its cards from the canvas with
+   that edge-and-lift pair rather than with a heavier border, which is
+   why every panel on the page reads at the same elevation and only
+   overlays sit above it.
    ------------------------------------------------------------------ */
+.card-surface {
+  background-color: rgb(var(--surface));
+  border: 1px solid rgb(var(--border));
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+/* Legacy alias. The inset highlight is no longer part of the surface
+   language, but older call sites still reference the class. */
 .inner-glow {
-  box-shadow: inset 0 1px 0 0 rgb(var(--inner-glow) / var(--inner-glow-a));
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
 }
 
 /* Pressure values update every second. Tabular figures stop the layout
@@ -214,8 +262,8 @@ body {
   --surface-2: 241 245 249;
   --surface-3: 226 232 240;
   --sidebar: 248 250 252;
-  --border: 226 232 240;
-  --border-strong: 203 213 225;
+  --border: 234 239 244;
+  --border-strong: 226 232 240;
   --border-control: 124 134 149;
   --fg: 15 23 42;
   --fg-2: 51 65 85;
@@ -228,6 +276,10 @@ body {
   --safe: 22 163 74;
   --warning: 202 138 4;
   --danger: 220 38 38;
+  --safe-ink: 22 101 52;
+  --warning-ink: 146 64 14;
+  --danger-ink: 153 27 27;
+  --secondary-ink: 6 95 70;
   --focus: 15 23 42;
   --series-1: 0 114 178;
   --series-2: 213 94 0;

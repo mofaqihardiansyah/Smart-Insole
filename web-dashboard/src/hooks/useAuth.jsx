@@ -27,6 +27,7 @@ export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState("");
 
   useEffect(() => {
     // Cek apakah sudah diinisialisasi di luar (seperti dari SSR/Node)
@@ -53,12 +54,16 @@ export const useAuth = () => {
         // Ambil profil lengkap dari Firestore (gagal = tidak fatal)
         getUserDoc(currentUser.uid)
           .then((profile) => {
-            if (profile) setDisplayName(profile.displayName || currentUser.displayName);
+            if (profile) {
+              setDisplayName(profile.displayName || currentUser.displayName);
+              setRole(profile.role || "user");
+            }
           })
           .catch((e) => console.warn("Gagal ambil profil:", e?.message));
       } else {
         setUser(null);
         setDisplayName("");
+        setRole("");
       }
       setLoading(false);
     });
@@ -107,6 +112,8 @@ export const useAuth = () => {
             uid: cred.user.uid,
             email: cred.user.email,
             displayName: name,
+            role: "user",
+            active: true,
             createdAt: new Date().toISOString(),
           });
         } catch (e) {
@@ -175,6 +182,7 @@ export const useAuth = () => {
     user,
     loading,
     displayName,
+    role,
     login: doLogin,
     register: doRegister,
     logout: doLogout,

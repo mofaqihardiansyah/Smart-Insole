@@ -4,12 +4,18 @@ import { useInsole } from "../context/InsoleContext";
 import { t } from "../utils/i18n";
 import {
   GlassCard,
-  PanelHeader,
+  GlassLabel,
   GlassSelect,
+  GlassTable,
+  GlassTableCell,
+  GlassTableRow,
+  PanelHeader,
   StatePanel,
+  StateRetry,
   StatusChip,
   PageHeader,
 } from "../components/ui/GlassComponents";
+import { Chip } from "../components/ui/Chip";
 import {
   TelemetryChart,
   TELEMETRY_SERIES,
@@ -26,6 +32,9 @@ import {
  * What it does now: draws the real 30 sample ring buffer from InsoleContext as
  * three continuous lines against the danger threshold, and offers a real window
  * control rather than a swipe gesture.
+ *
+ * The session register below the chart is a real table from `md` up and stacked
+ * definition rows below it, because a table cannot reflow.
  */
 const WINDOW_OPTIONS = [10, 20, 30];
 
@@ -41,6 +50,7 @@ const MonitoringPage = () => {
     language,
     connectionState,
     source,
+    reconnect,
     risk,
     riskScore,
   } = useInsole();
@@ -66,20 +76,17 @@ const MonitoringPage = () => {
   const levelLabel = t(`risk.${risk}`, language);
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5 lg:space-y-6">
       <PageHeader
         title={t("monitoring.title", language)}
         subtitle={t("monitoring.subtitle", language)}
         meta={<StatusChip level={risk} label={levelLabel} size="sm" />}
         actions={
           // A real, keyboard reachable control instead of a swipe gesture.
-          <div className="w-full min-w-[10rem] sm:w-40">
-            <label
-              htmlFor="monitoring-window"
-              className="mb-1.5 block text-label uppercase text-muted"
-            >
+          <div className="w-full sm:w-40">
+            <GlassLabel htmlFor="monitoring-window" className="mb-1.5">
               {t("monitoring.axisTime", language)}
-            </label>
+            </GlassLabel>
             <GlassSelect
               id="monitoring-window"
               value={windowSize}
@@ -97,19 +104,37 @@ const MonitoringPage = () => {
 
       <GlassCard flush>
         <PanelHeader
-          label={t("monitoring.chartTitle", language)}
+          title={t("monitoring.chartTitle", language)}
           icon={<Activity className="h-4 w-4" />}
           action={
-            <span className="tabular-data text-body-sm text-muted">
-              {`${thresholds.dangerKpa} ${t("metrics.unit.kpa", language)}`}
-            </span>
+            <Chip tone="danger">
+              {`${t("monitoring.threshold", language)}: ${thresholds.dangerKpa} ${t(
+                "metrics.unit.kpa",
+                language
+              )}`}
+            </Chip>
           }
         />
 
-        <div className="p-4">
+        <div className="px-6 pb-6">
           {!hasData ? (
             connectionState === "connecting" ? (
               <StatePanel variant="loading" title={t("monitoring.loading", language)} />
+            ) : connectionState === "error" ? (
+              // Cause, then the one action that clears it. Without this branch
+              // a dead device would look like a foot that has never been
+              // measured, which is a different and much less urgent problem.
+              <StatePanel
+                variant="error"
+                title={t("source.errorTitle", language)}
+                description={t("source.errorBody", language)}
+                action={
+                  <StateRetry
+                    onRetry={reconnect}
+                    label={t("common.retry", language)}
+                  />
+                }
+              />
             ) : (
               <StatePanel
                 variant="empty"
@@ -136,7 +161,7 @@ const MonitoringPage = () => {
         </div>
 
         {source === "SIMULATOR" && (
-          <p className="border-t border-border px-4 py-3 text-body-sm text-muted">
+          <p className="border-t border-border px-6 py-3 text-body-sm text-muted">
             {t("source.simBody", language)}
           </p>
         )}
@@ -144,58 +169,63 @@ const MonitoringPage = () => {
 
       <GlassCard flush>
         <PanelHeader
-          label={t("monitoring.summary", language)}
+          title={t("monitoring.summary", language)}
           icon={<BarChart3 className="h-4 w-4" />}
+          action={
+            <span className="tabular-data text-body-sm text-muted">
+              {`${t("risk.score", language)}: ${riskScore} / 100`}
+            </span>
+          }
         />
 
         {!hasData ? (
-          <p className="px-4 py-6 text-body-sm text-muted">
+          <p className="px-6 pb-6 text-body-sm text-muted">
             {t("common.notAvailable", language)}
           </p>
         ) : (
           <>
             {/* Desktop register */}
-            <div className="hidden overflow-x-auto md:block">
-              <table className="w-full min-w-[32rem] border-collapse text-left">
+            <div className="hidden border-t border-border md:block">
+              <GlassTable bare>
                 <thead>
-                  <tr className="border-b border-border bg-surface-2">
-                    <th scope="col" className="px-4 py-2.5 text-label uppercase text-muted">
-                      {t("risk.status", language)}
-                    </th>
-                    <th scope="col" className="px-4 py-2.5 text-label uppercase text-muted">
+                  <tr>
+                    <GlassTableCell as="th" scope="col">
+                      {t("dashboard.col.zone", language)}
+                    </GlassTableCell>
+                    <GlassTableCell as="th" scope="col">
                       {t("monitoring.average", language)}
-                    </th>
-                    <th scope="col" className="px-4 py-2.5 text-label uppercase text-muted">
+                    </GlassTableCell>
+                    <GlassTableCell as="th" scope="col">
                       {t("monitoring.maximum", language)}
-                    </th>
+                    </GlassTableCell>
                   </tr>
                 </thead>
                 <tbody>
                   {stats.map((entry) => (
-                    <tr key={entry.key} className="border-b border-border last:border-b-0">
+                    <GlassTableRow key={entry.key}>
                       <th
                         scope="row"
-                        className="px-4 py-2.5 text-left text-body-sm font-medium text-fg"
+                        className="px-6 py-4 text-left align-middle text-body-base font-semibold text-fg"
                       >
                         {t(`anatomy.${entry.key}`, language)}
                       </th>
-                      <td className="tabular-data px-4 py-2.5 text-body-sm text-fg">
+                      <GlassTableCell>
                         {entry.average.toFixed(1)} {t("metrics.unit.kpa", language)}
-                      </td>
-                      <td className="tabular-data px-4 py-2.5 text-body-sm text-fg">
+                      </GlassTableCell>
+                      <GlassTableCell>
                         {entry.peak.toFixed(1)} {t("metrics.unit.kpa", language)}
-                      </td>
-                    </tr>
+                      </GlassTableCell>
+                    </GlassTableRow>
                   ))}
                 </tbody>
-              </table>
+              </GlassTable>
             </div>
 
-            {/* Mobile register: a table cannot reflow, so it becomes labelled rows */}
-            <dl className="divide-y divide-border md:hidden">
+            {/* Mobile: the same rows as stacked definitions. */}
+            <dl className="divide-y divide-border-strong border-t border-border md:hidden">
               {stats.map((entry) => (
-                <div key={entry.key} className="px-4 py-3">
-                  <dt className="text-label uppercase text-muted">
+                <div key={entry.key} className="px-6 py-4">
+                  <dt className="text-body-base font-semibold text-fg">
                     {t(`anatomy.${entry.key}`, language)}
                   </dt>
                   <dd className="mt-2 space-y-1">
@@ -221,10 +251,6 @@ const MonitoringPage = () => {
             </dl>
           </>
         )}
-
-        <p className="border-t border-border px-4 py-3 text-body-sm text-muted">
-          {`${t("risk.score", language)}: ${riskScore} / 100`}
-        </p>
       </GlassCard>
     </section>
   );

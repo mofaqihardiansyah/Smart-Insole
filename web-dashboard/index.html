@@ -1,13 +1,11 @@
 <!doctype html>
 <!--
-  `class="dark"` is set here, not by JavaScript, so the first paint is already
-  the default theme. If it were applied on mount the page would flash light
-  before switching.
-
-  The runtime sets a Content Security Policy compatible theme class only; the
-  theme itself lives in src/index.css.
+  Light only, by design. There is one theme: patients and clinicians read this
+  in daylight, and dark ink on a light surface serves an elderly audience
+  better than the reverse. No theme class is written here, because there is no
+  second theme to switch to.
 -->
-<html lang="id" class="dark">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -15,11 +13,11 @@
       name="description"
       content="Pemantauan tekanan telapak kaki berbasis IoT untuk pencegahan ulkus kaki diabetik."
     />
-    <meta name="color-scheme" content="dark light" />
+    <meta name="color-scheme" content="light" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/icon.svg" />
-    <title>SOLE- Pemantauan Tekanan Telapak Kaki</title>
+    <title>Smart Insole IoT - Pemantauan Tekanan Telapak Kaki</title>
 
     <!-- Google Fonts: Plus Jakarta Sans (headings), DM Sans (body), Fira Code (vitals) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

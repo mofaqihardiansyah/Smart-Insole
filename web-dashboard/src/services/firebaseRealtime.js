@@ -17,11 +17,12 @@
  * That keeps the client and the firmware from disagreeing about the same foot.
  */
 
-import { ref, onValue, query, limitToLast } from 'firebase/database';
+import { ref, onValue, query, limitToLast, set } from 'firebase/database';
 import { realtimeDb } from './firebaseConfig';
 
 export const READINGS_PATH = 'readings/latest';
 export const HISTORY_PATH = 'readings/history';
+export const GLOBAL_CONFIG_PATH = 'config/global';
 
 /** The three sensor points, in anatomical order. */
 export const SENSOR_KEYS = ['forefoot', 'midfoot', 'heel'];
@@ -181,13 +182,53 @@ export function subscribeToBattery(onData, onError) {
   );
 }
 
+/**
+ * Subscribe to the global risk thresholds (admin-configured).
+ *
+ * @param {(config: { safeThreshold: number, dangerThreshold: number }) => void} onData
+ * @param {(error: Error) => void} onError
+ * @returns {() => void} unsubscribe
+ */
+export function subscribeToGlobalConfig(onData, onError) {
+  const configRef = ref(realtimeDb, GLOBAL_CONFIG_PATH);
+
+  const unsubscribe = onValue(
+    configRef,
+    (snapshot) => {
+      const value = snapshot.val();
+      onData({
+        safeThreshold: Number(value?.safeThreshold) || 35,
+        dangerThreshold: Number(value?.dangerThreshold) || 70,
+      });
+    },
+    (error) => {
+      onError?.(error instanceof Error ? error : new Error(String(error)));
+    }
+  );
+
+  return unsubscribe;
+}
+
+/**
+ * Write the global risk thresholds (admin only).
+ *
+ * @param {{ safeThreshold: number, dangerThreshold: number }} config
+ * @returns {Promise<void>}
+ */
+export function setGlobalConfig(config) {
+  return set(ref(realtimeDb, GLOBAL_CONFIG_PATH), config);
+}
+
 export default {
   READINGS_PATH,
   HISTORY_PATH,
+  GLOBAL_CONFIG_PATH,
   SENSOR_KEYS,
   subscribeToReadings,
   subscribeToHistory,
   subscribeToBattery,
+  subscribeToGlobalConfig,
+  setGlobalConfig,
   mapReadingPacket,
   mapHistory,
 };

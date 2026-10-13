@@ -66,7 +66,7 @@ const ProfilePage = () => {
   ];
 
   return (
-    <section className="mx-auto w-full max-w-3xl space-y-4">
+    <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
       <PageHeader
         title={t("profile.title", language)}
         subtitle={t("profile.subtitle", language)}
@@ -85,7 +85,7 @@ const ProfilePage = () => {
         />
       ) : (
         <>
-          <GlassCard className="p-4">
+          <GlassCard>
             <div className="flex items-center gap-4">
               <span
                 className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 font-heading text-h4 text-primary"
@@ -103,14 +103,14 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <p className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3 text-body-sm text-muted">
+            <p className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-4 text-body-sm text-muted">
               <CalendarDays className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>{t("profile.memberSince", language)}</span>
               <span className="tabular-data text-fg">{memberSince}</span>
             </p>
           </GlassCard>
 
-          <GlassCard className="space-y-4 p-4">
+          <GlassCard className="space-y-5">
             <GlassInput
               id="profile-name"
               label={t("profile.name", language)}
@@ -176,11 +176,11 @@ const ProfilePage = () => {
 
           <GlassCard flush>
             <PanelHeader
-              label={t("profile.stats", language)}
+              title={t("profile.stats", language)}
               icon={<Activity className="h-4 w-4" />}
             />
 
-            <div className="p-4">
+            <div className="px-6 pb-6">
               {incidentLogs.length === 0 ? (
                 <StatePanel
                   variant="empty"
@@ -188,14 +188,14 @@ const ProfilePage = () => {
                   description={t("history.emptyBody", language)}
                 />
               ) : (
-                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <dl className="grid grid-cols-1 gap-5 sm:grid-cols-3">
                   {stats.map((stat) => (
                     <div key={stat.key}>
-                      <dt className="text-label uppercase text-muted">
+                      <dt className="text-body-sm text-muted">
                         {t(stat.key, language)}
                       </dt>
-                      <dd className="mt-1.5 flex flex-wrap items-center gap-2">
-                        <span className="tabular-data font-heading text-h3 text-fg">
+                      <dd className="mt-1 flex flex-wrap items-center gap-2">
+                        <span className="tabular-data font-heading text-stat text-fg">
                           {stat.value}
                         </span>
                         {stat.level && (

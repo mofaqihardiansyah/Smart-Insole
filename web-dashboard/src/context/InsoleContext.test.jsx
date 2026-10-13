@@ -321,4 +321,39 @@ describe('InsoleProvider', () => {
     expect(first.readings).toHaveProperty('heel');
     expect(first.readings).toHaveProperty('sustainedDuration');
   });
+
+  it('reconnect tears the old subscription down and opens a new one', async () => {
+    // The retry controls used to call setSource('FIREBASE'). React bails out on
+    // an unchanged value, so the subscription effect never re-ran and the retry
+    // button did nothing. `reconnect` bumps a nonce the effect is keyed on.
+    const unsubscribes = [];
+    const transport = {
+      subscribeToReadings: vi.fn(() => {
+        const unsubscribe = vi.fn();
+        unsubscribes.push(unsubscribe);
+        return unsubscribe;
+      }),
+      subscribeToHistory: () => () => {},
+    };
+
+    render(
+      <InsoleProvider transport={transport} autoConnect>
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    const subscriptionsBefore = transport.subscribeToReadings.mock.calls.length;
+    // The listener opened by the first effect. Cleanup releases exactly this
+    // one, so it is the honest thing to assert on.
+    const firstUnsubscribe = unsubscribes[0];
+
+    await act(async () => {
+      ctxRef.current.reconnect();
+    });
+
+    expect(transport.subscribeToReadings.mock.calls.length).toBe(
+      subscriptionsBefore + 1
+    );
+    expect(firstUnsubscribe).toHaveBeenCalled();
+  });
 });

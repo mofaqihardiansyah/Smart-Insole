@@ -7,7 +7,12 @@ import React from 'react';
  * Firebase Auth and the Realtime Database are both mocked. Tests must not open
  * a socket, and the auth listener would otherwise never resolve.
  */
-const mockAuth = { user: null, loading: false, displayName: '' };
+const mockAuth = {
+  user: null,
+  loading: false,
+  displayName: '',
+  logout: vi.fn(),
+};
 
 vi.mock('./hooks/useAuth', () => ({
   useAuth: () => mockAuth,
@@ -21,6 +26,13 @@ vi.mock('./services/firebaseRealtime', () => ({
 }));
 
 const App = (await import('./App')).default;
+
+/**
+ * The dashboard's H1 is the time-based greeting, so it is matched on the
+ * greeting word rather than on a fixed string: the greeting is real behaviour,
+ * and a test that pinned "Selamat pagi" would fail every afternoon.
+ */
+const DASHBOARD_H1 = /selamat/i;
 
 const signedIn = {
   user: { uid: 'u1', email: 'kader@example.com', displayName: 'Kader' },
@@ -86,7 +98,7 @@ describe('App shell', () => {
 
     // Start on the dashboard.
     expect(
-      screen.getByRole('heading', { level: 1, name: /dasbor tekanan plantar/i })
+      screen.getByRole('heading', { level: 1, name: DASHBOARD_H1 })
     ).toBeInTheDocument();
 
     const nav = screen.getAllByRole('navigation', {
@@ -104,7 +116,7 @@ describe('App shell', () => {
       screen.getByRole('heading', { level: 1, name: /tren tekanan/i })
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('heading', { level: 1, name: /dasbor tekanan plantar/i })
+      screen.queryByRole('heading', { level: 1, name: DASHBOARD_H1 })
     ).not.toBeInTheDocument();
   });
 
@@ -131,7 +143,73 @@ describe('App shell', () => {
     render(<App />);
 
     expect(
-      screen.getByRole('heading', { level: 1, name: /dasbor tekanan plantar/i })
+      screen.getByRole('heading', { level: 1, name: DASHBOARD_H1 })
     ).toBeInTheDocument();
+  });
+});
+
+describe('Shell controls', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    window.history.pushState({}, '', '/');
+    mockAuth.user = signedIn.user;
+    mockAuth.displayName = signedIn.displayName;
+    mockAuth.logout.mockClear();
+  });
+
+  it('searches the real destinations and navigates on Enter', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const search = screen.getByRole('combobox', {
+      name: /cari halaman atau catatan/i,
+    });
+    expect(search).toHaveAttribute('aria-expanded', 'false');
+
+    await user.type(search, 'pengaturan');
+
+    // The popup opened and offered the matching destination.
+    expect(search).toHaveAttribute('aria-expanded', 'true');
+    const option = screen.getByRole('option', { name: /pengaturan/i });
+    expect(option).toBeInTheDocument();
+
+    await user.keyboard('{Enter}');
+
+    expect(window.location.pathname).toBe('/settings');
+  });
+
+  it('reports no match instead of showing an empty popup', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(
+      screen.getByRole('combobox', { name: /cari halaman atau catatan/i }),
+      'zzzz'
+    );
+
+    expect(screen.getByText(/tidak ada yang cocok/i)).toBeInTheDocument();
+  });
+
+  it('closes the search popup on Escape without navigating away', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const search = screen.getByRole('combobox', {
+      name: /cari halaman atau catatan/i,
+    });
+    await user.type(search, 'riwayat');
+    await user.keyboard('{Escape}');
+
+    expect(search).toHaveValue('');
+    expect(window.location.pathname).toBe('/');
+  });
+
+  it('signs out from the rail account card', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getAllByRole('button', { name: /keluar/i })[0]);
+
+    expect(mockAuth.logout).toHaveBeenCalled();
   });
 });

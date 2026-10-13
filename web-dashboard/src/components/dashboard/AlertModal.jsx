@@ -93,18 +93,18 @@ const AlertModal = ({
         aria-modal="true"
         aria-labelledby="alert-modal-title"
         aria-describedby="alert-modal-body"
-        className={`w-full max-w-md rounded-card border-2 bg-surface inner-glow shadow-overlay ${
+        className={`w-full max-w-md rounded-card border-2 bg-surface shadow-overlay ${
           isDanger ? "border-danger" : "border-warning"
         }`}
       >
-        <div className="flex items-start gap-3 p-4">
+        <div className="flex items-start gap-3 p-5">
           {/* Risk is carried by the icon shape and the title text, so no
               separate colour-only badge is needed. */}
           <span
             className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${
               isDanger
-                ? "bg-danger/15 text-danger"
-                : "bg-warning/15 text-warning"
+                ? "bg-danger/15 text-danger-ink"
+                : "bg-warning/15 text-warning-ink"
             }`}
             aria-hidden="true"
           >
@@ -127,7 +127,7 @@ const AlertModal = ({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border p-4">
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border p-5">
           {onToggleMute && (
             <GlassButton
               variant="quiet"

@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { GlassButton } from "../components/ui/GlassButton";
 import { PanelHeader } from "../components/ui/GlassCard";
-import { LanguageToggle } from "../components/layout/FloatingNavbar";
+import { LanguageToggle } from "../components/layout/LanguageToggle";
 import PlantarHeatmap from "../components/PlantarHeatmap";
 import { useInsole } from "../context/InsoleContext";
 import { t } from "../utils/i18n";
@@ -434,6 +434,7 @@ const LandingPage = () => {
               <PanelHeader
                 label={t("dashboard.plantarView", language)}
                 icon={<Activity className="h-4 w-4" />}
+                padded={false}
               />
               <div className="plot-surface p-2">
                 <PlantarHeatmap

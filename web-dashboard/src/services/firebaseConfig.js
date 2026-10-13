@@ -93,3 +93,22 @@ export async function getUserDoc(uid) {
   const snap = await getDoc(userRef);
   return snap.exists() ? snap.data() : null;
 }
+
+// Helper: list semua user (admin only — Firestore rules harus mengizinkan
+// read collection users hanya untuk role admin)
+export async function listUsers() {
+  const { collection, getDocs } = await import("firebase/firestore");
+  const snap = await getDocs(collection(db, "users"));
+  return snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
+}
+
+// Helper: update field user (aktif/nonaktif, role, dll)
+export async function updateUserDoc(uid, data) {
+  return createUserDoc(uid, data);
+}
+
+// Helper: hapus user doc (admin)
+export async function deleteUserDoc(uid) {
+  const { deleteDoc } = await import("firebase/firestore");
+  await deleteDoc(doc(db, "users", uid));
+}

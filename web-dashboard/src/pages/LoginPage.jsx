@@ -88,8 +88,8 @@ const LoginPage = () => {
 
   return (
     <section className="mx-auto flex w-full max-w-md flex-col justify-center py-6 md:py-12">
-      <GlassCard className="p-5 md:p-7">
-        <div className="mb-5 flex items-center gap-3 border-b border-border pb-4">
+      <GlassCard className="md:p-7">
+        <div className="mb-6 flex items-center gap-3">
           <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-primary/10 text-primary">
             <ShieldCheck className="h-5 w-5" aria-hidden="true" />
           </span>
@@ -97,7 +97,7 @@ const LoginPage = () => {
             <p className="font-heading text-h4 text-fg">
               {t("app.title", language)}
             </p>
-            <p className="text-label uppercase text-muted">
+            <p className="text-body-sm text-muted">
               {t("app.tagline", language)}
             </p>
           </div>

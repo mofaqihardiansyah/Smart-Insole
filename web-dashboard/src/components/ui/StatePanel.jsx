@@ -29,7 +29,7 @@ const StatePanel = ({
       <div
         role="status"
         aria-live="polite"
-        className={`rounded-card border border-border-strong bg-surface p-4 ${className}`.trim()}
+        className={`rounded-card border border-border bg-surface p-4 shadow-panel ${className}`.trim()}
       >
         {title && (
           <p className="mb-3 text-label uppercase text-muted">{title}</p>
@@ -51,13 +51,13 @@ const StatePanel = ({
   const config = isError
     ? {
         Icon: AlertTriangle,
-        tone: "border-danger/50 bg-danger/12",
-        iconTone: "text-danger",
+        tone: "border-danger/50 bg-danger/15",
+        iconTone: "text-danger-ink",
         role: "alert",
       }
     : {
         Icon: Inbox,
-        tone: "border-border-strong bg-surface",
+        tone: "border-border bg-surface shadow-panel",
         iconTone: "text-muted",
         role: undefined,
       };

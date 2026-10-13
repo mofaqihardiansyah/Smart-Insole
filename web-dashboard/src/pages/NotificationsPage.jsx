@@ -71,7 +71,7 @@ const PreferenceRow = ({
         {title}
       </p>
       <p className="mt-0.5 text-body-sm text-muted">{body}</p>
-      <p className="mt-1 text-label uppercase text-muted">
+      <p className="mt-1 text-body-sm text-muted">
         {checked ? t("settings.on", language) : t("settings.off", language)}
       </p>
     </div>
@@ -153,7 +153,7 @@ const NotificationsPage = () => {
   const SourceIcon = source === "FIREBASE" ? Radio : FlaskConical;
 
   return (
-    <section className="mx-auto w-full max-w-3xl space-y-4">
+    <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
       <PageHeader
         title={t("notifications.title", language)}
         subtitle={t("notifications.subtitle", language)}
@@ -161,11 +161,11 @@ const NotificationsPage = () => {
 
       <GlassCard flush>
         <PanelHeader
-          label={t("notifications.permission", language)}
+          title={t("notifications.permission", language)}
           icon={<Bell className="h-4 w-4" />}
         />
 
-        <div className="p-4">
+        <div className="px-6 pb-6">
           <p className="text-body-sm text-muted">
             {t("notifications.permissionBody", language)}
           </p>
@@ -199,11 +199,11 @@ const NotificationsPage = () => {
 
       <GlassCard flush>
         <PanelHeader
-          label={t("settings.notifications", language)}
+          title={t("settings.notifications", language)}
           icon={soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
         />
 
-        <div className="space-y-5 p-4">
+        <div className="space-y-5 px-6 pb-6">
           <PreferenceRow
             id="alarm-sound"
             icon={soundEnabled ? Volume2 : VolumeX}
@@ -227,11 +227,11 @@ const NotificationsPage = () => {
 
       <GlassCard flush>
         <PanelHeader
-          label={t("notifications.connection", language)}
+          title={t("notifications.connection", language)}
           icon={<SourceIcon className="h-4 w-4" />}
         />
 
-        <div className="p-4">
+        <div className="px-6 pb-6">
           {connectionState === "connecting" ? (
             <StatePanel
               variant="loading"
@@ -269,7 +269,7 @@ const NotificationsPage = () => {
         </div>
       </GlassCard>
 
-      <GlassCard className="p-4">
+      <GlassCard>
         {saved && (
           <StatusBanner
             tone="success"

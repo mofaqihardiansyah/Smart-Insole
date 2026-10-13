@@ -45,7 +45,7 @@ const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
 
 /** One count in the summary strip. */
 const SummaryCell = ({ label, value, chip }) => (
-  <div className="bg-surface p-4">
+  <div className="bg-surface px-6 py-5">
     <dt className="text-label uppercase text-muted">{label}</dt>
     <dd className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
       <span className="tabular-data font-heading text-h3 text-fg">{value}</span>
@@ -63,7 +63,7 @@ const MobileField = ({ label, children }) => (
 );
 
 const HistoryPage = () => {
-  const { incidentLogs, connectionState, source, setSource, isLive, language } =
+  const { incidentLogs, connectionState, source, reconnect, isLive, language } =
     useInsole();
 
   const unavailable = t("common.notAvailable", language);
@@ -121,8 +121,8 @@ const HistoryPage = () => {
   const canReconnect = !isLive && !connecting;
 
   const handleRefresh = useCallback(() => {
-    setSource("FIREBASE");
-  }, [setSource]);
+    reconnect();
+  }, [reconnect]);
 
   const handleExport = useCallback(() => {
     if (rows.length === 0) return;
@@ -201,7 +201,7 @@ const HistoryPage = () => {
   ];
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5 lg:space-y-6">
       <PageHeader
         title={t("history.title", language)}
         subtitle={t("history.subtitle", language)}
@@ -255,12 +255,11 @@ const HistoryPage = () => {
         <>
           <GlassCard flush>
             <PanelHeader
-              label={t("history.title", language)}
+              title={t("dashboard.riskSummary", language)}
               icon={<ClipboardList className="h-4 w-4" />}
-              action={sourceIndicator}
             />
 
-            <dl className="grid grid-cols-1 gap-px bg-border sm:grid-cols-3">
+            <dl className="grid grid-cols-1 gap-px border-t border-border bg-border sm:grid-cols-3">
               <SummaryCell
                 label={t("history.totalIncidents", language)}
                 value={rows.length}
@@ -290,39 +289,41 @@ const HistoryPage = () => {
             </dl>
           </GlassCard>
 
-          <section className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-label uppercase text-muted">
-                {t("dashboard.recentIncidents", language)}
-              </h2>
-              <span className="tabular-data text-body-sm text-muted">
-                {rows.length}
-              </span>
-            </div>
-
-            {hasError ? (
-              <StatePanel
-                variant="error"
-                title={t("history.errorTitle", language)}
-                description={t("source.errorBody", language)}
+          {hasError ? (
+            <StatePanel
+              variant="error"
+              title={t("history.errorTitle", language)}
+              description={t("source.errorBody", language)}
+              action={
+                <StateRetry
+                  onRetry={handleRefresh}
+                  label={t("common.retry", language)}
+                />
+              }
+            />
+          ) : isEmpty ? (
+            <StatePanel
+              variant="empty"
+              title={t("history.empty", language)}
+              description={t("history.emptyBody", language)}
+            />
+          ) : (
+            <GlassCard flush>
+              <PanelHeader
+                title={t("dashboard.recentIncidents", language)}
+                icon={<ClipboardList className="h-4 w-4" />}
                 action={
-                  <StateRetry
-                    onRetry={handleRefresh}
-                    label={t("common.retry", language)}
-                  />
+                  <span className="tabular-data text-body-sm text-muted">
+                    {rows.length}
+                  </span>
                 }
               />
-            ) : isEmpty ? (
-              <StatePanel
-                variant="empty"
-                title={t("history.empty", language)}
-                description={t("history.emptyBody", language)}
-              />
-            ) : (
-              <>
-                <div className="hidden md:block">
-                  <GlassTable aria-label={t("history.title", language)}>
-                    <GlassTableRow>
+
+              {/* Desktop: a real table, from `md` up. */}
+              <div className="hidden border-t border-border md:block">
+                <GlassTable bare aria-label={t("history.title", language)}>
+                  <thead>
+                    <tr>
                       <GlassTableCell as="th" scope="col">
                         {t("history.col.time", language)}
                       </GlassTableCell>
@@ -334,8 +335,9 @@ const HistoryPage = () => {
                           {t(key, language)}
                         </GlassTableCell>
                       ))}
-                    </GlassTableRow>
-
+                    </tr>
+                  </thead>
+                  <tbody>
                     {rows.map((row) => (
                       <GlassTableRow key={row.id}>
                         <GlassTableCell>
@@ -355,38 +357,37 @@ const HistoryPage = () => {
                         ))}
                       </GlassTableRow>
                     ))}
-                  </GlassTable>
-                </div>
+                  </tbody>
+                </GlassTable>
+              </div>
 
-                <ul className="space-y-3 md:hidden">
-                  {rows.map((row) => (
-                    <li key={row.id}>
-                      <GlassCard>
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <StatusChip
-                            level={row.level}
-                            label={riskLabel(row.level, language)}
-                            size="sm"
-                          />
-                          <span className="tabular-data text-body-sm text-fg">
-                            {formatTimestamp(row.timestamp, language, unavailable)}
-                          </span>
-                        </div>
+              {/* Mobile: the same rows as stacked labelled fields. */}
+              <ul className="divide-y divide-border-strong border-t border-border md:hidden">
+                {rows.map((row) => (
+                  <li key={row.id} className="px-6 py-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <StatusChip
+                        level={row.level}
+                        label={riskLabel(row.level, language)}
+                        size="sm"
+                      />
+                      <span className="tabular-data text-body-sm text-fg">
+                        {formatTimestamp(row.timestamp, language, unavailable)}
+                      </span>
+                    </div>
 
-                        <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-3">
-                          {columns.slice(1).map(([key, read]) => (
-                            <MobileField key={key} label={t(key, language)}>
-                              {read(row)}
-                            </MobileField>
-                          ))}
-                        </dl>
-                      </GlassCard>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </section>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-3">
+                      {columns.slice(1).map(([key, read]) => (
+                        <MobileField key={key} label={t(key, language)}>
+                          {read(row)}
+                        </MobileField>
+                      ))}
+                    </dl>
+                  </li>
+                ))}
+              </ul>
+            </GlassCard>
+          )}
         </>
       )}
     </section>

@@ -1,7 +1,17 @@
 import React from "react";
 
 /**
- * BentoGrid — the metric tile grid, in the Romer instrument style.
+ * BentoGrid — the metric tile row.
+ *
+ * Each tile follows the reference console's stat card: an icon tile and a small
+ * state chip on the first line, the metric name, the value, and an italic
+ * caption that says what the value is measured against. The caption is not
+ * optional garnish: "danger limit 70 kPa" is what turns a bare number into a
+ * reading, and without it the card is a claim with no scale.
+ *
+ * The icon tile is tinted by the metric's SEMANTIC role, never by position.
+ * That is the identity rule for this product: colour is a vital sign, so a
+ * green tile means the reading is good, not that it is the third card.
  *
  * `cards[].icon` must be a React element, not a string: an earlier version
  * accepted icon names and rendered the literal text "Speed".
@@ -22,8 +32,16 @@ const COLUMN_CLASSES = {
   4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
 };
 
+const ICON_TONES = {
+  neutral: "bg-surface-2 text-fg-2",
+  accent: "bg-secondary/15 text-secondary-ink",
+  success: "bg-safe/15 text-safe-ink",
+  warning: "bg-warning/15 text-warning-ink",
+  danger: "bg-danger/15 text-danger-ink",
+};
+
 const CELL_CLASSES =
-  "flex flex-col justify-between rounded-card border border-border-strong bg-surface inner-glow p-4 text-left transition-colors duration-150";
+  "flex flex-col rounded-card border border-border bg-surface p-5 text-left shadow-panel transition-colors duration-150";
 
 const BentoCell = ({ card }) => {
   const interactive = typeof card.onSelect === "function";
@@ -31,28 +49,34 @@ const BentoCell = ({ card }) => {
   const body = (
     <>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-label uppercase text-muted">{card.title}</p>
         {card.icon && (
-          <span className="shrink-0 text-muted" aria-hidden="true">
+          <span
+            aria-hidden="true"
+            className={`grid h-12 w-12 shrink-0 place-items-center rounded-tile ${
+              ICON_TONES[card.iconTone] || ICON_TONES.neutral
+            }`}
+          >
             {card.icon}
           </span>
         )}
+        {card.badge}
       </div>
 
-      <div className="mt-3">
-        <p className="tabular-data font-heading text-h3 font-semibold text-fg">
-          {card.value ?? "--"}
-          {card.unit && (
-            <span className="ml-1.5 text-body-sm font-medium text-muted">
-              {card.unit}
-            </span>
-          )}
-        </p>
-        {card.label && (
-          <p className="mt-1 text-body-sm text-muted">{card.label}</p>
+      <p className="mt-4 text-body-base text-fg-2">{card.title}</p>
+
+      <p className="tabular-data mt-1 font-heading text-stat text-fg">
+        {card.value ?? "--"}
+        {card.unit && (
+          <span className="ml-1.5 align-middle text-body-sm font-medium text-muted">
+            {card.unit}
+          </span>
         )}
-        {card.footer}
-      </div>
+      </p>
+
+      {card.caption && (
+        <p className="mt-2 text-caption italic text-muted">{card.caption}</p>
+      )}
+      {card.footer}
     </>
   );
 
@@ -80,7 +104,7 @@ const BentoCell = ({ card }) => {
 const BentoGrid = ({ cards = [], columns = 3, className = "" }) => (
   <div
     className={[
-      "grid gap-3",
+      "grid gap-5 lg:gap-6",
       COLUMN_CLASSES[columns] || COLUMN_CLASSES[3],
       className,
     ]

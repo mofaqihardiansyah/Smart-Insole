@@ -222,6 +222,13 @@ export const InsoleProvider = ({
   const [history, setHistory] = useState([]);
   const [incidentLogs, setIncidentLogs] = useState([]);
   const [acknowledgedAt, setAcknowledgedAt] = useState(0);
+  /**
+   * Bumped by `reconnect`. The subscription effect is keyed on it, so asking
+   * for the same source again actually tears the old listener down and opens a
+   * new one. Setting the source to the value it already holds would be a no-op
+   * and the retry button would be a dead control.
+   */
+  const [connectNonce, setConnectNonce] = useState(0);
 
   const historyRef = useRef([]);
   const previousRiskRef = useRef('safe');
@@ -331,7 +338,7 @@ export const InsoleProvider = ({
       clearTimeout(graceTimer);
       unsubscribe?.();
     };
-  }, [source, transport, autoConnect]);
+  }, [source, transport, autoConnect, connectNonce]);
 
   // Reflect the manual simulator choice honestly.
   useEffect(() => {
@@ -459,6 +466,19 @@ export const InsoleProvider = ({
     setSource(next);
   }, []);
 
+  /**
+   * Ask the device feed again, right now.
+   *
+   * This is what a retry button calls. It re-selects Firebase and forces a new
+   * subscription even when Firebase is already the chosen source, which is the
+   * only way a retry can do anything after an explicit failure.
+   */
+  const reconnect = useCallback(() => {
+    manualSourceRef.current = true;
+    setSource(SOURCE.FIREBASE);
+    setConnectNonce((prev) => prev + 1);
+  }, []);
+
   const setThresholds = useCallback((next) => {
     setThresholdsState((prev) => sanitiseThresholds({ ...prev, ...next }));
   }, []);
@@ -530,6 +550,7 @@ export const InsoleProvider = ({
     severity,
     source,
     setSource: chooseSource,
+    reconnect,
     connectionState,
     sourceReason,
     isLive,
