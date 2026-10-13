@@ -16,7 +16,7 @@ import {
   StateRetry,
 } from "../components/ui/GlassComponents";
 import { useInsole } from "../context/InsoleContext";
-import { inferRisk } from "../utils/fuzzyRisk";
+import { inferRisk } from "../utils/randomForestRisk";
 import { t } from "../utils/i18n";
 
 /**

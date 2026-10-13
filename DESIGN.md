@@ -55,6 +55,37 @@ blue, grey, mint). That is four hues doing no work. Here the icon tile takes the
 when it is not. The reference's visual rhythm survives, and the colour now means
 something.
 
+## Risk inference: Random Forest
+
+The risk verdict is computed by a **Random Forest** classifier
+(`src/utils/randomForestRisk.js`), replacing the earlier fuzzy logic
+inference. The forest is trained on a synthetic dataset labelled by the
+clinical expert rules (the 3x3 pressure x duration rule base), so the
+decision boundary is **data-driven** rather than hand-tuned membership
+functions, while the expert rules remain the source of the clinical
+contract:
+
+- peak < 35 kPa, not sustained -> safe
+- peak >= 35 kPa -> at least warning, immediately
+- peak > 70 kPa, under ~30 s -> warning
+- peak > 70 kPa, past ~30 s -> danger
+- any peak sustained past ~20 s -> at least warning
+
+Training: a deterministic grid over the clinical input space (0-150 kPa
+x 0-60 s, 1 kPa / 1 s steps) labelled by the expert rules, 30 trees with
+bootstrap aggregation, Gini impurity splits, depth 10. Inference is a
+majority vote; the reported score is the vote proportion mapped onto the
+existing bands (safe 0-47, warning 48-74, danger 75-100). The PRNG is a
+seeded LCG, so the model is identical on every load and in every test.
+
+The clinical contract is asserted in `randomForestRisk.test.js` across
+the whole sweep: if a future change makes a 40 kPa reading "safe", the
+test fails before a patient is told they are fine.
+
+The expert rules themselves stay in `src/utils/fuzzyRisk.js` as the
+labelling function for the training data — they are the clinical source
+of truth, not the runtime inference path.
+
 ## Theme: light, and only light
 
 Chosen by the product owner. The written reason: patients and clinicians read

@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { RISK_THRESHOLDS, inferRisk } from '../utils/fuzzyRisk';
+import { RISK_THRESHOLDS, inferRisk } from '../utils/randomForestRisk';
 import { playAlertBeep, stopAlertBeep } from '../utils/audioAlert';
 import * as defaultTransport from '../services/firebaseRealtime';
 
