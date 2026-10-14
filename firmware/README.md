@@ -1,7 +1,7 @@
 # Firmware — Smart Insole (ESP32)
 
 Kode C++ untuk mikrokontroler **ESP32** pada *smart insole*. Program ini
-membaca 3 sensor FSR 402, menjalankan **Fuzzy Logic Inference System**, lalu
+membaca 3 sensor FSR 402, menjalankan **Random Forest** (model ter-trained), lalu
 mengirim hasil ke **Firebase Realtime Database** lewat Wi-Fi.
 
 ## Isi Folder
@@ -10,9 +10,9 @@ mengirim hasil ke **Firebase Realtime Database** lewat Wi-Fi.
 | --- | --- |
 | `platformio.ini` | Konfigurasi build & dependensi PlatformIO |
 | `include/config.h.example` | Templat kredensial Wi-Fi & Firebase |
-| `src/main.cpp` | Program utama: ADC → filter → fuzzy → Firebase |
-| `src/FuzzyLogic.h` | Deklarasi variabel linguistik, *rule base*, dan API |
-| `src/FuzzyLogic.cpp` | Fuzzifikasi, inferensi (Mamdani), defuzzifikasi |
+| `src/main.cpp` | Program utama: ADC → filter → random forest → Firebase |
+| `src/RandomForest.h` | Deklarasi model Random Forest (pohon, threshold) |
+| `src/RandomForest.cpp` | Inference Random Forest (majority vote) |
 
 ## Setup
 

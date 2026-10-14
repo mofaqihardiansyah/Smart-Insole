@@ -1,6 +1,6 @@
 # `Smart Insole IoT — Plantar Pressure Monitoring System
 
-> **Rancang Bangun Smart Insole Berbasis IoT Menggunakan Metode Fuzzy Logic untuk Monitoring Tekanan Plantar Pasien Diabetes Mellitus Menggunakan Platform Web**
+> **Rancang Bangun Smart Insole Berbasis IoT Menggunakan Metode Random Forest untuk Monitoring Tekanan Plantar Pasien Diabetes Mellitus Menggunakan Platform Web**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Framework: React](https://img.shields.io/badge/Frontend-React.js-61DAFB?logo=react)](https://reactjs.org/)
@@ -14,14 +14,14 @@
 
 **Smart Insole IoT** adalah sistem pemantauan tekanan telapak kaki (_plantar pressure_) secara _real-time_ berbasis perangkat lunak web dan sistem tertanam (_embedded system_). Sistem ini dirancang untuk membantu penderita **Diabetes Mellitus (DM)** yang mengalami _Diabetic Peripheral Neuropathy_ (DPN) atau hilangnya _loss of protective sensation_ dalam mencegah terjadinya **Ulkus Kaki Diabetik (_Diabetic Foot Ulcer_ / DFU)**.
 
-Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada titik anatomis kritis (_forefoot_, _midfoot_, _heel_) dan dikendalikan oleh mikrokontroler **ESP32**. Algoritma **Fuzzy Logic Inference System** ditanamkan langsung pada ESP32 untuk mengevaluasi kombinasi besaran tekanan (kPa) dan durasi tumpuan (_sustained pressure duration_) ke dalam 3 kategori tingkat risiko: **Aman**, **Waspada**, dan **Bahaya**. Data ditransmisikan nirkabel ke **Google Firebase Realtime Database** dan ditayangkan pada **Web Dashboard Multiplatform (_Mobile-First Responsive Design_)**.
+Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada titik anatomis kritis (_forefoot_, _midfoot_, _heel_) dan dikendalikan oleh mikrokontroler **ESP32**. Algoritma **Random Forest** dilatih pada _dataset_ tekanan plantar pasien diabetes (DFN-DS, 135 pasien) untuk mengevaluasi kombinasi besaran tekanan (kPa) dan durasi tumpuan (_sustained pressure duration_) ke dalam 3 kategori tingkat risiko: **Aman**, **Waspada**, dan **Bahaya**. Data ditransmisikan nirkabel ke **Google Firebase Realtime Database** dan ditayangkan pada **Web Dashboard Multiplatform (_Mobile-First Responsive Design_)**.
 
 ---
 
 ## Fitur Utama
 
 - **Real-time Plantar Heatmap** — visualisasi gradasi warna kontur tekanan telapak kaki secara langsung pada layar _browser_ HP maupun PC (komponen SVG dari Task 5).
-- **Embedded Fuzzy Logic Assessment** — klasifikasi risiko adaptif langsung di tingkat mikro (_Aman_, _Waspada_, _Bahaya_) tanpa ketergantungan pemrosesan _server-side_ (firmware ESP32).
+- **Random Forest Risk Assessment** — klasifikasi risiko berbasis _machine learning_ yang dilatih dari data pasien diabetes asli (_Aman_, _Waspada_, _Bahaya_) tanpa ketergantungan pemrosesan _server-side_.
 - **Sustained Pressure Monitoring** — mengukur akumulasi durasi waktu tumpuan berulang untuk mencegah pembentukan lesi jaringan lunak.
 - **Early Warning System (EWS)** — pemicuan notifikasi web (_Web Notification API_) dan peringatan alarm audio/getar pada ponsel saat risiko mencapai kategori _Waspada_ atau _Bahaya_ (Web Audio API Synthesizer dari Task 3).
 - **Histori & Analytics** — rekam medis kuantitatif pola tumpuan harian pasien untuk membantu rekomendasi terapi dokter/_orthotics_ (halaman Riwayat).
@@ -62,7 +62,7 @@ Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada t
 ## Arsitektur & Alur Data
 
 ```text
-[ 3x FSR Sensors ] ──(Analog ADC)──> [ ESP32 (Embedded Fuzzy Logic) ]
+[ 3x FSR Sensors ] ──(Analog ADC)──> [ ESP32 (Random Forest Inference) ]
                                                    │
                                             (Wi-Fi / JSON)
                                                    ▼
@@ -88,8 +88,8 @@ smart-insole-ta/
 │   ├── lib/
 │   ├── src/
 │   │   ├── main.cpp            # Program utama, Wi-Fi, & Firebase Sync
-│   │   ├── FuzzyLogic.cpp      # Fuzzifikasi, Rules, & Defuzzifikasi
-│   │   ├── FuzzyLogic.h
+│   │   ├── RandomForest.cpp    # Inference Random Forest (model ter-trained)
+│   │   ├── RandomForest.h
 │   │   ├── SensorFSR.cpp       # Pembacaan ADC & kalibrasi ke kPa
 │   │   └── FirebaseHandler.cpp # Transmisi data ke Firebase
 │   └── README.md

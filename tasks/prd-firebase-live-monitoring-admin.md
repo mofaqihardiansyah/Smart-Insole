@@ -185,3 +185,37 @@ PRD ini mencakup tiga fitur yang saling terkait:
 2. **Admin melihat detail pasien:** Ya — admin dapat membuka dashboard individual pasien secara detail (read-only), dengan akses log.
 3. **Force disconnect perangkat:** Tidak perlu — di luar scope untuk proyek ini.
 4. **Penunjukan admin pertama:** Assignment manual oleh developer via Firebase console atau Admin SDK script. Role disimpan di `users/{uid}/role` (Firestore) dan dicek saat akses halaman Admin. Tidak ada self-service admin. Ini pilihan paling aman untuk skala proyek ini — role tidak pernah ditentukan client-side.
+
+## 10. ML Method: Random Forest (replaces Fuzzy Logic)
+
+The risk classifier is a **Random Forest**, replacing the fuzzy logic
+inference. Rationale: fuzzy membership functions are hand-tuned heuristics;
+the forest learns the decision boundary from data.
+
+**Training data:**
+- **DFN-DS** (`/tmp/opencode/datasets/DFN-DS/`): 135 diabetes patients, 8 FSR
+  sensors per foot, continuous walking recordings, binary label
+  DFN (neuropathy, high risk) vs DM (no neuropathy). The clinical source
+  of truth.
+- **Figshare DFU offloading** (`figshare_dfu.xlsx`): peak plantar pressure
+  and pressure-time integrals per foot region across offloading modalities.
+  Used to justify the clinical thresholds.
+- **OptiTrack v2** (`InsolesOpitrackDataset_v2.zip`, kept in repo root):
+  dynamic gait plantar pressure. Used for gait-phase validation only.
+
+**Excluded datasets** (different task, not usable for this classifier):
+footanalytic (static 32x32), tg0uk (GRF estimation), CAPPIMU (activity
+recognition), FSR_DATASET_FV (valgus only), Footscan (flatfoot norms).
+
+**Training pipeline:**
+1. Aggregate DFN-DS 8 sensors/foot into 3 regions (forefoot, midfoot,
+   heel) matching the insole layout.
+2. Derive per-sample features: peak pressure + sustained duration per region.
+3. Label: DFN -> danger, DM -> safe/warning (split by duration threshold).
+4. Train Random Forest (trees, Gini impurity, bootstrap), validate against
+   OptiTrack gait patterns and Figshare thresholds.
+5. Export model for inference (web dashboard and/or ESP32 firmware).
+
+**Deliverable:** `randomForestRisk.js` inference module (web) and
+`RandomForest.cpp` (ESP32 firmware), with the clinical contract asserted by
+tests (a 40 kPa reading must never be "safe").

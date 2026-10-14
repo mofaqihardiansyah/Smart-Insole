@@ -11,7 +11,7 @@ Folder ini menampung aset visual dan dokumen pendukung Tugas Akhir.
 | `diagrams/` | Diagram blok & flowchart sistem |
 | `block-diagram.png` | Diagram blok sistem (sensor → ESP32 → Firebase → web) |
 | `schematic.png` | Skematik wiring ESP32 + 3x FSR 402 + power management |
-| `fuzzy-rule-base.png` | Visualisasi *rule base* Fuzzy Logic |
+| `fuzzy-rule-base.png` | Visualisasi *rule base* Fuzzy Logic (sumber label untuk training Random Forest) |
 | `literature-review.md` | Rangkuman dari paper acuan (lihat folder induk `Tugas Akhir/`) |
 
 ## Daftar Paper Acuan
