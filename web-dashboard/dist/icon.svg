@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Smart Insole">
+  <!--
+    Provisional app mark: a left-sole outline with the three measured
+    pressure points (forefoot, midfoot, heel) called out. It states what the
+    product measures rather than inventing a brand identity, and it is meant
+    to be replaced by the real mark when one exists.
+  -->
+  <rect width="64" height="64" rx="14" fill="#1D4ED8" />
+  <path
+    d="M32 9c6.2 0 10.4 4.4 11.2 11.2.5 4.4.2 8.4.2 12.6 0 4.6.6 7.4.6 11.4 0 6.6-4.6 10.8-12 10.8s-12-4.2-12-10.8c0-4-.6-6.8-.6-11.4 0-4.2-.3-8.2.2-12.6C20.4 13.4 25.8 9 32 9Z"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="2.6"
+    stroke-linejoin="round"
+  />
+  <circle cx="32" cy="20" r="3.4" fill="#FFFFFF" />
+  <circle cx="30.5" cy="33" r="3.4" fill="#FFFFFF" fill-opacity="0.72" />
+  <circle cx="32" cy="46" r="3.4" fill="#FFFFFF" />
+</svg>
