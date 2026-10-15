@@ -17,3 +17,6 @@ Thumbs.db
 DISCUSSION-GUIDE.md
 JIRA-*.md
 firmware/.pio/
+
+# PlatformIO IDE generated config
+firmware/.vscode/
