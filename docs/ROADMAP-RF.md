@@ -62,14 +62,14 @@
 
 **Output:** web dashboard pakai model asli
 
-## Fase 5 — Integration Firmware ESP32 (2-3 hari)
+## Fase 5 — Integration Firmware ESP32 (2-3 hari) — 5.1-5.3 selesai
 
 **Goal:** model yang sama jalan di ESP32 (on-device inference).
 
-- [ ] 5.1 Export model ke C++ (array of trees: feature index, threshold, children)
-- [ ] 5.2 Implementasi `RandomForest.cpp` — majority vote, tanpa dependency
-- [ ] 5.3 Test di PlatformIO (unit test native atau via simulator)
-- [ ] 5.4 Flash ke ESP32, uji dengan data nyata dari sensor
+- [x] 5.1 Export model ke C++ (`scripts/export-model-cpp.js` → `firmware/include/rf-model-data.h`)
+- [x] 5.2 Implementasi `RandomForest.cpp` — majority vote, danger rule, safe override, tanpa dependency
+- [x] 5.3 Test native (13/13 PASS — clinical contract sama dengan web)
+- [ ] 5.4 Flash ke ESP32, uji dengan data nyata dari sensor (user manual)
 
 **Output:** firmware dengan RF inference, teruji di hardware
 
