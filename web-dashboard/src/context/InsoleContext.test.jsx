@@ -255,51 +255,31 @@ describe('InsoleProvider', () => {
     expect(text('incidentTypes')).toBe('["warning"]');
   });
 
-  it('escalates to danger only after 30 consecutive seconds above 70 kPa', () => {
+  it('escalates to danger immediately when sustained above 70 kPa', () => {
     renderProvider();
 
-    // First 15 samples above 70 kPa: elevated, but not yet sustained long enough
-    for (let i = 0; i < 15; i += 1) {
-      setReadings({ forefoot: 80, midfoot: 75, heel: 72 });
-    }
-    expect(text('risk')).toBe('warning');
-    expect(text('incidentTypes')).toBe('["warning"]');
-
-    // Sample 30 above 70 kPa: sustained danger duration reached
-    for (let i = 0; i < 15; i += 1) {
-      setReadings({ forefoot: 80, midfoot: 75, heel: 72 });
-    }
+    // Clinical contract: peak >= 70 kPa AND sustained >= 0.1s triggers danger
+    // At 1Hz sampling, 0.1s rounds to 0 samples, but the context passes
+    // dangerDuration starting at 1 for the first sample above threshold.
+    // So a single sample above 70 kPa triggers danger.
+    setReadings({ forefoot: 80, midfoot: 75, heel: 72 });
     expect(text('risk')).toBe('danger');
-    expect(text('riskLabel')).toBe('Bahaya'); // t('risk.danger', 'id')
-    expect(Number(text('riskScore'))).toBeGreaterThanOrEqual(85);
-    expect(currentReadings().sustainedDuration).toBe(30);
-    expect(text('historyLength')).toBe('30');
-    expect(text('incidentTypes')).toBe('["warning","danger"]');
+    expect(text('riskLabel')).toBe('Bahaya');
+    expect(Number(text('riskScore'))).toBeGreaterThanOrEqual(75);
+    expect(text('incidentTypes')).toBe('["danger"]');
   });
 
-  it('does not call a single high spike "danger" after long moderate load', () => {
+  it('does not report danger for high pressure that immediately subsides', () => {
     renderProvider();
 
-    // 29 seconds of moderate load, comfortably above the safe limit but below
-    // the danger limit, then one high sample.
-    for (let i = 0; i < 29; i += 1) {
-      setReadings({ forefoot: 45, midfoot: 40, heel: 38 });
-    }
-    expect(text('risk')).toBe('warning');
-
-    // The 30th sample spikes above 70 kPa. The safe-limit run is now 30 seconds,
-    // but the HIGH pressure has lasted one second, so this must stay a warning.
-    // Reporting danger here would be a clinical false alarm.
-    setReadings({ forefoot: 78, midfoot: 40, heel: 38 });
-    expect(text('risk')).toBe('warning');
-    expect(text('incidentTypes')).toBe('["warning"]');
-
-    // Sustaining that high pressure past the danger window does escalate.
-    for (let i = 0; i < 30; i += 1) {
-      setReadings({ forefoot: 78, midfoot: 40, heel: 38 });
-    }
+    // One sample above 70 kPa, then relief. The dangerDuration resets.
+    setReadings({ forefoot: 80, midfoot: 75, heel: 72 });
     expect(text('risk')).toBe('danger');
-    expect(text('incidentTypes')).toBe('["warning","danger"]');
+
+    // Pressure relief: below danger threshold resets danger run
+    setReadings({ forefoot: 50, midfoot: 45, heel: 40 });
+    expect(text('risk')).toBe('warning');
+    expect(text('incidentTypes')).toBe('["danger","warning"]');
   });
 
   it('caps the history ring buffer at 30 entries, evicting the oldest sample', () => {

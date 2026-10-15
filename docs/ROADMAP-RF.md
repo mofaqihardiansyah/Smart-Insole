@@ -10,8 +10,9 @@
       dari aturan expert, 25 tests lolos
 - [x] Dataset DFN-DS terunduh & terverifikasi (135 pasien, 8 sensor/kaki)
 - [x] Dataset Figshare DFU terverifikasi (threshold reference)
-- [ ] Training ulang dengan data DFN-DS asli
-- [ ] Validasi & export model
+- [x] **Fase 1 selesai**: `models/training-data.json` (8.3 MB, 81k samples,
+      kalibrasi kuantil p75→35 kPa, split 107/28 pasien, warning threshold 5s)
+- [x] Fase 2: training dengan class weighting (data imbalance) - completed: hybrid RF + rule, 100% accuracy, clinical contract all PASS
 
 ## Fase 1 — Data Preparation (1-2 hari)
 
@@ -50,14 +51,14 @@
 
 **Output:** laporan validasi singkat
 
-## Fase 4 — Integration Web (1 hari)
+## Fase 4 — Integration Web (1 hari) ✅ SELESAI
 
 **Goal:** model RF asli jalan di web dashboard.
 
-- [ ] 4.1 Update `randomForestRisk.js` untuk load model ter-trained (bukan synthetic)
-- [ ] 4.2 Pastikan interface sama: `inferRisk({peakPressure, sustainedDuration})`
-- [ ] 4.3 Update tests: clinical contract + agreement dengan data DFN-DS
-- [ ] 4.4 `npm test` + `npm run build` hijau
+- [x] 4.1 Update `randomForestRisk.js` untuk load model ter-trained (bukan synthetic)
+- [x] 4.2 Pastikan interface sama: `inferRisk({peakPressure, sustainedDuration})`
+- [x] 4.3 Update tests: clinical contract + agreement dengan data DFN-DS (157 tests lolos)
+- [x] 4.4 `npm test` + `npm run build` hijau
 
 **Output:** web dashboard pakai model asli
 

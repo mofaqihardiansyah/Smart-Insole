@@ -97,13 +97,19 @@ def parse_xls(path):
 
 # ----------------------------------------------------------------- label ----
 def label_samples(samples, group):
-    """DFN -> semua danger. DM -> warning jika sustained >= threshold."""
+    """
+    Label per-sample: safe atau warning saja.
+    Danger di-handle rule-based terpisah (peak >= 70 kPa AND sustained >= 0.1s).
+    
+    Hybrid approach: RF classifier untuk safe/warning boundary,
+    clinical rule untuk danger (data DFN-DS hanya punya 31 danger samples).
+    """
     labeled = []
     for s in samples:
-        if group == "DFN":
-            level = "danger"
-        else:  # DM
-            level = "warning" if s["sustained"] >= WARNING_SECONDS else "safe"
+        if s["peak"] >= 35 or s["sustained"] >= 200:
+            level = "warning"
+        else:
+            level = "safe"
         labeled.append({**s, "level": level})
     return labeled
 

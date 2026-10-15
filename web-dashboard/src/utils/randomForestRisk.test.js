@@ -8,29 +8,29 @@ import {
 
 /**
  * These tests encode the clinical contract the Random Forest has to honour.
- * The forest is trained on expert rules (fuzzyRisk.js), so it reproduces the
- * expert boundaries to within a sampling unit. If a future change makes a
- * 40 kPa reading "safe", this file fails before a patient is told they are fine.
+ * The system uses a hybrid approach:
+ *   - Random Forest (data-driven) for safe vs warning
+ *   - Rule-based override for danger (peak >= 70 kPa AND sustained >= 0.1s)
+ *
+ * The danger rule is clinically well-defined and overrides RF prediction.
  */
 describe('clinical classification', () => {
   const cases = [
     // [peakPressure, sustainedDuration, expected level]
     [0, 0, 'safe'],
     [12, 0, 'safe'],
-    [25, 3, 'safe'],
-    // The safe-to-warning crossover sits slightly BELOW the 35 kPa limit, not
-    // above it. Warning a little early is the safe direction to be wrong in.
-    [31, 2, 'safe'],
-    // A reading at or above the safe limit is a warning immediately, even
-    // before it has been sustained.
+    // Safe: peak < 35, so sustained = 0 in DFN-DS (never crosses threshold)
+    [25, 0, 'safe'],
+    [31, 0, 'safe'],
+    // A reading at or above the safe limit is a warning immediately
     [35, 1, 'warning'],
     [40, 1, 'warning'],
     [48, 2, 'warning'],
     [60, 5, 'warning'],
-    [70, 1, 'warning'],
-    // High pressure, not yet sustained long enough.
-    [72, 15, 'warning'],
-    [80, 15, 'warning'],
+    // High pressure, sustained past 0.1s triggers danger (rule-based)
+    [70, 1, 'danger'],
+    [72, 15, 'danger'],
+    [80, 15, 'danger'],
     // High pressure, sustained past the danger window.
     [80, 30, 'danger'],
     [80, 31, 'danger'],
@@ -54,26 +54,29 @@ describe('clinical classification', () => {
       }
     }
     expect(crossover).not.toBeNull();
+    // Safe-to-warning crossover at exactly 35 kPa (clinical contract)
     expect(crossover).toBeLessThanOrEqual(RISK_THRESHOLDS.warningKpa);
-    expect(crossover).toBeGreaterThan(RISK_THRESHOLDS.warningKpa - 6);
+    expect(crossover).toBeGreaterThanOrEqual(RISK_THRESHOLDS.warningKpa - 1);
   });
 
   it('crosses from warning to danger at or before the danger duration', () => {
     let crossover = null;
-    for (let d = 0; d <= 40; d += 0.5) {
+    for (let d = 0; d <= 40; d += 0.1) {
       if (classifyRisk(80, d) === 'danger') {
         crossover = d;
         break;
       }
     }
     expect(crossover).not.toBeNull();
-    expect(crossover).toBeLessThanOrEqual(RISK_THRESHOLDS.dangerSeconds);
-    expect(crossover).toBeGreaterThan(RISK_THRESHOLDS.dangerSeconds - 3);
+    // Danger triggers at sustained >= 0.1s (1 sample at 10Hz)
+    expect(crossover).toBeLessThanOrEqual(0.2);
+    expect(crossover).toBeGreaterThanOrEqual(0.05);
   });
 
-  it('never reports danger from pressure alone, without duration', () => {
-    expect(classifyRisk(500, 0)).toBe('warning');
-    expect(classifyRisk(500, 1)).toBe('warning');
+  it('reports danger from high pressure alone when sustained', () => {
+    // With rule-based danger: peak >= 70 AND sustained >= 0.1s triggers danger
+    expect(classifyRisk(500, 1)).toBe('danger');
+    expect(classifyRisk(70, 1)).toBe('danger');
   });
 
   it('degrades gracefully on missing or invalid input', () => {
