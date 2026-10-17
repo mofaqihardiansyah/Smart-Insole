@@ -54,6 +54,17 @@
 | web-dashboard/src/components/PlantarHeatmap.jsx | rgb(var(--safe)) | safe | 4.5:1 (AA) | matched | — |
 | web-dashboard/src/components/PlantarHeatmap.jsx | rgb(var(--warning)) | warning | 4.6:1 (AA) | matched | — |
 | web-dashboard/src/components/PlantarHeatmap.jsx | rgb(var(--danger)) | danger | 5.9:1 (AA) | matched | — |
+| web-dashboard/src/index.css (:root) | --primary-btn: #0F172A | primary | 18.1:1 (AAA) | matched | — |
+| web-dashboard/src/index.css (:root) | --primary-on: #FFFFFF | surface | — | matched | — |
+| web-dashboard/src/index.css (:root) | --primary-hover: #020617 | primary-hover | — | matched | — |
+| web-dashboard/src/index.css (:root) | --danger-hover: #DC2626 | danger | 5.9:1 (AA) | matched | — |
+| web-dashboard/src/index.css (:root) | --sidebar: #F8FAFC | bg | — | matched | — |
+| web-dashboard/src/index.css (:root) | --inner-glow: #FFFFFF | surface | — | matched | — |
+| web-dashboard/src/index.css (:root) | --grid: #0F172A | fg | 18.1:1 (AAA) | matched | — |
+| web-dashboard/src/index.css (:root) | --scrim: #0F172A | fg | 18.1:1 (AAA) | matched | — |
+| web-dashboard/src/index.css (.card-surface) | border-radius: 16px | radius: card (16px) | — | matched | — |
+| web-dashboard/src/index.css (.card-surface) | box-shadow: 0 1px 2px rgb(15 23 42 / 0.04) | shadow: panel | — | matched | — |
+| web-dashboard/src/index.css (.inner-glow) | box-shadow: 0 1px 2px rgb(15 23 42 / 0.04) | shadow: panel | — | matched | — |
 
 **No hard-coded (non-DESIGN.md) colour/radius/shadow/type values found in `web-dashboard/src/`** — all components consume CSS variables (`rgb(var(--…))`) and Tailwind utility tokens mapped 1:1 to DESIGN.md. Zero flagged rows; nothing carried to Phase 2 FIX from this inventory.
 
