@@ -175,8 +175,7 @@ describe("BentoGrid tile control semantics", () => {
     expect(cell.tagName).toBe("BUTTON");
     expect(cell).toHaveAttribute("type", "button");
     expect(cell).toHaveAttribute("aria-label", "Open live");
-    expect(cell.className).toContain("focus-visible:outline-none");
-    expect(cell.className).toContain("focus-visible:ring-2");
+    expect(cell.className).toContain("focus-visible:outline-none"); expect(cell.className).toContain("focus-visible:ring-2");
     expect(cell.className).not.toMatch(/\bmin-h/);
   });
 });

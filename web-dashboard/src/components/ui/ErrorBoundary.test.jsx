@@ -104,12 +104,7 @@ describe('ErrorBoundary crash surface', () => {
    * visible focus ring fails FIX-02, and a ring on a sub-44px target fails
    * FIX-03, so the two are asserted on the same element rather than apart.
    */
-  const RING = [
-    'focus-visible:outline-none',
-    'focus-visible:ring-2',
-    'focus-visible:ring-primary',
-    'focus-visible:ring-offset-2',
-  ];
+  const RING = ['focus-visible:outline-none', 'focus-visible:ring-2', 'focus-visible:ring-primary', 'focus-visible:ring-offset-2'];
 
   const renderFallback = () =>
     render(

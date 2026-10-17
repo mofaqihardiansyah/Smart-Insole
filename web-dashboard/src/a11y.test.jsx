@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import React from 'react';
 
 /**
@@ -7,11 +10,11 @@ import React from 'react';
  * element) and FIX-03 (every touch target at least 44x44px).
  *
  * The 01-UI-REVIEW audit found the app register already held both floors but had
- * no automated coverage at all: nothing existed that would notice a 40px target
- * or an `outline-none` shipped without a ring. This file is that coverage. It
- * asserts the rendered DOM for the landing controls (a source grep cannot prove
- * a class reached an element) and scans the source for the two shapes that
- * silently remove a floor.
+ * no automated coverage at all: nothing existed that would notice a 40px target,
+ * or a focused element whose outline had been nulled with no ring put back.
+ * This file is that coverage. It asserts the rendered DOM for the landing
+ * controls (a source grep cannot prove a class reached an element) and scans the
+ * source for the two shapes that silently remove a floor.
  */
 
 /**
@@ -38,6 +41,23 @@ vi.mock('./services/firebaseRealtime', () => ({
 }));
 
 const App = (await import('./App')).default;
+
+/** This file lives in `src`, so the sources under test are right here. */
+const SRC = path.dirname(fileURLToPath(import.meta.url));
+
+/** Every `.jsx` under a directory, following `designTokens.test.js`. */
+const collectSources = (dir) => {
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...collectSources(full));
+    } else if (entry.name.endsWith('.jsx')) {
+      out.push(full);
+    }
+  }
+  return out;
+};
 
 /** A class list read as an array, so every assertion is a membership check. */
 const classesOf = (element) =>
@@ -98,5 +118,48 @@ describe('landing presence on touch targets and focus rings', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(trigger).toHaveAttribute('aria-controls', 'landing-menu');
     expect(trigger).toHaveClass('md:hidden');
+  });
+});
+
+describe('focus indicator source lock', () => {
+  it('pairs every outline reset with a ring, and keeps the global floor alive', () => {
+    /**
+     * The global `:focus-visible` rule in `index.css` is the floor for elements
+     * that carry no ring utility. It is a floor, not a pass: an element that
+     * nulls that outline with the shared utility and supplies no ring has
+     * deleted its only focus indicator, and that is the FIX-02 defect class.
+     * Every shipped site today pairs the two, so the mismatch list is empty and
+     * a future edit that drops a ring fails `npm test` instead of shipping.
+     *
+     * Comment lines are skipped: the file headers in this codebase discuss the
+     * pattern, and discussing it is not shipping it.
+     */
+    const offenders = [];
+
+    for (const file of collectSources(SRC)) {
+      const lines = fs.readFileSync(file, 'utf8').split('\n');
+      lines.forEach((raw, index) => {
+        const line = raw.trim();
+        if (line.startsWith('*') || line.startsWith('//')) return;
+        if (line.includes('outline-none') && !line.includes('ring-2')) {
+          offenders.push(`${path.relative(SRC, file)}:${index + 1}`);
+        }
+      });
+    }
+
+    expect(offenders).toEqual([]);
+
+    // The floor itself must survive: a non-`none` outline on the global rule,
+    // and `color-scheme: light` in both scopes. The two scope spellings are the
+    // exact literals `designTokens.test.js` already slices on.
+    const css = fs.readFileSync(path.join(SRC, 'index.css'), 'utf8');
+    const focusRule = css.slice(css.indexOf(':focus-visible'));
+    expect(focusRule).toMatch(/outline:\s*2px\s+solid/);
+    expect(focusRule).not.toMatch(/outline:\s*none/);
+
+    expect(css.slice(css.indexOf(':root {'))).toMatch(/color-scheme:\s*light/);
+    expect(css.slice(css.indexOf('.landing-scope {'))).toMatch(
+      /color-scheme:\s*light/
+    );
   });
 });
