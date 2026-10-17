@@ -152,6 +152,11 @@ const AdminPage = () => {
     }
   };
 
+  // The language-neutral fallback for an absent user field. Taken from the
+  // dictionary rather than written as a separator character, so the copy is
+  // localised and stays inside every dictionary gate.
+  const unavailable = t("common.notAvailable", language);
+
   const deviceOnline =
     device?.timestamp && Date.now() - device.timestamp < 5 * 60 * 1000;
 
@@ -198,10 +203,10 @@ const AdminPage = () => {
                   {users.map((user) => (
                     <GlassTableRow key={user.uid}>
                       <GlassTableCell>
-                        <span className="font-medium text-fg">{user.displayName || "—"}</span>
+                        <span className="font-medium text-fg">{user.displayName || unavailable}</span>
                       </GlassTableCell>
                       <GlassTableCell>
-                        <span className="text-muted">{user.email || "—"}</span>
+                        <span className="text-muted">{user.email || unavailable}</span>
                       </GlassTableCell>
                       <GlassTableCell>
                         <StatusChip
