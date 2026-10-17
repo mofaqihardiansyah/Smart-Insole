@@ -31,21 +31,21 @@
 | web-dashboard/src/index.css (:root) | #0072B2 | series-1 | 5.19:1 | matched | — |
 | web-dashboard/src/index.css (:root) | #D55E00 | series-2 | 3.87:1 | matched | — |
 | web-dashboard/src/index.css (:root) | #009E73 | series-3 | 3.42:1 | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #ECEDEE | warm-canvas | — | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #F4F5F5 | warm-raised | — | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #FFFFFF | warm-card | — | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #2E3034 | warm-ink | 11.3:1 (AAA) | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #55575c | warm-body | 6.62:1 (AA) | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #5A6270 | warm-caption | 5.64:1 (AA) | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #E34A32 | warm-accent | 3.98:1 | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #C93A24 | warm-accent-deep | 4.70:1 (AA) | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #171719 | warm-dark | — | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #D8DBDE | warm-line | — | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #202024 | warm-panel | — | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #26262b | warm-panel-2 | — | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #2c2c31 | warm-panel-3 | — | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #34343a | warm-panel-4 | — | matched | — |
-| web-dashboard/src/index.css (.landing-scope) | #F05A3C | warm-accent-2 | — | matched | — |
+| web-dashboard/src/index.css (:root) | #ECEDEE | warm-canvas | — | matched | — |
+| web-dashboard/src/index.css (:root) | #F4F5F5 | warm-raised | — | matched | — |
+| web-dashboard/src/index.css (:root) | #FFFFFF | warm-card | — | matched | — |
+| web-dashboard/src/index.css (:root) | #2E3034 | warm-ink | 11.3:1 (AAA) | matched | — |
+| web-dashboard/src/index.css (:root) | #55575c | warm-body | 6.62:1 (AA) | matched | — |
+| web-dashboard/src/index.css (:root) | #5A6270 | warm-caption | 5.64:1 (AA) | matched | — |
+| web-dashboard/src/index.css (:root) | #E34A32 | warm-accent | 3.98:1 | matched | — |
+| web-dashboard/src/index.css (:root) | #C93A24 | warm-accent-deep | 4.70:1 (AA) | matched | — |
+| web-dashboard/src/index.css (:root) | #171719 | warm-dark | — | matched | — |
+| web-dashboard/src/index.css (:root) | #D8DBDE | warm-line | — | matched | — |
+| web-dashboard/src/index.css (:root) | #202024 | warm-panel | — | matched | — |
+| web-dashboard/src/index.css (:root) | #26262b | warm-panel-2 | — | matched | — |
+| web-dashboard/src/index.css (:root) | #2c2c31 | warm-panel-3 | — | matched | — |
+| web-dashboard/src/index.css (:root) | #34343a | warm-panel-4 | — | matched | — |
+| web-dashboard/src/index.css (:root) | #F05A3C | warm-accent-2 | — | matched | — |
 | web-dashboard/src/components/ui/GlassInput.jsx | min-h-[44px] | — | — | matched | — |
 | web-dashboard/src/components/ui/GlassButton.jsx | focus-visible:ring-2 | focus | — | matched | — |
 | web-dashboard/src/components/ui/StatePanel.jsx | shadow-panel | panel | — | matched | — |
@@ -65,9 +65,14 @@
 | web-dashboard/src/index.css (.card-surface) | border-radius: 16px | radius: card (16px) | — | matched | — |
 | web-dashboard/src/index.css (.card-surface) | box-shadow: 0 1px 2px rgb(15 23 42 / 0.04) | shadow: panel | — | matched | — |
 | web-dashboard/src/index.css (.inner-glow) | box-shadow: 0 1px 2px rgb(15 23 42 / 0.04) | shadow: panel | — | matched | — |
+| web-dashboard/tailwind.config.js | box-shadow: 0 14px 30px -18px rgb(23 23 25 / 0.25) | shadow: card | — | matched | — |
+| web-dashboard/tailwind.config.js | box-shadow: 0 24px 44px -18px rgb(23 23 25 / 0.30) | shadow: lift | — | matched | — |
+| web-dashboard/tailwind.config.js | box-shadow: 0 10px 30px -14px rgb(23 23 25 / 0.25) | shadow: nav | — | matched | — |
+| web-dashboard/tailwind.config.js | box-shadow: 0 18px 35px -14px rgb(23 23 25 / 0.35) | shadow: glow | — | matched | — |
+| web-dashboard/src/index.css (:root) | --inner-glow-a: 0.7 | — | — | matched | — |
 | web-dashboard/src/index.css (.nav-scrolled) | box-shadow: 0 18px 44px -14px rgb(35 36 39 / 0.25) (#232427) | none — warm-dark is #171719, not #232427 | — | flagged | FIX-01 |
 
-**One hard-coded (non-DESIGN.md) value flagged** — `.nav-scrolled` box-shadow `rgb(35 36 39 / 0.25)` (#232427) is not a DESIGN.md token (warm-dark is #171719). It is flagged with FIX phase reference FIX-01 and carried to Phase 2 FIX work; it is NOT fixed in Phase 1 per D-06. All other inventory rows are matched to DESIGN.md tokens.
+**Five shipping sites carried the undeclared fifth neutral `#232427`** (`rgb(35 36 39 / …)`) — not one. The row above (`.landing-scope .nav-scrolled`) was flagged in Phase 1; the shadow surface in `web-dashboard/tailwind.config.js` was un-inventoried, so the same value shipped four more times (`card`, `lift`, `nav`, `glow`) without being recorded. FIX-01 was widened to cover the shadow surface (02-CONTEXT.md D-03), and Phase 2 plan 02-01 normalizes all five sites to the declared `warm-dark` ink (`23 23 25`). The four `tailwind.config.js` shadow rows above record that post-fix value with status `matched`; the `.nav-scrolled` row keeps its Phase 1 `flagged` status as the finding that opened FIX-01 (Phase 1 D-06 kept it unfixed there).
 
 ## Notes
 
