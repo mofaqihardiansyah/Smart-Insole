@@ -65,8 +65,9 @@
 | web-dashboard/src/index.css (.card-surface) | border-radius: 16px | radius: card (16px) | — | matched | — |
 | web-dashboard/src/index.css (.card-surface) | box-shadow: 0 1px 2px rgb(15 23 42 / 0.04) | shadow: panel | — | matched | — |
 | web-dashboard/src/index.css (.inner-glow) | box-shadow: 0 1px 2px rgb(15 23 42 / 0.04) | shadow: panel | — | matched | — |
+| web-dashboard/src/index.css (.nav-scrolled) | box-shadow: 0 18px 44px -14px rgb(35 36 39 / 0.25) (#232427) | none — warm-dark is #171719, not #232427 | — | flagged | FIX-01 |
 
-**No hard-coded (non-DESIGN.md) colour/radius/shadow/type values found in `web-dashboard/src/`** — all components consume CSS variables (`rgb(var(--…))`) and Tailwind utility tokens mapped 1:1 to DESIGN.md. Zero flagged rows; nothing carried to Phase 2 FIX from this inventory.
+**One hard-coded (non-DESIGN.md) value flagged** — `.nav-scrolled` box-shadow `rgb(35 36 39 / 0.25)` (#232427) is not a DESIGN.md token (warm-dark is #171719). It is flagged with FIX phase reference FIX-01 and carried to Phase 2 FIX work; it is NOT fixed in Phase 1 per D-06. All other inventory rows are matched to DESIGN.md tokens.
 
 ## Notes
 
