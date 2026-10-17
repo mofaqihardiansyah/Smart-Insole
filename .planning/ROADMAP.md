@@ -41,7 +41,7 @@ Plan list:
 
 **Goal**: All audit-identified defects corrected so rebuilds start from a clean, spec-conformant baseline; fix precedes rebuild.
 **Depends on**: Phase 1
-**Requirements**: FIX-01, FIX-02, FIX-03, FIX-04, FIX-05, FIX-06, FIX-07, FIX-08, FIX-09
+**Requirements**: FIX-01, FIX-02, FIX-03, FIX-04, FIX-05, FIX-06, FIX-07, FIX-08, FIX-09, FIX-10
 **Success Criteria** (what must be TRUE):
   1. All contrast failures meet DESIGN.md measured values (fg 18.1:1 AAA, muted 4.8:1 AA)
   2. Visible focus rings (3:1 or better) on every interactive element
@@ -52,8 +52,17 @@ Plan list:
   7. Fabricated telemetry replaced with real measured output or an explicit Simulation label
   8. Actionable loading, empty, and error states on every data view (named cause + next action)
   9. No em dashes in shipped copy; middot or pipe separators used
+  10. A render throw in any view is caught by an app-level ErrorBoundary — named cause + recovery action, never a white screen
 
-**Plans**: TBD
+**Plans**: 0/6 plans complete
+
+Plan list:
+- [ ] 02-01-PLAN.md — FIX-01: normalize the undeclared fifth neutral to the declared `warm-dark` token at all five sites, split the duplicate `lg`/`overlay` elevation, harden the token gate and correct the token inventory (wave 1)
+- [ ] 02-02-PLAN.md — FIX-02 + FIX-03: lock the landing's focus indicators and 44×44px touch targets as an automated contract (wave 1)
+- [ ] 02-03-PLAN.md — FIX-04 + FIX-06 + FIX-08: close the dashboard's two genuine empty/loading gaps; lock StatusChip's three redundant channels and BentoGrid's data-driven tone (wave 1)
+- [ ] 02-04-PLAN.md — FIX-05 + FIX-07 + FIX-09: shipped-JSX dash guard plus localised admin fallbacks; lock the two standing actions and the always-labelled data source (wave 1)
+- [ ] 02-05-PLAN.md — FIX-09 (D-05, D-06): force Indonesian on read and reconcile DESIGN.md's stale language clauses (wave 1)
+- [ ] 02-06-PLAN.md — FIX-10: app-level ErrorBoundary with a named cause and a working recovery action (wave 1)
 
 ### Phase 3: Primitive rebuilds
 
@@ -93,7 +102,7 @@ Plan list:
 **Success Criteria** (what must be TRUE):
   1. Dashboard rebuilt — greeting row, 4 metric tiles, trend panel, load donut, live feed, pressure map (in that order)
   2. Monitoring, History, Device, Settings, Profile, Notifications, Login, and Register pages rebuilt
-  3. Landing rebuilt — warm dialect under .landing-scope, real PlantarHeatmap component (no skeleton/placeholder)
+  3. Landing rebuilt — warm dialect under .landing-scope, real PlantarHeatmap component (no skeleton/placeholder); heading scale and radius re-derived against a declared landing scale, and the landing nav keeps ≥44px touch targets (drawer trigger `h-11 w-11`, nav links `min-h-[44px]`)
   4. Responsive breakpoints <640 / 640–1023 / >=1024px on every page
   5. Two visual registers never mixed (clinical app vs warm landing); Indonesian language only; no language switch
 
@@ -108,7 +117,7 @@ Plan list:
 **Success Criteria** (what must be TRUE):
   1. npm test — Vitest, zero errors
   2. npm run build — zero errors
-  3. Click-through verified at 360px, 768px, and 1280px
+  3. Click-through verified at 360px, 768px, and 1280px — including the landing nav at ≥44px touch targets and the landing heading scale and radius carried forward from Phase 5 criterion 3
   4. Accessibility verified — 44×44px targets, keyboard operability, colour-never-alone risk, prefers-reduced-motion respected
   5. oil-ui go/no-go decision recorded in PROJECT.md Key Decisions with token-mapping table; components wrapped to emit DESIGN.md tokens (not oil-ui defaults) if adopted
 
