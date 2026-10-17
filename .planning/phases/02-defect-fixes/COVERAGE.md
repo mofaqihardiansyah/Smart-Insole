@@ -1,6 +1,8 @@
 # API Coverage — Phase 02 (defect fixes)
 
-No external API integration: this phase integrates no external API, SDK or service. It edits the project's own design tokens, page and component source, CSS variable layer, test gates, the provider's stored-preference reader, a design document, and two planning documents. The Firebase Realtime Database reads its labels already exist in `src/services/firebaseRealtime.js` and `src/services/firebaseConfig.js` from an earlier phase; Phase 2 neither adds nor changes a call, a verb or a subscription.
+No external API integration: Phase 2 adds no external call, SDK, endpoint or subscription; it edits the project's own tokens, source, CSS layer, test gates and planning docs.
+
+This phase integrates no external API, SDK or service. It edits the project's own design tokens, page and component source, CSS variable layer, test gates, the provider's stored-preference reader, a design document, and two planning documents. The Firebase Realtime Database reads its labels already exist in `src/services/firebaseRealtime.js` and `src/services/firebaseConfig.js` from an earlier phase; Phase 2 neither adds nor changes a call, a verb or a subscription.
 
 ## Why no matrix
 
