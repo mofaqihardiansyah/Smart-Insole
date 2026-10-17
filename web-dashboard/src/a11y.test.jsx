@@ -4,6 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import React from 'react';
+import { GlassButton } from './components/ui/GlassButton';
+import { GlassInput } from './components/ui/GlassInput';
+import { StateRetry } from './components/ui/StatePanel';
+import { BentoCell } from './components/dashboard/BentoGrid';
 
 /**
  * Accessibility lock for FIX-02 (a visible focus indicator on every interactive
@@ -62,6 +66,13 @@ const collectSources = (dir) => {
 /** A class list read as an array, so every assertion is a membership check. */
 const classesOf = (element) =>
   (element.getAttribute('class') || '').split(/\s+/).filter(Boolean);
+
+/**
+ * The shared focus pair, both tokens on one line so this file stays inside its
+ * own sweep below: that sweep flags any line which resets the outline and does
+ * not put a ring back, and this file is scanned along with every other source.
+ */
+const RING_PAIR = ['focus-visible:outline-none', 'focus-visible:ring-2'];
 
 describe('landing presence on touch targets and focus rings', () => {
   beforeEach(() => {
@@ -161,5 +172,113 @@ describe('focus indicator source lock', () => {
     expect(css.slice(css.indexOf('.landing-scope {'))).toMatch(
       /color-scheme:\s*light/
     );
+  });
+
+  it('keeps tab order to the natural document order', () => {
+    /**
+     * A positive `tabIndex` yanks an element out of document order and to the
+     * front of the tab sequence, which is the FIX-02 "focus goes somewhere
+     * unexpected" defect. `0` opts into the normal flow and `-1` takes an
+     * element out of the tab order on purpose (a programmatic focus target),
+     * so both are allowed; only a positive value fails. Comment lines are
+     * skipped for the same reason as the sweep above.
+     */
+    const offenders = [];
+
+    for (const file of collectSources(SRC)) {
+      const lines = fs.readFileSync(file, 'utf8').split('\n');
+      lines.forEach((raw, index) => {
+        const line = raw.trim();
+        if (line.startsWith('*') || line.startsWith('//')) return;
+        if (/tabindex\s*=\s*(?:\{\s*|\{?"\s*)[1-9]/i.test(line)) {
+          offenders.push(`${path.relative(SRC, file)}:${index + 1}`);
+        }
+      });
+    }
+
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe('shared control floors', () => {
+  it('holds the 44px floor on every GlassButton size and releases it only at lg', () => {
+    const compact = [
+      { size: 'sm', desktop: 'lg:min-h-[36px]' },
+      { size: 'md', desktop: 'lg:min-h-[40px]' },
+    ];
+
+    compact.forEach(({ size, desktop }) => {
+      const { container } = render(<GlassButton size={size}>Go</GlassButton>);
+      const classes = classesOf(container.querySelector('button'));
+      expect(classes, `${size} lost its 44px floor`).toContain('min-h-[44px]');
+      expect(classes, `${size} lost its desktop release`).toContain(desktop);
+    });
+
+    const { container } = render(<GlassButton size="lg">Go</GlassButton>);
+    const classes = classesOf(container.querySelector('button'));
+    // `lg` is already past the floor, so it needs no desktop release: shrinking
+    // it would be the regression, not releasing it.
+    expect(classes, 'lg lost its larger floor').toContain('min-h-[48px]');
+    expect(classes, 'lg must not shrink to the compact floor').not.toContain(
+      'min-h-[44px]'
+    );
+  });
+
+  it('holds the 44px floor and a ring on the shared input and retry control', () => {
+    const { container: field } = render(<GlassInput label="Weight" />);
+    const inputClasses = classesOf(field.querySelector('input'));
+    expect(inputClasses, 'input lost its 44px floor').toContain(
+      'min-h-[44px]'
+    );
+    RING_PAIR.forEach((cls) => {
+      expect(inputClasses, `input lost ${cls}`).toContain(cls);
+    });
+
+    const { container: retryWrap } = render(
+      <StateRetry onRetry={() => {}} label="Try again" />
+    );
+    const retry = retryWrap.querySelector('button');
+    expect(retry).toHaveAttribute('type', 'button');
+    const retryClasses = classesOf(retry);
+    expect(retryClasses, 'retry lost its 44px floor').toContain(
+      'min-h-[44px]'
+    );
+    RING_PAIR.forEach((cls) => {
+      expect(retryClasses, `retry lost ${cls}`).toContain(cls);
+    });
+  });
+
+  it('gives a bento tile button semantics only when it has something to do', () => {
+    const { container: actionable } = render(
+      <BentoCell
+        card={{
+          id: 'a',
+          title: 'Left peak',
+          value: 42,
+          actionLabel: 'Open left peak detail',
+          onSelect: () => {},
+        }}
+      />
+    );
+    const button = actionable.querySelector('button');
+    expect(button, 'an actionable tile must be a button').not.toBeNull();
+    expect(button).toHaveAttribute('aria-label', 'Open left peak detail');
+
+    const buttonClasses = classesOf(button);
+    RING_PAIR.forEach((cls) => {
+      expect(buttonClasses, `tile button lost ${cls}`).toContain(cls);
+    });
+    // No height assertion for a tile: this is the Phase 3 primitive and its
+    // floor is content-driven, so pinning `min-h` here would over-constrain it.
+
+    const { container: inert } = render(
+      <BentoCell card={{ id: 'b', title: 'Left peak', value: 42 }} />
+    );
+    const tile = inert.firstElementChild;
+    expect(tile.tagName, 'an inert tile must not be a button').toBe('DIV');
+    expect(
+      classesOf(tile),
+      'an inert tile must not invite a click it cannot honour'
+    ).not.toContain('focus-visible:ring-2');
   });
 });
