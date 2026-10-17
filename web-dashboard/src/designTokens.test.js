@@ -88,4 +88,35 @@ describe("design tokens", () => {
     expect(config.theme.extend.boxShadow.card).toMatch(/35 36 39/);
     expect(config.theme.extend.boxShadow.panel).toMatch(/15 23 42/);
   });
+
+  it("rejects dark: utility variants (light-only theme)", async () => {
+    const { css } = await postcss([tailwindcss(config)]).process(
+      "@tailwind utilities;",
+      { from: undefined }
+    );
+
+    // dark: is a Tailwind variant prefix — any match means a dark-mode rule leaked in.
+    const darkMatches = css.match(/dark:/g) || [];
+    expect(darkMatches).toEqual([]);
+
+    // color-scheme: light must be declared on both :root and .landing-scope.
+    const indexCss = fs.readFileSync(
+      path.join(SRC, "index.css"),
+      "utf8"
+    );
+    expect(indexCss).toMatch(/color-scheme:\s*light/);
+    const rootMatches = (indexCss.match(/:root\s*\{/g) || []).length;
+    const landingMatches = (indexCss.match(/\.landing-scope\s*\{/g) || []).length;
+    expect(rootMatches).toBeGreaterThanOrEqual(1);
+    expect(landingMatches).toBeGreaterThanOrEqual(1);
+    // color-scheme: light must appear within both scopes.
+    const rootBlock = indexCss.slice(
+      indexCss.indexOf(":root {")
+    );
+    const landingBlock = indexCss.slice(
+      indexCss.indexOf(".landing-scope {")
+    );
+    expect(rootBlock).toMatch(/color-scheme:\s*light/);
+    expect(landingBlock).toMatch(/color-scheme:\s*light/);
+  });
 });
