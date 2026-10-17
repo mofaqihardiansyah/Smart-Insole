@@ -10,6 +10,7 @@ import { InsoleProvider, useInsole } from "./context/InsoleContext";
 import { UserProvider, useUser } from "./context/UserContext";
 import { t } from "./utils/i18n";
 import { AppLayout } from "./components/layout/AppLayout";
+import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 import { AlertModal } from "./components/dashboard/AlertModal";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
@@ -53,7 +54,16 @@ const buildNavLinks = (language, role) => {
 function App() {
   return (
     <Router>
-      <AppShell />
+      {/*
+        The boundary wraps the shell rather than sitting inside it, so a throw
+        from the auth hook, from either provider and from every page lands in
+        the fallback, not only a throw from a page. Because it is above the
+        providers it reads no context: its copy resolves through the
+        dictionary's own default language.
+      */}
+      <ErrorBoundary>
+        <AppShell />
+      </ErrorBoundary>
     </Router>
   );
 }
