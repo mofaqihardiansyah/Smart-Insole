@@ -114,7 +114,52 @@
 
 | REQ-ID | Phase | Verified |
 |--------|-------|----------|
-| (filled by roadmap) | | |
+| TOKEN-01 | Phase 1 | Pending |
+| TOKEN-02 | Phase 1 | Pending |
+| TOKEN-03 | Phase 1 | Pending |
+| TOKEN-04 | Phase 1 | Pending |
+| THEME-01 | Phase 1 | Pending |
+| OIL-01 | Phase 1 | Pending |
+| OIL-02 | Phase 1 | Pending |
+| FIX-01 | Phase 2 | Pending |
+| FIX-02 | Phase 2 | Pending |
+| FIX-03 | Phase 2 | Pending |
+| FIX-04 | Phase 2 | Pending |
+| FIX-05 | Phase 2 | Pending |
+| FIX-06 | Phase 2 | Pending |
+| FIX-07 | Phase 2 | Pending |
+| FIX-08 | Phase 2 | Pending |
+| FIX-09 | Phase 2 | Pending |
+| COMP-01 | Phase 3 | Pending |
+| COMP-02 | Phase 3 | Pending |
+| COMP-03 | Phase 3 | Pending |
+| COMP-04 | Phase 3 | Pending |
+| COMP-05 | Phase 3 | Pending |
+| SHELL-01 | Phase 4 | Pending |
+| SHELL-02 | Phase 4 | Pending |
+| SHELL-03 | Phase 4 | Pending |
+| SHELL-04 | Phase 4 | Pending |
+| SHELL-05 | Phase 4 | Pending |
+| SHELL-06 | Phase 4 | Pending |
+| PAGE-01 | Phase 5 | Pending |
+| PAGE-02 | Phase 5 | Pending |
+| PAGE-03 | Phase 5 | Pending |
+| PAGE-04 | Phase 5 | Pending |
+| PAGE-05 | Phase 5 | Pending |
+| PAGE-06 | Phase 5 | Pending |
+| PAGE-07 | Phase 5 | Pending |
+| PAGE-08 | Phase 5 | Pending |
+| PAGE-09 | Phase 5 | Pending |
+| PAGE-10 | Phase 5 | Pending |
+| PAGE-11 | Phase 5 | Pending |
+| PAGE-12 | Phase 5 | Pending |
+| LANG-01 | Phase 5 | Pending |
+| GATE-01 | Phase 6 | Pending |
+| GATE-02 | Phase 6 | Pending |
+| GATE-03 | Phase 6 | Pending |
+| GATE-04 | Phase 6 | Pending |
+| OIL-03 | Phase 6 | Pending |
+| OIL-04 | Phase 6 | Pending |
 
 ---
 
