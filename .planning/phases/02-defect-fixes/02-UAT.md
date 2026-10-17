@@ -3,14 +3,14 @@ status: testing
 phase: 02-defect-fixes
 source: [02-VERIFICATION.md]
 started: 2026-10-17T14:07:34.177Z
-updated: 2026-10-17T14:24:03.130Z
+updated: 2026-10-17T14:26:56.961Z
 ---
 ## Current Test
 
-number: 2
-name: Backstop-tagged truth (02-01): re-run the token normalization over the already-normalized tailwind.config.js / src/index.css and confirm both files stay byte-identical.
+number: 3
+name: Backstop-tagged truth (02-02): tab through the landing nav and confirm a focused control flush against a 44px neighbour paints its own ring, unclipped and unmerged.
 expected: |
-  Second run is a no-op: no second-order substitution, no repeated rewrite, `git diff` empty.
+  Each element paints its own visible 2px focus indicator; no ring is clipped by the neighbour's box.
 awaiting: user response
 
 ## Tests
@@ -22,7 +22,7 @@ why_human: Declared `verification: backstop` (non-inferable). No held-out or pro
 
 ### 2. Backstop-tagged truth (02-01): re-run the token normalization over the already-normalized tailwind.config.js / src/index.css and confirm both files stay byte-identical.
 expected: Second run is a no-op: no second-order substitution, no repeated rewrite, `git diff` empty.
-result: [pending]
+result: pass
 why_human: Declared `verification: backstop`. There is no idempotency property test and no referent for the hypothetical second run.
 
 ### 3. Backstop-tagged truth (02-02): tab through the landing nav and confirm a focused control flush against a 44px neighbour paints its own ring, unclipped and unmerged.
@@ -93,9 +93,9 @@ why_human: This is a scope question, not a code question: the target is not audi
 ## Summary
 
 total: 15
-passed: 1
+passed: 2
 issues: 0
-pending: 14
+pending: 13
 skipped: 0
 blocked: 0
 
