@@ -179,7 +179,10 @@ export default {
         sm: "0 1px 3px rgb(15 23 42 / 0.03)",
         DEFAULT: "0 2px 6px rgb(15 23 42 / 0.05)",
         md: "0 4px 16px rgb(15 23 42 / 0.07)",
-        lg: "0 8px 32px rgb(15 23 42 / 0.10)",
+        // `lg` is its own step: numerically between `md` (4px / 16px, navy
+        // 7%) and the modal-only `overlay` (8px / 32px, navy 10%), on the
+        // declared navy ink — so a dropdown no longer reads at modal elevation.
+        lg: "0 6px 24px rgb(15 23 42 / 0.08)",
         // The floating overlay token, reserved for the alert dialog.
         overlay: "0 8px 32px rgb(15 23 42 / 0.10)",
         // The one place a control is allowed to float above the page.

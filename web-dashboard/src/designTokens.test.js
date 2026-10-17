@@ -102,6 +102,13 @@ describe("design tokens", () => {
     }
   });
 
+  it("gives every shadow step its own value", () => {
+    // `lg` used to be a byte-copy of `overlay`, which is reserved for modal
+    // dialogs. Every elevation step must carry its own distinct value.
+    const values = Object.values(config.theme.extend.boxShadow);
+    expect(new Set(values).size).toBe(values.length);
+  });
+
   it("rejects dark: utility variants (light-only theme)", async () => {
     const { css } = await postcss([tailwindcss(config)]).process(
       "@tailwind utilities;",
