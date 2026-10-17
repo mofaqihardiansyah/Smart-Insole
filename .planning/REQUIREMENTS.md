@@ -22,11 +22,11 @@
 - [x] **FIX-02**: Add missing visible focus rings (3:1 or better) on every interactive element
 - [x] **FIX-03**: Bring every interactive touch target to at least 44×44px (34–40px only from `lg` up)
 - [x] **FIX-04**: Replace colour-only risk with icon **and** text label **and** colour on every risk element
-- [ ] **FIX-05**: Remove dead controls; keep only Export CSV and Mark as read as the two standing actions
+- [x] **FIX-05**: Remove dead controls; keep only Export CSV and Mark as read as the two standing actions
 - [x] **FIX-06**: Remove decorative pastel stat-card tints; icon tile takes the metric's semantic colour (sage while good, amber/red when not)
-- [ ] **FIX-07**: Replace fabricated telemetry with real measured output or explicit Simulation label
+- [x] **FIX-07**: Replace fabricated telemetry with real measured output or explicit Simulation label
 - [x] **FIX-08**: Add actionable loading, empty, and error states to every data view (names cause + next action, never "No data")
-- [ ] **FIX-09**: Remove em dashes from all shipped copy; use middot or pipe separators (both ID and EN, if retained)
+- [x] **FIX-09**: Remove em dashes from all shipped copy; use middot or pipe separators (both ID and EN, if retained)
 - [x] **FIX-10**: Add an app-level ErrorBoundary — a render throw in any view shows a named cause and a recovery action; the console never white-screens
 
 ### COMP — Component rebuilds to DESIGN.md spec
@@ -126,11 +126,11 @@
 | FIX-02 | Phase 2 | 02-02 |
 | FIX-03 | Phase 2 | 02-02 |
 | FIX-04 | Phase 2 | 02-03 |
-| FIX-05 | Phase 2 | Pending |
+| FIX-05 | Phase 2 | 02-04 |
 | FIX-06 | Phase 2 | 02-03 |
-| FIX-07 | Phase 2 | Pending |
+| FIX-07 | Phase 2 | 02-04 |
 | FIX-08 | Phase 2 | 02-03 |
-| FIX-09 | Phase 2 | Pending |
+| FIX-09 | Phase 2 | 02-04 |
 | FIX-10 | Phase 2 | 02-06 |
 | COMP-01 | Phase 3 | Pending |
 | COMP-02 | Phase 3 | Pending |

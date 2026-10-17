@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: Audit, Fix, Rebuild UI/UX Design
 current_phase: 02
 current_phase_name: Defect fixes
-status: executing
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-10-17T13:08:50.011Z"
+status: phase-complete
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-10-17T13:25:11.000Z"
 last_activity: 2026-10-17
-last_activity_desc: Phase 02 plan 06 complete (FIX-10 app-level ErrorBoundary)
-state_head: c342c42204345e78c65c944cd1a912ae8258dbff
+last_activity_desc: Phase 02 plan 04 complete (FIX-05/FIX-07/FIX-09 shipped-copy guard, standing actions, source labelling) — phase 02 fully executed
+state_head: 54e48b94869d8d78f7d7e43a6dab47c12c5766b2
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -28,17 +28,17 @@ See: .planning/PROJECT.md (updated 2026-10-17)
 
 ## Current Position
 
-Phase: 02 (Defect fixes) — EXECUTING
-Plan: 5 of 6 (02-02 in wave 2 and 02-04 in wave 3 still outstanding)
-Status: Ready to execute
-Last activity: 2026-10-17 — Completed 02-06 (FIX-10 app-level ErrorBoundary: page-shaped crash surface + working recovery action)
+Phase: 02 (Defect fixes) — COMPLETE
+Plan: 6 of 6 (all six plans executed across waves 1–3)
+Status: Phase complete — ready for GATE-03 verification
+Last activity: 2026-10-17 — Completed 02-04 (FIX-05/FIX-07/FIX-09: shipped-copy guard, exactly-two standing actions, always-labelled data source)
 
-Progress: [█████████░] 82%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 11
 - Average duration: - min
 - Total execution time: - hours
 
@@ -47,7 +47,7 @@ Progress: [█████████░] 82%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 5 | - | - |
-| 02 | 4 | - | - |
+| 02 | 6 | - | - |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -64,6 +64,7 @@ Progress: [█████████░] 82%
 | Phase 02 P05 | 8min | 2 tasks | 4 files |
 | Phase 02 P06 | 17min | 3 tasks | 5 files |
 | Phase 02 P02 | 12 | 3 tasks | 4 files |
+| Phase 02 P04 | 7min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,12 @@ Recent decisions affecting current work:
 - [Phase 02]: Landing drawer trigger moved 40x40 to h-11 w-11 (44x44) with explicit focus-visible:ring-2 rather than leaning on the global outline; ring-offset-warm-card chosen because the nav sits on the warm card
 - [Phase 02]: Mobile sheet links received the ring pair only: py-3 plus text-base already clears 44px and the plan forbade touching the padding, so no height utility was added
 - [Phase 02]: BentoCell carries no min-h assertion: it is a Phase 3 primitive with a content-driven floor and appears in no plan's files_modified, so pinning a height would require an undeclared write to a Phase 3 file
+- [Phase 02 P04]: The dash rule is now enforced on both sides — `i18n.test.js` gates dictionary values, `copy.test.js` gates the shipped JSX that bypasses the dictionary; the two admin users-table fallbacks moved onto `common.notAvailable` so they fall inside the existing gate rather than beside it
+- [Phase 02 P04]: Comment stripping is mandatory, not an optimisation: ~29 `.jsx` files carry dashes in JSDoc prose, so a raw grep would demand edits to comments the requirement scopes out and would make the guard noisy enough to be disabled (threat T-02-11)
+- [Phase 02 P04]: The copy guard's walk asserts its collected count (>40 of 54) before any per-file verdict, and excludes `src/__oil_ui_eval__/` by directory rather than filename so the exclusion cannot silently widen as files are added
+- [Phase 02 P04]: FIX-05 is asserted as a property of the markup (exactly two header buttons, unchanged after a state transition) plus a source scan for the two reference dead-control labels; the scan assembles its banned strings from parts so it does not match its own file
+- [Phase 02 P04]: FIX-07's dictionary case pairs `hasKey` with the rendered-text comparison, because comparing text rendered from `t(key)` against `t(key)` compares a value to itself and cannot detect a removed dictionary entry
+- [Phase 02 P04]: `renderDashboard` parameterised (`{ autoConnect = true } = {}`) rather than duplicated, and the two new describes nested under the existing top-level describe so they inherit its localStorage-clearing `beforeEach` — the FIX-07 simulator determinism depends on it
 
 ### Pending Todos
 
@@ -107,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-17T13:08:48.589Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-10-17T13:25:11.000Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
