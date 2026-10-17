@@ -23,6 +23,7 @@ import {
   StatusChip,
   StatusBanner,
   StatePanel,
+  StateRetry,
   PageHeader,
   GlassButton,
 } from "../components/ui/GlassComponents";
@@ -114,6 +115,7 @@ const DashboardPage = () => {
     riskScore,
     source,
     connectionState,
+    reconnect,
     isLive,
     batteryPercent,
     language,
@@ -476,12 +478,11 @@ const DashboardPage = () => {
             }
           />
           <div className="px-6 pb-5">
-            {history.length === 0 ? (
-              <StatePanel
-                variant="loading"
-                title={t("monitoring.loading", language)}
-              />
-            ) : (
+            {/* The chart is the arm this panel exists for, so it stays
+                outermost: a state panel may never displace data. Below it the
+                three branches mirror MonitoringPage, in the same order, so a
+                settled connection can never be reported as loading. */}
+            {history.length > 0 ? (
               <TrendChart
                 history={history}
                 dangerKpa={thresholds.dangerKpa}
@@ -492,6 +493,32 @@ const DashboardPage = () => {
                   axisTime: t("monitoring.axisTime", language),
                   axisPressure: t("monitoring.axisPressure", language),
                 }}
+              />
+            ) : connectionState === "connecting" ? (
+              <StatePanel
+                variant="loading"
+                title={t("monitoring.loading", language)}
+              />
+            ) : connectionState === "error" ? (
+              // Cause, then the one action that clears it. Without this branch
+              // a dead device would look like a foot that has never been
+              // measured, which is a different and much less urgent problem.
+              <StatePanel
+                variant="error"
+                title={t("source.errorTitle", language)}
+                description={t("source.errorBody", language)}
+                action={
+                  <StateRetry
+                    onRetry={reconnect}
+                    label={t("common.retry", language)}
+                  />
+                }
+              />
+            ) : (
+              <StatePanel
+                variant="empty"
+                title={t("monitoring.empty", language)}
+                description={t("monitoring.emptyBody", language)}
               />
             )}
           </div>
@@ -529,9 +556,13 @@ const DashboardPage = () => {
         />
 
         {activityRows.length === 0 ? (
-          <p className="border-t border-border px-6 py-8 text-body-base text-muted">
-            {t("dashboard.noMatch", language)}
-          </p>
+          <div className="border-t border-border px-6 py-6">
+            <StatePanel
+              variant="empty"
+              title={t("dashboard.noMatch", language)}
+              description={t("source.noDeviceBody", language)}
+            />
+          </div>
         ) : (
           <>
             {/* Desktop: a real table. */}
