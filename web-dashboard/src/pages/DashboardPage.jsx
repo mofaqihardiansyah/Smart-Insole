@@ -350,7 +350,7 @@ const DashboardPage = () => {
       id: "score",
       title: t("risk.score", language),
       icon: <Activity className="h-5 w-5" />,
-      iconTone: risk,
+      iconTone: risk === "safe" ? "success" : risk,
       value: String(riskScore),
       unit: "/ 100",
       badge: <StatusChip level={risk} label={levelLabel} size="sm" />,

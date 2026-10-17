@@ -77,6 +77,34 @@ const regionFor = (title) => {
 const trendRegion = () => regionFor(t("dashboard.trendTitle", LANGUAGE));
 const feedRegion = () => regionFor(t("dashboard.activityTitle", LANGUAGE));
 
+/**
+ * The tone each reachable risk verdict must paint the score tile with.
+ *
+ * These are the semantic pairs the component already carries, not decoration:
+ * colour is a vital sign, so the `safe` verdict must render the sage tile and
+ * never the neutral one.
+ */
+const RISK_TONE = {
+  safe: "bg-safe/15 text-safe-ink",
+  warning: "bg-warning/15 text-warning-ink",
+  danger: "bg-danger/15 text-danger-ink",
+};
+/** What a verdict that reached the component's unmapped-key fallback renders. */
+const NEUTRAL_TONE = "bg-surface-2 text-fg-2";
+
+/**
+ * The score tile's icon span. The tile is located by its own title, which is
+ * unique on this page, and the `rounded-tile` descendant is the icon tile and
+ * nothing else (`BentoGrid.jsx:55`). The locator asserts it resolved, so a
+ * broken locator fails loudly instead of passing vacuously.
+ */
+const scoreIcon = () => {
+  const title = screen.getByText(t("risk.score", LANGUAGE));
+  const tile = title.parentElement.querySelector(".rounded-tile");
+  expect(tile, "the score tile's icon span").not.toBeNull();
+  return tile;
+};
+
 /** Each reading must land in its own commit, or React batches them into one. */
 const push = (readings) => {
   act(() => {
@@ -135,5 +163,42 @@ describe("DashboardPage data states", () => {
     expect(within(trend).queryByRole("status")).toBeNull();
     expect(within(trend).queryByRole("alert")).toBeNull();
     expect(within(trend).queryByText(t("monitoring.empty", LANGUAGE))).toBeNull();
+  });
+});
+
+describe("the score tile's semantic tone", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    ctxRef.current = null;
+  });
+
+  const assertTone = (verdict) => {
+    const tile = scoreIcon();
+    expect(tile.className, verdict).toContain(RISK_TONE[verdict]);
+    expect(tile.className, `a grey tile for a ${verdict} reading`).not.toContain(
+      NEUTRAL_TONE
+    );
+  };
+
+  it("paints a good reading with the sage tone, never the neutral fallback", () => {
+    // A settled, empty session leaves the verdict at its initial `safe`. That
+    // verdict value is not a tone key, so passing it through would reach the
+    // component's neutral fallback and paint a good foot grey — the defect
+    // FIX-06 and DESIGN.md:51-56 exist to refuse. The component cannot catch it:
+    // an unmapped tone key is absorbed silently at BentoGrid.jsx:56.
+    renderDashboard({ autoConnect: true });
+    assertTone("safe");
+  });
+
+  it("paints a warning reading with the warning tone", () => {
+    renderDashboard({ autoConnect: true });
+    push({ forefoot: 40, midfoot: 20, heel: 20 });
+    assertTone("warning");
+  });
+
+  it("paints a danger reading with the danger tone", () => {
+    renderDashboard({ autoConnect: true });
+    push({ forefoot: 75, midfoot: 20, heel: 20 });
+    assertTone("danger");
   });
 });
