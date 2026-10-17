@@ -380,8 +380,8 @@ New primitives added by this pass, with the reason each exists:
 
 ## Anti-slop constraints specific to this product
 
-- No em dashes in shipped copy, in either language. A middot or a pipe
-  separates ideas instead.
+- No em dashes in shipped copy. The shipped copy is Indonesian only, so one
+  dictionary holds to this rule. A middot or a pipe separates ideas instead.
 - No fabricated telemetry. If a value is not measured, it reads as unavailable
   or carries an explicit Simulation label. No random numbers dressed as live
   data.
@@ -418,7 +418,10 @@ The landing is **light-only by design**. `.landing-scope` in `src/index.css`
 re-declares the light semantic tokens, so every in-app component (GlassCard,
 StatusChip, GlassButton focus rings) renders in its measured light form on the
 warm surface. There is no theme switch on the landing: on a light-only page it
-would be a dead control. Language stays switchable.
+would be a dead control. The language switch is still present and still works,
+but the stored-preference reader now forces Indonesian for any preference left
+behind, and removing the switch is the Indonesian-only requirement owned by
+Phase 5 (LANG-01).
 
 Palette, all measured on `#F4F5F5` raised:
 
