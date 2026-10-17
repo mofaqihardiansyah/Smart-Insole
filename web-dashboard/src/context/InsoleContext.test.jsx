@@ -115,15 +115,19 @@ describe('InsoleProvider', () => {
     expect(text('connectionState')).toBe('connecting');
   });
 
-  it('hydrates language and mute state from localStorage', () => {
+  it('forces Indonesian and corrects the stored language when hydration finds a foreign value', () => {
     localStorage.setItem('language', 'en');
     localStorage.setItem('isMuted', 'true');
 
     renderProvider();
 
-    expect(text('language')).toBe('en');
+    expect(text('language')).toBe('id');
     expect(text('isMuted')).toBe('true');
-    expect(text('riskLabel')).toBe('Safe'); // t('risk.safe', 'en')
+    expect(text('riskLabel')).toBe('Aman'); // t('risk.safe', 'id')
+    // The migration writes the forced value back, so any later reader in this
+    // session agrees with the copy that is on screen.
+    expect(localStorage.getItem('language')).toBe('id');
+    expect(document.documentElement.lang).toBe('id');
   });
 
   it('falls back to Indonesian when a stored language value is invalid', () => {
@@ -131,6 +135,54 @@ describe('InsoleProvider', () => {
 
     renderProvider();
 
+    expect(text('language')).toBe('id');
+  });
+
+  it('survives storage that refuses writes and still forces Indonesian', () => {
+    // Private-mode storage throws on write. A migration that wrote without
+    // catching would break the provider's first render, which is a white
+    // screen rather than a language preference.
+    const originalStorage = globalThis.localStorage;
+    const seeded = new Map([['language', 'en']]);
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: {
+        getItem: (key) =>
+          seeded.has(String(key)) ? seeded.get(String(key)) : null,
+        setItem: () => {
+          throw new Error('storage is read-only');
+        },
+        removeItem: (key) => seeded.delete(String(key)),
+        clear: () => seeded.clear(),
+        key: (index) => Array.from(seeded.keys())[index] ?? null,
+        get length() {
+          return seeded.size;
+        },
+      },
+      configurable: true,
+      writable: true,
+    });
+
+    try {
+      expect(() => renderProvider()).not.toThrow();
+      expect(text('language')).toBe('id');
+      expect(text('riskLabel')).toBe('Aman');
+    } finally {
+      Object.defineProperty(globalThis, 'localStorage', {
+        value: originalStorage,
+        configurable: true,
+        writable: true,
+      });
+    }
+  });
+
+  it('forces Indonesian on a second mount without depending on the first', () => {
+    localStorage.setItem('language', 'en');
+    const first = renderProvider();
+    expect(text('language')).toBe('id');
+    first.unmount();
+
+    localStorage.setItem('language', 'en');
+    renderProvider();
     expect(text('language')).toBe('id');
   });
 

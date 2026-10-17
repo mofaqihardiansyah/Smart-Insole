@@ -129,7 +129,7 @@ describe('PlantarHeatmap', () => {
     ).toBeInTheDocument();
   });
 
-  it('switches labels between languages', () => {
+  it('keeps Indonesian labels when storage holds a foreign language preference', () => {
     const renderLocalized = () =>
       render(
         <InsoleProvider>
@@ -143,12 +143,15 @@ describe('PlantarHeatmap', () => {
     ).toBeInTheDocument();
     first.unmount();
 
+    // The setter (used by the toggle and the profile control) stays the only
+    // route to English while the switch exists, so a value left in storage by
+    // an earlier build must not decide what the component renders.
     localStorage.setItem('language', 'en');
     renderLocalized();
     expect(
-      within(screen.getByTestId('node-heel')).getByText('Heel (Calcaneus)')
+      within(screen.getByTestId('node-heel')).getByText('Tumit (Heel)')
     ).toBeInTheDocument();
-    expect(screen.queryByText('Tumit (Heel)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Heel (Calcaneus)')).not.toBeInTheDocument();
   });
 
   it('reads live readings and language from InsoleContext when no override is given', () => {

@@ -165,11 +165,14 @@ const readStoredThresholds = () => {
 
 const readStoredLanguage = () => {
   try {
-    const stored = localStorage.getItem('language');
-    return stored === 'id' || stored === 'en' ? stored : 'id';
+    // Indonesian is the only shipped language, so a preference left over from
+    // an earlier build must not decide what this app renders. Force the
+    // contract value and correct the stored copy so later readers agree.
+    localStorage.setItem('language', 'id');
   } catch {
-    return 'id';
+    /* storage unavailable (private mode); the default still applies */
   }
+  return 'id';
 };
 
 /**
