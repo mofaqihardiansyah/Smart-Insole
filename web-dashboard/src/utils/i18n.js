@@ -474,6 +474,12 @@ export const DICTIONARY = {
     'common.copied': 'Tersalin',
     'common.menu': 'Menu',
     'common.loading': 'Memuat',
+
+    /* -------------------------- Error boundary ------------------------- */
+    'error.boundary.title': 'Tampilan gagal dimuat',
+    'error.boundary.body':
+      'Tekan tombol di bawah untuk memuat ulang tampilan ini.',
+    'error.boundary.action': 'Muat ulang tampilan',
   },
 
   en: {
@@ -930,6 +936,11 @@ export const DICTIONARY = {
     'common.copied': 'Copied',
     'common.menu': 'Menu',
     'common.loading': 'Loading',
+
+    /* -------------------------- Error boundary ------------------------- */
+    'error.boundary.title': 'The view failed to load',
+    'error.boundary.body': 'Use the button below to reload this view.',
+    'error.boundary.action': 'Reload the view',
   },
 };
 
