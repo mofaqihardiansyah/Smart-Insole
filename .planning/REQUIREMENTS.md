@@ -27,7 +27,7 @@
 - [ ] **FIX-07**: Replace fabricated telemetry with real measured output or explicit Simulation label
 - [x] **FIX-08**: Add actionable loading, empty, and error states to every data view (names cause + next action, never "No data")
 - [ ] **FIX-09**: Remove em dashes from all shipped copy; use middot or pipe separators (both ID and EN, if retained)
-- [ ] **FIX-10**: Add an app-level ErrorBoundary — a render throw in any view shows a named cause and a recovery action; the console never white-screens
+- [x] **FIX-10**: Add an app-level ErrorBoundary — a render throw in any view shows a named cause and a recovery action; the console never white-screens
 
 ### COMP — Component rebuilds to DESIGN.md spec
 
@@ -131,7 +131,7 @@
 | FIX-07 | Phase 2 | Pending |
 | FIX-08 | Phase 2 | 02-03 |
 | FIX-09 | Phase 2 | Pending |
-| FIX-10 | Phase 2 | Pending |
+| FIX-10 | Phase 2 | 02-06 |
 | COMP-01 | Phase 3 | Pending |
 | COMP-02 | Phase 3 | Pending |
 | COMP-03 | Phase 3 | Pending |
