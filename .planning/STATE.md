@@ -2,19 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v1.0
 milestone_name: Audit, Fix, Rebuild UI/UX Design
-current_phase: 02
-current_phase_name: Defect fixes
-status: executing
-stopped_at: Phase 02 executed — awaiting human verification (15 items in 02-UAT.md)
-last_updated: "2026-10-17T14:10:00.000Z"
+current_phase: 3
+current_phase_name: Primitive rebuilds
+status: planning
+stopped_at: Phase 2 complete, ready to plan Phase 3
+last_updated: "2026-10-17T14:50:15.182Z"
 last_activity: 2026-10-17
-last_activity_desc: Phase 02 executed 6/6 plans; verification returned human_needed (40/46 must-haves) — phase stays pending until UAT passes
-state_head: 699688936ba5796a22b6c4f402c718cb085d9258
+last_activity_desc: Phase 2 complete, transitioned to Phase 3
+state_head: 55a0182ecb67e68147b951d7c6e262bc459690f5
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 11
   completed_plans: 11
+  percent: 33
 ---
 
 # Project State
@@ -24,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-17)
 
 **Core value:** Trustworthy, legible real-time plantar pressure monitoring that flags risk states clearly — nothing on screen is decorative colour; colour means a foot needs attention.
-**Current focus:** Phase 02 — Defect fixes
+**Current focus:** Phase 3 — Primitive rebuilds
 
 ## Current Position
 
-Phase: 02 (Defect fixes) — EXECUTED, AWAITING HUMAN VERIFICATION
-Plan: 6 of 6 (all six plans executed across waves 1–3)
-Status: Verification returned `human_needed` (40/46 must-haves; 10/10 requirement IDs accounted for). The phase is deliberately NOT marked complete: 15 human-verification items are persisted in 02-UAT.md and phase completion is applied by `/gsd-verify-work 02` once UAT passes.
-Last activity: 2026-10-17 — Phase 02 executed 6/6 plans; code review found 1 blocker (CR-01, pre-existing AdminPage hook order) and 2 warnings; verifier green on every automated check
+Phase: 3 — Primitive rebuilds
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-17 — Phase 2 complete, transitioned to Phase 3
 
-Progress: [██████████] plans executed (11/11) — phase 02 pending UAT, so 1 of 6 phases is complete
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -47,7 +48,7 @@ Progress: [██████████] plans executed (11/11) — phase 02 p
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 5 | - | - |
-| 02 | 6 | - | - |
+| 2 | 6 | - | - |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -104,7 +105,21 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+- ⚠️ [Phase 02] CR-01 — `AdminPage.jsx:56-67` early-returns before three `useEffect` hooks (`:70`,
+  `:91`, `:108`), so an `/admin` deep link throws. Pre-existing; deliberately not fixed in Phase 02
+  (out of the phase's scope fence) and recorded `open` in `02-REVIEW-DISPOSITION.md`.
+- ⚠️ [Phase 02] WR-01 / WR-02 — two warnings from the Phase 02 code review, still `open` in
+  `02-REVIEW-DISPOSITION.md`.
+- ⚠️ [Phase 02] Landing CTA variant collapse — `LandingPage.jsx` passes `variant="warm"` /
+  `"warmOutline"` at 8 call sites, but `GlassButton.jsx`'s `VARIANTS` carries neither key, so every
+  landing CTA renders the app-register navy `filled` button and the two registers bleed together.
+  Pre-existing (keys deleted in `8d9dd996`, before the Phase 02 base). Surfaced by the Phase 02 UI audit.
+- ⚠️ [Phase 02] `AdminPage.jsx` ships five English error fallbacks (`:81`, `:102`, `:125`, `:135`,
+  `:149`) against the Indonesian-only contract, and `copy.test.js` does not reach them. Pre-existing.
+  Surfaced by the Phase 02 UI audit.
+- ⚠️ [Phase 02] The dashboard error arm added by 02-03 is unreachable (`InsoleContext.jsx:319-326`,
+  `:347-348`), so its retry path is untested. This is the code review's WR-02, independently
+  confirmed by the UI audit.
 
 ## Deferred Items
 
@@ -114,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-17T13:25:11.000Z
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-10-17T14:50:15.182Z
+Stopped at: Phase 2 complete, ready to plan Phase 3
 Resume file: None

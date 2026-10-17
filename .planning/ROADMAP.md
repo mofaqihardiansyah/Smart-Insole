@@ -7,7 +7,7 @@
 ## Phases
 
 - [x] **Phase 1: Design-system audit & token lock** - Audit DESIGN.md tokens and lock them into index.css/tailwind.config.js; oil-ui evaluation sandbox runs in parallel scratch space (completed 2026-10-17)
-- [ ] **Phase 2: Defect fixes** - Fix contrast, focus rings, touch targets, colour-alone risk, dead controls, telemetry, loading/empty/error states, copy
+- [x] **Phase 2: Defect fixes** - Fix contrast, focus rings, touch targets, colour-alone risk, dead controls, telemetry, loading/empty/error states, copy (completed 2026-10-17)
 - [ ] **Phase 3: Primitive rebuilds** - Rebuild Glass* primitives, StatusChip/Chip, Alert/Banner primitive, chart SERIES source; preserve realtime data contract
 - [ ] **Phase 4: Shell rebuild** - Rebuild AppLayout, AppSidebar, AppTopbar, AppSearch; mobile drawer as real dialog
 - [ ] **Phase 5: Page-by-page rebuild** - Rebuild all 10 pages + landing; two visual registers never mixed; Indonesian only
@@ -54,7 +54,7 @@ Plan list:
   9. No em dashes in shipped copy; middot or pipe separators used
   10. A render throw in any view is caught by an app-level ErrorBoundary — named cause + recovery action, never a white screen
 
-**Plans**: 6/6 plans executed — phase NOT complete. Verification returned `human_needed` (40/46 must-haves). 15 human-verification items are persisted in `02-UAT.md`; run `/gsd-verify-work 2` to walk them and complete the phase.
+**Plans**: 6/6 plans complete — phase NOT complete. Verification returned `human_needed` (40/46 must-haves). 15 human-verification items are persisted in `02-UAT.md`; run `/gsd-verify-work 2` to walk them and complete the phase.
 
 Plan list:
 - [x] 02-01-PLAN.md — FIX-01: normalize the undeclared fifth neutral to the declared `warm-dark` token at all five sites, split the duplicate `lg`/`overlay` elevation, harden the token gate and correct the token inventory (wave 1)
@@ -128,7 +128,7 @@ Plan list:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Design-system audit & token lock | 5/5 | Complete    | 2026-10-17 |
-| 2. Defect fixes | 6/6 | Needs review (UAT) | — |
+| 2. Defect fixes | 6/6 | Complete    | 2026-10-17 |
 | 3. Primitive rebuilds | TBD | Not started | - |
 | 4. Shell rebuild | TBD | Not started | - |
 | 5. Page-by-page rebuild | TBD | Not started | - |

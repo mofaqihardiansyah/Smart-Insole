@@ -18,14 +18,13 @@ Trustworthy, legible real-time plantar pressure monitoring that flags risk state
 
 <!-- Shipped and confirmed valuable. -->
 
-(None yet — ship to validate)
+- ✓ Audit existing web-dashboard UI/UX against DESIGN.md design system — Phase 1
+- ✓ Fix UI/UX defects found during audit — Phase 2 (10/10 FIX requirements; 40/46 verifier must-haves, UAT 15/15)
 
 ### Active
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Audit existing web-dashboard UI/UX against DESIGN.md design system
-- [ ] Fix UI/UX defects found during audit
 - [ ] Rebuild UI/UX components to match DESIGN.md specification
 - [ ] Evaluate oil-ui design system for potential adoption
 
@@ -58,6 +57,10 @@ Trustworthy, legible real-time plantar pressure monitoring that flags risk state
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | DESIGN.md as design authority | Owner-supplied clinical console reference + measured tokens | — Pending |
+| Phase 02 reuses the Phase 01 approved UI-SPEC verbatim rather than authoring a second contract | Defect fixes only *apply* an already-locked contract; a phase-local copy would create a second source of truth that can drift | ✓ Applied — `02-UI-SPEC.md` is a provenance stub pointing at `01-UI-SPEC.md` |
+| The token gate asserts the declared value positively *and* scans for the undeclared one negatively | A positive-only assertion can be emptied and still pass; a negative-only scan cannot prove the intended value shipped. Both are needed to make a partial fix fail | ✓ Phase 02 (T-02-01, `designTokens.test.js`) |
+| A UAT row recorded as `pass` at the operator's direction carries a per-item basis note | A green row whose basis is unrecorded is indistinguishable from one nobody ever checked; the record must state what the pass rests on | ✓ Phase 02 (`02-UAT.md` `## Notes`) |
+| Pre-existing defects surfaced by a phase's own reviews are recorded, not absorbed into that phase's scope | The Phase 02 UI audit found two real defects that existed at the phase's diff base; naming them keeps the phase's completion claim honest without silently widening it | ✓ Phase 02 (`02-UI-REVIEW.md`, `02-REVIEW-DISPOSITION.md`) |
 
 ---
 
@@ -91,4 +94,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: Sat Oct 17 2026 after v1.0 milestone start*
+*Last updated: Sat Oct 17 2026 after Phase 2*
