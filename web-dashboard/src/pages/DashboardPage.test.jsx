@@ -8,7 +8,7 @@ import React from "react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { InsoleProvider, useInsole } from "../context/InsoleContext";
 import { UserProvider } from "../context/UserContext";
-import { t } from "../utils/i18n";
+import { t, hasKey } from "../utils/i18n";
 import DashboardPage from "./DashboardPage";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -61,9 +61,16 @@ const stubTransport = {
   subscribeToHistory: () => () => {},
 };
 
-const renderDashboard = () => {
+/**
+ * Render the dashboard inside the real providers.
+ *
+ * `autoConnect` on (the default) puts the provider on FIREBASE with the stub
+ * feed, so the connection stays unanswered. Off leaves it on the simulator
+ * source, which is the only way to reach the Simulation banner.
+ */
+const renderDashboard = ({ autoConnect = true } = {}) => {
   const utils = render(
-    <InsoleProvider autoConnect transport={stubTransport}>
+    <InsoleProvider autoConnect={autoConnect} transport={stubTransport}>
       <UserProvider value={{ user: { email: "kader@example.com" }, displayName: "Kader" }}>
         <MemoryRouter initialEntries={["/"]}>
           <Routes>
@@ -287,6 +294,61 @@ describe("DashboardPage controls", () => {
       });
 
       expect(offenders.map((file) => path.relative(SRC, file))).toEqual([]);
+    });
+  });
+
+  /**
+   * FIX-07: the source is always labelled. A live-but-silent device must not be
+   * dressed as live data, and an unanswered one must not be dressed as a
+   * simulator either. Every state says which it is, and the wording comes from
+   * the dictionary so it travels through the same gates as every other string.
+   */
+  describe("DashboardPage data source labelling (FIX-07)", () => {
+    it("labels the simulator source with the Simulation banner", () => {
+      renderDashboard({ autoConnect: false });
+
+      const title = t("source.simTitle", "id");
+      const banner = screen.getByText(title).closest('[role="status"]');
+
+      // role="status" is the warning banner, not the danger variant: this is a
+      // notice about the data, not an interruption.
+      expect(banner).not.toBeNull();
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+
+      // The body is the sentence saying the figures come from the simulator.
+      expect(banner).toHaveTextContent(t("source.simBody", "id"));
+
+      // Nothing on the page claims a measured connection.
+      expect(screen.queryByText(t("source.live", "id"))).not.toBeInTheDocument();
+    });
+
+    it("does not label an unanswered device as a simulator", () => {
+      renderDashboard();
+
+      expect(
+        screen.queryByText(t("source.simTitle", "id"))
+      ).not.toBeInTheDocument();
+      // The connecting panel is what renders instead.
+      expect(
+        screen.getAllByText(t("source.connecting", "id")).length
+      ).toBeGreaterThan(0);
+    });
+
+    it("ships the Simulation wording straight from the dictionary", () => {
+      renderDashboard({ autoConnect: false });
+
+      const title = t("source.simTitle", "id");
+      const body = t("source.simBody", "id");
+
+      // Both keys must exist. Without them `t` returns the key itself, and the
+      // comparisons below would pass against the key rather than against copy.
+      expect(hasKey("source.simTitle")).toBe(true);
+      expect(hasKey("source.simBody")).toBe(true);
+
+      const banner = screen.getByText(title).closest('[role="status"]');
+      expect(banner).not.toBeNull();
+      expect(within(banner).getByText(title)).toHaveTextContent(title);
+      expect(within(banner).getByText(body)).toHaveTextContent(body);
     });
   });
 });
