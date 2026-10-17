@@ -1,7 +1,8 @@
 ---
 phase: "03"
 slug: primitive-rebuilds
-status: draft
+status: approved
+reviewed_at: "2026-10-18"
 shadcn_initialized: false
 preset: none
 contract_source: .planning/phases/01-design-system-audit-token-lock/01-UI-SPEC.md
@@ -41,8 +42,9 @@ created: "2026-10-18"
 | D-05 | `TrendChart`'s trace stays the non-identity `--secondary` sage line, carved out of the series set | `03-CONTEXT.md` D-05 | `src/components/monitoring/TrendChart.jsx` | `DESIGN.md:349` (amended by D-05) |
 | C-01 | Undeclared motion resolved at the two carried-forward sites | `03-CONTEXT.md` carry-forward | `GlassButton.jsx:58`, `StatePanel.jsx:41` | `DESIGN.md:283-302` (MOTION 1) |
 | C-02 | Every radius in the `Glass*`/chip primitives resolves to the declared scale | `03-CONTEXT.md` carry-forward | `src/components/ui/*.jsx` | 01-UI-SPEC `## Radius Scale`; `DESIGN.md:254-262` |
+| C-03 | The pre-existing half-step (6/10/14px) spacing inside this phase's own primitives is carried **unchanged** and enumerated in full as an owned non-conformance set; the phase authors no new step and no exception | `03-CONTEXT.md` carry-forward (spacing is outside the Phase 2 deferral ledger, `02-CONTEXT.md` D-11) | the `Glass*`/chip primitive files | 01-UI-SPEC `## Spacing Scale` |
 | M-01 | Ink-per-surface rule: secondary text on a tint or a raised surface takes `fg-2`, never `muted` | derived (measured default, not a user decision) | `GlassTable.jsx:70`, `StatusBanner.jsx:64`, `StatePanel.jsx:75` | `DESIGN.md:359` ("measured, never eyeballed") + the ink-pair rule `DESIGN.md:128-144` |
-| F-01 | `DESIGN.md`'s white-surface contrast column disagrees with a re-measurement; three verdicts are unchanged, two flip | reported, needs an owner-signed amendment | the palette table, not a component | see `## Reported Non-Conformances` |
+| F-01 | `DESIGN.md`'s white-surface contrast column disagrees with a re-measurement on **five** chromatic tokens; four verdicts flip (`safe`, `warning`, `secondary`, `tertiary`) and one holds (`danger`) | reported, needs an owner-signed amendment | the palette table, not a component | see `## Reported Non-Conformances` |
 
 ---
 
@@ -81,7 +83,8 @@ Phase 01 ran the same gate and recorded `Could not enumerate:` with source-inspe
 | StatusBanner | `src/components/ui/StatusBanner.jsx` | **D-02** delegate + **M-01** |
 | StatePanel / StateRetry | `src/components/ui/StatePanel.jsx` | **D-02** keeps its register + **C-01** motion + **M-01** |
 | Alert/Banner (new) | name is the planner's (`03-CONTEXT.md` discretion) | **D-02 + D-03** — the new primitive |
-| PageHeader, GlassIcon, PanelHeader | `src/components/ui/GlassCard.jsx` | consumed; unchanged |
+| GlassIcon, PanelHeader | `src/components/ui/GlassCard.jsx` (`:107` exports `{ GlassCard, GlassIcon, PanelHeader }`) | consumed; unchanged |
+| PageHeader | `src/components/ui/PageHeader.jsx` (its own file; `:35` exports `{ PageHeader }`) | consumed; unchanged |
 | GlassComponents barrel | `src/components/ui/GlassComponents.jsx` | COMP-05 — every legacy name stays exported |
 | GlassForm's second barrel | `src/components/ui/GlassForm.jsx:111-120` | COMP-05 — zero consumers today; Phase 4's shell starts using it |
 | TrendChart | `src/components/monitoring/TrendChart.jsx` | **D-04** consumes the source + **D-05** carve-out |
@@ -136,28 +139,58 @@ Contract for the pair:
 
 ## Spacing Scale
 
-Unchanged from 01-UI-SPEC `## Spacing Scale` (xs 4 / sm 8 / md 16 / lg 24 / xl 32 / 2xl 48 /
-3xl 64; multiples of 4 only; **exceptions: none**).
+Inherited from 01-UI-SPEC `## Spacing Scale` (xs 4 / sm 8 / md 16 / lg 24 / xl 32 / 2xl 48 /
+3xl 64; multiples of 4 only).
 
-Phase 3 introduces no new step and no exception. Two inherited statements carry forward
-verbatim:
+**Phase 3's spacing rule is multiples of 4 only: the phase authors no new step and declares no
+exception.** Every value Phase 3 writes or changes lands on the scale. The half-step values
+that survive in this phase's files are therefore not an exception authored here — they are an
+inherited, measured, pre-existing **non-conformance** set, enumerated in full under C-03,
+carried unchanged, and owned. One posture is stated, not two.
+
+Two inherited statements carry forward verbatim:
 
 - Touch targets: every interactive control keeps its `min-h-[44px]` floor on touch, releasing
   to 36/40px only from `lg` (`GlassButton.jsx:31-32`, `GlassInput.jsx:58`,
   `GlassForm.jsx:38`, `StateRetry`, `StatusBanner`'s dismiss at `h-11 w-11`). The new
   Alert/Banner's dismiss control takes the same `h-11 w-11` floor.
-- Panel padding stays on the scale (`p-6` card, `px-6 py-4` cells, `px-6 pb-3 pt-5` header).
+- Panel padding stays on the scale (`p-6` card, `px-6 py-4` data cells, `px-6 pb-3 pt-5`
+  header) **with one exception that is not an exception**: the column-head cell takes
+  `px-6 py-3.5` (14px). That is C-03's first row and is listed there, not here.
 
-⚠ unresolved — planner must treat as assumption. **Half-step (2px-grid) spacing inside this
-phase's own primitives.** `gap-1.5` and `space-y-1.5` (6px) at `Chip.jsx:36`,
-`GlassForm.jsx:16`, `GlassInput.jsx:41`; `mt-1.5` (6px) at `PageHeader.jsx:22`,
-`StatePanel.jsx:75`; `px-2.5`/`py-2.5`/`px-3.5` (10/10/14px) at `Chip.jsx:36`,
-`GlassInput.jsx:58`, `StatusChip.jsx:35,37`. These are the same class of violation Phase 01's
-review scored at pillar 5 (2/4), and they sit in files this phase rebuilds. They are **not**
-in the Phase 2 deferral ledger (`02-CONTEXT.md` D-11 named motion and radius only), so no
-locked decision covers them. Default: leave the metrics unchanged in Phase 3. Normalising
-them to `sm`/`md` moves every primitive's measured height and is a spacing decision with its
-own click-through, not a side effect of COMP-01.
+### C-03 — carried spacing non-conformances (complete for this phase's files)
+
+Measured 2026-10-18 across the primitives COMP-01/COMP-02 rebuild (`GlassCard`, `GlassButton`,
+`GlassInput`, `GlassTable`, `GlassForm`, `StatusChip`, `Chip`) plus the two other in-scope
+files that carry a half-step value (`PageHeader`, `StatePanel`). `GlassCard.jsx` and
+`GlassButton.jsx` carry none. Every off-grid value is listed; none is a declared exception and
+none is cleared by Phase 3.
+
+Phase 3 carries all nine rows **unchanged**. Normalising them to `sm`/`md` moves every
+primitive's measured height across the app and is a spacing decision with its own
+three-breakpoint click-through, not a side effect of COMP-01/COMP-02. The list is complete so
+the planner cannot mistake a retained violation for a settled value.
+
+| Site | Off-grid value (px) | Owner |
+|------|---------------------|-------|
+| `Chip.jsx:36` | `gap-1.5` (6), `px-2.5` (10) | Backlog 999.x (source phase 03) |
+| `GlassForm.jsx:16` | `space-y-1.5` (6) | Backlog 999.x (source phase 03) |
+| `GlassInput.jsx:41` | `space-y-1.5` (6) | Backlog 999.x (source phase 03) |
+| `GlassInput.jsx:58` | `px-3.5` (14), `py-2.5` (10) — the field; its `min-h-[44px]` floor is on the scale | Backlog 999.x (source phase 03) |
+| `GlassTable.jsx:67` | `px-6 py-3.5` — the `th` cell (14); the `td` branch's `py-4` is on the scale | Backlog 999.x (source phase 03) |
+| `PageHeader.jsx:22` | `mt-1.5` (6) | Backlog 999.x (source phase 03) |
+| `StatePanel.jsx:75` | `mt-1.5` (6) | Backlog 999.x (source phase 03) |
+| `StatusChip.jsx:35` | `gap-1.5` (6), `px-2.5` (10), `h-3.5 w-3.5` (14) — the `sm` box and icon | Backlog 999.x (source phase 03) |
+| `StatusChip.jsx:37` | `px-3.5` (14), `py-1.5` (6) — the `lg` box; its `gap-2` is on the scale | Backlog 999.x (source phase 03) |
+
+**Owner.** These are the class of violation Phase 01's review scored at pillar 5 (2/4), and no
+locked decision covers them: `02-CONTEXT.md` D-11's deferral ledger named motion and radius
+only, and no phase in `ROADMAP.md` owns a spacing pass — COMP-01/COMP-02 rebuild these files
+"against `DESIGN.md`", which declares no spacing scale at all. The owner is therefore a single
+backlog item on the project's existing 999.x pattern (`Source phase: 03`, the slot `999.1` /
+`999.2` occupy), opened by the planner; Phase 6's GATE-04 sweep is the net that proves this
+enumeration is complete. Naming the owner is what keeps the finding from evaporating at plan
+time.
 
 ---
 
@@ -181,7 +214,7 @@ used by an in-scope primitive arrives through a token that already carries it.
 Uppercase stays reserved for table column heads and chips (`DESIGN.md:211-214`). Every kPa
 figure keeps `tabular-data` / `tabular-nums`.
 
-⚠ Reported, not owned: `LoadDonut.jsx:74,84` hand-rolls SVG type with raw
+⚠ Reported, not owned: `LoadDonut.jsx:79,89` hand-rolls SVG type with raw
 `fontSize="26"` / `fontSize="10"` + `letterSpacing="0.1em"` instead of a token — the 10px
 unit label is below the declared 12px caption floor and below `micro` (11px), which matters
 for this product's elderly audience. `designTokens.test.js` scans Tailwind classes, so raw SVG
@@ -269,7 +302,8 @@ Consequences that are now contract:
   The description takes `fg-2` (8.17–8.93:1 on the same tints). The title keeps `fg`
   (14.08–15.36:1) and the tone's icon keeps its `-ink`.
 - **M-01c — accents are not text tokens.** Measured as text on white: `safe` 3.30:1,
-  `warning` 2.94:1, `secondary` 3.77:1, `tertiary` 2.77:1 — none may carry 12–14px text.
+  `warning` 2.94:1, `secondary` 3.77:1, `tertiary` 2.77:1 — none may carry 12–14px text
+  (all four are re-measurements that disagree with `DESIGN.md`; see F-01).
   `danger` measures 4.83:1 and passes, so `GlassInput`'s field error
   (`GlassInput.jsx:86`, `text-danger` on `surface`) may stay exactly as it is. Risk text is
   always the tone's `-ink` on that tone's tint.
@@ -300,7 +334,8 @@ the landing set. Phase 3's delta is the carried-forward **C-02**, now stated as 
 - **Bare `rounded` is not allowed in these files** (DEFAULT 8px duplicates `control`; one value,
   two names). Today's one site is `StatePanel.jsx:41` (skeleton bar) — it becomes
   `rounded-sm` (4px, a bar) or `rounded-control`; either is a declared step.
-- The switch track's `rounded-full` is the one documented exception (`GlassForm.jsx:59-61`): a
+- The switch track's `rounded-full` (`GlassForm.jsx:93`; the thumb's own is at `:101`) is the
+  one documented exception, explained in the block comment at `GlassForm.jsx:59-61`: a
   toggle's shape convention carries meaning. Cards are never pills.
 
 ---
@@ -456,7 +491,7 @@ Applicable state considerations resolved: 16 covered, 1 backstop, 1 unresolved.
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
 | empty | StatePanel, the new Alert/Banner's empty register (`list-collection`) | ✅ covered | A zero-row data view renders StatePanel's empty register with a title and a next action (`StateRetry` or a declared string), never a bare paragraph. The five `AdminPage` branches are the last title-only sites and are repaired in-phase per `## Copywriting Contract`. |
-| empty | LoadDonut (`media`) with all three zone values at zero | ✅ covered | With `sum === 0` the share is 0 for every segment, so no arc is drawn and the ring centre states the whole as 0. The share computation never divides by zero (`LoadDonut.jsx:38`). |
+| empty | LoadDonut (`media`) with all three zone values at zero | ✅ covered | With `sum === 0` the share is 0 for every segment, so no arc is drawn and the ring centre states the whole as 0. The share computation never divides by zero (`LoadDonut.jsx:40`). |
 | empty | TrendChart / TelemetryChart (`media`) with an empty ring buffer | ✅ covered | An empty buffer renders no plot at all (`if (!history.length) return null` in both charts); the caller shows StatePanel's empty register. An empty chart is never drawn as an empty axis frame. |
 | loading | StatePanel loading register, charts while the source is connecting | ✅ covered | Loading announces itself with `role="status"` + `aria-live="polite"` and reserves space with skeleton rows shaped like the incoming content. After the Motion delta nothing inside it animates. |
 | error | StatePanel error, banner `danger`, GlassInput field error | ✅ covered | Every failure renders `role="alert"`, a named cause and a next action (element or string), and its description ink is the measured ink for the surface behind it (see `## Color`). Field errors also set `aria-invalid` + `aria-describedby`. |
@@ -483,30 +518,39 @@ the planner treats it explicitly instead of rediscovering it. None blocks Phase 
 
 **F-01 — `DESIGN.md`'s white-surface contrast column does not reproduce.** Re-measured with
 the WCAG 2.x formula, which reproduces the ink-pair table exactly (`DESIGN.md:123-126`,
-`:136-139`) but not the accent column:
+`:136-139`) but not the white-surface column. That column is wrong for **five** chromatic
+tokens, not three:
 
 | Token | `DESIGN.md` | Re-measured | Verdict impact |
 |-------|-------------|-------------|----------------|
 | `safe` `#16A34A` | 4.5:1 (AA) | **3.30:1** | flips: fails AA as text; still clears the 3:1 graphical bar |
 | `warning` `#CA8A04` | 4.6:1 (AA) | **2.94:1** | flips: fails AA as text **and** the 3:1 graphical bar on white |
 | `danger` `#DC2626` | 5.9:1 (AA) | **4.83:1** | unchanged: still passes AA as text |
-| `fg` / `fg-2` / `muted` | 18.1 / 12.6 / 4.8 | 17.85 / 10.35 / 4.76 | unchanged: same verdicts |
+| `secondary` `#059669` | 4.6:1 (AA) | **3.77:1** | flips: fails AA as text — this is the figure `## Color` §2 and M-01c point here for; still clears the 3:1 graphical bar, which is all a stroke needs |
+| `tertiary` `#0EA5E9` | 3.0:1 | **2.77:1** | flips: fails the 3:1 graphical bar on white; it was already declared unusable as a 12px label (M-01c) |
+| `fg` / `fg-2` / `muted` | 18.1 / 12.6 / 4.8 | 17.85 / 10.35 / 4.76 | values differ, verdicts unchanged |
 
-The Phase 3 rule set holds under **either** reading (it forbids the accents as text and routes
-every tint to the `-ink` pair), so no in-scope primitive depends on which number is right. What
-does depend on it is `PlantarHeatmap`'s `warning` fill and `AppSidebar`'s status text, both
-outside this phase. Action: an owner-signed `DESIGN.md` amendment re-measuring the column (the
-same posture as the D-04 amendment), or a swap of the shipped `safe`/`warning` values for their
-700-shade equivalents. Do not silently change a hex in Phase 3.
+Read together: five chromatic tokens disagree with `DESIGN.md`, four verdicts flip (`safe`,
+`warning`, `secondary`, `tertiary`) and one holds (`danger`).
+
+The Phase 3 rule set holds under **either** reading (it forbids every chromatic token as 12–14px
+text and routes every tint to the `-ink` pair), so no in-scope primitive depends on which number
+is right. What does depend on it is `PlantarHeatmap`'s `warning` fill and `AppSidebar`'s status
+text, both outside this phase. Action: an owner-signed `DESIGN.md` amendment re-measuring the
+column (the same posture as the D-04 amendment), or a swap of the shipped
+`safe`/`warning`/`secondary`/`tertiary` values for their darker equivalents. Do not silently
+change a hex in Phase 3.
 
 **N-02 — `RowMenu.jsx:104`** renders `text-safe` (`#16A34A`) as 14px text on the menu surface:
-3.30:1, fails AA. Not in this phase's files; owner unassigned (a dropdown leaf, not a COMP
-primitive).
+3.30:1, fails AA. Not in this phase's files (a dropdown leaf, not a COMP primitive). Owner:
+**Phase 5 / PAGE-01** — `RowMenu` has exactly one consumer, `DashboardPage.jsx:33`, rendering
+it at `:632` and `:669`, and PAGE-01 rebuilds the dashboard. Assigned here so the finding does
+not evaporate before Phase 6's GATE-04 sweep.
 
 **N-03 — `AppSidebar.jsx:90`** renders `text-safe` / `text-warning` on the rail (`bg` `#F8FAFC`):
 3.15:1 / 2.81:1, both fail AA. Owner: **Phase 4** (SHELL-02 rebuilds the sidebar).
 
-**N-04 — `LoadDonut.jsx:74,84`** hand-rolled SVG type (see `## Typography`). Owner: planner's
+**N-04 — `LoadDonut.jsx:79,89`** hand-rolled SVG type (see `## Typography`). Owner: planner's
 call within this phase, or Phase 5.
 
 ---
