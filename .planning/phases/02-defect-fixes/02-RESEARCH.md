@@ -284,22 +284,25 @@ md: "min-h-[44px] lg:min-h-[40px] px-4 text-body-sm",
 |---|-------|---------|---------------|
 | — | None — all claims verified or cited | — | — |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Whether any interactive element beyond those already audited lacks a 44px target or focus ring.**
    - What we know: `GlassButton`, `GlassInput`, `StateRetry`, and the jump-to-map button all use the 44px + focus-visible pattern [VERIFIED: GlassButton.jsx, GlassInput.jsx, StatePanel.jsx, DashboardPage.jsx:744-751].
    - What's unclear: Whether every page (Login, Register, Settings, Device, Profile, Monitoring, History, Notifications, Landing) uses these shared components exclusively, or whether some have one-off inline buttons/links.
    - Recommendation: Grep `src/` for `<button`, `<a`, and `<input` not using the shared components during execution; add `min-h-[44px]` + `focus-visible:ring-2` where missing.
+   - **RESOLVED — plan `02-02`, tasks 1 and 2, plus plan `02-06` task 1.** The two genuinely non-conformant sites are on the landing nav (`LandingPage.jsx:244` drawer trigger at 40px, `:217` nav links at ~36px); task 1 brings every landing anchor and the trigger to the floor with an explicit ring and asserts it in the rendered DOM. The open-ended part of the question — "does any *other* one-off element exist?" — is answered by task 2's source sweep over every `src/**/*.jsx`, which fails on any `outline-none` without a `ring-2` on the same line, so a future one-off is caught rather than audited by hand. The one new control this phase introduces (the `02-06` recovery button) is specified to reuse the `GlassButton` 44px + ring classes. No hand-audit remains open.
 
 2. **Whether the em-dash sweep covers i18n EN values as well as ID.**
    - What we know: i18n dictionary uses `|` separators, no em dashes in values [VERIFIED: src/utils/i18n.js:18-933]. AdminPage.jsx `—` fallback is the only shipped em dash found [VERIFIED: src/pages/AdminPage.jsx:201, 204].
    - What's unclear: None remaining after the grep.
    - Recommendation: Confirm the grep for `\u2014` in string values (excluding JSDoc comments) returns zero during execution.
+   - **RESOLVED — plan `02-04`, task 1.** The dictionary half is already gated (`i18n.test.js:80-90`, which reads both dictionaries and therefore the EN values too) and stays green; D-07 scopes FIX-09 to the two language-neutral fallbacks, so this phase ships no English work. The coverage gap was that the *dictionary-only* gate cannot see a raw separator typed straight into JSX, which is exactly how the two admin fallbacks escaped it: task 1 creates `src/copy.test.js`, which walks every shipped `.jsx` under `src/` with comments stripped and a non-vacuous walk count, and it excludes the git-tracked scratch page by directory. The execution-time grep is therefore a durable test, not a one-off check.
 
 3. **Whether FIX-07 requires any change beyond the existing Simulation label.**
    - What we know: The simulator path already renders `StatusBanner` with `source.simTitle`/`source.simBody` and the landing footer note states simulator data [VERIFIED: src/pages/DashboardPage.jsx:282-288, src/pages/LandingPage.jsx].
    - What's unclear: Whether any page shows numeric readings without a source indicator.
    - Recommendation: Audit each data view for a source indicator during execution.
+   - **RESOLVED — plan `02-04`, task 3, with plan `02-03` task 1 closing the view-level gaps.** The audit answer is that the source indicator is present on every data view, so FIX-07 needs a regression lock rather than a source change: task 3 asserts the Simulation banner renders on the simulator, is absent on a live-but-silent connection (so the two states cannot be conflated), and that its title and body resolve from the dictionary. The one related source gap the audit did surface is not the label but the *views* it labels — the dashboard's trend panel and activity feed answered "no readings" dishonestly — and that is FIX-08 work, closed by plan `02-03` task 1.
 
 ## Environment Availability
 
