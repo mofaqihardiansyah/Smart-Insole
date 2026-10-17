@@ -3,14 +3,14 @@ status: testing
 phase: 02-defect-fixes
 source: [02-VERIFICATION.md]
 started: 2026-10-17T14:07:34.177Z
-updated: 2026-10-17T14:26:56.961Z
+updated: 2026-10-17T14:28:41.105Z
 ---
 ## Current Test
 
-number: 3
-name: Backstop-tagged truth (02-02): tab through the landing nav and confirm a focused control flush against a 44px neighbour paints its own ring, unclipped and unmerged.
+number: 4
+name: Backstop-tagged truth (02-03): compare StatusChip's icon shape and text label by code-point identity rather than locale collation.
 expected: |
-  Each element paints its own visible 2px focus indicator; no ring is clipped by the neighbour's box.
+  A level's non-colour channels read as distinct under every locale, never equal under one and distinct under another.
 awaiting: user response
 
 ## Tests
@@ -27,7 +27,7 @@ why_human: Declared `verification: backstop`. There is no idempotency property t
 
 ### 3. Backstop-tagged truth (02-02): tab through the landing nav and confirm a focused control flush against a 44px neighbour paints its own ring, unclipped and unmerged.
 expected: Each element paints its own visible 2px focus indicator; no ring is clipped by the neighbour's box.
-result: [pending]
+result: pass
 why_human: Declared `verification: backstop`. jsdom has no layout engine or paint, so no test can observe clipping.
 
 ### 4. Backstop-tagged truth (02-03): compare StatusChip's icon shape and text label by code-point identity rather than locale collation.
@@ -93,9 +93,9 @@ why_human: This is a scope question, not a code question: the target is not audi
 ## Summary
 
 total: 15
-passed: 2
+passed: 3
 issues: 0
-pending: 13
+pending: 12
 skipped: 0
 blocked: 0
 
