@@ -198,7 +198,7 @@ const LandingPage = () => {
               e.preventDefault();
               scrollTop();
             }}
-            className="flex min-w-0 items-center gap-2.5"
+            className="flex min-h-[44px] min-w-0 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-card"
           >
             <span className="relative flex h-6 w-9 shrink-0 items-center" aria-hidden="true">
               <span className="absolute left-0 h-6 w-6 rounded-full bg-warm-dark" />
@@ -214,7 +214,7 @@ const LandingPage = () => {
               <a
                 key={link.href}
                 href={link.href}
-                className="rounded-pill px-3.5 py-2 transition-colors duration-150 hover:bg-warm-dark/5 hover:text-warm-ink"
+                className="inline-flex min-h-[44px] items-center rounded-pill px-3.5 py-2 transition-colors duration-150 hover:bg-warm-dark/5 hover:text-warm-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-card"
               >
                 {link.label}
               </a>
@@ -241,7 +241,7 @@ const LandingPage = () => {
             </GlassButton>
             <button
               type="button"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill border border-warm-line bg-warm-card text-warm-ink transition-colors duration-150 hover:bg-warm-raised md:hidden"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-pill border border-warm-line bg-warm-card text-warm-ink transition-colors duration-150 hover:bg-warm-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-card md:hidden"
               aria-expanded={menuOpen}
               aria-controls="landing-menu"
               onClick={() => setMenuOpen((open) => !open)}
@@ -269,7 +269,7 @@ const LandingPage = () => {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
-                className="rounded-tile px-4 py-3 text-warm-ink transition-colors duration-150 hover:bg-warm-raised"
+                className="inline-flex items-center rounded-tile px-4 py-3 text-warm-ink transition-colors duration-150 hover:bg-warm-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-card"
               >
                 {link.label}
               </a>
@@ -762,7 +762,7 @@ const LandingPage = () => {
                   <a
                     key={link.href}
                     href={link.href}
-                    className="transition-colors duration-150 hover:text-warm-ink"
+                    className="inline-flex min-h-[44px] items-center transition-colors duration-150 hover:text-warm-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-card"
                   >
                     {link.label}
                   </a>
