@@ -133,3 +133,28 @@ Plan list:
 | 4. Shell rebuild | TBD | Not started | - |
 | 5. Page-by-page rebuild | TBD | Not started | - |
 | 6. Delivery Gate & oil-ui go/no-go | TBD | Not started | - |
+
+## Backlog
+
+### Phase 999.1: Landing CTA variant collapse — 8 landing call sites render the app-register button (BACKLOG)
+
+**Goal:** Restore the landing register's button variants. `LandingPage.jsx:227,235,279,286,391,400,730,739` pass `variant="warm"` / `variant="warmOutline"`, but `GlassButton.jsx:20-28`'s `VARIANTS` carries neither key, so `VARIANTS[variant] || VARIANTS.filled` renders the app-register navy `filled` button at every landing CTA. The hero's primary and secondary actions are visually identical, and `01-UI-SPEC.md:89` forbids mixing the two registers. Pre-existing: the keys were added by `c46fa83c` and deleted by `8d9dd996` (2026-10-13), both before the Phase 2 diff base `54ae72a7`. Surfaced by the Phase 02 UI audit (`02-UI-REVIEW.md`, top priority fix 1).
+**Source phase:** 02
+**Surfaced at:** 2026-10-17 during /gsd-verify-work 02 completion
+**Evidence:** `bg-warm-accent-deep` occurs 0 times in `dist/` and in no `variant` string; `VARIANTS` at `54ae72a7` already lacks both keys.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
+
+### Phase 999.2: `AdminPage.jsx` ships five English error fallbacks against the Indonesian-only contract (BACKLOG)
+
+**Goal:** Route the five literals — `"Failed to load users"` (`:81`), `"Device read failed"` (`:102`), `"Update failed"` (`:125`), `"Delete failed"` (`:135`), `"Save failed"` (`:149`), rendered at `:180` and `:264` — through `i18n.js` keys, and extend `copy.test.js` so a Latin-sentence literal on an admin failure branch fails the guard. `copy.test.js` currently scans only for dashes, so it cannot see language. Pre-existing at the Phase 2 diff base `54ae72a7`. Surfaced by the Phase 02 UI audit (`02-UI-REVIEW.md`, top priority fix 2). Related: CR-01 (`AdminPage.jsx:56-67`, hooks after the early return) is a separate open finding in `02-REVIEW-DISPOSITION.md` on the same file.
+**Source phase:** 02
+**Surfaced at:** 2026-10-17 during /gsd-verify-work 02 completion
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
