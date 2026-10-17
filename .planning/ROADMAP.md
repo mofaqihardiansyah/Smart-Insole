@@ -28,14 +28,14 @@
   5. Light-only theme confirmed: no .dark block, no dark: variants, color-scheme: light only
   6. oil-ui skill installed outside the project (zero package.json impact); design directions generated in src/__oil_ui_eval__/ scratch sandbox (not shipped)
 
-**Plans**: 5 plans
+**Plans**: 5/5 plans executed
 
 Plan list:
 - [x] 01-01-PLAN.md — TOKEN-01 + TOKEN-02: token inventory mapping document (wave 1)
 - [x] 01-02-PLAN.md — TOKEN-03: lock tokens into index.css + tailwind.config.js (wave 1)
 - [x] 01-03-PLAN.md — TOKEN-04 + THEME-01: designTokens.test.js build gate + light-only theme (wave 1)
 - [x] 01-04-PLAN.md — OIL-01 + OIL-02: oil-ui install + scratch directions (wave 2, depends 01-01)
-- [ ] 01-05-PLAN.md — TOKEN-01 + TOKEN-02 gap closure: complete token inventory + flag nav-scrolled (wave 2, depends 01-01)
+- [x] 01-05-PLAN.md — TOKEN-01 + TOKEN-02 gap closure: complete token inventory + flag nav-scrolled (wave 2, depends 01-01)
 
 ### Phase 2: Defect fixes
 
@@ -118,7 +118,7 @@ Plan list:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Design-system audit & token lock | 4/4 | In Progress | - |
+| 1. Design-system audit & token lock | 5/5 | In Progress | - |
 | 2. Defect fixes | TBD | Not started | - |
 | 3. Primitive rebuilds | TBD | Not started | - |
 | 4. Shell rebuild | TBD | Not started | - |

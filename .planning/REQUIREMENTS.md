@@ -11,8 +11,8 @@
 
 ### TOKEN — Design-system token audit & lock
 
-- [ ] **TOKEN-01**: Inventory every colour/radius/shadow/type value used in `src/` and map 1:1 to DESIGN.md tokens
-- [ ] **TOKEN-02**: Flag every hard-coded value not present in DESIGN.md
+- [x] **TOKEN-01**: Inventory every colour/radius/shadow/type value used in `src/` and map 1:1 to DESIGN.md tokens
+- [x] **TOKEN-02**: Flag every hard-coded value not present in DESIGN.md
 - [ ] **TOKEN-03**: Lock tokens into `src/index.css` (`:root` + `.landing-scope`) and `tailwind.config.js`
 - [ ] **TOKEN-04**: `design-tokens.test.js` fails the build if any Tailwind class in `src/` has no generated rule
 
