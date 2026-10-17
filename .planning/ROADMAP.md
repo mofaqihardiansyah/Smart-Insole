@@ -28,16 +28,14 @@
   5. Light-only theme confirmed: no .dark block, no dark: variants, color-scheme: light only
   6. oil-ui skill installed outside the project (zero package.json impact); design directions generated in src/__oil_ui_eval__/ scratch sandbox (not shipped)
 
-**Plans**: 4/4 plans executed
+**Plans**: 5 plans
 
 Plan list:
-- [x] 01-01-PLAN.md — TOKEN-03: lock tokens into index.css + tailwind.config.js (tracer, wave 1)
-- [x] 01-02-PLAN.md — TOKEN-01: token inventory mapping document (wave 1)
-- [x] 01-03-PLAN.md — TOKEN-02: flag hard-coded non-DESIGN.md values (wave 2, depends 01-02)
-- [x] 01-04-PLAN.md — TOKEN-04: designTokens.test.js build gate (wave 2, depends 01-01)
-- [ ] 01-05-PLAN.md — THEME-01: light-only theme confirmation (wave 1)
-- [ ] 01-06-PLAN.md — OIL-01: install oil-ui skill outside project (wave 1)
-- [ ] 01-07-PLAN.md — OIL-02: oil-ui design directions in scratch sandbox (wave 2, depends 01-06)
+- [x] 01-01-PLAN.md — TOKEN-01 + TOKEN-02: token inventory mapping document (wave 1)
+- [x] 01-02-PLAN.md — TOKEN-03: lock tokens into index.css + tailwind.config.js (wave 1)
+- [x] 01-03-PLAN.md — TOKEN-04 + THEME-01: designTokens.test.js build gate + light-only theme (wave 1)
+- [x] 01-04-PLAN.md — OIL-01 + OIL-02: oil-ui install + scratch directions (wave 2, depends 01-01)
+- [ ] 01-05-PLAN.md — TOKEN-01 + TOKEN-02 gap closure: complete token inventory + flag nav-scrolled (wave 2, depends 01-01)
 
 ### Phase 2: Defect fixes
 
