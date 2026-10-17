@@ -1,11 +1,39 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, within, act, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import React from "react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { InsoleProvider, useInsole } from "../context/InsoleContext";
 import { UserProvider } from "../context/UserContext";
+import { t } from "../utils/i18n";
 import DashboardPage from "./DashboardPage";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+/** This file lives in `src/pages`, so the shipped sources are one level up. */
+const SRC = path.resolve(here, "..");
+
+/**
+ * Every shipped `.jsx` / `.js` under `dir`, recursively.
+ *
+ * Trimmed to those two extensions so committed build output is never read: a
+ * dead control has to be written into a module that exports UI, and `dist/`
+ * holds bundles rather than sources.
+ */
+const collectSources = (dir) => {
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...collectSources(full));
+    } else if (entry.name.endsWith(".jsx") || entry.name.endsWith(".js")) {
+      out.push(full);
+    }
+  }
+  return out;
+};
 
 /**
  * Behavioural tests for the dashboard, not screenshot tests.
@@ -196,5 +224,69 @@ describe("DashboardPage controls", () => {
     expect(
       await screen.findByRole("button", { name: /semua peringatan sudah dibaca/i })
     ).toBeDisabled();
+  });
+
+  /**
+   * FIX-05: the header carries exactly the two standing actions this product
+   * actually has. DESIGN.md names the reference's two dead controls and states
+   * the rule this locks: a button that cannot act is a defect, not decoration.
+   * A page that renders one is rendering a control with nothing behind it.
+   */
+  describe("DashboardPage standing actions (FIX-05)", () => {
+    it("exposes exactly two standing actions in the header", () => {
+      const { container } = renderDashboard();
+      const header = container.querySelector("header");
+
+      expect(header).not.toBeNull();
+      // Two, and only two: the count is what a reintroduced dead control breaks.
+      expect(within(header).getAllByRole("button")).toHaveLength(2);
+      expect(
+        within(header).getByRole("button", { name: /ekspor csv/i })
+      ).toBeInTheDocument();
+      expect(
+        within(header).getByRole("button", {
+          name: /semua peringatan sudah dibaca/i,
+        })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /ekspor pdf|sesi baru/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it("still exposes exactly two after the reading state changes", () => {
+      const { container } = renderDashboard();
+      expect(within(container.querySelector("header")).getAllByRole("button")).toHaveLength(2);
+
+      // Push readings so both actions become meaningful (Export CSV leaves its
+      // disabled state, the feed fills up). The count is a property of the
+      // markup, so a state transition that added a control would fail here.
+      push(6);
+
+      expect(within(container.querySelector("header")).getAllByRole("button")).toHaveLength(2);
+      expect(
+        within(container.querySelector("header")).getByRole("button", {
+          name: /ekspor csv/i,
+        })
+      ).toBeEnabled();
+    });
+
+    it("ships neither dead control label in any module under src", () => {
+      // Assembled from parts on purpose: this scan reads its own file too, and
+      // a literal would make the scanner the one thing it bans.
+      const deadLabels = [
+        ["Export", "PDF"].join(" "),
+        ["New", "Session"].join(" "),
+      ];
+
+      const files = collectSources(SRC);
+      expect(files.length).toBeGreaterThan(40);
+
+      const offenders = files.filter((file) => {
+        const source = fs.readFileSync(file, "utf8");
+        return deadLabels.some((label) => source.includes(label));
+      });
+
+      expect(offenders.map((file) => path.relative(SRC, file))).toEqual([]);
+    });
   });
 });
