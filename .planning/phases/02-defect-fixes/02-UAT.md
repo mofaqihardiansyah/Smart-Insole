@@ -3,22 +3,21 @@ status: testing
 phase: 02-defect-fixes
 source: [02-VERIFICATION.md]
 started: 2026-10-17T14:07:34.177Z
-updated: 2026-10-17T14:07:34.177Z
+updated: 2026-10-17T14:24:03.130Z
 ---
-
 ## Current Test
 
-number: 1
-name: Backstop-tagged truth (02-01): reorder the `boxShadow` block in tailwind.config.js and confirm no call-site's resolved shadow changes (identity is by name, not declaration order).
+number: 2
+name: Backstop-tagged truth (02-01): re-run the token normalization over the already-normalized tailwind.config.js / src/index.css and confirm both files stay byte-identical.
 expected: |
-  Resolved class output is identical for every consumer after reordering; no visual change on any surface.
+  Second run is a no-op: no second-order substitution, no repeated rewrite, `git diff` empty.
 awaiting: user response
 
 ## Tests
 
 ### 1. Backstop-tagged truth (02-01): reorder the `boxShadow` block in tailwind.config.js and confirm no call-site's resolved shadow changes (identity is by name, not declaration order).
 expected: Resolved class output is identical for every consumer after reordering; no visual change on any surface.
-result: [pending]
+result: pass
 why_human: Declared `verification: backstop` (non-inferable). No held-out or property-based test exercises declaration-order independence; presence + wiring cannot qualify.
 
 ### 2. Backstop-tagged truth (02-01): re-run the token normalization over the already-normalized tailwind.config.js / src/index.css and confirm both files stay byte-identical.
@@ -94,9 +93,9 @@ why_human: This is a scope question, not a code question: the target is not audi
 ## Summary
 
 total: 15
-passed: 0
+passed: 1
 issues: 0
-pending: 15
+pending: 14
 skipped: 0
 blocked: 0
 
