@@ -3,14 +3,14 @@ status: testing
 phase: 02-defect-fixes
 source: [02-VERIFICATION.md]
 started: 2026-10-17T14:07:34.177Z
-updated: 2026-10-17T14:28:41.105Z
+updated: 2026-10-17T14:29:07.726Z
 ---
 ## Current Test
 
-number: 4
-name: Backstop-tagged truth (02-03): compare StatusChip's icon shape and text label by code-point identity rather than locale collation.
+number: 5
+name: Backstop-tagged truth (02-04): two concurrent renders of the dashboard cannot change the number of standing actions.
 expected: |
-  A level's non-colour channels read as distinct under every locale, never equal under one and distinct under another.
+  Exactly two standing actions under any render, transition or concurrent update.
 awaiting: user response
 
 ## Tests
@@ -32,7 +32,7 @@ why_human: Declared `verification: backstop`. jsdom has no layout engine or pain
 
 ### 4. Backstop-tagged truth (02-03): compare StatusChip's icon shape and text label by code-point identity rather than locale collation.
 expected: A level's non-colour channels read as distinct under every locale, never equal under one and distinct under another.
-result: [pending]
+result: pass
 why_human: Declared `verification: backstop`. Variant selection is outside jsdom's control; no cross-locale test exists.
 
 ### 5. Backstop-tagged truth (02-04): two concurrent renders of the dashboard cannot change the number of standing actions.
@@ -93,9 +93,9 @@ why_human: This is a scope question, not a code question: the target is not audi
 ## Summary
 
 total: 15
-passed: 3
+passed: 4
 issues: 0
-pending: 12
+pending: 11
 skipped: 0
 blocked: 0
 
