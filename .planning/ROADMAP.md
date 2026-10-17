@@ -6,7 +6,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Design-system audit & token lock** - Audit DESIGN.md tokens and lock them into index.css/tailwind.config.js; oil-ui evaluation sandbox runs in parallel scratch space
+- [x] **Phase 1: Design-system audit & token lock** - Audit DESIGN.md tokens and lock them into index.css/tailwind.config.js; oil-ui evaluation sandbox runs in parallel scratch space (completed 2026-10-17)
 - [ ] **Phase 2: Defect fixes** - Fix contrast, focus rings, touch targets, colour-alone risk, dead controls, telemetry, loading/empty/error states, copy
 - [ ] **Phase 3: Primitive rebuilds** - Rebuild Glass* primitives, StatusChip/Chip, Alert/Banner primitive, chart SERIES source; preserve realtime data contract
 - [ ] **Phase 4: Shell rebuild** - Rebuild AppLayout, AppSidebar, AppTopbar, AppSearch; mobile drawer as real dialog
@@ -28,7 +28,7 @@
   5. Light-only theme confirmed: no .dark block, no dark: variants, color-scheme: light only
   6. oil-ui skill installed outside the project (zero package.json impact); design directions generated in src/__oil_ui_eval__/ scratch sandbox (not shipped)
 
-**Plans**: 5/5 plans executed
+**Plans**: 5/5 plans complete
 
 Plan list:
 - [x] 01-01-PLAN.md — TOKEN-01 + TOKEN-02: token inventory mapping document (wave 1)
@@ -118,7 +118,7 @@ Plan list:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Design-system audit & token lock | 5/5 | In Progress | - |
+| 1. Design-system audit & token lock | 5/5 | Complete    | 2026-10-17 |
 | 2. Defect fixes | TBD | Not started | - |
 | 3. Primitive rebuilds | TBD | Not started | - |
 | 4. Shell rebuild | TBD | Not started | - |

@@ -13,8 +13,8 @@
 
 - [x] **TOKEN-01**: Inventory every colour/radius/shadow/type value used in `src/` and map 1:1 to DESIGN.md tokens
 - [x] **TOKEN-02**: Flag every hard-coded value not present in DESIGN.md
-- [ ] **TOKEN-03**: Lock tokens into `src/index.css` (`:root` + `.landing-scope`) and `tailwind.config.js`
-- [ ] **TOKEN-04**: `design-tokens.test.js` fails the build if any Tailwind class in `src/` has no generated rule
+- [x] **TOKEN-03**: Lock tokens into `src/index.css` (`:root` + `.landing-scope`) and `tailwind.config.js`
+- [x] **TOKEN-04**: `design-tokens.test.js` fails the build if any Tailwind class in `src/` has no generated rule
 
 ### FIX — Defect fixes (fix precedes rebuild)
 
@@ -62,8 +62,8 @@
 
 ### OIL — oil-ui design-skill evaluation
 
-- [ ] **OIL-01**: Install oil-ui skill (`npx skills add oil-oil/oil-ui`) outside the project (zero `package.json` impact)
-- [ ] **OIL-02**: Generate design directions for the app register in scratch sandbox (`src/__oil_ui_eval__/`, not shipped)
+- [x] **OIL-01**: Install oil-ui skill (`npx skills add oil-oil/oil-ui`) outside the project (zero `package.json` impact)
+- [x] **OIL-02**: Generate design directions for the app register in scratch sandbox (`src/__oil_ui_eval__/`, not shipped)
 - [ ] **OIL-03**: Compare directions side-by-side; record adopt / do-not-adopt decision in PROJECT.md Key Decisions
 - [ ] **OIL-04**: If adopted, wrap components to emit DESIGN.md tokens (not oil-ui defaults); token-mapping table required
 
@@ -80,7 +80,7 @@
 
 ### THEME — Theme (per user decision: default/light mode only, no dark mode)
 
-- [ ] **THEME-01**: Light-only theme; no dark mode toggle; no `dark:` variants anywhere; `color-scheme: light` only
+- [x] **THEME-01**: Light-only theme; no dark mode toggle; no `dark:` variants anywhere; `color-scheme: light` only
 
 ---
 
