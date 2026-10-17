@@ -54,12 +54,12 @@ Plan list:
   9. No em dashes in shipped copy; middot or pipe separators used
   10. A render throw in any view is caught by an app-level ErrorBoundary — named cause + recovery action, never a white screen
 
-**Plans**: 1/6 plans complete
+**Plans**: 2/6 plans complete
 
 Plan list:
 - [x] 02-01-PLAN.md — FIX-01: normalize the undeclared fifth neutral to the declared `warm-dark` token at all five sites, split the duplicate `lg`/`overlay` elevation, harden the token gate and correct the token inventory (wave 1)
 - [ ] 02-02-PLAN.md — FIX-02 + FIX-03: lock the landing's focus indicators and 44×44px touch targets as an automated contract (wave 2)
-- [ ] 02-03-PLAN.md — FIX-04 + FIX-06 + FIX-08: close the dashboard's two genuine empty/loading gaps; lock StatusChip's three redundant channels and BentoGrid's data-driven tone (wave 1)
+- [x] 02-03-PLAN.md — FIX-04 + FIX-06 + FIX-08: close the dashboard's two genuine empty/loading gaps; lock StatusChip's three redundant channels and BentoGrid's data-driven tone (wave 1)
 - [ ] 02-04-PLAN.md — FIX-05 + FIX-07 + FIX-09: shipped-JSX dash guard plus localised admin fallbacks; lock the two standing actions and the always-labelled data source (wave 3)
 - [ ] 02-05-PLAN.md — FIX-09 (D-05, D-06): force Indonesian on read and reconcile DESIGN.md's stale language clauses (wave 1)
 - [ ] 02-06-PLAN.md — FIX-10: app-level ErrorBoundary with a named cause and a working recovery action (wave 1)
@@ -128,7 +128,7 @@ Plan list:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Design-system audit & token lock | 5/5 | Complete    | 2026-10-17 |
-| 2. Defect fixes | 1/6 | In Progress | - |
+| 2. Defect fixes | 2/6 | In Progress | - |
 | 3. Primitive rebuilds | TBD | Not started | - |
 | 4. Shell rebuild | TBD | Not started | - |
 | 5. Page-by-page rebuild | TBD | Not started | - |
