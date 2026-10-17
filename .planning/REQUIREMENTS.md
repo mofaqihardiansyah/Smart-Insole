@@ -18,7 +18,7 @@
 
 ### FIX — Defect fixes (fix precedes rebuild)
 
-- [ ] **FIX-01**: Fix all contrast failures to meet DESIGN.md measured values (fg 18.1:1 AAA, muted 4.8:1 AA, etc.); covers the shadow surface in `tailwind.config.js` + `index.css` — normalize the undeclared `#232427` to the declared `warm-dark` token and remove the `lg`/`overlay` duplication
+- [x] **FIX-01**: Fix all contrast failures to meet DESIGN.md measured values (fg 18.1:1 AAA, muted 4.8:1 AA, etc.); covers the shadow surface in `tailwind.config.js` + `index.css` — normalize the undeclared `#232427` to the declared `warm-dark` token and remove the `lg`/`overlay` duplication
 - [ ] **FIX-02**: Add missing visible focus rings (3:1 or better) on every interactive element
 - [ ] **FIX-03**: Bring every interactive touch target to at least 44×44px (34–40px only from `lg` up)
 - [ ] **FIX-04**: Replace colour-only risk with icon **and** text label **and** colour on every risk element
@@ -122,7 +122,7 @@
 | THEME-01 | Phase 1 | Pending |
 | OIL-01 | Phase 1 | Pending |
 | OIL-02 | Phase 1 | Pending |
-| FIX-01 | Phase 2 | Pending |
+| FIX-01 | Phase 2 | 02-01 |
 | FIX-02 | Phase 2 | Pending |
 | FIX-03 | Phase 2 | Pending |
 | FIX-04 | Phase 2 | Pending |

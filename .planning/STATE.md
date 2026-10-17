@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v1.0
 milestone_name: Audit, Fix, Rebuild UI/UX Design
 current_phase: 02
-current_phase_name: defect-fixes
+current_phase_name: Defect fixes
 status: executing
 stopped_at: Phase 2 context gathered
-last_updated: "2026-10-17T10:21:58.757Z"
+last_updated: "2026-10-17T11:33:46.000Z"
 last_activity: 2026-10-17
-last_activity_desc: Phase 01 complete, transitioned to Phase 2
-state_head: edb88eb80cc0bb55a008f9ae865aac1a305a69a4
+last_activity_desc: Phase 02 plan 01 complete (FIX-01)
+state_head: 85d1691ecf42a362fbb3821f5fc4e318a653ad0b
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 11
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-17)
 
 **Core value:** Trustworthy, legible real-time plantar pressure monitoring that flags risk states clearly — nothing on screen is decorative colour; colour means a foot needs attention.
-**Current focus:** Phase 01 — Design-system audit & token lock
+**Current focus:** Phase 02 — Defect fixes
 
 ## Current Position
 
-Phase: 02 (defect-fixes) — READY TO EXECUTE
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-10-17 — Phase 01 complete, transitioned to Phase 2
+Phase: 02 (Defect fixes) — EXECUTING
+Plan: 2 of 6
+Status: Executing Phase 02
+Last activity: 2026-10-17 — Completed 02-01 (FIX-01: shadow ink + elevation gate)
 
-Progress: [██░░░░░░░░] 17%
+Progress: [██████░░░░] 55%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [██░░░░░░░░] 17%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 01 P05 | 5min | 2 tasks | 1 files |
+| Phase 02 P01 | 3min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,9 @@ Recent decisions affecting current work:
 - (milestone just started)
 - [Phase 01]: Flag-only per D-06: no index.css/tailwind.config.js/component changes in Phase 1; #232427 left unchanged in source
 - [Phase 01]: FIX-01 Phase 2 reference carried for .nav-scrolled #232427 (non-DESIGN.md value); not fixed in Phase 1
+- [Phase 02 P01]: Undeclared fifth neutral shipped at 5 sites, not 1; normalized all five to declared `warm-dark` (23 23 25) with the test inversion in one commit (atomicity)
+- [Phase 02 P01]: `boxShadow.lg` given its own value (0 6px 24px navy 8%), distinct from the modal-only `overlay`; overlay untouched
+- [Phase 02 P01]: Token gate inverts the contract — asserts the declared ink positively and scans the source negatively, so a partial fix fails
 
 ### Pending Todos
 
@@ -85,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-17T08:46:46.668Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-defect-fixes/02-CONTEXT.md
+Last session: 2026-10-17T11:33:46.000Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: None
