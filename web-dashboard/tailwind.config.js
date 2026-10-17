@@ -185,10 +185,10 @@ export default {
         // The one place a control is allowed to float above the page.
         fab: "0 10px 30px -6px rgb(5 150 105 / 0.45)",
         // Landing variant.
-        card: "0 14px 30px -18px rgb(35 36 39 / 0.25)",
-        lift: "0 24px 44px -18px rgb(35 36 39 / 0.30)",
-        nav: "0 10px 30px -14px rgb(35 36 39 / 0.25)",
-        glow: "0 18px 35px -14px rgb(35 36 39 / 0.35)",
+        card: "0 14px 30px -18px rgb(23 23 25 / 0.25)",
+        lift: "0 24px 44px -18px rgb(23 23 25 / 0.30)",
+        nav: "0 10px 30px -14px rgb(23 23 25 / 0.25)",
+        glow: "0 18px 35px -14px rgb(23 23 25 / 0.35)",
       },
 
       backgroundImage: {

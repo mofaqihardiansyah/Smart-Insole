@@ -85,8 +85,21 @@ describe("design tokens", () => {
     expect(config.theme.extend.boxShadow.panel).not.toBe(
       config.theme.extend.boxShadow.card
     );
-    expect(config.theme.extend.boxShadow.card).toMatch(/35 36 39/);
+    // Positive: the landing shadows resolve to the DECLARED warm-dark ink.
+    expect(config.theme.extend.boxShadow.card).toMatch(/23 23 25/);
     expect(config.theme.extend.boxShadow.panel).toMatch(/15 23 42/);
+  });
+
+  it("declares no shade outside the token inventory", () => {
+    // The landing shadow surface is generated entirely by these two files, so
+    // an off-token channel triplet here ships unmeasured on every landing
+    // shadow. The declared warm ink is the only one that may appear.
+    for (const rel of ["../tailwind.config.js", "index.css"]) {
+      const text = fs.readFileSync(path.join(SRC, rel), "utf8");
+      expect(text, `${rel} declares an off-token shade`).not.toMatch(
+        /35 36 39/
+      );
+    }
   });
 
   it("rejects dark: utility variants (light-only theme)", async () => {
