@@ -5,16 +5,16 @@ milestone_name: Audit, Fix, Rebuild UI/UX Design
 current_phase: 02
 current_phase_name: Defect fixes
 status: executing
-stopped_at: Completed 02-06-PLAN.md
-last_updated: "2026-10-17T12:32:51.000Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-10-17T13:08:50.011Z"
 last_activity: 2026-10-17
 last_activity_desc: Phase 02 plan 06 complete (FIX-10 app-level ErrorBoundary)
-state_head: 5f34d9e410047daf732956e7410b2984eab14f50
+state_head: c342c42204345e78c65c944cd1a912ae8258dbff
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -29,8 +29,8 @@ See: .planning/PROJECT.md (updated 2026-10-17)
 ## Current Position
 
 Phase: 02 (Defect fixes) — EXECUTING
-Plan: 6 of 6 (02-02 and 02-04 still outstanding)
-Status: Executing Phase 02
+Plan: 5 of 6 (02-02 in wave 2 and 02-04 in wave 3 still outstanding)
+Status: Ready to execute
 Last activity: 2026-10-17 — Completed 02-06 (FIX-10 app-level ErrorBoundary: page-shaped crash surface + working recovery action)
 
 Progress: [█████████░] 82%
@@ -63,6 +63,7 @@ Progress: [█████████░] 82%
 | Phase 02 P03 | 13min | 3 tasks | 5 files |
 | Phase 02 P05 | 8min | 2 tasks | 4 files |
 | Phase 02 P06 | 17min | 3 tasks | 5 files |
+| Phase 02 P02 | 12 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,11 @@ Recent decisions affecting current work:
 - [Phase 02 P06]: The crash fallback reuses StatePanel's error branch and StateRetry rather than re-composing the icon/title/body/action markup; the codebase already owns that surface (FIX-08) and a second copy would drift
 - [Phase 02 P06]: The boundary is mounted above AppShell (inside Router, outside the providers), so a throw from the auth hook or either provider is caught; the cost is that the fallback reads the dictionary's default language rather than a context value, which is why it calls `t(key)` instead of a hook
 - [Phase 02 P06]: `componentDidCatch` reports under the stable label "[ErrorBoundary] render error" so the reporting assertion can find the boundary's own call and not React's re-throw
+- [Phase 02]: FIX-02/FIX-03 enforced as an automated contract in src/a11y.test.jsx rather than an eyeballed pass: rendered-DOM assertions where a class grep cannot prove a class reached an element, plus a phase-wide .jsx sweep for the two shapes that silently delete a floor (outline reset with no ring; positive tabIndex)
+- [Phase 02]: Both sweeps walk every .jsx under src/ including test fixtures, so the sweep and the plan's acceptance grep measure the same set; two fixture literals were merged onto one line to satisfy that, and both sweeps were proven non-vacuous with throwaway probes
+- [Phase 02]: Landing drawer trigger moved 40x40 to h-11 w-11 (44x44) with explicit focus-visible:ring-2 rather than leaning on the global outline; ring-offset-warm-card chosen because the nav sits on the warm card
+- [Phase 02]: Mobile sheet links received the ring pair only: py-3 plus text-base already clears 44px and the plan forbade touching the padding, so no height utility was added
+- [Phase 02]: BentoCell carries no min-h assertion: it is a Phase 3 primitive with a content-driven floor and appears in no plan's files_modified, so pinning a height would require an undeclared write to a Phase 3 file
 
 ### Pending Todos
 
@@ -101,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-17T12:32:51.000Z
-Stopped at: Completed 02-06-PLAN.md
+Last session: 2026-10-17T13:08:48.589Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
