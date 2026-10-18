@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v1.0
 milestone_name: Audit, Fix, Rebuild UI/UX Design
 current_phase: 3
-current_phase_name: primitive-rebuilds
+current_phase_name: Primitive rebuilds
 status: executing
-stopped_at: Phase 3 UI-SPEC approved
-last_updated: "2026-10-18T00:35:26.972Z"
-last_activity: 2026-10-17
-last_activity_desc: Phase 2 complete, transitioned to Phase 3
-state_head: 6eb5ffad718c8e835e2904a0107dde2b4866c173
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-10-18T03:29:57.108Z"
+last_activity: 2026-10-18
+last_activity_desc: Phase 3 execution started
+state_head: 22b26229cf2ff643a73aea7bc6703fee5d6b927f
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 18
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-10-17)
 
 ## Current Position
 
-Phase: 3 (primitive-rebuilds) — READY TO EXECUTE
-Plan: Not started
+Phase: 3 (Primitive rebuilds) — EXECUTING
+Plan: 2 of 7
 Status: Ready to execute
-Last activity: 2026-10-17 — Phase 2 complete, transitioned to Phase 3
+Last activity: 2026-10-18 — Phase 3 execution started
 
 Progress: [███░░░░░░░] 33%
 
@@ -65,6 +65,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 02 P06 | 17min | 3 tasks | 5 files |
 | Phase 02 P02 | 12 | 3 tasks | 4 files |
 | Phase 02 P04 | 7min | 3 tasks | 3 files |
+| Phase 3 P01 | 26 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,11 @@ Recent decisions affecting current work:
 - [Phase 02 P04]: FIX-05 is asserted as a property of the markup (exactly two header buttons, unchanged after a state transition) plus a source scan for the two reference dead-control labels; the scan assembles its banned strings from parts so it does not match its own file
 - [Phase 02 P04]: FIX-07's dictionary case pairs `hasKey` with the rendered-text comparison, because comparing text rendered from `t(key)` against `t(key)` compares a value to itself and cannot detect a removed dictionary entry
 - [Phase 02 P04]: `renderDashboard` parameterised (`{ autoConnect = true } = {}`) rather than duplicated, and the two new describes nested under the existing top-level describe so they inherit its localStorage-clearing `beforeEach` — the FIX-07 simulator determinism depends on it
+- [Phase 3]: Fix and gate ship in one commit (D-01): a silent fallback that ships a wrong-but-plausible surface is the defect shape, so the correction cannot land without the mechanism that makes the next one impossible.
+- [Phase 3]: hover:opacity-90 retained on warm as instant state feedback, not a transition, so it is outside MOTION 1's transition list; no declared warm hover-fill token exists, so replacing it would have meant inventing a value.
+- [Phase 3]: danger's hover:bg-danger-hover deleted rather than re-valued: --danger-hover is byte-identical to --danger, so the utility was a no-op; a distinct danger hover is a token decision recorded against ROADMAP backlog 999.3 (UI-SPEC 4, option b) and no hex was invented.
+- [Phase 3]: The variantKeys gate's tone= half does not ship in 03-01: its vocabulary is the banner tone set, owned by the new primitive in 03-03 and gated in 03-06.
+- [Phase 3]: Task 3 is tdd=true with no RED commit: Task 1 ships the behaviour by plan design, so all nine assertions were green on first run. Recorded as-is rather than fabricating a RED/GREEN pair; tdd_mode is not enabled and the plan is type=execute.
 
 ### Pending Todos
 
@@ -128,6 +134,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-17T23:24:34.310Z
-Stopped at: Phase 3 UI-SPEC approved
-Resume file: /home/qihh/Documents/Tugas Akhir/smart-insole-ta/.planning/phases/03-primitive-rebuilds/03-UI-SPEC.md
+Last session: 2026-10-18T03:29:57.042Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None

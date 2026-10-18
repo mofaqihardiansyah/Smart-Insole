@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 5
+open_count: 7
 waived_count: 0
 fixed_count: 1
-total_count: 6
-last_updated: 2026-10-17T13:25:11.000Z
+total_count: 8
+last_updated: 2026-10-18T03:28:51.699Z
 ---
 
 # Broken Windows Ledger
@@ -21,6 +21,8 @@ last_updated: 2026-10-17T13:25:11.000Z
 | 4 | 02 | deviation | web-dashboard/dist/index.html |  | web-dashboard/dist/ is tracked in git, so the AGENTS.md-mandated npm run build dirties the tree with build output no plan owns. 02-02 left it out of every commit and restored it to HEAD. Decide dist tracking policy (gitignore vs batch tracking commit). | open |  | 2026-10-17T13:09:48.536Z |  |
 | 5 | 02 | unrun-verify | web-dashboard/src/pages/DashboardPage.test.jsx |  | Manual click-through of the dashboard and the admin users table at 360/768/1280px was not run (02-04 coverage D6): with the simulator running the Simulation banner must read correctly, and the admin users-table fallback must show a localised "not available" rather than a dash. jsdom has no layout engine and cannot run the simulator or a live Firebase connection; owned by GATE-03 / human UAT. | open |  | 2026-10-17T13:25:11.000Z |  |
 | 6 | 02 | deviation | .planning/phases/02-defect-fixes/02-04-PLAN.md |  | The 02-04 plan's `<automated>` commands embed an unquoted absolute path containing a space (`cd /home/qihh/Documents/Tugas Akhir/smart-insole-ta/web-dashboard && …`), which fails as `cd: too many arguments`. Recurrence of the same plan-template defect recorded for 02-02. Commands were run with the shell workdir / a quoted path instead; the plan file was not edited. | open |  | 2026-10-17T13:25:11.000Z |  |
+| 7 | 03 | unrun-verify | web-dashboard/src/pages/landingCta.test.jsx |  | Manual click-through of the rebuilt landing register at 360/768/1280px was not run (03-01 coverage D5): the eight CTAs must read as two registers, the hero primary and secondary actions must look different, and a long localised label must wrap inside the button with no horizontal overflow. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T03:28:51.544Z |  |
+| 8 | 03 | deviation | .planning/phases/03-primitive-rebuilds/03-01-PLAN.md |  | Task 3 is tdd=true but produced no RED commit: Task 1 ships the behaviour by plan design, so all nine assertions were green on first run. Recorded as-is rather than fabricating a RED/GREEN pair. tdd_mode is not enabled and the plan is type=execute, so no RED-gate contract applied. | open |  | 2026-10-18T03:28:51.699Z |  |
 
 ````json
 [
@@ -95,10 +97,36 @@ last_updated: 2026-10-17T13:25:11.000Z
     "phase": "02",
     "file": ".planning/phases/02-defect-fixes/02-04-PLAN.md",
     "line": null,
-    "description": "The 02-04 plan's <automated> commands embed an unquoted absolute path containing a space, which fails as `cd: too many arguments`. Recurrence of the same plan-template defect recorded for 02-02. Commands were run with the shell workdir / a quoted path instead; the plan file was not edited.",
+    "description": "The 02-04 plan's `<automated>` commands embed an unquoted absolute path containing a space (`cd /home/qihh/Documents/Tugas Akhir/smart-insole-ta/web-dashboard && …`), which fails as `cd: too many arguments`. Recurrence of the same plan-template defect recorded for 02-02. Commands were run with the shell workdir / a quoted path instead; the plan file was not edited.",
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-17T13:25:11.000Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 7,
+    "kind": "unrun-verify",
+    "phase": "03",
+    "file": "web-dashboard/src/pages/landingCta.test.jsx",
+    "line": null,
+    "description": "Manual click-through of the rebuilt landing register at 360/768/1280px was not run (03-01 coverage D5): the eight CTAs must read as two registers, the hero primary and secondary actions must look different, and a long localised label must wrap inside the button with no horizontal overflow. jsdom has no layout engine. Owned by GATE-03 / human UAT.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T03:28:51.544Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 8,
+    "kind": "deviation",
+    "phase": "03",
+    "file": ".planning/phases/03-primitive-rebuilds/03-01-PLAN.md",
+    "line": null,
+    "description": "Task 3 is tdd=true but produced no RED commit: Task 1 ships the behaviour by plan design, so all nine assertions were green on first run. Recorded as-is rather than fabricating a RED/GREEN pair. tdd_mode is not enabled and the plan is type=execute, so no RED-gate contract applied.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T03:28:51.699Z",
     "resolved_at": null,
     "milestone": "v1.0"
   }
