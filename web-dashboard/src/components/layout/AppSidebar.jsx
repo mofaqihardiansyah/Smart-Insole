@@ -10,6 +10,7 @@ import {
   Bell,
   Radio,
   FlaskConical,
+  Shield,
 } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
@@ -40,6 +41,7 @@ const ICONS = {
   Settings,
   User,
   Bell,
+  Shield,
 };
 
 const renderIcon = (icon, className = "h-5 w-5") => {
