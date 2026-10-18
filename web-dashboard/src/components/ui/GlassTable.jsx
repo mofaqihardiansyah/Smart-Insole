@@ -67,7 +67,7 @@ const GlassTableCell = ({
       Tag === "th" ? "px-6 py-3.5" : "px-6 py-4",
       "align-middle",
       Tag === "th"
-        ? "bg-surface-2 text-label uppercase text-muted whitespace-nowrap"
+        ? "bg-surface-2 text-label uppercase text-fg-2 whitespace-nowrap"
         : "tabular-data text-body-base text-fg-2",
       className,
     ]

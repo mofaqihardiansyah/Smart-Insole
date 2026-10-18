@@ -15,10 +15,10 @@ import { fileURLToPath } from "node:url";
  *
  * The posture this file enforces is: a wrong key must be caught where it is
  * written, not discovered as a wrong-looking surface. So every LITERAL
- * `variant=` and `level=` value in the shipped `.jsx` must be a member of the
- * vocabulary its primitive declares, and each vocabulary is read from that
- * primitive's own source rather than re-typed here, so a key cannot quietly
- * diverge from the map it is supposed to belong to.
+ * `variant=`, `level=` and `tone=` value in the shipped `.jsx` must be a member
+ * of the vocabulary its primitive declares, and each vocabulary is read from
+ * that primitive's own source rather than re-typed here, so a key cannot
+ * quietly diverge from the map it is supposed to belong to.
  *
  * A computed key is out of scope by design: the source cannot see it, so no
  * static gate can judge it. That half is covered at runtime instead — a bad key
@@ -26,11 +26,11 @@ import { fileURLToPath } from "node:url";
  * declared fallback in production, so a bad key degrades rather than blanks a
  * view.
  *
- * THE `tone=` HALF OF THIS GATE IS NOT MISSING, IT IS NOT DUE YET. The tone
- * vocabulary is the banner tone set, which moves onto the new Alert/Banner
- * primitive in plan 03-03. Plan 03-06 adds the `tone=` half once that primitive
- * exists and is the thing that declares the vocabulary. Writing it here now
- * would freeze a vocabulary that is about to move.
+ * THE CALL-SITE KEY GATE COVERS THREE VOCABULARIES. `variant=` is owned by
+ * `GlassButton`'s variant map plus the literals `StatePanel` branches on,
+ * `level=` by `StatusChip`'s level map, and `tone=` by two owners: `Chip`'s
+ * tone map and the banner tone map on `AlertBanner` (the primitive `StatusBanner`
+ * delegates to). Every literal key must be a member of its owner's vocabulary.
  *
  * The `__oil_ui_eval__` scratch page is excluded by DIRECTORY, following
  * `copy.test.js`: it is imported by no production source and is deleted before
@@ -108,6 +108,8 @@ const handledVariants = (source, label) => {
 const GLASS_BUTTON = readSource("components/ui/GlassButton.jsx");
 const STATE_PANEL = readSource("components/ui/StatePanel.jsx");
 const STATUS_CHIP = readSource("components/ui/StatusChip.jsx");
+const CHIP = readSource("components/ui/Chip.jsx");
+const ALERT_BANNER = readSource("components/ui/AlertBanner.jsx");
 
 const BUTTON_KEYS = mapKeys(
   GLASS_BUTTON,
@@ -123,6 +125,16 @@ const CHIP_KEYS = mapKeys(
   /const LEVELS = \{([\s\S]*?)\n\};/,
   "StatusChip's LEVELS"
 );
+const CHIP_TONE_KEYS = mapKeys(
+  CHIP,
+  /const TONES = \{([\s\S]*?)\n\};/,
+  "Chip's TONES"
+);
+const BANNER_TONE_KEYS = mapKeys(
+  ALERT_BANNER,
+  /const TONES = \{([\s\S]*?)\n\};/,
+  "AlertBanner's TONES"
+);
 
 /**
  * The two registers share one `variant` prop name, so a literal is legal if
@@ -131,6 +143,13 @@ const CHIP_KEYS = mapKeys(
  */
 const DECLARED_VARIANTS = new Set([...BUTTON_KEYS, ...PANEL_KEYS]);
 const DECLARED_LEVELS = new Set(CHIP_KEYS);
+
+/**
+ * The `tone` prop is shared by more components than any other key here, so its
+ * vocabulary is the union of both owners: a filter chip and a banner take the
+ * same four semantic tones, and only `Chip` additionally declares `neutral`.
+ */
+const DECLARED_TONES = new Set([...CHIP_TONE_KEYS, ...BANNER_TONE_KEYS]);
 
 const FILES = collect(SRC);
 
@@ -150,6 +169,7 @@ const collectLiterals = (files, prop) => {
 
 const VARIANT_LITERALS = collectLiterals(FILES, "variant");
 const LEVEL_LITERALS = collectLiterals(FILES, "level");
+const TONE_LITERALS = collectLiterals(FILES, "tone");
 
 /**
  * The floors. A broken walk or a regex that stopped matching would otherwise
@@ -159,6 +179,7 @@ const LEVEL_LITERALS = collectLiterals(FILES, "level");
 const FILE_FLOOR = 40;
 const VARIANT_FLOOR = 8;
 const LEVEL_FLOOR = 2;
+const TONE_FLOOR = 2;
 
 const assertFloors = () => {
   expect(FILES.length, "the walk collected no shipped sources").toBeGreaterThan(
@@ -172,6 +193,10 @@ const assertFloors = () => {
     LEVEL_LITERALS.length,
     "no literal level= key was collected"
   ).toBeGreaterThanOrEqual(LEVEL_FLOOR);
+  expect(
+    TONE_LITERALS.length,
+    "no literal tone= key was collected"
+  ).toBeGreaterThanOrEqual(TONE_FLOOR);
 };
 
 describe("a call-site key must be declared", () => {
@@ -200,6 +225,30 @@ describe("a call-site key must be declared", () => {
 
     expect(
       undeclared.map(({ file, value }) => `${file} passes level="${value}"`)
+    ).toEqual([]);
+  });
+
+  it("declares every literal tone= key a call site passes, across both owners", () => {
+    assertFloors();
+
+    // Both owners have to have been read: an unreadable map throws inside
+    // `mapKeys`, and an empty one would make every tone below undeclared and
+    // fail loudly rather than quietly.
+    expect(CHIP_TONE_KEYS.length, "Chip declares no tones").toBeGreaterThan(0);
+    expect(
+      BANNER_TONE_KEYS.length,
+      "AlertBanner declares no tones"
+    ).toBeGreaterThan(0);
+
+    const undeclared = TONE_LITERALS.filter(
+      ({ value }) => !DECLARED_TONES.has(value)
+    );
+
+    expect(
+      undeclared.map(
+        ({ file, value }) =>
+          `${file} passes tone="${value}", which neither Chip nor AlertBanner declares`
+      )
     ).toEqual([]);
   });
 });
