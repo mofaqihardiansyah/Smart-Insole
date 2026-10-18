@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 10
+open_count: 12
 waived_count: 0
 fixed_count: 1
-total_count: 11
-last_updated: 2026-10-18T03:39:51.609Z
+total_count: 13
+last_updated: 2026-10-18T04:02:41.332Z
 ---
 
 # Broken Windows Ledger
@@ -26,6 +26,8 @@ last_updated: 2026-10-18T03:39:51.609Z
 | 9 | 03 | unrun-verify | web-dashboard/src/pages/MonitoringPage.jsx |  | The 360/768/1280 click-through of the rebuilt series path (chart plot, legend readout, screen-reader table, window control) could not be run: this environment has no browser. The structural half is locked by unit test; the visual half needs a human pass at the three breakpoints (AGENTS.md Delivery Gate). | open |  | 2026-10-18T03:39:51.224Z |  |
 | 10 | 03 | deviation | web-dashboard/src/components/monitoring/TelemetryChart.test.jsx |  | Rule 2: added the literal three-series floor to TelemetryChart.test.jsx. The plan's Task-2 action derives the count from SERIES.length, which stayed self-consistent when SERIES was probed down to two entries; threat T-03-05 names 'asserts the three-series count' as the mitigation, so the literal floor was added to complete it. | open |  | 2026-10-18T03:39:51.412Z |  |
 | 11 | 03 | deviation | web-dashboard/src/components/monitoring/TelemetryChart.test.jsx |  | Rule 1: the new chart test's literal SVG dash attribute name tripped designTokens.test.js, whose sweep reads any stroke-* token in a .jsx as a Tailwind utility. The name is now assembled from parts at the point of use. | open |  | 2026-10-18T03:39:51.609Z |  |
+| 12 | 03 | unrun-verify | web-dashboard/src/components/ui/AlertBanner.jsx |  | Manual click-through of the rebuilt banner primitives at 360/768/1280px was not run (03-03 coverage D5/D6): the cause/next-action hierarchy must read as two tiers at every breakpoint, a long localised next-action label must wrap inside the link without horizontal overflow, and the danger tone must stay perceivable by more than hue alone. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T04:02:37.487Z |  |
+| 13 | 03 | deviation | web-dashboard/src/pages/LoginPage.jsx | 114 | Consequence of D-03: the AlertBanner primitive dev-warns on a danger tone with a cause but no next action and no children. LoginPage.jsx:114 and RegisterPage.jsx:100 are exactly that shape (pre-existing pages, outside this plan's scope fence), so they now emit the warning in development. Production copy is unchanged and the fallback is benign; the repair belongs to PAGE-08/PAGE-09 (or 03-07). | open |  | 2026-10-18T04:02:41.332Z |  |
 
 ````json
 [
@@ -169,6 +171,32 @@ last_updated: 2026-10-18T03:39:51.609Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-18T03:39:51.609Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 12,
+    "kind": "unrun-verify",
+    "phase": "03",
+    "file": "web-dashboard/src/components/ui/AlertBanner.jsx",
+    "line": null,
+    "description": "Manual click-through of the rebuilt banner primitives at 360/768/1280px was not run (03-03 coverage D5/D6): the cause/next-action hierarchy must read as two tiers at every breakpoint, a long localised next-action label must wrap inside the link without horizontal overflow, and the danger tone must stay perceivable by more than hue alone. jsdom has no layout engine. Owned by GATE-03 / human UAT.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:02:37.487Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 13,
+    "kind": "deviation",
+    "phase": "03",
+    "file": "web-dashboard/src/pages/LoginPage.jsx",
+    "line": 114,
+    "description": "Consequence of D-03: the AlertBanner primitive dev-warns on a danger tone with a cause but no next action and no children. LoginPage.jsx:114 and RegisterPage.jsx:100 are exactly that shape (pre-existing pages, outside this plan's scope fence), so they now emit the warning in development. Production copy is unchanged and the fallback is benign; the repair belongs to PAGE-08/PAGE-09 (or 03-07).",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:02:41.332Z",
     "resolved_at": null,
     "milestone": "v1.0"
   }
