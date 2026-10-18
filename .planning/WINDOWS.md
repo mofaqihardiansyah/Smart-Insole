@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 32
+open_count: 38
 waived_count: 0
 fixed_count: 1
-total_count: 33
-last_updated: 2026-10-18T05:13:45.056Z
+total_count: 39
+last_updated: 2026-10-18T07:43:18.440Z
 ---
 
 # Broken Windows Ledger
@@ -48,6 +48,12 @@ last_updated: 2026-10-18T05:13:45.056Z
 | 31 | 04 | deviation | web-dashboard/src/components/layout/shell.test.jsx |  | The shell had zero test coverage before this file: no test touched AppLayout, AppSidebar, AppTopbar or AppSearch. The six SHELL requirements were roadmap prose with no gate. This is the phase's real deliverable. | open |  | 2026-10-18T05:13:39.382Z |  |
 | 32 | 04 | unrun-verify | web-dashboard/src/components/layout/AppLayout.jsx |  | 360/768/1280 click-through of the shell not run: the 288px rail, the 72px bar, the 1400px cap and the drawer's 19rem width must be checked at all three widths, including that the drawer does not overflow at 360px. jsdom applies no stylesheets, so it can prove the class and not the width. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T05:13:41.462Z |  |
 | 33 | 04 | unrun-verify | web-dashboard/src/App.jsx |  | 360/768/1280 click-through of the new first paint not run: the product mark must sit centred with the announced sentence under it at every width. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T05:13:45.056Z |  |
+| 34 | 05 | deviation | web-dashboard/src/context/InsoleContext.jsx |  | An orphaned Theme preference comment (was lines 178-185) documented a theme state that does not exist anywhere under src/. Removed in Batch 0 before the pages are rebuilt, because a page author reading it would have re-added a theme switch, which DESIGN.md:432 refuses as a dead control. | open |  | 2026-10-18T07:43:17.507Z |  |
+| 35 | 05 | deviation | web-dashboard/src/pages/ProfilePage.jsx |  | An orphaned comment claimed this page carries the labelled theme control. The control does not exist; the page carries the language selector instead, which LANG-01 now removes too. Removed in Batch 0. | open |  | 2026-10-18T07:43:17.693Z |  |
+| 36 | 05 | deviation | web-dashboard/src/components/layout/LanguageToggle.jsx |  | LANG-01 executed as option a1 (the user's choice): the toggle is deleted with all four mounts (rail, topbar, drawer, landing) and ProfilePage's own language picker. setLanguage stays on the context because two tests drive it and the sweep-wide a3 was declined; DICTIONARY.en (~360 lines) stays as dead weight by the same decision. | open |  | 2026-10-18T07:43:17.874Z |  |
+| 37 | 05 | deviation | web-dashboard/src/utils/i18n.js |  | LANGUAGES is now a single-entry registry (id only). dictionaryKeys(), the id/en parity tests and t()'s lang parameter are untouched by decision. | open |  | 2026-10-18T07:43:18.056Z |  |
+| 38 | 05 | deviation | DESIGN.md |  | DESIGN.md:326 named the topbar's account controls as (language, notifications, profile). After LANG-01 the clause names (notifications, profile) and records the switch's removal. Awaiting owner countersignature, non-blocking. | open |  | 2026-10-18T07:43:18.260Z |  |
+| 39 | 05 | deviation | docs/DESIGN-BRIEF |  | The October design brief predates the redesign and contradicts the shipped product (bilingual ID/EN vs LANG-01, dark glassmorphism palette vs light-only, FloatingNavbar which no longer exists). A historical note in its header marks section 5's page inventory as the surviving authority and the rest as historical record. | open |  | 2026-10-18T07:43:18.440Z |  |
 
 ````json
 [
@@ -477,6 +483,84 @@ last_updated: 2026-10-18T05:13:45.056Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-18T05:13:45.056Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 34,
+    "kind": "deviation",
+    "phase": "05",
+    "file": "web-dashboard/src/context/InsoleContext.jsx",
+    "line": null,
+    "description": "An orphaned Theme preference comment (was lines 178-185) documented a theme state that does not exist anywhere under src/. Removed in Batch 0 before the pages are rebuilt, because a page author reading it would have re-added a theme switch, which DESIGN.md:432 refuses as a dead control.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T07:43:17.507Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 35,
+    "kind": "deviation",
+    "phase": "05",
+    "file": "web-dashboard/src/pages/ProfilePage.jsx",
+    "line": null,
+    "description": "An orphaned comment claimed this page carries the labelled theme control. The control does not exist; the page carries the language selector instead, which LANG-01 now removes too. Removed in Batch 0.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T07:43:17.693Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 36,
+    "kind": "deviation",
+    "phase": "05",
+    "file": "web-dashboard/src/components/layout/LanguageToggle.jsx",
+    "line": null,
+    "description": "LANG-01 executed as option a1 (the user's choice): the toggle is deleted with all four mounts (rail, topbar, drawer, landing) and ProfilePage's own language picker. setLanguage stays on the context because two tests drive it and the sweep-wide a3 was declined; DICTIONARY.en (~360 lines) stays as dead weight by the same decision.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T07:43:17.874Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 37,
+    "kind": "deviation",
+    "phase": "05",
+    "file": "web-dashboard/src/utils/i18n.js",
+    "line": null,
+    "description": "LANGUAGES is now a single-entry registry (id only). dictionaryKeys(), the id/en parity tests and t()'s lang parameter are untouched by decision.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T07:43:18.056Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 38,
+    "kind": "deviation",
+    "phase": "05",
+    "file": "DESIGN.md",
+    "line": null,
+    "description": "DESIGN.md:326 named the topbar's account controls as (language, notifications, profile). After LANG-01 the clause names (notifications, profile) and records the switch's removal. Awaiting owner countersignature, non-blocking.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T07:43:18.260Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 39,
+    "kind": "deviation",
+    "phase": "05",
+    "file": "docs/DESIGN-BRIEF",
+    "line": null,
+    "description": "The October design brief predates the redesign and contradicts the shipped product (bilingual ID/EN vs LANG-01, dark glassmorphism palette vs light-only, FloatingNavbar which no longer exists). A historical note in its header marks section 5's page inventory as the surviving authority and the rest as historical record.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T07:43:18.440Z",
     "resolved_at": null,
     "milestone": "v1.0"
   }

@@ -1,5 +1,14 @@
 # Design Brief — Smart Insole IoT Dashboard (Web)
 
+> **HISTORIS (ditandai 18 Oktober 2026).** Dokumen ini adalah baseline *sebelum*
+> redesign, dan sebagian besar sudah tertinggal di belakang produk yang dikirim:
+> §2.5 "Bilingual ID/EN" sudah tidak berlaku (dapat bahasa dihapus, hanya bahasa
+> Indonesia); §3 palet gelap glassmorphism diganti light-only (lihat `DESIGN.md`,
+> yang sekarang menjadi otoritas desain); §6 menyebut `FloatingNavbar.jsx` dan
+> `GlassCard` yang sudah tidak ada bentuknya seperti itu. Yang tetap hidup dan
+> valid: **§5 (inventaris isi per halaman)** — gunakan itu sebagai daftar isi
+> sah per route; sisanya dibaca sebagai rekaman historis, bukan instruksi.
+>
 > Dokumen ini ditujukan untuk AI agent/designer: berisi semua yang perlu diketahui
 > untuk merancang ulang UI dashboard ini **tanpa merusak logika yang sudah jalan**.
 > Tanggal: 11 Oktober 2026.
