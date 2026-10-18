@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 38
+open_count: 39
 waived_count: 0
 fixed_count: 3
-total_count: 41
-last_updated: 2026-10-18T08:17:05.342Z
+total_count: 42
+last_updated: 2026-10-18T08:23:50.621Z
 ---
 
 # Broken Windows Ledger
@@ -56,6 +56,7 @@ last_updated: 2026-10-18T08:17:05.342Z
 | 39 | 05 | deviation | docs/DESIGN-BRIEF |  | The October design brief predates the redesign and contradicts the shipped product (bilingual ID/EN vs LANG-01, dark glassmorphism palette vs light-only, FloatingNavbar which no longer exists). A historical note in its header marks section 5's page inventory as the surviving authority and the rest as historical record. | open |  | 2026-10-18T07:43:18.440Z |  |
 | 40 | 5 | deviation | web-dashboard/src/pages/AdminPage.jsx |  | Accepted pattern, same as the login page: Firebase error strings flow into panel descriptions and banner bodies as raw technical detail beneath a translated title. Every fallback literal is dictionary-sourced; window.confirm stays native for destructive confirmation, window.alert is gone. Repaired by a2d38550. | open |  | 2026-10-18T08:17:05.169Z |  |
 | 41 | 5 | unrun-verify | web-dashboard/src/pages/AdminPage.jsx |  | Visual pass on the rebuilt admin console (banners, threshold GlassInputs, 360/768/1280) is owner-run; no browser in the agent environment. | open |  | 2026-10-18T08:17:05.342Z |  |
+| 42 | 5 | unrun-verify | web-dashboard/src/pages/LandingPage.jsx |  | The re-derived landing scale (e0a...) was only gated statically: 0 raw size/radius classes remain in the file, the build resolves every new token. The owner-run 360/768/1280 pass must re-check the landing visual rhythm after ee-batch: landing-h2 clamp across section headings, 26px to 28px cell radii, and the nav 44px targets that were not touched. | open |  | 2026-10-18T08:23:50.621Z |  |
 
 ````json
 [
@@ -589,6 +590,19 @@ last_updated: 2026-10-18T08:17:05.342Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-18T08:17:05.342Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 42,
+    "kind": "unrun-verify",
+    "phase": "5",
+    "file": "web-dashboard/src/pages/LandingPage.jsx",
+    "line": null,
+    "description": "The re-derived landing scale (e0a...) was only gated statically: 0 raw size/radius classes remain in the file, the build resolves every new token. The owner-run 360/768/1280 pass must re-check the landing visual rhythm after ee-batch: landing-h2 clamp across section headings, 26px to 28px cell radii, and the nav 44px targets that were not touched.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T08:23:50.621Z",
     "resolved_at": null,
     "milestone": "v1.0"
   }
