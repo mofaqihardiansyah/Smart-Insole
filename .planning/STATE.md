@@ -2,19 +2,19 @@
 gsd_state_version: "1.0"
 milestone: v1.0
 milestone_name: Audit, Fix, Rebuild UI/UX Design
-current_phase: 3
-current_phase_name: Primitive rebuilds
-status: executing
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-10-18T03:43:06.149Z"
+current_phase: 4
+current_phase_name: Shell rebuild
+status: ready
+stopped_at: Phase 3 closed — 7/7 plans, one phase summary, no per-plan ceremony
+last_updated: "2026-10-18T11:35:00.000Z"
 last_activity: 2026-10-18
-last_activity_desc: Phase 3 execution started
-state_head: d3a30326105368bd890c803b215af33684960bff
+last_activity_desc: Phase 3 closed (primitives rebuilt, gates landed)
+state_head: e5315843
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 18
-  completed_plans: 13
+  completed_plans: 18
 ---
 
 # Project State
@@ -24,16 +24,35 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-17)
 
 **Core value:** Trustworthy, legible real-time plantar pressure monitoring that flags risk states clearly — nothing on screen is decorative colour; colour means a foot needs attention.
-**Current focus:** Phase 3 — Primitive rebuilds
+**Current focus:** Phase 4 — Shell rebuild
 
 ## Current Position
 
-Phase: 3 (Primitive rebuilds) — EXECUTING
-Plan: 3 of 7
-Status: Ready to execute
-Last activity: 2026-10-18 — Phase 3 execution started
+Phase: 3 (Primitive rebuilds) — COMPLETE
+Plan: 7 of 7
+Status: Ready for Phase 4
+Last activity: 2026-10-18 — Phase 3 closed; all 7 plans landed and the full suite is green
 
-Progress: [███░░░░░░░] 33%
+Progress: [██████████] 100%
+
+## Phase 3 outcome (closed directly, without the per-plan machinery)
+
+Seven plans landed in one session after the GSD phase machinery was turned off.
+Gate for every change: `npm --prefix web-dashboard test` and
+`npm --prefix web-dashboard run build`. Final state: **34 test files, 314 tests,
+build exit 0.** The phase summary lives in `03-PHASE-SUMMARY.md`; per-plan
+SUMMARYs are short and exist only because the ROADMAP's progress counter reads
+them.
+
+Two design decisions were made while executing and are recorded, not absorbed:
+
+- The bento icon tile keeps its decorative `h-12 w-12` square. The content-driven
+  floor applies to the CELL (no min, fixed or max height); the tile holds no copy
+  that could be clipped. 03-06's letter and its own acceptance criteria
+  contradicted each other; the invariant won.
+- `aria-live="off"` does not exist in the source and was not added. The criterion's
+  stronger form — live numbers outside every live region — is what the
+  `liveRegion.test.js` gate asserts.
 
 ## Performance Metrics
 
@@ -107,6 +126,24 @@ Recent decisions affecting current work:
 - [Phase 3]: series.js is the single source for the three CVD-safe series values and exports the D-05 carve-out (NON_IDENTITY_TRACE = --secondary) so plan 03-04 proves it by import instead of hard-coding the variable name; the module names --series-N only and its test fails on any hex literal, which keeps index.css the only place the measured values are written.
 - [Phase 3]: The TELEMETRY_SERIES alias and its single importer moved in one task: 03-CONTEXT.md:49 recorded the re-export as zero-importer but MonitoringPage.jsx:21,64 consumed it, so deleting the re-export first would have broken the build (threat T-03-06).
 - [Phase 3]: A SERIES.length comparison is never the only floor in a chart test: probing SERIES down to two entries left TelemetryChart.test.jsx fully green, so a literal three-series assertion was added to complete the mitigation threat T-03-05 names. A green task-scoped run is not a green plan: the token gate in another file caught the new test's literal SVG dash attribute name, which only the plan-level full-suite run could see.
+- [Phase 3]: `AlertBanner` owns the tone-to-role matrix and delegates the role decision to `feedbackState.roleFor`; `StatusBanner` is reduced to a 39-line delegate with a byte-identical prop signature and both exports, which is what keeps thirteen call sites in eight files working unchanged.
+- [Phase 3]: The donut carries no dash channel. `SERIES` entries declare a `dash` for the line charts, but a dashed stroke on a contiguous ring reads as a broken ring rather than as a redundant channel, so identity on the donut is recovered from the labelled caption. The plan named only `varName` for the donut.
+- [Phase 3]: The donut's unknowable case is a GAP, not a closed ring: an unknown zone key draws no arc while its offset still advances, and its caption row is kept on the neutral `--muted` ink, so the ring and the caption never disagree.
+- [Phase 3]: The donut's two centre sizes resolve to the declared scale as classes (`text-stat` 30px, `text-micro` 11px) rather than as two numbers chosen in place, so they cannot drift from the scale.
+- [Phase 3]: The `tone=` half of the call-site gate has TWO owners — `Chip`'s tone map and the banner tone map on `AlertBanner` — because the prop is shared by more components than any other key the gate covers. Both maps are read with `mapKeys`, which throws rather than returning empty.
+- [Phase 3]: `GlassTable.test.jsx` is a new file outside 03-06's `files_modified`, chosen deliberately: a source-scanning static gate is the wrong owner for a jsdom render assertion, and the plan permitted either home.
+- [Phase 3]: `StatePanel` keeps its register byte-identical while the role decision moves to `roleFor`; the second half of the two-tier contract arrives as `nextAction` plus an announced `nextActionLabel` prop, following `AlertBanner`'s `dismissLabel` precedent rather than a dictionary lookup inside a pure primitive.
+- [Phase 3]: The quarantine gate strips comments before searching, so a chart's own header comment can name the property it reads. Without stripping, the alternative was exempting every chart file by name, which would have weakened the rule to "charts may reference series properties".
+- [Phase 3]: Two new gates were proved failing before being trusted. The `liveRegion` probe caught a real weakness in the first version — it compared the set of files rather than occurrences, so a second region beside an existing one passed; it now pushes one entry per occurrence. The quarantine probe was run against a `.js` file specifically, to prove the widened walk reaches what `designTokens.test.js`'s `.jsx`-only walk skips.
+
+### Phase 3 gates added
+
+| Gate | File | What it fails on |
+|---|---|---|
+| Call-site keys | `variantKeys.test.js` | an undeclared literal `variant=`, `level=` or `tone=` in any shipped `.jsx` |
+| Series quarantine | `seriesQuarantine.test.js` | a raw `--series-N` outside `index.css` and `utils/series.js`, in `.jsx` or `.js` |
+| Radius scale | `radiusScale.test.js` | a bare `rounded` or an undeclared radius step under `src/components/ui/` |
+| Live regions | `liveRegion.test.js` | a fifth polite region, a live number inside one, or a changed `InsoleContext` guard |
 
 ### Pending Todos
 
@@ -128,7 +165,26 @@ None yet.
   Surfaced by the Phase 02 UI audit.
 - ⚠️ [Phase 02] The dashboard error arm added by 02-03 is unreachable (`InsoleContext.jsx:319-326`,
   `:347-348`), so its retry path is untested. This is the code review's WR-02, independently
-  confirmed by the UI audit.
+  confirmed by the UI audit. **Re-confirmed in Phase 3**: WR-02 is deliberately still open, and
+  `liveRegion.test.js` now asserts the guard verbatim so a later "cleanup" fails a gate.
+- ⚠️ [Phase 3] Eight feedback panels name a cause with no next step:
+  `DashboardPage.jsx:515`, `DashboardPage.jsx:557`, `DevicePage.jsx:142`, `HistoryPage.jsx:305`,
+  `MonitoringPage.jsx:137`, `ProfilePage.jsx:82`, `ProfilePage.jsx:185`, `SettingsPage.jsx:303`.
+  Phase 3's repair set was AdminPage's five sites by plan scope; the sweep is scoped to that file
+  for the same reason. **Owner: Phase 5.** `StatePanel` warns about them in development meanwhile.
+- ⚠️ [Phase 3] `web-dashboard/dist/` is tracked in git, so every `npm run build` dirties the tree
+  with new hashed asset names. Every Phase 3 build was reverted rather than staged. Not fixed here
+  (it is a repo-hygiene decision, not a plan's), recorded as a broken window.
+- ⚠️ [Phase 3] `DESIGN.md`'s two amendments (the `Single source` clause and the `TrendChart`
+  carve-out record) are **awaiting owner countersignature**. Non-blocking: the code side of D-04 and
+  D-05 is enforced by the quarantine gate and 03-04's tests.
+- ⚠️ [Phase 3] `DESIGN.md:518-541` F-01 is reported, not fixed. No palette hex value was changed by
+  Phase 3; an owner-signed amendment is that finding's remedy.
+- ⚠️ [Phase 3] `App.jsx:111` `animate-spin` still violates MOTION 1. Owner: Phase 4 (N-05), carried
+  from the Phase 3 UI contract.
+- ⚠️ [Phase 3] `03-UI-SPEC.md` C-03's heading claims its off-grid-spacing list is complete but omits
+  `StatusBanner.jsx:57 mt-0.5`, `BentoGrid.jsx:70 ml-1.5` and `LoadDonut.jsx:99 space-y-2.5`.
+  Cosmetic spec defect; the list is not used by any gate.
 
 ## Deferred Items
 
@@ -138,6 +194,12 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-18T03:43:06.074Z
-Stopped at: Completed 03-02-PLAN.md
-Resume file: None
+Last session: 2026-10-18T11:35:00.000Z
+Stopped at: Phase 3 closed — 7/7 plans, full suite green (34 files / 314 tests), build exit 0
+Resume file: `.planning/phases/03-primitive-rebuilds/03-PHASE-SUMMARY.md`
+
+**Next:** Phase 4 (shell rebuild) — rail, topbar, search and drawer. `ROADMAP.md` still lists
+Phases 4-6 with `Plans: TBD`; the remaining work is the shell, then the ten pages plus the landing
+page, then the delivery gate. The three-viewport click-through (360/768/1280) is required by repo
+convention and remains structurally unverifiable in this environment: there is no browser here, so
+the user runs it.

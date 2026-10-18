@@ -77,6 +77,7 @@ Plan list:
   5. Realtime data contract preserved: aria-live="off" on live numbers, one polite region for risk changes, autoConnect={Boolean(user)} guard intact
 
 **Plans:** 7/7 plans executed
+**Outcome**: complete 2026-10-18. Full suite 34 files / 314 tests green; `npm run build` exit 0. See `.planning/phases/03-primitive-rebuilds/03-PHASE-SUMMARY.md`.
 
 Plan list:
 - [x] 03-01-PLAN.md — COMP-01: restore the landing button variants and land the `variant=`/`level=` dev-warning gate (wave 1)

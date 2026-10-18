@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 12
+open_count: 24
 waived_count: 0
 fixed_count: 1
-total_count: 13
-last_updated: 2026-10-18T04:02:41.332Z
+total_count: 25
+last_updated: 2026-10-18T04:34:16.130Z
 ---
 
 # Broken Windows Ledger
@@ -28,6 +28,18 @@ last_updated: 2026-10-18T04:02:41.332Z
 | 11 | 03 | deviation | web-dashboard/src/components/monitoring/TelemetryChart.test.jsx |  | Rule 1: the new chart test's literal SVG dash attribute name tripped designTokens.test.js, whose sweep reads any stroke-* token in a .jsx as a Tailwind utility. The name is now assembled from parts at the point of use. | open |  | 2026-10-18T03:39:51.609Z |  |
 | 12 | 03 | unrun-verify | web-dashboard/src/components/ui/AlertBanner.jsx |  | Manual click-through of the rebuilt banner primitives at 360/768/1280px was not run (03-03 coverage D5/D6): the cause/next-action hierarchy must read as two tiers at every breakpoint, a long localised next-action label must wrap inside the link without horizontal overflow, and the danger tone must stay perceivable by more than hue alone. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T04:02:37.487Z |  |
 | 13 | 03 | deviation | web-dashboard/src/pages/LoginPage.jsx | 114 | Consequence of D-03: the AlertBanner primitive dev-warns on a danger tone with a cause but no next action and no children. LoginPage.jsx:114 and RegisterPage.jsx:100 are exactly that shape (pre-existing pages, outside this plan's scope fence), so they now emit the warning in development. Production copy is unchanged and the fallback is benign; the repair belongs to PAGE-08/PAGE-09 (or 03-07). | open |  | 2026-10-18T04:02:41.332Z |  |
+| 14 | 03 | deviation | web-dashboard/src/components/ui/GlassTable.test.jsx |  | New test file outside 03-06's files_modified. The plan allowed the raised-head ink assertion in 'the gate's file or the existing table coverage'; no table coverage existed, and a source-scanning static gate (variantKeys.test.js) is the wrong owner for a jsdom render assertion. The table's contract therefore lives beside the table, following the Chip.test.jsx precedent. | open |  | 2026-10-18T04:34:13.979Z |  |
+| 15 | 03 | deviation | web-dashboard/src/components/dashboard/BentoGrid.jsx |  | The bento icon tile keeps its decorative h-12 w-12 square, against the letter of 03-06 Task 3. That task asked for no height utility at all 'and the same for the icon tile inside it', while its own acceptance criteria require 'git diff BentoGrid.jsx' to be empty. The lock asserts the full no-height property on the CELL (min, fixed, max) and on the tile asserts no floor, ceiling or stretch. The protected invariant is unaffected: the tile holds no copy that could be clipped. | open |  | 2026-10-18T04:34:14.169Z |  |
+| 16 | 03 | deviation | web-dashboard/src/components/ui/StatePanel.jsx |  | nextActionLabel is a prop rather than a dictionary lookup inside the primitive (03-07). StatePanel is pure and tested without providers and this codebase has no language context, so a lookup would either make the primitive impure or hardcode a language. The caller localises it, matching AlertBanner's dismissLabel precedent. | open |  | 2026-10-18T04:34:14.368Z |  |
+| 17 | 03 | deviation | web-dashboard/src/seriesQuarantine.test.js |  | Comments are stripped before the quarantine search (03-05), which the plan's action text did not specify. Without stripping, TelemetryChart.jsx:12 (a header comment naming the series property) would fail a gate it should pass; the alternative, exempting every chart file by name, would weaken the rule to 'charts may reference series properties'. | open |  | 2026-10-18T04:34:14.555Z |  |
+| 18 | 03 | deviation | .planning/ROADMAP.md |  | Success criterion 5 is phrased as aria-live=off on the live pressure numbers. No such attribute exists anywhere under src/: the numbers are simply outside every live region, which is the stronger form of the same rule. liveRegion.test.js asserts the absence rather than adding the attribute, so both adding an 'off' attribute and adding a real region fail the gate. | open |  | 2026-10-18T04:34:14.755Z |  |
+| 19 | 03 | deviation | .planning/phases/03-primitive-rebuilds/03-UI-SPEC.md |  | C-03's heading claims its off-grid-spacing list is complete but omits StatusBanner.jsx:57 mt-0.5, BentoGrid.jsx:70 ml-1.5 and LoadDonut.jsx:99 space-y-2.5. Cosmetic spec defect: the list is read by no gate. | open |  | 2026-10-18T04:34:14.942Z |  |
+| 20 | 03 | deviation | web-dashboard/src/pages/AdminPage.jsx |  | The two-tier feedback sweep is scoped to AdminPage.jsx (03-07). A whole-app sweep fails today on eight panels that name a cause with no next step: DashboardPage.jsx:515, DashboardPage.jsx:557, DevicePage.jsx:142, HistoryPage.jsx:305, MonitoringPage.jsx:137, ProfilePage.jsx:82, ProfilePage.jsx:185, SettingsPage.jsx:303. StatePanel dev-warns about them; the repair belongs to Phase 5. | open |  | 2026-10-18T04:34:15.130Z |  |
+| 21 | 03 | deviation | DESIGN.md |  | The two DESIGN.md amendments (the Single source clause naming src/utils/series.js, and the TrendChart non-identity carve-out record) are awaiting owner countersignature. Non-blocking: the code side of D-04/D-05 is enforced by seriesQuarantine.test.js and 03-04's tests. | open |  | 2026-10-18T04:34:15.338Z |  |
+| 22 | 03 | unrun-verify | web-dashboard/src/components/ui/GlassTable.jsx |  | 360/768/1280 click-through of the raised column head not run: the fg-2 ink must clear AA on the bg-surface-2 tint at every breakpoint, at 12px uppercase. jsdom has no layout engine and cannot measure contrast on a rendered surface. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T04:34:15.532Z |  |
+| 23 | 03 | unrun-verify | web-dashboard/src/components/ui/StatePanel.jsx |  | 360/768/1280 click-through of the rebuilt state primitive not run (03-07): the next-action paragraph must read as a second tier under the description at every breakpoint, and a long localised next-step string must wrap without horizontal overflow. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T04:34:15.745Z |  |
+| 24 | 03 | unrun-verify | web-dashboard/src/components/dashboard/LoadDonut.jsx |  | 360/768/1280 click-through of the rebuilt donut not run (03-04): the three arcs must stay distinguishable at every breakpoint and the caption must stay readable under the ring. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T04:34:15.936Z |  |
+| 25 | 03 | unrun-verify | web-dashboard/src/components/monitoring/TrendChart.jsx |  | 360/768/1280 click-through of the rebuilt trend trace not run (03-04): the carve-out sage line must keep the contrast the palette table measures for it against the plot surface, and the threshold label must not collide with the trace at 360px. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T04:34:16.130Z |  |
 
 ````json
 [
@@ -197,6 +209,162 @@ last_updated: 2026-10-18T04:02:41.332Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-18T04:02:41.332Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 14,
+    "kind": "deviation",
+    "phase": "03",
+    "file": "web-dashboard/src/components/ui/GlassTable.test.jsx",
+    "line": null,
+    "description": "New test file outside 03-06's files_modified. The plan allowed the raised-head ink assertion in 'the gate's file or the existing table coverage'; no table coverage existed, and a source-scanning static gate (variantKeys.test.js) is the wrong owner for a jsdom render assertion. The table's contract therefore lives beside the table, following the Chip.test.jsx precedent.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:13.979Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 15,
+    "kind": "deviation",
+    "phase": "03",
+    "file": "web-dashboard/src/components/dashboard/BentoGrid.jsx",
+    "line": null,
+    "description": "The bento icon tile keeps its decorative h-12 w-12 square, against the letter of 03-06 Task 3. That task asked for no height utility at all 'and the same for the icon tile inside it', while its own acceptance criteria require 'git diff BentoGrid.jsx' to be empty. The lock asserts the full no-height property on the CELL (min, fixed, max) and on the tile asserts no floor, ceiling or stretch. The protected invariant is unaffected: the tile holds no copy that could be clipped.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:14.169Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 16,
+    "kind": "deviation",
+    "phase": "03",
+    "file": "web-dashboard/src/components/ui/StatePanel.jsx",
+    "line": null,
+    "description": "nextActionLabel is a prop rather than a dictionary lookup inside the primitive (03-07). StatePanel is pure and tested without providers and this codebase has no language context, so a lookup would either make the primitive impure or hardcode a language. The caller localises it, matching AlertBanner's dismissLabel precedent.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:14.368Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 17,
+    "kind": "deviation",
+    "phase": "03",
+    "file": "web-dashboard/src/seriesQuarantine.test.js",
+    "line": null,
+    "description": "Comments are stripped before the quarantine search (03-05), which the plan's action text did not specify. Without stripping, TelemetryChart.jsx:12 (a header comment naming the series property) would fail a gate it should pass; the alternative, exempting every chart file by name, would weaken the rule to 'charts may reference series properties'.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:14.555Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 18,
+    "kind": "deviation",
+    "phase": "03",
+    "file": ".planning/ROADMAP.md",
+    "line": null,
+    "description": "Success criterion 5 is phrased as aria-live=off on the live pressure numbers. No such attribute exists anywhere under src/: the numbers are simply outside every live region, which is the stronger form of the same rule. liveRegion.test.js asserts the absence rather than adding the attribute, so both adding an 'off' attribute and adding a real region fail the gate.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:14.755Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 19,
+    "kind": "deviation",
+    "phase": "03",
+    "file": ".planning/phases/03-primitive-rebuilds/03-UI-SPEC.md",
+    "line": null,
+    "description": "C-03's heading claims its off-grid-spacing list is complete but omits StatusBanner.jsx:57 mt-0.5, BentoGrid.jsx:70 ml-1.5 and LoadDonut.jsx:99 space-y-2.5. Cosmetic spec defect: the list is read by no gate.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:14.942Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 20,
+    "kind": "deviation",
+    "phase": "03",
+    "file": "web-dashboard/src/pages/AdminPage.jsx",
+    "line": null,
+    "description": "The two-tier feedback sweep is scoped to AdminPage.jsx (03-07). A whole-app sweep fails today on eight panels that name a cause with no next step: DashboardPage.jsx:515, DashboardPage.jsx:557, DevicePage.jsx:142, HistoryPage.jsx:305, MonitoringPage.jsx:137, ProfilePage.jsx:82, ProfilePage.jsx:185, SettingsPage.jsx:303. StatePanel dev-warns about them; the repair belongs to Phase 5.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:15.130Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 21,
+    "kind": "deviation",
+    "phase": "03",
+    "file": "DESIGN.md",
+    "line": null,
+    "description": "The two DESIGN.md amendments (the Single source clause naming src/utils/series.js, and the TrendChart non-identity carve-out record) are awaiting owner countersignature. Non-blocking: the code side of D-04/D-05 is enforced by seriesQuarantine.test.js and 03-04's tests.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:15.338Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 22,
+    "kind": "unrun-verify",
+    "phase": "03",
+    "file": "web-dashboard/src/components/ui/GlassTable.jsx",
+    "line": null,
+    "description": "360/768/1280 click-through of the raised column head not run: the fg-2 ink must clear AA on the bg-surface-2 tint at every breakpoint, at 12px uppercase. jsdom has no layout engine and cannot measure contrast on a rendered surface. Owned by GATE-03 / human UAT.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:15.532Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 23,
+    "kind": "unrun-verify",
+    "phase": "03",
+    "file": "web-dashboard/src/components/ui/StatePanel.jsx",
+    "line": null,
+    "description": "360/768/1280 click-through of the rebuilt state primitive not run (03-07): the next-action paragraph must read as a second tier under the description at every breakpoint, and a long localised next-step string must wrap without horizontal overflow. jsdom has no layout engine. Owned by GATE-03 / human UAT.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:15.745Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 24,
+    "kind": "unrun-verify",
+    "phase": "03",
+    "file": "web-dashboard/src/components/dashboard/LoadDonut.jsx",
+    "line": null,
+    "description": "360/768/1280 click-through of the rebuilt donut not run (03-04): the three arcs must stay distinguishable at every breakpoint and the caption must stay readable under the ring. jsdom has no layout engine. Owned by GATE-03 / human UAT.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:15.936Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 25,
+    "kind": "unrun-verify",
+    "phase": "03",
+    "file": "web-dashboard/src/components/monitoring/TrendChart.jsx",
+    "line": null,
+    "description": "360/768/1280 click-through of the rebuilt trend trace not run (03-04): the carve-out sage line must keep the contrast the palette table measures for it against the plot surface, and the threshold label must not collide with the trace at 360px. jsdom has no layout engine. Owned by GATE-03 / human UAT.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T04:34:16.130Z",
     "resolved_at": null,
     "milestone": "v1.0"
   }
