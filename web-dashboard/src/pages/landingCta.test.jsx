@@ -58,16 +58,11 @@ const classesOf = (element) =>
 const classString = (element) => element.getAttribute("class") || "";
 
 /**
- * A landing CTA is a GlassButton, and `rounded-control` is the control radius
- * the radius scale declares for buttons. It is present whatever variant
+ * The landing CTA set is defined by `rounded-control`, the control radius the
+ * radius scale declares for buttons. It is present whatever variant
  * resolves, so the count below cannot be satisfied by a collapsed CTA: a CTA
  * that fell back to `filled` is still counted, and then fails the per-button
  * verdict.
- *
- * This is what keeps the language toggle out of the set. Its active segment
- * carries `bg-primary-btn` at `LanguageToggle.jsx:38`, which is exactly the
- * token D-01 refused to remap: remapping it under `.landing-scope` would have
- * flipped that segment along with the CTAs.
  */
 const isCta = (button) => classesOf(button).includes("rounded-control");
 

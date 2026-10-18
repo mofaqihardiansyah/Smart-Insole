@@ -988,9 +988,12 @@ export const hasKey = (key) =>
 /** Every key in the dictionary, in declaration order. */
 export const dictionaryKeys = () => Object.keys(DICTIONARY.id);
 
-export const LANGUAGES = [
-  { code: 'id', label: 'Bahasa Indonesia' },
-  { code: 'en', label: 'English' },
-];
+/**
+ * The language registry. LANG-01 makes Indonesian the only shipped surface, but
+ * the two-column dictionary and this registry stay: `DICTIONARY.en` is dead
+ * weight by decision, and the `lang` context parameter keeps its 'id' value
+ * everywhere without a second sweep of every page.
+ */
+export const LANGUAGES = [{ code: 'id', label: 'Bahasa Indonesia' }];
 
 export default { DICTIONARY, t, hasKey, dictionaryKeys, LANGUAGES };

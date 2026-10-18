@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { GlassButton } from "../components/ui/GlassButton";
 import { PanelHeader } from "../components/ui/GlassCard";
-import { LanguageToggle } from "../components/layout/LanguageToggle";
 import PlantarHeatmap from "../components/PlantarHeatmap";
 import { useInsole } from "../context/InsoleContext";
 import { t } from "../utils/i18n";
@@ -222,7 +221,6 @@ const LandingPage = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <LanguageToggle />
             <GlassButton
               variant="warmOutline"
               size="sm"
