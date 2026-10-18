@@ -61,6 +61,8 @@ const AdminPage = () => {
           variant="error"
           title={t("admin.accessDenied", language)}
           description={t("admin.accessDeniedBody", language)}
+          nextAction={t("admin.accessDeniedNext", language)}
+          nextActionLabel={t("common.nextStep", language)}
         />
       </section>
     );
@@ -177,9 +179,9 @@ const AdminPage = () => {
           {usersLoading ? (
             <StatePanel variant="loading" title={t("admin.users.loading", language)} />
           ) : usersError ? (
-            <StatePanel variant="error" title={t("admin.users.error", language)} description={usersError} />
+            <StatePanel variant="error" title={t("admin.users.error", language)} description={usersError} nextAction={t("admin.retryNext", language)} nextActionLabel={t("common.nextStep", language)} />
           ) : users.length === 0 ? (
-            <StatePanel variant="empty" title={t("admin.users.empty", language)} />
+            <StatePanel variant="empty" title={t("admin.users.empty", language)} nextAction={t("admin.users.emptyNext", language)} nextActionLabel={t("common.nextStep", language)} />
           ) : (
             <div className="overflow-x-auto">
               <GlassTable>
@@ -261,9 +263,9 @@ const AdminPage = () => {
         />
         <div className="px-6 pb-6">
           {deviceError ? (
-            <StatePanel variant="error" title={t("admin.devices.error", language)} description={deviceError} />
+            <StatePanel variant="error" title={t("admin.devices.error", language)} description={deviceError} nextAction={t("admin.retryNext", language)} nextActionLabel={t("common.nextStep", language)} />
           ) : !device ? (
-            <StatePanel variant="empty" title={t("admin.devices.empty", language)} />
+            <StatePanel variant="empty" title={t("admin.devices.empty", language)} nextAction={t("admin.devices.emptyNext", language)} nextActionLabel={t("common.nextStep", language)} />
           ) : (
             <dl className="divide-y divide-border-strong">
               <div className="py-3 first:pt-0 last:pb-0">
