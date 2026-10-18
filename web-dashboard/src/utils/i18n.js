@@ -131,6 +131,7 @@ export const DICTIONARY = {
     'source.noDeviceTitle': 'Belum ada data dari perangkat',
     'source.noDeviceBody':
       'Insole belum mengirim data ke Firebase. Setelah terkirim, halaman ini akan memperbarui sendiri.',
+    'source.noDeviceNext': 'Pasang insole dan sambungkan ke jaringan; status muncul begitu data terkirim.',
 
     /* --------------------------- Dashboard ----------------------------- */
     'dashboard.title': 'Dasbor tekanan plantar',
@@ -198,6 +199,7 @@ export const DICTIONARY = {
     'monitoring.empty': 'Belum ada data grafik',
     'monitoring.emptyBody':
       'Grafik terisi setelah sensor mengirim pembacaan pertama.',
+    'monitoring.emptyNext': 'Sambungkan perangkat, atau mulai simulator untuk melihat tren.',
     'monitoring.loading': 'Memuat grafik',
     'monitoring.summary': 'Ringkasan sesi',
     'monitoring.average': 'Rata-rata',
@@ -218,6 +220,7 @@ export const DICTIONARY = {
     'history.empty': 'Belum ada insiden tercatat',
     'history.emptyBody':
       'Insiden muncul di sini saat tekanan melewati batas aman. Riwayat kosong berarti tidak ada peringatan tercatat, bukan data yang hilang.',
+    'history.emptyNext': 'Lanjutkan pemantauan seperti biasa; tidak ada yang perlu diperbaiki.',
     'history.col.time': 'Waktu',
     'history.col.risk': 'Risiko',
     'history.col.peak': 'Puncak',
@@ -273,6 +276,7 @@ export const DICTIONARY = {
     'settings.preview': 'Pratinjau klasifikasi',
     'settings.previewBody':
       'Contoh hasil perhitungan pada beberapa kombinasi tekanan dan durasi:',
+    'settings.previewNext': 'Tekan Coba lagi untuk memuat ulang pratinjau.',
     'settings.notifications': 'Notifikasi',
     'settings.sound': 'Suara alarm',
     'settings.soundBody':
@@ -297,6 +301,9 @@ export const DICTIONARY = {
     'profile.stats': 'Statistik pemantauan',
     'profile.memberSince': 'Terdaftar sejak',
     'profile.unavailable': 'Belum tersedia',
+    'profile.emptyNext':
+      'Pasang insole dan mulai sesi pemantauan; statistik terisi dari pembacaan nyata.',
+    'profile.accountNext': 'Muat ulang halaman; jika masih belum tersedia, masuk kembali.',
 
     /* -------------------------- Notifications -------------------------- */
     'notifications.title': 'Notifikasi dan alarm',
@@ -602,6 +609,8 @@ export const DICTIONARY = {
     'source.noDeviceTitle': 'No data from the device yet',
     'source.noDeviceBody':
       'The insole has not published to Firebase. This page updates on its own once it does.',
+    'source.noDeviceNext':
+      'Attach the insole and connect it to the network; status appears once data arrives.',
 
     /* --------------------------- Dashboard ----------------------------- */
     'dashboard.title': 'Plantar pressure dashboard',
@@ -668,6 +677,7 @@ export const DICTIONARY = {
     'monitoring.empty': 'No chart data yet',
     'monitoring.emptyBody':
       'The chart fills once the sensor sends its first reading.',
+    'monitoring.emptyNext': 'Connect the device, or start the simulator to see a trend.',
     'monitoring.loading': 'Loading chart',
     'monitoring.summary': 'Session summary',
     'monitoring.average': 'Average',
@@ -687,6 +697,8 @@ export const DICTIONARY = {
     'history.empty': 'No incidents recorded',
     'history.emptyBody':
       'Incidents appear here when pressure crosses a safe limit. An empty list means no warning was recorded, not that data was lost.',
+    'history.emptyNext':
+      'Keep monitoring as usual; nothing here needs fixing.',
     'history.col.time': 'Time',
     'history.col.risk': 'Risk',
     'history.col.peak': 'Peak',
@@ -741,6 +753,7 @@ export const DICTIONARY = {
     'settings.preview': 'Classification preview',
     'settings.previewBody':
       'Example results for a few pressure and duration combinations:',
+    'settings.previewNext': 'Press Retry to reload the preview.',
     'settings.notifications': 'Notifications',
     'settings.sound': 'Alarm sound',
     'settings.soundBody':
@@ -765,6 +778,10 @@ export const DICTIONARY = {
     'profile.stats': 'Monitoring statistics',
     'profile.memberSince': 'Member since',
     'profile.unavailable': 'Not available yet',
+    'profile.emptyNext':
+      'Wear the insole and start a monitoring session; these figures fill from real readings.',
+    'profile.accountNext':
+      'Reload the page; if it is still unavailable, sign in again.',
 
     /* -------------------------- Notifications -------------------------- */
     'notifications.title': 'Notifications and alarms',

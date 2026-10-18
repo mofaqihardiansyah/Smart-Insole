@@ -306,6 +306,7 @@ const HistoryPage = () => {
               variant="empty"
               title={t("history.empty", language)}
               description={t("history.emptyBody", language)}
+              nextAction={t("history.emptyNext", language)}
             />
           ) : (
             <GlassCard flush>

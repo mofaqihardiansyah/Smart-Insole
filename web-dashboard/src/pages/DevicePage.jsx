@@ -144,6 +144,7 @@ const DevicePage = () => {
                     className="mb-4"
                     title={t("source.noDeviceTitle", language)}
                     description={t("source.noDeviceBody", language)}
+                    nextAction={t("source.noDeviceNext", language)}
                   />
                 )}
 

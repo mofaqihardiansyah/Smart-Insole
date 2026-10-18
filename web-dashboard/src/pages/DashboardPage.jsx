@@ -516,6 +516,7 @@ const DashboardPage = () => {
                 variant="empty"
                 title={t("monitoring.empty", language)}
                 description={t("monitoring.emptyBody", language)}
+                nextAction={t("monitoring.emptyNext", language)}
               />
             )}
           </div>
@@ -558,6 +559,7 @@ const DashboardPage = () => {
               variant="empty"
               title={t("dashboard.noMatch", language)}
               description={t("source.noDeviceBody", language)}
+              nextAction={t("monitoring.emptyNext", language)}
             />
           </div>
         ) : (

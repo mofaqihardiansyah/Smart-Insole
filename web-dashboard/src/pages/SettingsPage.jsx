@@ -304,6 +304,7 @@ const SettingsPage = () => {
               variant="empty"
               title={t("settings.preview", language)}
               description={t("settings.previewBody", language)}
+              nextAction={t("settings.previewNext", language)}
             />
           </div>
         ) : (

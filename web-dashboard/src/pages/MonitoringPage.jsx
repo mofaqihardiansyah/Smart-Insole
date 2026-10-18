@@ -138,6 +138,7 @@ const MonitoringPage = () => {
                 variant="empty"
                 title={t("monitoring.empty", language)}
                 description={t("monitoring.emptyBody", language)}
+                nextAction={t("monitoring.emptyNext", language)}
               />
             )
           ) : (

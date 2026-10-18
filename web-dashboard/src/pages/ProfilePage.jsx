@@ -76,6 +76,7 @@ const ProfilePage = () => {
         <StatePanel
           variant="error"
           title={t("profile.unavailable", language)}
+          nextAction={t("profile.accountNext", language)}
         />
       ) : (
         <>
@@ -157,6 +158,7 @@ const ProfilePage = () => {
                   variant="empty"
                   title={t("profile.unavailable", language)}
                   description={t("history.emptyBody", language)}
+                  nextAction={t("profile.emptyNext", language)}
                 />
               ) : (
                 <dl className="grid grid-cols-1 gap-5 sm:grid-cols-3">
