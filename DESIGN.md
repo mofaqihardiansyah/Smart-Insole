@@ -323,7 +323,10 @@ queue is a state of the app rather than a place in it. Listing it in both the
 rail and the header would be two controls for one destination.
 
 The top bar carries the two things that are about *state* rather than *place*:
-search, and the account controls (language, notifications, profile).
+search, and the account controls (notifications, profile). The language switch
+existed here and is gone: the interface speaks Indonesian only (LANG-01, closed
+2026-10-18), so a second language would be a dead control, which this page's
+own rules refuse.
 
 Mobile uses a drawer rather than a bottom bar. A six-item bottom row cannot
 hold a readable label at 360px, and an icon-only row is the failure mode this
