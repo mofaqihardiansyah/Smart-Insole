@@ -10,13 +10,16 @@ import { AlertBanner } from "./AlertBanner";
  * and the visual pairs are declared in `AlertBanner.jsx`, and the live-region
  * role is decided once in `feedbackState.js`. This file therefore holds no
  * vocabulary of its own and re-decides nothing, so it cannot drift away from
- * the primitive it renders.
+ * the primitive it renders. `nextAction` is forwarded too, so a caller can
+ * state the step after the cause with the same prop name the primitive and the
+ * pages agree on.
  */
 const StatusBanner = ({
   tone = "info",
   title,
   children,
   action,
+  nextAction,
   onDismiss,
   dismissLabel,
   className = "",
@@ -26,6 +29,7 @@ const StatusBanner = ({
       tone={tone}
       title={title}
       action={action}
+      nextAction={nextAction}
       onDismiss={onDismiss}
       dismissLabel={dismissLabel}
       className={className}

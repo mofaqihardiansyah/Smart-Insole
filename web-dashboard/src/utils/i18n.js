@@ -365,6 +365,7 @@ export const DICTIONARY = {
     'auth.error.passwordLength': 'Kata sandi minimal 6 karakter.',
     'auth.error.passwordMismatch': 'Konfirmasi kata sandi tidak cocok.',
     'auth.error.generic': 'Proses gagal. Periksa kembali data Anda.',
+    'common.nextStepCheckConnection': 'Periksa koneksi, lalu coba lagi.',
 
     /* ------------------------------ Landing ---------------------------- */
     'landing.hero.eyebrow': 'Alat bantu pencegahan ulkus kaki diabetik',
@@ -832,6 +833,7 @@ export const DICTIONARY = {
     'auth.error.passwordLength': 'The password must be at least 6 characters.',
     'auth.error.passwordMismatch': 'The passwords do not match.',
     'auth.error.generic': 'That did not work. Please check your details.',
+    'common.nextStepCheckConnection': 'Check your connection, then try again.',
 
     /* ------------------------------ Landing ---------------------------- */
     'landing.hero.eyebrow': 'Diabetic foot ulcer prevention aid',

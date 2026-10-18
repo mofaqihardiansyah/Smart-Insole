@@ -111,7 +111,12 @@ const LoginPage = () => {
         </p>
 
         {formError && (
-          <StatusBanner tone="danger" className="mt-4" title={formError} />
+          <StatusBanner
+            tone="danger"
+            className="mt-4"
+            title={formError}
+            nextAction={t("common.nextStepCheckConnection", language)}
+          />
         )}
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate>
