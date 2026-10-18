@@ -207,6 +207,7 @@ Type scale:
 | Token | Size | Weight | Where it is used |
 |---|---|---|---|
 | `display` | `clamp(2.5rem, 5vw, 4.5rem)` | 700 | Landing hero only |
+| `landing-h2` | `clamp(1.875rem, 2.2vw + 0.9rem, 3rem)` | 600 | Landing section headings and the closing CTA |
 | `stat` | 30px | 700 | A metric value (the four dashboard tiles) |
 | `h1` | 30px | 700 | One per page. On the dashboard it is the greeting. |
 | `h2` | 24px | 600 | Rare; a nested section title |
@@ -458,10 +459,23 @@ Palette, all measured on `#F4F5F5` raised:
 and failed AA for 12px text. `warm-accent` is never used for a label;
 `warm-accent-deep` is its text-safe form.
 
-Radius scale (landing only): tile 12px, panel 16px, cards 24px
-(`rounded-3xl`), inner cells 28px, big panels 32 to 36px, hero 28px
-(40px on `sm`+), nav and CTAs pill (999px). Pills are the landing's navigation
-and actions; the app register keeps its 8px control scale.
+Radius: landing tiles use `rounded-tile` (12px), inner icon chips the same
+tile step, small panels and drifting-tile tiles `rounded-panel` (16px),
+cards 24px (`rounded-3xl`), dark-panel cells and "how it works" rows
+`rounded-cell` (28px), section bands `rounded-section` (32px) with the dark
+wrapper at `rounded-section-lg` (36px), hero `rounded-hero` (28px, 40px on
+`sm`+ via `rounded-hero-lg`), nav and CTAs `rounded-pill` (999px). Pills are
+the landing's navigation and actions; the app register keeps its 8px control
+scale. Every radius on the page resolves to one of these named hooks - no
+raw `rounded-[26px]`-style values remain, and `rounded-2xl`/`rounded-xl`
+built-ins are folded into the `panel`/`tile` hooks they duplicated.
+
+Landing headings resolve to three steps and nothing else: `display` (hero),
+`landing-h2` (every section heading and the closing CTA; 30px rising to 48px,
+one fluid step so no heading jumps size at a breakpoint), and the app-wide
+`h2` / `card-title` steps for sub-panel headings. Body copy uses the declared
+`body`, `body-lg`, `body-sm` and `caption` tokens; `text-sm`, `text-base`,
+`text-lg`, `text-xs` built-ins are deleted from the page.
 
 Motion budget: hero rise-in (420ms), scroll reveal via one IntersectionObserver
 (700ms, opacity and translate only), hover and focus transitions at 150ms,

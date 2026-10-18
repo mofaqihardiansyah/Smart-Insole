@@ -203,12 +203,12 @@ const LandingPage = () => {
               <span className="absolute left-0 h-6 w-6 rounded-full bg-warm-dark" />
               <span className="absolute left-3.5 h-6 w-6 rounded-full bg-warm-accent" />
             </span>
-            <span className="truncate text-base font-semibold leading-tight">
+            <span className="truncate text-body font-semibold leading-tight">
               {t("app.title", language)}
             </span>
           </a>
 
-          <div className="hidden items-center gap-1 text-sm font-medium text-warm-body md:flex">
+          <div className="hidden items-center gap-1 text-body-sm font-medium text-warm-body md:flex">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -261,7 +261,7 @@ const LandingPage = () => {
           id="landing-menu"
           className="relative z-40 mx-4 mt-3 rounded-panel border border-warm-line bg-warm-card p-4 shadow-lift md:hidden"
         >
-          <div className="flex flex-col text-base font-medium">
+          <div className="flex flex-col text-body font-medium">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -325,7 +325,7 @@ const LandingPage = () => {
           <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-6 pb-28 pt-16 text-center sm:pt-24 lg:pb-36">
             {/* Badge */}
             <p
-              className="rise inline-flex items-center gap-2 rounded-pill border border-warm-line bg-warm-card/80 px-4 py-2 text-sm font-medium text-warm-accent-deep shadow-card backdrop-blur"
+              className="rise inline-flex items-center gap-2 rounded-pill border border-warm-line bg-warm-card/80 px-4 py-2 text-body-sm font-medium text-warm-accent-deep shadow-card backdrop-blur"
               style={{ animationDelay: "150ms" }}
             >
               <Footprints className="h-4 w-4" aria-hidden="true" />
@@ -345,9 +345,9 @@ const LandingPage = () => {
                 data-drift
                 data-rot="6"
                 aria-hidden="true"
-                className="absolute -right-8 -top-10 hidden h-16 w-16 rotate-6 items-center justify-center rounded-2xl border border-warm-line bg-warm-card shadow-glow md:flex"
+                className="absolute -right-8 -top-10 hidden h-16 w-16 rotate-6 items-center justify-center rounded-panel border border-warm-line bg-warm-card shadow-glow md:flex"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-warm-accent text-white">
+                <span className="flex h-10 w-10 items-center justify-center rounded-tile bg-warm-accent text-white">
                   <Workflow className="h-5 w-5" />
                 </span>
               </div>
@@ -355,9 +355,9 @@ const LandingPage = () => {
                 data-drift
                 data-rot="-6"
                 aria-hidden="true"
-                className="absolute -right-24 top-16 hidden h-16 w-16 -rotate-6 items-center justify-center rounded-2xl border border-warm-line bg-warm-card shadow-glow lg:flex"
+                className="absolute -right-24 top-16 hidden h-16 w-16 -rotate-6 items-center justify-center rounded-panel border border-warm-line bg-warm-card shadow-glow lg:flex"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-warm-dark text-white">
+                <span className="flex h-10 w-10 items-center justify-center rounded-tile bg-warm-dark text-white">
                   <Bot className="h-5 w-5" />
                 </span>
               </div>
@@ -365,16 +365,16 @@ const LandingPage = () => {
                 data-drift
                 data-rot="3"
                 aria-hidden="true"
-                className="absolute -bottom-14 right-6 hidden h-16 w-16 rotate-3 items-center justify-center rounded-2xl border border-warm-line bg-warm-card shadow-glow md:flex"
+                className="absolute -bottom-14 right-6 hidden h-16 w-16 rotate-3 items-center justify-center rounded-panel border border-warm-line bg-warm-card shadow-glow md:flex"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-warm-raised text-warm-accent-deep">
+                <span className="flex h-10 w-10 items-center justify-center rounded-tile bg-warm-raised text-warm-accent-deep">
                   <Sparkles className="h-5 w-5" />
                 </span>
               </div>
             </div>
 
             <p
-              className="rise mt-10 max-w-xl text-lg leading-relaxed text-warm-body"
+              className="rise mt-10 max-w-xl text-body-lg leading-relaxed text-warm-body"
               style={{ animationDelay: "450ms" }}
             >
               {t("landing.hero.subtitle", language)}
@@ -412,10 +412,10 @@ const LandingPage = () => {
             >
               {SPECS.map((spec) => (
                 <div key={spec.title} className="text-center">
-                  <p className="font-heading text-2xl font-semibold text-warm-ink">
+                  <p className="font-heading text-h2 font-semibold text-warm-ink">
                     {t(spec.title, language)}
                   </p>
-                  <p className="mt-1 text-xs text-warm-caption">
+                  <p className="mt-1 text-caption text-warm-caption">
                     {t(spec.body, language)}
                   </p>
                 </div>
@@ -453,20 +453,20 @@ const LandingPage = () => {
           className="scroll-mt-28 px-4 py-24 sm:px-10 lg:px-16 lg:py-32"
         >
           <div className="max-w-2xl" data-reveal>
-            <p className="text-sm font-semibold text-warm-accent-deep">
+            <p className="text-body-sm font-semibold text-warm-accent-deep">
               {t("landing.nav.why", language)}
             </p>
-            <h2 className="mt-3 font-heading text-4xl font-semibold leading-tight text-warm-ink sm:text-5xl">
+            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
               {t("landing.problem.title", language)}
             </h2>
-            <p className="mt-4 text-lg leading-relaxed text-warm-body">
+            <p className="mt-4 text-body-lg leading-relaxed text-warm-body">
               {t("landing.problem.body", language)}
             </p>
           </div>
 
           <div
             data-reveal
-            className="relative mt-14 rounded-[32px] border border-warm-line bg-warm-raised p-8 shadow-card sm:p-12"
+            className="relative mt-14 rounded-section border border-warm-line bg-warm-raised p-8 shadow-card sm:p-12"
           >
             <div className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-center lg:-space-x-6">
               {SPECS.map((spec) => (
@@ -474,10 +474,10 @@ const LandingPage = () => {
                   key={spec.title}
                   className="flex-1 rounded-full border border-warm-line bg-warm-card px-8 py-7 text-center shadow-card"
                 >
-                  <p className="font-heading text-4xl font-semibold text-warm-ink sm:text-5xl">
+                  <p className="font-heading text-landing-h2 text-warm-ink">
                     {t(spec.title, language)}
                   </p>
-                  <p className="mt-1.5 text-base text-warm-body">
+                  <p className="mt-1.5 text-body text-warm-body">
                     {t(spec.body, language)}
                   </p>
                 </div>
@@ -492,13 +492,13 @@ const LandingPage = () => {
           className="scroll-mt-28 px-4 py-24 sm:px-10 lg:px-16 lg:py-32"
         >
           <div className="max-w-2xl" data-reveal>
-            <p className="text-sm font-semibold text-warm-accent-deep">
+            <p className="text-body-sm font-semibold text-warm-accent-deep">
               {t("landing.nav.features", language)}
             </p>
-            <h2 className="mt-3 font-heading text-4xl font-semibold leading-tight text-warm-ink sm:text-5xl">
+            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
               {t("landing.feature.title", language)}
             </h2>
-            <p className="mt-4 text-lg leading-relaxed text-warm-body">
+            <p className="mt-4 text-body-lg leading-relaxed text-warm-body">
               {t("landing.feature.body", language)}
             </p>
           </div>
@@ -511,13 +511,13 @@ const LandingPage = () => {
                 style={{ transitionDelay: `${index * 80}ms` }}
                 className="group rounded-3xl border border-warm-line bg-warm-card p-7 shadow-card transition-all duration-150 hover:-translate-y-1 hover:shadow-lift"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-warm-line bg-warm-raised text-warm-accent-deep">
+                <span className="flex h-12 w-12 items-center justify-center rounded-panel border border-warm-line bg-warm-raised text-warm-accent-deep">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <h3 className="mt-5 text-lg font-semibold text-warm-ink">
+                <h3 className="mt-5 text-body-lg font-semibold text-warm-ink">
                   {t(title, language)}
                 </h3>
-                <p className="mt-2 text-base leading-relaxed text-warm-body">
+                <p className="mt-2 text-body leading-relaxed text-warm-body">
                   {t(body, language)}
                 </p>
               </article>
@@ -528,31 +528,31 @@ const LandingPage = () => {
         {/* ================= KEMAMPUAN (dark panel) ================= */}
         <section className="px-4 pb-24 sm:px-10 lg:px-16 lg:pb-32">
           <div className="max-w-2xl" data-reveal>
-            <p className="text-sm font-semibold text-warm-accent-deep">
+            <p className="text-body-sm font-semibold text-warm-accent-deep">
               {t("landing.cap.eyebrow", language)}
             </p>
-            <h2 className="mt-3 font-heading text-4xl font-semibold leading-tight text-warm-ink sm:text-5xl">
+            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
               {t("landing.cap.title", language)}
             </h2>
           </div>
 
           <div
             data-reveal
-            className="mt-14 rounded-[36px] bg-warm-dark p-4 shadow-glow sm:p-5"
+            className="mt-14 rounded-section-lg bg-warm-dark p-4 shadow-glow sm:p-5"
           >
             <div className="grid gap-4 lg:grid-cols-3">
               {CAPABILITIES.map(({ icon: Icon, title, body }, index) => (
                 <div
                   key={title}
-                  className="rounded-[28px] border border-white/5 bg-warm-panel p-8 sm:p-10"
+                  className="rounded-cell border border-white/5 bg-warm-panel p-8 sm:p-10"
                 >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-warm-accent-2">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-panel bg-white/10 text-warm-accent-2">
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
-                  <h3 className="mt-5 text-2xl font-semibold text-white">
+                  <h3 className="mt-5 text-h2 font-semibold text-white">
                     {t(title, language)}
                   </h3>
-                  <p className="mt-3 max-w-md text-base leading-relaxed text-white/55">
+                  <p className="mt-3 max-w-md text-body leading-relaxed text-white/55">
                     {t(body, language)}
                   </p>
                 </div>
@@ -567,10 +567,10 @@ const LandingPage = () => {
           className="scroll-mt-28 px-4 pb-24 sm:px-10 lg:px-16 lg:pb-32"
         >
           <div className="max-w-2xl" data-reveal>
-            <p className="text-sm font-semibold text-warm-accent-deep">
+            <p className="text-body-sm font-semibold text-warm-accent-deep">
               {t("landing.nav.how", language)}
             </p>
-            <h2 className="mt-3 font-heading text-4xl font-semibold leading-tight text-warm-ink sm:text-5xl">
+            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
               {t("landing.how.title", language)}
             </h2>
           </div>
@@ -580,21 +580,21 @@ const LandingPage = () => {
               <div
                 key={title}
                 data-reveal
-                className="grid overflow-hidden rounded-[28px] border border-warm-line bg-warm-card shadow-card lg:grid-cols-5"
+                className="grid overflow-hidden rounded-cell border border-warm-line bg-warm-card shadow-card lg:grid-cols-5"
               >
                 <div className="p-8 sm:p-10 lg:col-span-3">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-warm-raised px-3 py-1.5 text-xs font-medium text-warm-body">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-warm-raised px-3 py-1.5 text-caption text-warm-body">
                     {t("landing.step.number", language)} {String(index + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="mt-4 text-2xl font-semibold text-warm-ink sm:text-3xl">
+                  <h3 className="mt-4 text-h2 font-semibold text-warm-ink">
                     {t(title, language)}
                   </h3>
-                  <p className="mt-4 max-w-prose text-base leading-relaxed text-warm-body">
+                  <p className="mt-4 max-w-prose text-body leading-relaxed text-warm-body">
                     {t(body, language)}
                   </p>
                 </div>
                 <div className="relative flex min-h-[220px] items-center justify-center bg-warm-raised lg:col-span-2">
-                  <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-warm-line bg-warm-card text-warm-accent-deep shadow-card">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-panel border border-warm-line bg-warm-card text-warm-accent-deep shadow-card">
                     <Icon className="h-8 w-8" aria-hidden="true" />
                   </span>
                 </div>
@@ -609,10 +609,10 @@ const LandingPage = () => {
           className="scroll-mt-28 px-4 pb-24 sm:px-10 lg:px-16 lg:pb-32"
         >
           <div className="max-w-2xl" data-reveal>
-            <p className="text-sm font-semibold text-warm-accent-deep">
+            <p className="text-body-sm font-semibold text-warm-accent-deep">
               {t("landing.nav.start", language)}
             </p>
-            <h2 className="mt-3 font-heading text-4xl font-semibold leading-tight text-warm-ink sm:text-5xl">
+            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
               {t("landing.flow.title", language)}
             </h2>
           </div>
@@ -625,28 +625,28 @@ const LandingPage = () => {
                   key={flow.title}
                   data-reveal
                   style={{ transitionDelay: `${index * 80}ms` }}
-                  className={`rounded-[26px] p-8 shadow-card ${
+                  className={`rounded-cell p-8 shadow-card ${
                     featured
                       ? "bg-warm-dark text-white lg:scale-[1.04]"
                       : "border border-warm-line bg-warm-card"
                   }`}
                 >
                   <span
-                    className={`text-sm font-semibold ${
+                    className={`text-body-sm font-semibold ${
                       featured ? "text-warm-accent-2" : "text-warm-accent-deep"
                     }`}
                   >
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <h3
-                    className={`mt-4 text-lg font-semibold ${
+                    className={`mt-4 text-body-lg font-semibold ${
                       featured ? "text-white" : "text-warm-ink"
                     }`}
                   >
                     {t(flow.title, language)}
                   </h3>
                   <p
-                    className={`mt-2 text-base leading-relaxed ${
+                    className={`mt-2 text-body leading-relaxed ${
                       featured ? "text-white/70" : "text-warm-body"
                     }`}
                   >
@@ -661,10 +661,10 @@ const LandingPage = () => {
         {/* ================= TEKNOLOGI ================= */}
         <section className="px-4 pb-24 sm:px-10 lg:px-16 lg:pb-32">
           <div className="max-w-2xl" data-reveal>
-            <p className="text-sm font-semibold text-warm-accent-deep">
+            <p className="text-body-sm font-semibold text-warm-accent-deep">
               {t("landing.stack.eyebrow", language)}
             </p>
-            <h2 className="mt-3 font-heading text-4xl font-semibold leading-tight text-warm-ink sm:text-5xl">
+            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
               {t("landing.stack.title", language)}
             </h2>
           </div>
@@ -675,16 +675,16 @@ const LandingPage = () => {
                 key={title}
                 data-reveal
                 style={{ transitionDelay: `${index * 80}ms` }}
-                className="flex min-h-[360px] flex-col justify-between rounded-[26px] bg-gradient-to-br from-warm-panel to-warm-dark p-6 shadow-card"
+                className="flex min-h-[360px] flex-col justify-between rounded-cell bg-gradient-to-br from-warm-panel to-warm-dark p-6 shadow-card"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-white">
+                <span className="flex h-12 w-12 items-center justify-center rounded-panel bg-white/10 text-white">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">
+                  <h3 className="text-card-title font-semibold text-white">
                     {t(title, language)}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-white/60">
+                  <p className="mt-2 text-body-sm leading-relaxed text-white/60">
                     {t(body, language)}
                   </p>
                 </div>
@@ -717,10 +717,10 @@ const LandingPage = () => {
             />
 
             <div className="relative mx-auto max-w-3xl">
-              <h2 className="font-heading text-4xl font-semibold leading-tight text-warm-ink sm:text-6xl">
+              <h2 className="font-heading text-landing-h2 leading-tight text-warm-ink">
                 {t("landing.cta.title", language)}
               </h2>
-              <p className="mt-6 text-lg leading-relaxed text-warm-body">
+              <p className="mt-6 text-body-lg leading-relaxed text-warm-body">
                 {t("landing.cta.body", language)}
               </p>
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">
@@ -750,11 +750,11 @@ const LandingPage = () => {
                   <span className="absolute left-0 h-5 w-5 rounded-full bg-warm-dark" />
                   <span className="absolute left-3 h-5 w-5 rounded-full bg-warm-accent" />
                 </span>
-                <span className="text-base font-semibold">{t("app.title", language)}</span>
+                <span className="text-body font-semibold">{t("app.title", language)}</span>
               </span>
               <nav
                 aria-label={t("app.title", language)}
-                className="flex flex-wrap items-center justify-center gap-6 text-sm font-medium text-warm-body"
+                className="flex flex-wrap items-center justify-center gap-6 text-body-sm font-medium text-warm-body"
               >
                 {navLinks.map((link) => (
                   <a
@@ -766,7 +766,7 @@ const LandingPage = () => {
                   </a>
                 ))}
               </nav>
-              <p className="flex items-center gap-2 text-xs text-warm-caption">
+              <p className="flex items-center gap-2 text-caption text-warm-caption">
                 <Radio className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 {t("landing.footerNote", language)}
               </p>

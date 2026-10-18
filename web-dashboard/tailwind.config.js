@@ -132,6 +132,10 @@ export default {
         h1: ["1.875rem", { lineHeight: "1.2", fontWeight: "700" }],
         // The landing hero is the one place the scale reaches past `h1`.
         display: ["clamp(2.5rem, 5vw, 4.5rem)", { lineHeight: "1.02", letterSpacing: "-0.035em", fontWeight: "700" }],
+        // Landing section headings, including the closing CTA: 30px on small
+        // screens flowing to 48px on desktop, so no heading on the public page
+        // needs a per-breakpoint size jump anymore. Landing only.
+        "landing-h2": ["clamp(1.875rem, 2.2vw + 0.9rem, 3rem)", { lineHeight: "1.15", fontWeight: "600" }],
         stat: ["1.875rem", { lineHeight: "1.15", fontWeight: "700" }],
         label: ["0.75rem", { lineHeight: "1.1", letterSpacing: "0.08em", fontWeight: "600" }],
         data: ["0.875rem", { lineHeight: "1.6", fontWeight: "400" }],
@@ -162,6 +166,12 @@ export default {
         pill: "999px",
         hero: "28px",
         "hero-lg": "40px",
+        // Landing big-panel register, declared so the page holds no raw pixel
+        // radius at all: inner cells sit at 28px inside a 32px section band
+        // (36px when the section is the dark wrapper).
+        cell: "28px",
+        section: "32px",
+        "section-lg": "36px",
       },
 
       /**
