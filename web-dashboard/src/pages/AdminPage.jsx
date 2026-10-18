@@ -6,6 +6,7 @@ import { t } from "../utils/i18n";
 import {
   GlassCard,
   GlassButton,
+  GlassInput,
   GlassTable,
   GlassTableRow,
   GlassTableCell,
@@ -13,6 +14,7 @@ import {
   PageHeader,
   StatusChip,
   StatePanel,
+  StatusBanner,
 } from "../components/ui/GlassComponents";
 import {
   subscribeToReadings,
@@ -34,7 +36,12 @@ import { listUsers, updateUserDoc, deleteUserDoc } from "../services/firebaseCon
  * on the dashboard rather than seeing a 404 or a half-rendered console.
  *
  * Every destructive action (deactivate, delete) asks for confirmation first.
- * A dead control is a defect, not decoration.
+ * A dead control is a defect, not decoration. The confirmation stays
+ * `window.confirm` on purpose: it is native, accessible and blocks nothing
+ * visually. Action *failures* used to be `window.alert`, which is a blocking
+ * unstyled dialog; they are inline danger banners now, with the Firebase
+ * detail as the body and the translated title carrying the hierarchy, the
+ * same pattern the login page settled on.
  */
 
 const AdminPage = () => {
@@ -44,6 +51,7 @@ const AdminPage = () => {
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState(null);
+  const [userActionError, setUserActionError] = useState(null);
 
   const [device, setDevice] = useState(null);
   const [deviceError, setDeviceError] = useState(null);
@@ -51,6 +59,7 @@ const AdminPage = () => {
   const [config, setConfig] = useState({ safeThreshold: 35, dangerThreshold: 70 });
   const [configSaving, setConfigSaving] = useState(false);
   const [configSaved, setConfigSaved] = useState(false);
+  const [configError, setConfigError] = useState(null);
 
   /* ---- guard: non-admins go back to the dashboard ---- */
   if (role !== "admin") {
@@ -101,7 +110,7 @@ const AdminPage = () => {
         });
         setDeviceError(null);
       },
-      (err) => setDeviceError(err?.message || "Device read failed")
+      (err) => setDeviceError(err?.message || undefined)
     );
     return unsub;
   }, []);
@@ -118,29 +127,32 @@ const AdminPage = () => {
   }, []);
 
   const handleToggleActive = async (user) => {
+    setUserActionError(null);
     const next = !user.active;
     if (!window.confirm(t(next ? "admin.confirmActivate" : "admin.confirmDeactivate", language))) return;
     try {
       await updateUserDoc(user.uid, { active: next });
       setUsers((prev) => prev.map((u) => (u.uid === user.uid ? { ...u, active: next } : u)));
     } catch (err) {
-      window.alert(err?.message || "Update failed");
+      setUserActionError(err?.message || t("admin.actionError", language));
     }
   };
 
   const handleDelete = async (user) => {
+    setUserActionError(null);
     if (!window.confirm(t("admin.confirmDelete", language))) return;
     try {
       await deleteUserDoc(user.uid);
       setUsers((prev) => prev.filter((u) => u.uid !== user.uid));
     } catch (err) {
-      window.alert(err?.message || "Delete failed");
+      setUserActionError(err?.message || t("admin.actionError", language));
     }
   };
 
   const handleSaveConfig = async () => {
     setConfigSaving(true);
     setConfigSaved(false);
+    setConfigError(null);
     try {
       await setGlobalConfig({
         safeThreshold: Number(config.safeThreshold),
@@ -148,7 +160,7 @@ const AdminPage = () => {
       });
       setConfigSaved(true);
     } catch (err) {
-      window.alert(err?.message || "Save failed");
+      setConfigError(err?.message || t("admin.actionError", language));
     } finally {
       setConfigSaving(false);
     }
@@ -176,6 +188,16 @@ const AdminPage = () => {
           icon={<Users className="h-4 w-4" />}
         />
         <div className="px-6 pb-6">
+          {userActionError && (
+            <StatusBanner
+              tone="danger"
+              className="mb-4"
+              title={t("admin.actionError", language)}
+              nextAction={t("common.nextStepCheckConnection", language)}
+            >
+              {userActionError}
+            </StatusBanner>
+          )}
           {usersLoading ? (
             <StatePanel variant="loading" title={t("admin.users.loading", language)} />
           ) : usersError ? (
@@ -317,45 +339,41 @@ const AdminPage = () => {
           icon={<Settings className="h-4 w-4" />}
         />
         <div className="px-6 pb-6">
+          {configError && (
+            <StatusBanner
+              tone="danger"
+              className="mb-4"
+              title={t("admin.actionError", language)}
+              nextAction={t("common.nextStepCheckConnection", language)}
+            >
+              {configError}
+            </StatusBanner>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="admin-safe-threshold"
-                className="mb-1.5 block text-body-sm font-medium text-fg"
-              >
-                {t("admin.config.safe", language)}
-              </label>
-              <input
-                id="admin-safe-threshold"
-                type="number"
-                min="0"
-                max="200"
-                value={config.safeThreshold}
-                onChange={(e) =>
-                  setConfig((prev) => ({ ...prev, safeThreshold: e.target.value }))
-                }
-                className="w-full rounded-control border border-border-control bg-surface px-3.5 py-2.5 text-data text-fg transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:ring-offset-surface"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="admin-danger-threshold"
-                className="mb-1.5 block text-body-sm font-medium text-fg"
-              >
-                {t("admin.config.danger", language)}
-              </label>
-              <input
-                id="admin-danger-threshold"
-                type="number"
-                min="0"
-                max="200"
-                value={config.dangerThreshold}
-                onChange={(e) =>
-                  setConfig((prev) => ({ ...prev, dangerThreshold: e.target.value }))
-                }
-                className="w-full rounded-control border border-border-control bg-surface px-3.5 py-2.5 text-data text-fg transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:ring-offset-surface"
-              />
-            </div>
+            <GlassInput
+              id="admin-safe-threshold"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={200}
+              label={t("admin.config.safe", language)}
+              value={config.safeThreshold}
+              onChange={(e) =>
+                setConfig((prev) => ({ ...prev, safeThreshold: e.target.value }))
+              }
+            />
+            <GlassInput
+              id="admin-danger-threshold"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={200}
+              label={t("admin.config.danger", language)}
+              value={config.dangerThreshold}
+              onChange={(e) =>
+                setConfig((prev) => ({ ...prev, dangerThreshold: e.target.value }))
+              }
+            />
           </div>
           <div className="mt-4 flex items-center gap-3">
             <GlassButton
