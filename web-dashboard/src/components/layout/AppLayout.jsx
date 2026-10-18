@@ -6,7 +6,6 @@ import { t } from "../../utils/i18n";
 import { AppSidebar, AccountCard, renderIcon } from "./AppSidebar";
 import { AppTopbar } from "./AppTopbar";
 import { AppSearch } from "./AppSearch";
-import { LanguageToggle } from "./LanguageToggle";
 
 /**
  * AppLayout — the application shell.
@@ -239,7 +238,6 @@ const AppLayout = ({
             </ul>
 
             <div className="space-y-3 border-t border-border p-3">
-              <LanguageToggle className="w-full justify-center" />
               <AccountCard
                 name={userName}
                 email={userEmail}

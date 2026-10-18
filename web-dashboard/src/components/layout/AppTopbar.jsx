@@ -4,7 +4,6 @@ import { Bell } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
 import { AppSearch } from "./AppSearch";
-import { LanguageToggle } from "./LanguageToggle";
 import { initialsOf } from "./AppSidebar";
 
 /**
@@ -24,8 +23,6 @@ const AppTopbar = ({ links = [], hasUnread = false, userName, userEmail }) => {
       <AppSearch links={links} />
 
       <div className="ml-auto flex items-center gap-2">
-        <LanguageToggle />
-
         <Link
           to="/notifications"
           className="relative grid h-11 w-11 place-items-center rounded-full text-fg-2 transition-colors duration-150 hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"

@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
-import { LanguageToggle } from "./LanguageToggle";
 
 /**
  * AppSidebar — the 288px product rail.
@@ -180,7 +179,6 @@ const AppSidebar = ({
 
       <div className="space-y-3 border-t border-border-strong px-3 py-4">
         <SourceReadout />
-        <LanguageToggle />
         <AccountCard
           name={userName}
           email={userEmail}
