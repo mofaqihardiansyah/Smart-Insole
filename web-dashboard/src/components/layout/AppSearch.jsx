@@ -11,7 +11,8 @@ import { t } from "../../utils/i18n";
  * navigates somewhere that exists. Two kinds of result are offered, because
  * this product has exactly two things worth jumping to:
  *
- *   PAGES    the seven destinations in the rail, matched by label.
+ *   PAGES    the six destinations in the rail (seven for an admin), matched by
+ *            label.
  *   RECORDS  the readings still in the live buffer, matched by sensor point,
  *            risk level or clock time. Picking one opens the history page,
  *            which is where the full record lives.
@@ -152,7 +153,7 @@ const AppSearch = ({ links = [] }) => {
           onKeyDown={onKeyDown}
           aria-label={t("search.label", language)}
           aria-expanded={showPopup}
-          aria-controls={listboxId}
+          aria-controls={showPopup ? listboxId : undefined}
           aria-autocomplete="list"
           aria-activedescendant={
             showPopup && results.length > 0 ? optionId(active) : undefined
@@ -176,14 +177,19 @@ const AppSearch = ({ links = [] }) => {
       </div>
 
       {showPopup && (
-        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 overflow-hidden rounded-tile border border-border-strong bg-surface shadow-lg">
+        // The popup owns the id the combobox points at, so `aria-controls`
+        // resolves in the no-match state too, where the listbox itself is not
+        // rendered and a reference to it would dangle.
+        <div
+          id={listboxId}
+          className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 overflow-hidden rounded-tile border border-border-strong bg-surface shadow-lg"
+        >
           {results.length === 0 ? (
             <p className="px-4 py-4 text-body-sm text-muted">
               {`${t("search.empty", language)} "${query.trim()}"`}
             </p>
           ) : (
             <ul
-              id={listboxId}
               role="listbox"
               aria-label={t("search.label", language)}
               className="max-h-[60vh] overflow-y-auto py-1"
