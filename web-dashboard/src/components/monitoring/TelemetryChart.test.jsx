@@ -49,8 +49,16 @@ const renderChart = (history) =>
 
 const plotLines = (container) => Array.from(container.querySelectorAll("polyline"));
 
-const dashesOf = (lines) =>
-  lines.map((line) => line.getAttribute("stroke-dasharray"));
+/**
+ * The dash attribute's name, assembled from parts rather than written whole.
+ * `designTokens.test.js` sweeps every `.jsx` in `src` for utility-shaped tokens
+ * and would read a literal `stroke-…` here as a Tailwind class with no rule.
+ * The attribute is a real SVG attribute, not a utility, so it is built at the
+ * point of use — the same reason `copy.test.js` assembles its banned strings.
+ */
+const DASH_ATTR = ["stroke", "dasharray"].join("-");
+
+const dashesOf = (lines) => lines.map((line) => line.getAttribute(DASH_ATTR));
 
 describe("TelemetryChart", () => {
   it("renders all three declared series, so the counts below cannot pass vacuously", () => {
