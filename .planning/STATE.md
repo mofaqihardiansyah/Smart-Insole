@@ -2,17 +2,17 @@
 gsd_state_version: "1.0"
 milestone: v1.0
 milestone_name: Audit, Fix, Rebuild UI/UX Design
-current_phase: 5
-current_phase_name: Page-by-page rebuild
+current_phase: 6
+current_phase_name: Delivery Gate & oil-ui go/no-go
 status: ready
-stopped_at: Phase 4 closed — the shell is gated; no plan files existed for it
+stopped_at: Phase 5 closed — the ledger sweep landed; the click-through is owner-run
 last_updated: "2026-10-18T12:12:00.000Z"
 last_activity: 2026-10-18
-last_activity_desc: Phase 4 closed (shell gated, four defects fixed)
+last_activity_desc: Phase 5 closed (two-tier sweep, AdminPage idiom, landing tokens, page contract gate)
 state_head: 78fcdf8d
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 18
   completed_plans: 18
 ---
@@ -24,16 +24,28 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-17)
 
 **Core value:** Trustworthy, legible real-time plantar pressure monitoring that flags risk states clearly — nothing on screen is decorative colour; colour means a foot needs attention.
-**Current focus:** Phase 5 — Page-by-page rebuild
+**Current focus:** Phase 6 — Delivery Gate (npm gates pass; owner-run UAT at 360/768/1280; OIL-03/04)
 
 ## Current Position
 
-Phase: 4 (Shell rebuild) — COMPLETE
-Plan: no plan files; executed directly as five commits
-Status: Ready for Phase 5
-Last activity: 2026-10-18 — Phase 4 closed; the shell is gated by `shell.test.jsx` and the full suite is green
+Phase: 5 (Page-by-page rebuild) — COMPLETE
+Plan: no plan files; executed directly as eight commits (five code, three docs)
+Status: Ready for Phase 6
+Last activity: 2026-10-18 — Phase 5 closed; suite 36 files / 342 tests green, build exit 0
 
 Progress: [██████████] 100%
+
+## Phase 5 outcome, in one paragraph
+
+The ten app pages already composed the fixed primitives, so the phase closed the ledger's sweep
+instead of rebuilding from scratch: `StatusBanner` now forwards `nextAction`, all 14 empty/error
+panels on 8 pages name the step after their cause (WINDOWS 13 and 20 closed), AdminPage swapped
+blocking `window.alert` dialogs and raw inputs for the shared banner and `GlassInput`, and the
+landing resolved 49 built-in size classes plus 6 raw radii onto the newly declared
+`landing-h2` / `cell` / `section` / `section-lg` tokens (`DESIGN.md` states the mapping). A
+static page-contract gate (`pagesContract.test.js`, three probes proven failing first) now holds
+PAGE-11, PAGE-12 and the two-tier feedback rule. Suite: 36 files / 342 tests green, build exit
+0. The three-viewport click-through remains owner-run and ledgered. See `05-PHASE-SUMMARY.md`.
 
 ## Phase 4 outcome, in one paragraph
 

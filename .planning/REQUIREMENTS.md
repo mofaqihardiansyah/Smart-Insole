@@ -48,18 +48,18 @@
 
 ### PAGE — Page-by-page rebuild
 
-- [ ] **PAGE-01**: Rebuild Dashboard — greeting row, 4 metric tiles, trend panel, load donut, live feed, pressure map (in that order)
-- [ ] **PAGE-02**: Rebuild Monitoring page
-- [ ] **PAGE-03**: Rebuild History page
-- [ ] **PAGE-04**: Rebuild Device page
-- [ ] **PAGE-05**: Rebuild Settings page
-- [ ] **PAGE-06**: Rebuild Profile page
-- [ ] **PAGE-07**: Rebuild Notifications page
-- [ ] **PAGE-08**: Rebuild Login page
-- [ ] **PAGE-09**: Rebuild Register page
-- [ ] **PAGE-10**: Rebuild Landing page — warm dialect under `.landing-scope`, real PlantarHeatmap component (no skeleton/placeholder); re-derive the landing heading scale and radius values against a declared landing scale (Phase 2 fixed the two a11y-critical touch targets; type scale + radius carry forward per 02-CONTEXT.md D-13)
-- [ ] **PAGE-11**: Responsive breakpoints <640 / 640–1023 / >=1024px on every page
-- [ ] **PAGE-12**: Two visual registers never mixed — clinical app (pale slate, 8px control scale) vs warm landing (warm grey, pill nav)
+- [x] **PAGE-01**: Rebuild Dashboard — greeting row, 4 metric tiles, trend panel, load donut, live feed, pressure map (in that order)
+- [x] **PAGE-02**: Rebuild Monitoring page
+- [x] **PAGE-03**: Rebuild History page
+- [x] **PAGE-04**: Rebuild Device page
+- [x] **PAGE-05**: Rebuild Settings page
+- [x] **PAGE-06**: Rebuild Profile page
+- [x] **PAGE-07**: Rebuild Notifications page
+- [x] **PAGE-08**: Rebuild Login page
+- [x] **PAGE-09**: Rebuild Register page
+- [x] **PAGE-10**: Rebuild Landing page — warm dialect under `.landing-scope`, real PlantarHeatmap component (no skeleton/placeholder); re-derive the landing heading scale and radius values against a declared landing scale (Phase 2 fixed the two a11y-critical touch targets; type scale + radius carry forward per 02-CONTEXT.md D-13)
+- [x] **PAGE-11**: Responsive breakpoints <640 / 640–1023 / >=1024px on every page
+- [x] **PAGE-12**: Two visual registers never mixed — clinical app (pale slate, 8px control scale) vs warm landing (warm grey, pill nav)
 
 ### OIL — oil-ui design-skill evaluation
 
@@ -77,7 +77,7 @@
 
 ### LANG — Language (per user decision: Indonesian only, no language switch)
 
-- [ ] **LANG-01**: Indonesian language only; remove English language switch / i18n toggle
+- [x] **LANG-01**: Indonesian language only; remove English language switch / i18n toggle
 
 ### THEME — Theme (per user decision: default/light mode only, no dark mode)
 
@@ -88,7 +88,7 @@
 ## Future Requirements (deferred to v1.x / v2+)
 
 - [ ] **OIL-05**: oil-ui Pro adoption ($9.99) — open-source skill sufficient for MVP
-- [ ] **PAGE-13**: Additional pages beyond the 10 existing routes
+- [x] **PAGE-13**: Admin console page (AdminPage) added beyond the 10 routes - owner decision, ticked in Phase 5
 - [ ] **THEME-02**: Dark mode — explicitly out of scope (light-only by owner decision)
 - [ ] **NEW-01**: User preferences, theme switcher, additional charts — out of scope for this milestone
 
@@ -143,19 +143,20 @@
 | SHELL-04 | Phase 4 | Complete |
 | SHELL-05 | Phase 4 | Complete |
 | SHELL-06 | Phase 4 | Complete |
-| PAGE-01 | Phase 5 | Pending |
-| PAGE-02 | Phase 5 | Pending |
-| PAGE-03 | Phase 5 | Pending |
-| PAGE-04 | Phase 5 | Pending |
-| PAGE-05 | Phase 5 | Pending |
-| PAGE-06 | Phase 5 | Pending |
-| PAGE-07 | Phase 5 | Pending |
-| PAGE-08 | Phase 5 | Pending |
-| PAGE-09 | Phase 5 | Pending |
-| PAGE-10 | Phase 5 | Pending |
-| PAGE-11 | Phase 5 | Pending |
-| PAGE-12 | Phase 5 | Pending |
-| LANG-01 | Phase 5 | Pending |
+| PAGE-01 | Phase 5 | Complete |
+| PAGE-02 | Phase 5 | Complete |
+| PAGE-03 | Phase 5 | Complete |
+| PAGE-04 | Phase 5 | Complete |
+| PAGE-05 | Phase 5 | Complete |
+| PAGE-06 | Phase 5 | Complete |
+| PAGE-07 | Phase 5 | Complete |
+| PAGE-08 | Phase 5 | Complete |
+| PAGE-09 | Phase 5 | Complete |
+| PAGE-10 | Phase 5 | Complete |
+| PAGE-11 | Phase 5 | Complete |
+| PAGE-12 | Phase 5 | Complete |
+| LANG-01 | Phase 5 | Complete |
+| PAGE-13 | Phase 5 | Complete |
 | GATE-01 | Phase 6 | Pending |
 | GATE-02 | Phase 6 | Pending |
 | GATE-03 | Phase 6 | Pending |

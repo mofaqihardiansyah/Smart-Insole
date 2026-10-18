@@ -121,7 +121,17 @@ files / 338 tests green; `npm run build` exit 0. See
   4. Responsive breakpoints <640 / 640–1023 / >=1024px on every page
   5. Two visual registers never mixed (clinical app vs warm landing); Indonesian language only; no language switch
 
-**Plans**: TBD
+**Plans**: executed directly, without plan files (see the outcome line)
+**Outcome**: complete 2026-10-18. Eight commits (five code, three ledger/bookkeeping). The ten app pages already
+composed the fixed primitives, so the work was the sweep the ledger owned: all 14 empty/error
+panels on 8 pages now name their next step; `StatusBanner` forwards `nextAction`; AdminPage
+traded its blocking `alert()` dialogs and raw inputs for banner + `GlassInput`; the landing's
+49 built-in size classes and 6 raw radii resolved onto the newly declared `landing-h2` and
+`cell`/`section`/`section-lg` hooks (`DESIGN.md` records the mapping). New gate:
+`pagesContract.test.js` (responsive vocabulary, register separation, two-tier feedback),
+three probes proved failing first. Full suite 36 files / 342 tests green; build exit 0.
+The three-viewport click-through is owner-run and ledgered as `unrun-verify`.
+See `.planning/phases/05-page-rebuild/05-PHASE-SUMMARY.md`.
 **UI hint**: yes
 
 ### Phase 6: Delivery Gate & oil-ui go/no-go
