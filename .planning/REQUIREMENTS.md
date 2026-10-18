@@ -34,7 +34,7 @@
 - [x] **COMP-01**: Rebuild GlassCard, GlassButton, GlassInput, GlassTable, GlassForm against DESIGN.md
 - [ ] **COMP-02**: Rebuild StatusChip and Chip against DESIGN.md
 - [ ] **COMP-03**: Build new Alert/Banner primitive — unified loading/empty/error/danger banner with named cause + next action
-- [ ] **COMP-04**: Align TrendChart, LoadDonut, PlantarHeatmap to single SERIES source (Okabe-Ito, CVD-safe, quarantined to charts)
+- [x] **COMP-04**: Align TrendChart, LoadDonut, PlantarHeatmap to single SERIES source (Okabe-Ito, CVD-safe, quarantined to charts)
 - [ ] **COMP-05**: Retain Glass* component naming; never rename exports (pages import by name)
 
 ### SHELL — Shell rebuild

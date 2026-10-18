@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 7
+open_count: 10
 waived_count: 0
 fixed_count: 1
-total_count: 8
-last_updated: 2026-10-18T03:28:51.699Z
+total_count: 11
+last_updated: 2026-10-18T03:39:51.609Z
 ---
 
 # Broken Windows Ledger
@@ -23,6 +23,9 @@ last_updated: 2026-10-18T03:28:51.699Z
 | 6 | 02 | deviation | .planning/phases/02-defect-fixes/02-04-PLAN.md |  | The 02-04 plan's `<automated>` commands embed an unquoted absolute path containing a space (`cd /home/qihh/Documents/Tugas Akhir/smart-insole-ta/web-dashboard && …`), which fails as `cd: too many arguments`. Recurrence of the same plan-template defect recorded for 02-02. Commands were run with the shell workdir / a quoted path instead; the plan file was not edited. | open |  | 2026-10-17T13:25:11.000Z |  |
 | 7 | 03 | unrun-verify | web-dashboard/src/pages/landingCta.test.jsx |  | Manual click-through of the rebuilt landing register at 360/768/1280px was not run (03-01 coverage D5): the eight CTAs must read as two registers, the hero primary and secondary actions must look different, and a long localised label must wrap inside the button with no horizontal overflow. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T03:28:51.544Z |  |
 | 8 | 03 | deviation | .planning/phases/03-primitive-rebuilds/03-01-PLAN.md |  | Task 3 is tdd=true but produced no RED commit: Task 1 ships the behaviour by plan design, so all nine assertions were green on first run. Recorded as-is rather than fabricating a RED/GREEN pair. tdd_mode is not enabled and the plan is type=execute, so no RED-gate contract applied. | open |  | 2026-10-18T03:28:51.699Z |  |
+| 9 | 03 | unrun-verify | web-dashboard/src/pages/MonitoringPage.jsx |  | The 360/768/1280 click-through of the rebuilt series path (chart plot, legend readout, screen-reader table, window control) could not be run: this environment has no browser. The structural half is locked by unit test; the visual half needs a human pass at the three breakpoints (AGENTS.md Delivery Gate). | open |  | 2026-10-18T03:39:51.224Z |  |
+| 10 | 03 | deviation | web-dashboard/src/components/monitoring/TelemetryChart.test.jsx |  | Rule 2: added the literal three-series floor to TelemetryChart.test.jsx. The plan's Task-2 action derives the count from SERIES.length, which stayed self-consistent when SERIES was probed down to two entries; threat T-03-05 names 'asserts the three-series count' as the mitigation, so the literal floor was added to complete it. | open |  | 2026-10-18T03:39:51.412Z |  |
+| 11 | 03 | deviation | web-dashboard/src/components/monitoring/TelemetryChart.test.jsx |  | Rule 1: the new chart test's literal SVG dash attribute name tripped designTokens.test.js, whose sweep reads any stroke-* token in a .jsx as a Tailwind utility. The name is now assembled from parts at the point of use. | open |  | 2026-10-18T03:39:51.609Z |  |
 
 ````json
 [
@@ -127,6 +130,45 @@ last_updated: 2026-10-18T03:28:51.699Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-18T03:28:51.699Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 9,
+    "kind": "unrun-verify",
+    "phase": "03",
+    "file": "web-dashboard/src/pages/MonitoringPage.jsx",
+    "line": null,
+    "description": "The 360/768/1280 click-through of the rebuilt series path (chart plot, legend readout, screen-reader table, window control) could not be run: this environment has no browser. The structural half is locked by unit test; the visual half needs a human pass at the three breakpoints (AGENTS.md Delivery Gate).",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T03:39:51.224Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 10,
+    "kind": "deviation",
+    "phase": "03",
+    "file": "web-dashboard/src/components/monitoring/TelemetryChart.test.jsx",
+    "line": null,
+    "description": "Rule 2: added the literal three-series floor to TelemetryChart.test.jsx. The plan's Task-2 action derives the count from SERIES.length, which stayed self-consistent when SERIES was probed down to two entries; threat T-03-05 names 'asserts the three-series count' as the mitigation, so the literal floor was added to complete it.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T03:39:51.412Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 11,
+    "kind": "deviation",
+    "phase": "03",
+    "file": "web-dashboard/src/components/monitoring/TelemetryChart.test.jsx",
+    "line": null,
+    "description": "Rule 1: the new chart test's literal SVG dash attribute name tripped designTokens.test.js, whose sweep reads any stroke-* token in a .jsx as a Tailwind utility. The name is now assembled from parts at the point of use.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T03:39:51.609Z",
     "resolved_at": null,
     "milestone": "v1.0"
   }

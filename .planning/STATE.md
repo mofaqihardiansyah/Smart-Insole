@@ -5,16 +5,16 @@ milestone_name: Audit, Fix, Rebuild UI/UX Design
 current_phase: 3
 current_phase_name: Primitive rebuilds
 status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-10-18T03:29:57.108Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-10-18T03:43:06.149Z"
 last_activity: 2026-10-18
 last_activity_desc: Phase 3 execution started
-state_head: 22b26229cf2ff643a73aea7bc6703fee5d6b927f
+state_head: d3a30326105368bd890c803b215af33684960bff
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 18
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-10-17)
 ## Current Position
 
 Phase: 3 (Primitive rebuilds) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 Status: Ready to execute
 Last activity: 2026-10-18 — Phase 3 execution started
 
@@ -66,6 +66,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 02 P02 | 12 | 3 tasks | 4 files |
 | Phase 02 P04 | 7min | 3 tasks | 3 files |
 | Phase 3 P01 | 26 | 3 tasks | 6 files |
+| Phase 3 P02 | 6min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ Recent decisions affecting current work:
 - [Phase 3]: danger's hover:bg-danger-hover deleted rather than re-valued: --danger-hover is byte-identical to --danger, so the utility was a no-op; a distinct danger hover is a token decision recorded against ROADMAP backlog 999.3 (UI-SPEC 4, option b) and no hex was invented.
 - [Phase 3]: The variantKeys gate's tone= half does not ship in 03-01: its vocabulary is the banner tone set, owned by the new primitive in 03-03 and gated in 03-06.
 - [Phase 3]: Task 3 is tdd=true with no RED commit: Task 1 ships the behaviour by plan design, so all nine assertions were green on first run. Recorded as-is rather than fabricating a RED/GREEN pair; tdd_mode is not enabled and the plan is type=execute.
+- [Phase 3]: series.js is the single source for the three CVD-safe series values and exports the D-05 carve-out (NON_IDENTITY_TRACE = --secondary) so plan 03-04 proves it by import instead of hard-coding the variable name; the module names --series-N only and its test fails on any hex literal, which keeps index.css the only place the measured values are written.
+- [Phase 3]: The TELEMETRY_SERIES alias and its single importer moved in one task: 03-CONTEXT.md:49 recorded the re-export as zero-importer but MonitoringPage.jsx:21,64 consumed it, so deleting the re-export first would have broken the build (threat T-03-06).
+- [Phase 3]: A SERIES.length comparison is never the only floor in a chart test: probing SERIES down to two entries left TelemetryChart.test.jsx fully green, so a literal three-series assertion was added to complete the mitigation threat T-03-05 names. A green task-scoped run is not a green plan: the token gate in another file caught the new test's literal SVG dash attribute name, which only the plan-level full-suite run could see.
 
 ### Pending Todos
 
@@ -134,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-18T03:29:57.042Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-10-18T03:43:06.074Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
