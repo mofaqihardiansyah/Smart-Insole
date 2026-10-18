@@ -383,19 +383,16 @@ const DashboardPage = () => {
       key: "forefoot",
       label: t("anatomy.forefoot.short", language),
       value: balance.perZone[0],
-      color: "rgb(var(--secondary))",
     },
     {
       key: "midfoot",
       label: t("anatomy.midfoot.short", language),
       value: balance.perZone[1],
-      color: "rgb(var(--primary))",
     },
     {
       key: "heel",
       label: t("anatomy.heel.short", language),
       value: balance.perZone[2],
-      color: "rgb(var(--border-strong))",
     },
   ];
 
