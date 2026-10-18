@@ -16,10 +16,8 @@ import {
   PageHeader,
 } from "../components/ui/GlassComponents";
 import { Chip } from "../components/ui/Chip";
-import {
-  TelemetryChart,
-  TELEMETRY_SERIES,
-} from "../components/monitoring/TelemetryChart";
+import { TelemetryChart } from "../components/monitoring/TelemetryChart";
+import { SERIES } from "../utils/series";
 
 /**
  * MonitoringPage — the pressure trend.
@@ -61,7 +59,7 @@ const MonitoringPage = () => {
   /** Real per-sensor statistics over the visible window. */
   const stats = useMemo(
     () =>
-      TELEMETRY_SERIES.map((series) => {
+      SERIES.map((series) => {
         const values = visible.map((record) => record.readings?.[series.key] ?? 0);
         return {
           key: series.key,

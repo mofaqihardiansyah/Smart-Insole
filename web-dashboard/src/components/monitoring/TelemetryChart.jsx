@@ -271,5 +271,5 @@ const TelemetryChart = ({
   );
 };
 
-export { TelemetryChart, SERIES as TELEMETRY_SERIES };
+export { TelemetryChart };
 export default TelemetryChart;
