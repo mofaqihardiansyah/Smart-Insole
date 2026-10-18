@@ -256,4 +256,19 @@ describe("the body ink and the source prohibitions", () => {
     // be a second, always-mounted polite region the app does not want.
     expect(source).not.toMatch(/aria-live/);
   });
+
+  it("reads its role from the shared decision rather than inlining the matrix", () => {
+    // The rendered assertions above compare against `roleFor`, so a hand-written
+    // copy of the matrix would pass them while it agreed. This is the assertion
+    // that fails the moment a second copy appears, which is the property D-02
+    // exists to hold.
+    expect(
+      shippedCode,
+      "the comment strip left nothing behind"
+    ).toContain("roleFor(");
+    expect(
+      shippedCode,
+      "the role is no longer read from feedbackState.roleFor"
+    ).toMatch(/role=\{roleFor\(\s*tone\s*\)\}/);
+  });
 });
