@@ -16,6 +16,7 @@ import {
 import { StatusChip } from "./StatusChip";
 import { StatePanel, StateRetry } from "./StatePanel";
 import { StatusBanner } from "./StatusBanner";
+import { AlertBanner } from "./AlertBanner";
 import { PageHeader } from "./PageHeader";
 
 export {
@@ -35,5 +36,6 @@ export {
   StatePanel,
   StateRetry,
   StatusBanner,
+  AlertBanner,
   PageHeader,
 };
