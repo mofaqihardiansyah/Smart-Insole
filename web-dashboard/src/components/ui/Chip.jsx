@@ -1,4 +1,5 @@
 import React from "react";
+import { devWarn } from "../../utils/devWarn";
 
 /**
  * Chip — the small labelled token used for filters, deltas and states.
@@ -10,6 +11,12 @@ import React from "react";
  *
  * Tones are the semantic set only. There is no arbitrary colour prop: a chip
  * that can be any colour ends up being every colour.
+ *
+ * A tone the map does not declare still renders `neutral` — a blank where a
+ * state should be is worse on a ward console than a correct-looking one — but a
+ * chip's whole job is to make a claim about the reading it labels, and a
+ * `danger` chip painted neutral makes the opposite claim convincingly. So
+ * development names the received value and the declared set.
  */
 const TONES = {
   neutral: "bg-surface-2 text-fg-2",
@@ -30,22 +37,36 @@ const Chip = ({
   className = "",
   as: Tag = "span",
   ...props
-}) => (
-  <Tag
-    className={[
-      "inline-flex items-center gap-1.5 border border-transparent px-2.5 py-1 font-semibold",
-      pill ? "rounded-full" : "rounded-control",
-      uppercase ? "text-chip uppercase" : "text-caption",
-      TONES[tone] || TONES.neutral,
-      className,
-    ]
-      .filter(Boolean)
-      .join(" ")}
-    {...props}
-  >
-    {children}
-  </Tag>
-);
+}) => {
+  // Production keeps the benign substitution; development names the received
+  // value and the declared set so a mis-spelled claim surfaces where it was
+  // written rather than as a chip that reads calm on a danger reading.
+  if (!TONES[tone]) {
+    devWarn(
+      "Chip",
+      `unknown tone "${tone}"; declared tones are ${Object.keys(TONES).join(
+        ", "
+      )}`
+    );
+  }
+
+  return (
+    <Tag
+      className={[
+        "inline-flex items-center gap-1.5 border border-transparent px-2.5 py-1 font-semibold",
+        pill ? "rounded-full" : "rounded-control",
+        uppercase ? "text-chip uppercase" : "text-caption",
+        TONES[tone] || TONES.neutral,
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      {...props}
+    >
+      {children}
+    </Tag>
+  );
+};
 
 Chip.displayName = "Chip";
 

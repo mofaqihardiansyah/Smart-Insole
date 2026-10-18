@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, within } from "@testing-library/react";
 import React from "react";
 import { StatusChip, STATUS_LEVELS } from "./StatusChip";
@@ -10,6 +10,11 @@ import { StatusChip, STATUS_LEVELS } from "./StatusChip";
  * (decorative to assistive tech), the translated text label, and the tone pair.
  * The pairs are read from the module's own `STATUS_LEVELS` rather than re-typed
  * here, so a level cannot quietly diverge from the vocabulary it declares.
+ *
+ * D-01 adds the second half: an undeclared key keeps its benign `safe` fallback
+ * — a blank status is worse than a correct-looking one — and development names
+ * the key it did not know. The benign-fallback case below predates that and is
+ * kept exactly as it was: the warning is an addition, not a replacement.
  */
 
 const LEVELS = ["safe", "warning", "danger"];
@@ -22,6 +27,11 @@ const renderChip = (props = {}) => {
 const toneTokens = (level) => STATUS_LEVELS[level].tone.split(" ");
 
 describe("StatusChip", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
   it("renders three redundant channels for every level", () => {
     for (const level of LEVELS) {
       const label = `Level ${level}`;
@@ -82,6 +92,63 @@ describe("StatusChip", () => {
     const { chip } = renderChip({ level: "unknown" });
 
     for (const token of toneTokens("safe")) {
+      expect(chip.className, token).toContain(token);
+    }
+  });
+
+  it("reads its level vocabulary from the export, so a shrunk map fails here", () => {
+    const levels = Object.keys(STATUS_LEVELS);
+    expect(levels).toHaveLength(LEVELS.length);
+    for (const level of LEVELS) {
+      expect(levels, level).toContain(level);
+    }
+  });
+
+  it("warns once in development for an undeclared level and keeps the safe fallback", () => {
+    vi.stubEnv("DEV", true);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const { chip } = renderChip({ level: "critical" });
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    const line = String(warn.mock.calls[0][0]);
+    expect(line).toContain("StatusChip");
+    expect(line).toContain("critical");
+    for (const level of LEVELS) {
+      expect(line, level).toContain(level);
+    }
+
+    for (const token of toneTokens("safe")) {
+      expect(chip.className, token).toContain(token);
+    }
+  });
+
+  it("stays silent outside development for an undeclared level", () => {
+    vi.stubEnv("DEV", false);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const { chip } = renderChip({ level: "critical" });
+
+    expect(warn).not.toHaveBeenCalled();
+    for (const token of toneTokens("safe")) {
+      expect(chip.className, token).toContain(token);
+    }
+  });
+
+  it("warns for an undeclared size and keeps the medium box", () => {
+    vi.stubEnv("DEV", true);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const { chip } = renderChip({ level: "warning", size: "huge" });
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    const line = String(warn.mock.calls[0][0]);
+    expect(line).toContain("StatusChip");
+    expect(line).toContain("huge");
+
+    // The three levels are untouched by the size branch: it still renders the
+    // level's own pair.
+    for (const token of toneTokens("warning")) {
       expect(chip.className, token).toContain(token);
     }
   });

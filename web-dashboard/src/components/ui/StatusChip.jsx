@@ -1,5 +1,6 @@
 import React from "react";
 import { CheckCircle2, AlertTriangle, AlertOctagon } from "lucide-react";
+import { devWarn } from "../../utils/devWarn";
 
 /**
  * StatusChip — the risk readout.
@@ -43,6 +44,27 @@ const SIZES = {
  * @param {string} props.label localised, human readable level name
  */
 const StatusChip = ({ level = "safe", label, size = "md", className = "" }) => {
+  // Same posture as `Chip`: an undeclared key keeps its benign fallback, and
+  // development says which key was received. An unknown level resolving to
+  // `safe` is a false clinical claim — it paints an unread state as a good one
+  // — so the mistake has to be loud where it was written.
+  if (!LEVELS[level]) {
+    devWarn(
+      "StatusChip",
+      `unknown level "${level}"; declared levels are ${Object.keys(LEVELS).join(
+        ", "
+      )}`
+    );
+  }
+  if (!SIZES[size]) {
+    devWarn(
+      "StatusChip",
+      `unknown size "${size}"; declared sizes are ${Object.keys(SIZES).join(
+        ", "
+      )}`
+    );
+  }
+
   const config = LEVELS[level] || LEVELS.safe;
   const sizing = SIZES[size] || SIZES.md;
   const { Icon } = config;
