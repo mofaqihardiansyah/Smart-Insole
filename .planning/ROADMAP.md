@@ -76,7 +76,7 @@ Plan list:
   4. TrendChart, LoadDonut, PlantarHeatmap aligned to single Okabe-Ito SERIES source (CVD-safe, quarantined to charts)
   5. Realtime data contract preserved: aria-live="off" on live numbers, one polite region for risk changes, autoConnect={Boolean(user)} guard intact
 
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans executed
 
 Plan list:
 - [x] 03-01-PLAN.md — COMP-01: restore the landing button variants and land the `variant=`/`level=` dev-warning gate (wave 1)
@@ -85,7 +85,7 @@ Plan list:
 - [x] 03-04-PLAN.md — COMP-04 + COMP-01: donut and trend trace onto the series source; caller-supplied arc colours deleted (wave 2, depends 03-02)
 - [x] 03-06-PLAN.md — COMP-02 + COMP-01 + COMP-05: chip rebuilds, the `tone=` gate half, raised-surface ink fix (wave 2, depends 03-01, 03-03)
 - [x] 03-07-PLAN.md — COMP-03 + COMP-05: `StatePanel` reads the shared role decision; five admin feedback sites repaired; radius + live-region gates (wave 2, depends 03-03)
-- [ ] 03-05-PLAN.md — COMP-04 + COMP-05: series-quarantine gate and `DESIGN.md` single-source clause (wave 3, depends 03-04)
+- [x] 03-05-PLAN.md — COMP-04 + COMP-05: series-quarantine gate and `DESIGN.md` single-source clause (wave 3, depends 03-04)
 
 **UI hint**: yes
 
@@ -139,7 +139,7 @@ Plan list:
 |-------|----------------|--------|-----------|
 | 1. Design-system audit & token lock | 5/5 | Complete    | 2026-10-17 |
 | 2. Defect fixes | 6/6 | Complete    | 2026-10-17 |
-| 3. Primitive rebuilds | 6/7 | In Progress | - |
+| 3. Primitive rebuilds | 7/7 | In Progress | - |
 | 4. Shell rebuild | TBD | Not started | - |
 | 5. Page-by-page rebuild | TBD | Not started | - |
 | 6. Delivery Gate & oil-ui go/no-go | TBD | Not started | - |
