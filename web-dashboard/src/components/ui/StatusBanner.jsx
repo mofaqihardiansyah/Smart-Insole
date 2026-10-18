@@ -1,41 +1,17 @@
 import React from "react";
-import { Info, CheckCircle2, AlertTriangle, AlertOctagon, X } from "lucide-react";
+import { AlertBanner } from "./AlertBanner";
 
 /**
- * StatusBanner — non-blocking feedback and data-source notices.
+ * StatusBanner is now a delegate to `AlertBanner`.
  *
- * This replaces the `alert()` calls that used to stand in for feedback. A modal
- * alert interrupts, cannot be read in context by a screen reader, and hides the
- * page it is about; an inline banner says the same thing in place and stays put
- * until it is resolved.
- *
- * Tone decides the live-region role: the danger banner is `role="alert"` so it
- * is announced immediately, everything else is `role="status"` so it waits for
- * a pause in speech.
+ * It keeps its name, its props and both of its exports because thirteen call
+ * sites in eight files import it and the brief forbids renaming exports.
+ * Everything that used to live here has one owner instead: the tone vocabulary
+ * and the visual pairs are declared in `AlertBanner.jsx`, and the live-region
+ * role is decided once in `feedbackState.js`. This file therefore holds no
+ * vocabulary of its own and re-decides nothing, so it cannot drift away from
+ * the primitive it renders.
  */
-const TONES = {
-  info: {
-    Icon: Info,
-    tone: "border-border-control bg-surface-2",
-    icon: "text-primary",
-  },
-  success: {
-    Icon: CheckCircle2,
-    tone: "border-safe/50 bg-safe/15",
-    icon: "text-safe-ink",
-  },
-  warning: {
-    Icon: AlertTriangle,
-    tone: "border-warning/50 bg-warning/15",
-    icon: "text-warning-ink",
-  },
-  danger: {
-    Icon: AlertOctagon,
-    tone: "border-danger/50 bg-danger/15",
-    icon: "text-danger-ink",
-  },
-};
-
 const StatusBanner = ({
   tone = "info",
   title,
@@ -45,38 +21,17 @@ const StatusBanner = ({
   dismissLabel,
   className = "",
 }) => {
-  const config = TONES[tone] || TONES.info;
-  const { Icon } = config;
-
   return (
-    <div
-      role={tone === "danger" ? "alert" : "status"}
-      className={`flex items-start gap-3 rounded-card border p-4 ${config.tone} ${className}`.trim()}
+    <AlertBanner
+      tone={tone}
+      title={title}
+      action={action}
+      onDismiss={onDismiss}
+      dismissLabel={dismissLabel}
+      className={className}
     >
-      <Icon
-        className={`mt-0.5 h-5 w-5 shrink-0 ${config.icon}`}
-        aria-hidden="true"
-      />
-
-      <div className="min-w-0 flex-1">
-        {title && <p className="font-medium text-fg">{title}</p>}
-        {children && (
-          <div className="mt-1 text-body-sm text-muted">{children}</div>
-        )}
-        {action && <div className="mt-3">{action}</div>}
-      </div>
-
-      {onDismiss && (
-        <button
-          type="button"
-          onClick={onDismiss}
-          aria-label={dismissLabel}
-          className="-m-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-        >
-          <X className="h-4 w-4" aria-hidden="true" />
-        </button>
-      )}
-    </div>
+      {children}
+    </AlertBanner>
   );
 };
 
