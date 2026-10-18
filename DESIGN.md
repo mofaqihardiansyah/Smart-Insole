@@ -170,13 +170,25 @@ colour-vision-deficiency-safe categorical set:
 | Heel | `#009E73` | 3.42:1 |
 
 **Single source:** these three values are defined once, in the `SERIES` array in
-`web-dashboard/src/components/monitoring/TelemetryChart.jsx`. Every stroke, dot,
-legend swatch and screen-reader table row reads from it. The Heatmap uses the
-risk tokens instead, because the heatmap encodes pressure magnitude, which is a
-risk question, not a series-identity question.
+`web-dashboard/src/utils/series.js`. Every consumer reads that module: the live
+waveform (`TelemetryChart`), the peak trend (`TrendChart`) and the zone donut
+(`LoadDonut`). The values themselves stay in `index.css` as `--series-1`,
+`--series-2` and `--series-3`, so this module names those custom properties and
+never a hex. The Heatmap uses the risk tokens instead, because the heatmap
+encodes pressure magnitude, which is a risk question, not a series-identity
+question.
+
+`TrendChart` draws one trace that is deliberately *not* one of these three. It is
+the non-identity `--secondary` sage line, because that panel answers "is the peak
+climbing", never "which zone is worst", and giving it a series key would re-encode
+one trend as a three-series categorical chart. The carve-out is recorded rather
+than removed.
 
 **Quarantine rule:** the three series colours appear *only* inside the chart.
-They never touch buttons, badges, navigation or headings.
+They never touch buttons, badges, navigation or headings. An automated gate walks
+the shipped `.jsx` and `.js` sources and fails on a raw `--series-N` reference in
+any file other than `index.css` and `utils/series.js`, so the rule is enforced
+rather than intended.
 
 ---
 
@@ -346,7 +358,7 @@ New primitives added by this pass, with the reason each exists:
 | Component | Why it exists |
 |---|---|
 | `Chip` | Filter labels, deltas and state tokens need one tint vocabulary. Tones are the semantic set only; there is no arbitrary colour prop. |
-| `TrendChart` | The dashboard's trend panel. One series, because the donut and the map already answer "which zone". |
+| `TrendChart` | The dashboard's trend panel. One series, because the donut and the map already answer "which zone". Its single trace is the non-identity `--secondary` sage carve-out, not one of the three series values; a later reader who "fixes" the odd one out by giving it a series key would triple the ink for one answer. |
 | `LoadDonut` | Three parts of one whole, with the whole stated in the ring's centre. |
 | `RowMenu` | The per-row actions overflow. A real menu, so the trigger is not a dead glyph. |
 | `AppLayout` / `AppSidebar` / `AppTopbar` / `AppSearch` | The reference shell. `FloatingNavbar` was removed with it: it had been a rail for three redesigns and the name had stopped describing anything. |
