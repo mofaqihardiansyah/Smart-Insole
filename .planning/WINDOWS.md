@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 36
+open_count: 38
 waived_count: 0
 fixed_count: 3
-total_count: 39
-last_updated: 2026-10-18T08:11:55.051Z
+total_count: 41
+last_updated: 2026-10-18T08:17:05.342Z
 ---
 
 # Broken Windows Ledger
@@ -54,6 +54,8 @@ last_updated: 2026-10-18T08:11:55.051Z
 | 37 | 05 | deviation | web-dashboard/src/utils/i18n.js |  | LANGUAGES is now a single-entry registry (id only). dictionaryKeys(), the id/en parity tests and t()'s lang parameter are untouched by decision. | open |  | 2026-10-18T07:43:18.056Z |  |
 | 38 | 05 | deviation | DESIGN.md |  | DESIGN.md:326 named the topbar's account controls as (language, notifications, profile). After LANG-01 the clause names (notifications, profile) and records the switch's removal. Awaiting owner countersignature, non-blocking. | open |  | 2026-10-18T07:43:18.260Z |  |
 | 39 | 05 | deviation | docs/DESIGN-BRIEF |  | The October design brief predates the redesign and contradicts the shipped product (bilingual ID/EN vs LANG-01, dark glassmorphism palette vs light-only, FloatingNavbar which no longer exists). A historical note in its header marks section 5's page inventory as the surviving authority and the rest as historical record. | open |  | 2026-10-18T07:43:18.440Z |  |
+| 40 | 5 | deviation | web-dashboard/src/pages/AdminPage.jsx |  | Accepted pattern, same as the login page: Firebase error strings flow into panel descriptions and banner bodies as raw technical detail beneath a translated title. Every fallback literal is dictionary-sourced; window.confirm stays native for destructive confirmation, window.alert is gone. Repaired by a2d38550. | open |  | 2026-10-18T08:17:05.169Z |  |
+| 41 | 5 | unrun-verify | web-dashboard/src/pages/AdminPage.jsx |  | Visual pass on the rebuilt admin console (banners, threshold GlassInputs, 360/768/1280) is owner-run; no browser in the agent environment. | open |  | 2026-10-18T08:17:05.342Z |  |
 
 ````json
 [
@@ -561,6 +563,32 @@ last_updated: 2026-10-18T08:11:55.051Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-18T07:43:18.440Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 40,
+    "kind": "deviation",
+    "phase": "5",
+    "file": "web-dashboard/src/pages/AdminPage.jsx",
+    "line": null,
+    "description": "Accepted pattern, same as the login page: Firebase error strings flow into panel descriptions and banner bodies as raw technical detail beneath a translated title. Every fallback literal is dictionary-sourced; window.confirm stays native for destructive confirmation, window.alert is gone. Repaired by a2d38550.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T08:17:05.169Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 41,
+    "kind": "unrun-verify",
+    "phase": "5",
+    "file": "web-dashboard/src/pages/AdminPage.jsx",
+    "line": null,
+    "description": "Visual pass on the rebuilt admin console (banners, threshold GlassInputs, 360/768/1280) is owner-run; no browser in the agent environment.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T08:17:05.342Z",
     "resolved_at": null,
     "milestone": "v1.0"
   }
