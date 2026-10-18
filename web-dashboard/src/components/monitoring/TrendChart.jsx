@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { NON_IDENTITY_TRACE } from "../../utils/series";
 
 /**
  * TrendChart — peak pressure across the live ring buffer.
@@ -12,15 +13,26 @@ import React, { useMemo } from "react";
  *   in the load donut and the pressure map, so repeating all three traces here
  *   would triple the ink for the same answer. This card answers the other
  *   question: is the peak pressure climbing?
+ * - The one trace is drawn in `NON_IDENTITY_TRACE`, the sage line imported from
+ *   `../utils/series`. That name is the deliberate non-identity carve-out
+ *   recorded by D-05 and written into `DESIGN.md`'s data-visualisation section:
+ *   this trace answers "is it climbing", never "which zone", so it must not be
+ *   moved into the three-value series set. A later reader who "fixes" the odd
+ *   one out by giving it a series key would re-encode one trend as a
+ *   three-series categorical chart.
  * - The area under the line is a 12% tint of the same sage, so the magnitude
  *   reads before the exact number does. It is a hierarchy device, not decoration.
  * - The danger threshold is drawn AND labelled. A dashed line with no label is
  *   decoration; a labelled one is a limit.
  * - X labels are real clock times sampled from the buffer, not invented ticks.
+ * - A buffer shorter than the window draws only the points it has: no value is
+ *   interpolated, repeated or invented to fill the plot.
  * - The SVG is `role="img"` with a descriptive label, and the same numbers are
  *   exposed in a screen-reader-only table. A screen reader cannot read a
  *   polyline, and "chart" as alt text is not information.
  */
+
+const TRACE_INK = `rgb(var(${NON_IDENTITY_TRACE}))`;
 
 const WIDTH = 800;
 const HEIGHT = 260;
@@ -116,8 +128,8 @@ const TrendChart = ({
       >
         <defs>
           <linearGradient id="trend-area" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgb(var(--secondary))" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="rgb(var(--secondary))" stopOpacity="0" />
+            <stop offset="0%" stopColor={TRACE_INK} stopOpacity="0.18" />
+            <stop offset="100%" stopColor={TRACE_INK} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -171,7 +183,7 @@ const TrendChart = ({
         <polyline
           points={model.points}
           fill="none"
-          stroke="rgb(var(--secondary))"
+          stroke={TRACE_INK}
           strokeWidth="3"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -184,7 +196,7 @@ const TrendChart = ({
               cy={model.last.y}
               r="5"
               fill="rgb(var(--surface))"
-              stroke="rgb(var(--secondary))"
+              stroke={TRACE_INK}
               strokeWidth="3"
             />
             <g transform={`translate(${Math.min(model.last.x, WIDTH - PAD.right - 4)}, ${Math.max(model.last.y - 34, 12)})`}>
