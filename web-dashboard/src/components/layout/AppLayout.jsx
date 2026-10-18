@@ -20,9 +20,25 @@ import { LanguageToggle } from "./LanguageToggle";
  *           row is the failure mode this product's elderly audience cannot
  *           afford.
  *
- * The drawer is a real dialog: focus moves into it, Escape closes it, the page
- * behind it cannot scroll, and focus returns to the button that opened it.
+ * The drawer is a real dialog: focus moves into it, Tab stays inside it, Escape
+ * closes it, the page behind it cannot scroll, and focus returns to the button
+ * that opened it.
  */
+
+/**
+ * What Tab can reach. Collected fresh on each key press rather than cached,
+ * because the drawer's contents change (the search popup opens and closes, the
+ * rail is rebuilt when the role arrives).
+ */
+const FOCUSABLE = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(", ");
+
 const AppLayout = ({
   links = [],
   hasUnread = false,
@@ -53,6 +69,32 @@ const AppLayout = ({
       if (event.key === "Escape") {
         event.preventDefault();
         setDrawerOpen(false);
+        return;
+      }
+
+      // `aria-modal="true"` tells assistive technology the page behind is inert,
+      // so focus has to behave that way too. Without this, Tab walks straight out
+      // of the dialog and into the content it just declared unreachable.
+      if (event.key !== "Tab") return;
+
+      const drawer = drawerRef.current;
+      if (!drawer) return;
+      const focusables = Array.from(drawer.querySelectorAll(FOCUSABLE));
+      if (focusables.length === 0) return;
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+
+      if (!drawer.contains(active)) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
     document.addEventListener("keydown", onKeyDown);
