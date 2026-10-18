@@ -209,3 +209,98 @@ describe("the dashboard's tiles slice", () => {
     expect(tilesSlice).not.toMatch(/iconTone:\s*risk\s*[,}]/);
   });
 });
+
+/**
+ * The tile-height consideration, resolved (T-03-18).
+ *
+ * The accepted behaviour is a CONTENT-DRIVEN FLOOR: no minimum height, no fixed
+ * height and no maximum height on a cell, so a long localised value plus a
+ * caption grows the tile rather than being clipped. A minimum height on a tile
+ * would be a number with no measurement behind it, because a tile is not an
+ * interactive target and the 44px floor therefore does not apply to it.
+ *
+ * The pin below is the only height property expressible in a DOM without
+ * layout, which is why it is a class-list assertion rather than a measurement.
+ */
+const HEIGHT_UTILITY = /\bmin-h-|\bmax-h-|\bh-\[|\bh-\d|\bh-full\b/;
+
+const CLIPPING_UTILITY = /\btruncate\b|\bline-clamp-|\boverflow-hidden\b/;
+
+const cardWith = (extra) => ({
+  id: "long",
+  title: "Tekanan puncak",
+  value: "1",
+  ...extra,
+});
+
+describe("a bento cell's floor is its content", () => {
+  it("puts no height utility on an inert cell or an actionable one", () => {
+    const { container } = render(
+      <BentoGrid
+        cards={[
+          cardWith({ id: "inert", iconTone: "neutral" }),
+          cardWith({
+            id: "live",
+            iconTone: "neutral",
+            actionLabel: "Open the peak detail",
+            onSelect: () => {},
+          }),
+        ]}
+      />
+    );
+
+    const [inert, live] = cells(container);
+    // The two branches are genuinely different elements, so a lock that only
+    // saw one of them would not cover the component.
+    expect(inert.tagName).toBe("DIV");
+    expect(live.tagName).toBe("BUTTON");
+
+    expect(inert.className, "inert cell").not.toMatch(HEIGHT_UTILITY);
+    expect(live.className, "actionable cell").not.toMatch(HEIGHT_UTILITY);
+  });
+
+  it("gives the icon tile a decorative square and no floor or ceiling of its own", () => {
+    const { container } = render(
+      <BentoGrid cards={[cardWith({ icon: <span />, iconTone: "neutral" })]} />
+    );
+
+    const tile = tileOf(cells(container)[0]);
+    expect(tile).not.toBeNull();
+
+    // The square is deliberate: it is a decorative glyph frame, not a content
+    // box, so it holds no copy that could be clipped by it.
+    expect(tile.className).toContain("h-12");
+    expect(tile.className).toContain("w-12");
+
+    // What it must not carry is a floor, a ceiling, or a stretch — any of which
+    // would tie the icon's box to something other than its own glyph.
+    expect(tile.className, "icon tile").not.toMatch(/\bmin-h-/);
+    expect(tile.className, "icon tile").not.toMatch(/\bmax-h-/);
+    expect(tile.className, "icon tile").not.toMatch(/\bh-full\b/);
+  });
+
+  it("renders a long value and a long caption in full, with nothing clipping them", () => {
+    const value = "128.75";
+    const caption =
+      "Rata-rata sesi berjalan pada kaki kiri selama dua puluh menit terakhir";
+    const { container } = render(
+      <BentoGrid
+        cards={[cardWith({ value, caption, unit: "kPa", iconTone: "neutral" })]}
+      />
+    );
+
+    const cell = cells(container)[0];
+
+    // Both strings are present whole: a clipped tile would still contain the
+    // element, so the copy is asserted, not just its container.
+    expect(cell.textContent).toContain(value);
+    expect(cell.textContent).toContain(caption);
+
+    expect(cell.className, "cell").not.toMatch(CLIPPING_UTILITY);
+    for (const node of cell.querySelectorAll("p")) {
+      expect(node.className, node.textContent.slice(0, 24)).not.toMatch(
+        CLIPPING_UTILITY
+      );
+    }
+  });
+});
