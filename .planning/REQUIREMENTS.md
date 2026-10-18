@@ -39,12 +39,12 @@
 
 ### SHELL — Shell rebuild
 
-- [ ] **SHELL-01**: Rebuild AppLayout — 288px rail, 72px top bar, content column capped at 1400px with 32px gutters
-- [ ] **SHELL-02**: Rebuild AppSidebar — clinical register, six destinations (Dashboard, Monitoring, History, Device, Settings, Profile); Notifications on bell only, not in rail
-- [ ] **SHELL-03**: Rebuild AppTopbar — combobox search (pages + records), bell with unread dot, account controls
-- [ ] **SHELL-04**: Rebuild AppSearch — arrow keys, Enter, Escape, outside-click all work; every result navigates somewhere that exists
-- [ ] **SHELL-05**: Mobile drawer as real dialog — focus moves in, Escape closes, page behind cannot scroll, focus returns to trigger
-- [ ] **SHELL-06**: Skip-to-content link + ARIA labels; live pressure numbers `aria-live="off"`, only risk-level changes via one polite region
+- [x] **SHELL-01**: Rebuild AppLayout — 288px rail, 72px top bar, content column capped at 1400px with 32px gutters
+- [x] **SHELL-02**: Rebuild AppSidebar — clinical register, six destinations (Dashboard, Monitoring, History, Device, Settings, Profile); Notifications on bell only, not in rail
+- [x] **SHELL-03**: Rebuild AppTopbar — combobox search (pages + records), bell with unread dot, account controls
+- [x] **SHELL-04**: Rebuild AppSearch — arrow keys, Enter, Escape, outside-click all work; every result navigates somewhere that exists
+- [x] **SHELL-05**: Mobile drawer as real dialog — focus moves in, Escape closes, page behind cannot scroll, focus returns to trigger
+- [x] **SHELL-06**: Skip-to-content link + ARIA labels; live pressure numbers `aria-live="off"`, only risk-level changes via one polite region
 
 ### PAGE — Page-by-page rebuild
 
@@ -137,12 +137,12 @@
 | COMP-03 | Phase 3 | Pending |
 | COMP-04 | Phase 3 | Pending |
 | COMP-05 | Phase 3 | Pending |
-| SHELL-01 | Phase 4 | Pending |
-| SHELL-02 | Phase 4 | Pending |
-| SHELL-03 | Phase 4 | Pending |
-| SHELL-04 | Phase 4 | Pending |
-| SHELL-05 | Phase 4 | Pending |
-| SHELL-06 | Phase 4 | Pending |
+| SHELL-01 | Phase 4 | Complete |
+| SHELL-02 | Phase 4 | Complete |
+| SHELL-03 | Phase 4 | Complete |
+| SHELL-04 | Phase 4 | Complete |
+| SHELL-05 | Phase 4 | Complete |
+| SHELL-06 | Phase 4 | Complete |
 | PAGE-01 | Phase 5 | Pending |
 | PAGE-02 | Phase 5 | Pending |
 | PAGE-03 | Phase 5 | Pending |

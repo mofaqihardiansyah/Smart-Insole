@@ -102,7 +102,11 @@ Plan list:
   4. Mobile drawer as real dialog — focus moves in, Escape closes, page behind cannot scroll, focus returns to trigger
   5. Skip-to-content link + ARIA labels; live pressure numbers aria-live="off"; one polite region for risk-level changes
 
-**Plans**: TBD
+**Plans**: executed directly, without plan files (see the outcome line)
+**Outcome**: complete 2026-10-18. The shell was already built; what was missing was proof, so
+this phase is mostly a gate plus the four defects the gate found. Five commits. Full suite 35
+files / 338 tests green; `npm run build` exit 0. See
+`.planning/phases/04-shell-rebuild/04-PHASE-SUMMARY.md`.
 **UI hint**: yes
 
 ### Phase 5: Page-by-page rebuild

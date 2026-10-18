@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 24
+open_count: 32
 waived_count: 0
 fixed_count: 1
-total_count: 25
-last_updated: 2026-10-18T04:34:16.130Z
+total_count: 33
+last_updated: 2026-10-18T05:13:45.056Z
 ---
 
 # Broken Windows Ledger
@@ -40,6 +40,14 @@ last_updated: 2026-10-18T04:34:16.130Z
 | 23 | 03 | unrun-verify | web-dashboard/src/components/ui/StatePanel.jsx |  | 360/768/1280 click-through of the rebuilt state primitive not run (03-07): the next-action paragraph must read as a second tier under the description at every breakpoint, and a long localised next-step string must wrap without horizontal overflow. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T04:34:15.745Z |  |
 | 24 | 03 | unrun-verify | web-dashboard/src/components/dashboard/LoadDonut.jsx |  | 360/768/1280 click-through of the rebuilt donut not run (03-04): the three arcs must stay distinguishable at every breakpoint and the caption must stay readable under the ring. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T04:34:15.936Z |  |
 | 25 | 03 | unrun-verify | web-dashboard/src/components/monitoring/TrendChart.jsx |  | 360/768/1280 click-through of the rebuilt trend trace not run (03-04): the carve-out sage line must keep the contrast the palette table measures for it against the plot surface, and the threshold label must not collide with the trace at 360px. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T04:34:16.130Z |  |
+| 26 | 04 | deviation | web-dashboard/src/components/layout/AppSidebar.jsx |  | buildNavLinks gives the admin destination icon "Shield", but ICONS had no Shield entry, so renderIcon fell back to LayoutDashboard and an admin saw the dashboard glyph on a second rail item. Found while writing the shell gate; named by no SHELL requirement. Fixed by registering Shield. | open |  | 2026-10-18T05:13:29.232Z |  |
+| 27 | 04 | deviation | web-dashboard/src/components/layout/AppSearch.jsx |  | The combobox set aria-controls to the listbox id and aria-expanded to true, but the listbox is not rendered when nothing matches, so the reference dangled in exactly the state a screen-reader user is most likely to be in. The popup now owns that id. Not named by SHELL-04's wording. | open |  | 2026-10-18T05:13:32.156Z |  |
+| 28 | 04 | deviation | web-dashboard/src/components/layout/AppLayout.jsx |  | The drawer carried role=dialog aria-modal=true, which declares the page behind inert, while Tab could leave it. SHELL-05 names focus in, Escape, scroll lock and focus return but not the trap; the trap is what aria-modal already promised. Added. | open |  | 2026-10-18T05:13:32.940Z |  |
+| 29 | 04 | deviation | web-dashboard/src/App.jsx |  | The Phase 3 record put App.jsx:111 animate-spin at Phase 4 (N-05) and it is now removed: the splash is the product mark holding still. MOTION 1's permitted list has no loading spinner, and the announced sentence already carries the meaning. | open |  | 2026-10-18T05:13:35.063Z |  |
+| 30 | 04 | deviation | .planning/phases/04-shell-rebuild/04-PHASE-SUMMARY.md |  | Phase 4 was executed directly without plan files, so there is no 04-xx-PLAN.md and no per-plan acceptance criteria. The phase's claims are locked by src/components/layout/shell.test.jsx instead (24 tests, one describe per SHELL requirement, three gates proved failing first). | open |  | 2026-10-18T05:13:36.681Z |  |
+| 31 | 04 | deviation | web-dashboard/src/components/layout/shell.test.jsx |  | The shell had zero test coverage before this file: no test touched AppLayout, AppSidebar, AppTopbar or AppSearch. The six SHELL requirements were roadmap prose with no gate. This is the phase's real deliverable. | open |  | 2026-10-18T05:13:39.382Z |  |
+| 32 | 04 | unrun-verify | web-dashboard/src/components/layout/AppLayout.jsx |  | 360/768/1280 click-through of the shell not run: the 288px rail, the 72px bar, the 1400px cap and the drawer's 19rem width must be checked at all three widths, including that the drawer does not overflow at 360px. jsdom applies no stylesheets, so it can prove the class and not the width. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T05:13:41.462Z |  |
+| 33 | 04 | unrun-verify | web-dashboard/src/App.jsx |  | 360/768/1280 click-through of the new first paint not run: the product mark must sit centred with the announced sentence under it at every width. jsdom has no layout engine. Owned by GATE-03 / human UAT. | open |  | 2026-10-18T05:13:45.056Z |  |
 
 ````json
 [
@@ -365,6 +373,110 @@ last_updated: 2026-10-18T04:34:16.130Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-18T04:34:16.130Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 26,
+    "kind": "deviation",
+    "phase": "04",
+    "file": "web-dashboard/src/components/layout/AppSidebar.jsx",
+    "line": null,
+    "description": "buildNavLinks gives the admin destination icon \"Shield\", but ICONS had no Shield entry, so renderIcon fell back to LayoutDashboard and an admin saw the dashboard glyph on a second rail item. Found while writing the shell gate; named by no SHELL requirement. Fixed by registering Shield.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T05:13:29.232Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 27,
+    "kind": "deviation",
+    "phase": "04",
+    "file": "web-dashboard/src/components/layout/AppSearch.jsx",
+    "line": null,
+    "description": "The combobox set aria-controls to the listbox id and aria-expanded to true, but the listbox is not rendered when nothing matches, so the reference dangled in exactly the state a screen-reader user is most likely to be in. The popup now owns that id. Not named by SHELL-04's wording.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T05:13:32.156Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 28,
+    "kind": "deviation",
+    "phase": "04",
+    "file": "web-dashboard/src/components/layout/AppLayout.jsx",
+    "line": null,
+    "description": "The drawer carried role=dialog aria-modal=true, which declares the page behind inert, while Tab could leave it. SHELL-05 names focus in, Escape, scroll lock and focus return but not the trap; the trap is what aria-modal already promised. Added.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T05:13:32.940Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 29,
+    "kind": "deviation",
+    "phase": "04",
+    "file": "web-dashboard/src/App.jsx",
+    "line": null,
+    "description": "The Phase 3 record put App.jsx:111 animate-spin at Phase 4 (N-05) and it is now removed: the splash is the product mark holding still. MOTION 1's permitted list has no loading spinner, and the announced sentence already carries the meaning.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T05:13:35.063Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 30,
+    "kind": "deviation",
+    "phase": "04",
+    "file": ".planning/phases/04-shell-rebuild/04-PHASE-SUMMARY.md",
+    "line": null,
+    "description": "Phase 4 was executed directly without plan files, so there is no 04-xx-PLAN.md and no per-plan acceptance criteria. The phase's claims are locked by src/components/layout/shell.test.jsx instead (24 tests, one describe per SHELL requirement, three gates proved failing first).",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T05:13:36.681Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 31,
+    "kind": "deviation",
+    "phase": "04",
+    "file": "web-dashboard/src/components/layout/shell.test.jsx",
+    "line": null,
+    "description": "The shell had zero test coverage before this file: no test touched AppLayout, AppSidebar, AppTopbar or AppSearch. The six SHELL requirements were roadmap prose with no gate. This is the phase's real deliverable.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T05:13:39.382Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 32,
+    "kind": "unrun-verify",
+    "phase": "04",
+    "file": "web-dashboard/src/components/layout/AppLayout.jsx",
+    "line": null,
+    "description": "360/768/1280 click-through of the shell not run: the 288px rail, the 72px bar, the 1400px cap and the drawer's 19rem width must be checked at all three widths, including that the drawer does not overflow at 360px. jsdom applies no stylesheets, so it can prove the class and not the width. Owned by GATE-03 / human UAT.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T05:13:41.462Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 33,
+    "kind": "unrun-verify",
+    "phase": "04",
+    "file": "web-dashboard/src/App.jsx",
+    "line": null,
+    "description": "360/768/1280 click-through of the new first paint not run: the product mark must sit centred with the announced sentence under it at every width. jsdom has no layout engine. Owned by GATE-03 / human UAT.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-18T05:13:45.056Z",
     "resolved_at": null,
     "milestone": "v1.0"
   }

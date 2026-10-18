@@ -2,17 +2,17 @@
 gsd_state_version: "1.0"
 milestone: v1.0
 milestone_name: Audit, Fix, Rebuild UI/UX Design
-current_phase: 4
-current_phase_name: Shell rebuild
+current_phase: 5
+current_phase_name: Page-by-page rebuild
 status: ready
-stopped_at: Phase 3 closed — 7/7 plans, one phase summary, no per-plan ceremony
-last_updated: "2026-10-18T11:35:00.000Z"
+stopped_at: Phase 4 closed — the shell is gated; no plan files existed for it
+last_updated: "2026-10-18T12:12:00.000Z"
 last_activity: 2026-10-18
-last_activity_desc: Phase 3 closed (primitives rebuilt, gates landed)
-state_head: e5315843
+last_activity_desc: Phase 4 closed (shell gated, four defects fixed)
+state_head: 78fcdf8d
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 18
   completed_plans: 18
 ---
@@ -24,16 +24,27 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-17)
 
 **Core value:** Trustworthy, legible real-time plantar pressure monitoring that flags risk states clearly — nothing on screen is decorative colour; colour means a foot needs attention.
-**Current focus:** Phase 4 — Shell rebuild
+**Current focus:** Phase 5 — Page-by-page rebuild
 
 ## Current Position
 
-Phase: 3 (Primitive rebuilds) — COMPLETE
-Plan: 7 of 7
-Status: Ready for Phase 4
-Last activity: 2026-10-18 — Phase 3 closed; all 7 plans landed and the full suite is green
+Phase: 4 (Shell rebuild) — COMPLETE
+Plan: no plan files; executed directly as five commits
+Status: Ready for Phase 5
+Last activity: 2026-10-18 — Phase 4 closed; the shell is gated by `shell.test.jsx` and the full suite is green
 
 Progress: [██████████] 100%
+
+## Phase 4 outcome, in one paragraph
+
+The shell already stood, so the phase became proof rather than construction: **no test file
+touched `AppLayout`, `AppSidebar`, `AppTopbar` or `AppSearch`**, and the six SHELL requirements
+were roadmap prose with nothing behind them. `src/components/layout/shell.test.jsx` (24 tests,
+one describe per requirement, three gates proved failing first) now locks all six, and writing it
+exposed four defects: the `animate-spin` splash on the first paint (N-05, carried from Phase 3),
+an admin's rail item falling back to the dashboard glyph because `ICONS` had no `Shield`, a drawer
+that declared `aria-modal="true"` while letting Tab walk out of it, and an `aria-controls` that
+dangled in the search's no-match state. All four are fixed. See `04-PHASE-SUMMARY.md`.
 
 ## Phase 3 outcome (closed directly, without the per-plan machinery)
 
@@ -136,6 +147,19 @@ Recent decisions affecting current work:
 - [Phase 3]: The quarantine gate strips comments before searching, so a chart's own header comment can name the property it reads. Without stripping, the alternative was exempting every chart file by name, which would have weakened the rule to "charts may reference series properties".
 - [Phase 3]: Two new gates were proved failing before being trusted. The `liveRegion` probe caught a real weakness in the first version — it compared the set of files rather than occurrences, so a second region beside an existing one passed; it now pushes one entry per occurrence. The quarantine probe was run against a `.js` file specifically, to prove the widened walk reaches what `designTokens.test.js`'s `.jsx`-only walk skips.
 
+- [Phase 4]: The phase inverted: the shell was already built, so the deliverable became the gate. `shell.test.jsx` walks one describe per SHELL requirement and locks the four measured classes plus the drawer's dialog behaviour, the combobox's keyboard contract and the six destinations.
+- [Phase 4]: A gate written after the fact is only worth its probes. Three were run and all three failed naming the defect: re-adding `animate-spin` reported `App.jsx: animate-spin`, unregistering `Shield` reported `lucide lucide-layout-dashboard`, and neutering the Tab clamp failed both clamp cases.
+- [Phase 4]: `aria-modal="true"` is a promise about the rest of the page, so the drawer's menu-close focus and the drawer's focus-return shared one ref rather than two, and the trap clamps forward and backward at both ends. SHELL-05's wording names focus in, Escape, scroll lock and focus return; the trap is what `aria-modal` already claimed.
+- [Phase 4]: The search's `aria-controls` now points at the popup rather than at the listbox, because the listbox is exactly the element that is absent in the no-match state. The attribute is dropped entirely while no popup is shown.
+- [Phase 4]: The admin rail destination had no icon: `buildNavLinks` named `Shield` and `ICONS` had no entry for it, so `renderIcon`'s documented fallback drew the dashboard glyph on a second item. The fallback is the defect shape this whole milestone keeps finding, so the gate asserts the admin glyph differs from the dashboard's rather than that a `Shield` string exists.
+- [Phase 4]: The splash is now the product mark, holding still. Removing `animate-spin` alone would have left a ring that reads as a stalled progress indicator; the mark plus the announced sentence says what the ring said without implying progress that is not being drawn.
+
+### Phase 4 gate added
+
+| Gate | File | What it fails on |
+|---|---|---|
+| Shell contract | `components/layout/shell.test.jsx` | a rail that is not 288px, a duplicated destination in the top bar, a missing arrow-key wrap, a drawer that lets Tab escape, an unnamed control, or any `animate-` utility in the shipped sources |
+
 ### Phase 3 gates added
 
 | Gate | File | What it fails on |
@@ -194,12 +218,14 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-18T11:35:00.000Z
-Stopped at: Phase 3 closed — 7/7 plans, full suite green (34 files / 314 tests), build exit 0
-Resume file: `.planning/phases/03-primitive-rebuilds/03-PHASE-SUMMARY.md`
+Last session: 2026-10-18T12:12:00.000Z
+Stopped at: Phase 4 closed — shell gated (24 tests), four defects fixed, suite green (35 files / 338 tests), build exit 0
+Resume file: `.planning/phases/04-shell-rebuild/04-PHASE-SUMMARY.md`
 
-**Next:** Phase 4 (shell rebuild) — rail, topbar, search and drawer. `ROADMAP.md` still lists
-Phases 4-6 with `Plans: TBD`; the remaining work is the shell, then the ten pages plus the landing
-page, then the delivery gate. The three-viewport click-through (360/768/1280) is required by repo
-convention and remains structurally unverifiable in this environment: there is no browser here, so
-the user runs it.
+**Next:** Phase 5 (page-by-page rebuild) — ten pages plus the landing page, executed directly.
+The eight feedback panels that name a cause with no next step are the first thing waiting:
+`DashboardPage.jsx:515`, `:557`, `DevicePage.jsx:142`, `HistoryPage.jsx:305`,
+`MonitoringPage.jsx:137`, `ProfilePage.jsx:82`, `:185`, `SettingsPage.jsx:303`. Phases 4-6 have no
+plan files; the ROADMAP's `Plans:` counters are historical from Phase 3 onward. The three-viewport
+click-through (360/768/1280) is required by `AGENTS.md` and remains structurally unverifiable
+here: there is no browser, so the user runs it.
