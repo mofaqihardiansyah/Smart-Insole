@@ -100,15 +100,26 @@ const SkipLabel = () => {
   return t("app.skipToContent", language);
 };
 
+/**
+ * The first paint. It holds still on purpose: MOTION 1 permits motion only where
+ * it carries state, and a ring that turns forever while nothing else does reads
+ * as decoration competing with the numbers that start arriving a moment later.
+ * The mark and the announced sentence say what the ring said, without the motion.
+ */
 const Splash = () => {
   const { language } = useInsole();
   return (
     <div
       role="status"
       aria-live="polite"
-      className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 px-4"
+      className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 px-4"
     >
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-border-control border-t-primary" />
+      <span
+        aria-hidden="true"
+        className="grid h-14 w-14 place-items-center rounded-tile bg-primary-btn"
+      >
+        <img src="/icon.svg" alt="" className="h-9 w-9" />
+      </span>
       <p className="text-body-sm text-muted">{t("app.loading", language)}</p>
     </div>
   );
