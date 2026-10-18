@@ -176,14 +176,6 @@ const readStoredLanguage = () => {
 };
 
 /**
- * Theme preference.
- *
- * Dark is the product's default because the Romer instrument language is what
- * gives this dashboard its identity, so a first-time visitor gets the intended
- * design rather than whatever their operating system happens to prefer. The
- * choice is remembered from then on.
- */
-/**
  * @param {object} props
  * @param {React.ReactNode} props.children
  * @param {boolean} [props.autoConnect=false]

@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Activity, CalendarDays, Languages, Save, User } from "lucide-react";
+import { Activity, CalendarDays, Save, User } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useInsole } from "../context/InsoleContext";
-import { t, LANGUAGES } from "../utils/i18n";
+import { t } from "../utils/i18n";
 import {
   GlassButton,
   GlassCard,
-  GlassFormGroup,
   GlassInput,
-  GlassLabel,
-  GlassSelect,
   PageHeader,
   PanelHeader,
   StatePanel,
@@ -18,20 +15,17 @@ import {
 } from "../components/ui/GlassComponents";
 
 /**
- * ProfilePage: account identity, the interface preferences, and the statistics
+ * ProfilePage: account identity, the editable display name, and the statistics
  * that actually exist.
  *
  * Every figure is derived from InsoleContext's `incidentLogs`, which the context
  * appends to only when a real reading changes the risk level. With nothing
  * recorded yet the statistics panel says so rather than showing a placeholder
  * count.
- *
- * This page also carries the labelled theme control, so both themes are
- * reachable from inside the app and not only from the navigation bar.
  */
 const ProfilePage = () => {
   const { user, displayName, loading } = useAuth();
-  const { language, setLanguage, incidentLogs } = useInsole();
+  const { language, incidentLogs } = useInsole();
 
   const [fullName, setFullName] = useState(displayName || "");
   const [saved, setSaved] = useState(false);
@@ -129,29 +123,6 @@ const ProfilePage = () => {
               readOnly
               hint={t("profile.emailLocked", language)}
             />
-
-            <GlassFormGroup>
-              <GlassLabel htmlFor="profile-language">
-                <span className="inline-flex items-center gap-2">
-                  <Languages className="h-4 w-4" aria-hidden="true" />
-                  {t("profile.language", language)}
-                </span>
-              </GlassLabel>
-              <GlassSelect
-                id="profile-language"
-                value={language}
-                onChange={(event) => {
-                  setSaved(false);
-                  setLanguage(event.target.value);
-                }}
-              >
-                {LANGUAGES.map((option) => (
-                  <option key={option.code} value={option.code}>
-                    {option.label}
-                  </option>
-                ))}
-              </GlassSelect>
-            </GlassFormGroup>
 
             {saved && (
               <StatusBanner
