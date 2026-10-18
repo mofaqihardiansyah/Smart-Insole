@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { SERIES } from "../../utils/series";
 
 /**
  * TelemetryChart: the live pressure waveform.
@@ -21,12 +22,6 @@ import React, { useMemo } from "react";
  *   exposed in a screen-reader-only table. A screen reader cannot read a
  *   polyline, and "chart" as alt text is not information.
  */
-
-const SERIES = [
-  { key: "forefoot", varName: "--series-1", dash: undefined },
-  { key: "midfoot", varName: "--series-2", dash: "7 4" },
-  { key: "heel", varName: "--series-3", dash: "2 4" },
-];
 
 const WIDTH = 720;
 const HEIGHT = 280;
