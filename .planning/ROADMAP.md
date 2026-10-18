@@ -76,7 +76,17 @@ Plan list:
   4. TrendChart, LoadDonut, PlantarHeatmap aligned to single Okabe-Ito SERIES source (CVD-safe, quarantined to charts)
   5. Realtime data contract preserved: aria-live="off" on live numbers, one polite region for risk changes, autoConnect={Boolean(user)} guard intact
 
-**Plans**: TBD
+**Plans:** 7 plans
+
+Plan list:
+- [ ] 03-01-PLAN.md — COMP-01: restore the landing button variants and land the `variant=`/`level=` dev-warning gate (wave 1)
+- [ ] 03-02-PLAN.md — COMP-04: single `src/utils/series.js` source for the CVD-safe series values, read by the chart and its only page consumer (wave 1)
+- [ ] 03-03-PLAN.md — COMP-03 + COMP-05: `AlertBanner` primitive with one shared `roleFor(state)` decision, `StatusBanner` reduced to a delegate (wave 1)
+- [ ] 03-04-PLAN.md — COMP-04 + COMP-01: donut and trend trace onto the series source; caller-supplied arc colours deleted (wave 2, depends 03-02)
+- [ ] 03-06-PLAN.md — COMP-02 + COMP-01 + COMP-05: chip rebuilds, the `tone=` gate half, raised-surface ink fix (wave 2, depends 03-01, 03-03)
+- [ ] 03-07-PLAN.md — COMP-03 + COMP-05: `StatePanel` reads the shared role decision; five admin feedback sites repaired; radius + live-region gates (wave 2, depends 03-03)
+- [ ] 03-05-PLAN.md — COMP-04 + COMP-05: series-quarantine gate and `DESIGN.md` single-source clause (wave 3, depends 03-04)
+
 **UI hint**: yes
 
 ### Phase 4: Shell rebuild
@@ -129,7 +139,7 @@ Plan list:
 |-------|----------------|--------|-----------|
 | 1. Design-system audit & token lock | 5/5 | Complete    | 2026-10-17 |
 | 2. Defect fixes | 6/6 | Complete    | 2026-10-17 |
-| 3. Primitive rebuilds | TBD | Not started | - |
+| 3. Primitive rebuilds | 0/7 | Not started | - |
 | 4. Shell rebuild | TBD | Not started | - |
 | 5. Page-by-page rebuild | TBD | Not started | - |
 | 6. Delivery Gate & oil-ui go/no-go | TBD | Not started | - |
@@ -140,6 +150,7 @@ Plan list:
 
 **Goal:** Restore the landing register's button variants. `LandingPage.jsx:227,235,279,286,391,400,730,739` pass `variant="warm"` / `variant="warmOutline"`, but `GlassButton.jsx:20-28`'s `VARIANTS` carries neither key, so `VARIANTS[variant] || VARIANTS.filled` renders the app-register navy `filled` button at every landing CTA. The hero's primary and secondary actions are visually identical, and `01-UI-SPEC.md:89` forbids mixing the two registers. Pre-existing: the keys were added by `c46fa83c` and deleted by `8d9dd996` (2026-10-13), both before the Phase 2 diff base `54ae72a7`. Surfaced by the Phase 02 UI audit (`02-UI-REVIEW.md`, top priority fix 1).
 **Superseded:** by Phase 3 COMP-01 — see `.planning/phases/03-primitive-rebuilds/03-CONTEXT.md` D-01. Kept for the audit trail; do not promote as an independent phase.
+**Fix shipped in:** `.planning/phases/03-primitive-rebuilds/03-01-PLAN.md` (Phase 3, wave 1) — restores the `warm` and `warmOutline` keys and lands `src/variantKeys.test.js`, so the collapse cannot recur silently.
 **Source phase:** 02
 **Surfaced at:** 2026-10-17 during /gsd-verify-work 02 completion
 **Evidence:** `bg-warm-accent-deep` occurs 0 times in `dist/` and in no `variant` string; `VARIANTS` at `54ae72a7` already lacks both keys.
@@ -154,6 +165,41 @@ Plans:
 **Goal:** Route the five literals — `"Failed to load users"` (`:81`), `"Device read failed"` (`:102`), `"Update failed"` (`:125`), `"Delete failed"` (`:135`), `"Save failed"` (`:149`), rendered at `:180` and `:264` — through `i18n.js` keys, and extend `copy.test.js` so a Latin-sentence literal on an admin failure branch fails the guard. `copy.test.js` currently scans only for dashes, so it cannot see language. Pre-existing at the Phase 2 diff base `54ae72a7`. Surfaced by the Phase 02 UI audit (`02-UI-REVIEW.md`, top priority fix 2). Related: CR-01 (`AdminPage.jsx:56-67`, hooks after the early return) is a separate open finding in `02-REVIEW-DISPOSITION.md` on the same file.
 **Source phase:** 02
 **Surfaced at:** 2026-10-17 during /gsd-verify-work 02 completion
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
+
+### Phase 999.3: Primitive token-value residuals — nine off-grid spacing rows + the `--danger-hover` no-op (BACKLOG)
+
+**Goal:** Normalise the half-step spacing values carried unchanged through the Phase 3 primitive
+rebuild, and resolve the one token whose two names hold the same value. `DESIGN.md` declares no
+spacing scale, so COMP-01/COMP-02's "rebuilt against `DESIGN.md`" cannot settle these; and
+`--danger-hover` (`index.css:58`) is byte-identical to `--danger` (`:57`), documented as such in
+`01-design-system-audit-token-lock/token-inventory.md:60`, so `GlassButton`'s `hover:bg-danger-hover`
+was a no-op and Phase 3 deleted the utility rather than inventing a darker hex. Phase 3 leaves both
+findings open by design: normalising the spacing moves every primitive's measured height across the
+app, which is a spacing decision with its own three-breakpoint click-through, not a side effect of a
+primitive rebuild. The nine rows are complete for the phase's file set (see `03-UI-SPEC.md` §C-03),
+so a retained violation is not mistaken for a settled value.
+
+| Site | Off-grid value (px) | Residual |
+|------|---------------------|----------|
+| `Chip.jsx:36` | `gap-1.5` (6), `px-2.5` (10) | spacing |
+| `GlassForm.jsx:16` | `space-y-1.5` (6) | spacing |
+| `GlassInput.jsx:41` | `space-y-1.5` (6) | spacing |
+| `GlassInput.jsx:58` | `px-3.5` (14), `py-2.5` (10) | spacing |
+| `GlassTable.jsx:67` | `px-6 py-3.5` (14) | spacing |
+| `PageHeader.jsx:22` | `mt-1.5` (6) | spacing |
+| `StatePanel.jsx:75` | `mt-1.5` (6) | spacing |
+| `StatusChip.jsx:35` | `gap-1.5` (6), `px-2.5` (10), `h-3.5 w-3.5` (14) | spacing |
+| `StatusChip.jsx:37` | `px-3.5` (14), `py-1.5` (6) | spacing |
+| `index.css:58` | `--danger-hover` identical to `--danger` | declare a distinct value or retire the alias |
+
+**Source phase:** 03
+**Surfaced at:** 2026-10-18 during `/gsd-plan-phase 03` (UI-SPEC §C-03 enumeration; `GlassButton` hover no-op)
+**Evidence:** every listed class occurs at the named line; `--danger` and `--danger-hover` resolve to the same hex.
 **Requirements:** TBD
 **Plans:** 0 plans
 
