@@ -22,12 +22,10 @@ const TestComponent = () => {
       <span data-testid="riskScore">{String(ctx.riskScore)}</span>
       <span data-testid="severity">{String(ctx.severity)}</span>
       <span data-testid="peakPressure">{String(ctx.peakPressure)}</span>
-      <span data-testid="source">{ctx.source}</span>
       <span data-testid="connectionState">{ctx.connectionState}</span>
       <span data-testid="isMuted">{String(ctx.isMuted)}</span>
       <span data-testid="language">{ctx.language}</span>
       <span data-testid="warningKpa">{String(ctx.thresholds.warningKpa)}</span>
-      <span data-testid="simulationScenario">{ctx.simulationScenario}</span>
       <span data-testid="historyLength">{String(ctx.history.length)}</span>
       <span data-testid="historyFirst">
         {ctx.history.length ? JSON.stringify(ctx.history[0]) : ''}
@@ -96,22 +94,21 @@ describe('InsoleProvider', () => {
     expect(text('riskLabel')).toBe('Aman'); // t('risk.safe', 'id')
     expect(text('riskScore')).toBe('0');
     expect(text('peakPressure')).toBe('0');
-    expect(text('source')).toBe('SIMULATOR');
-    expect(text('connectionState')).toBe('simulated');
+    // No simulator exists: an unconnected provider is an idle one, not a
+    // fabricated one.
+    expect(text('connectionState')).toBe('idle');
     expect(text('isMuted')).toBe('false');
     expect(text('language')).toBe('id');
     expect(text('warningKpa')).toBe('35');
-    expect(text('simulationScenario')).toBe('NORMAL_GAIT');
     expect(text('historyLength')).toBe('0');
     expect(text('incidentTypes')).toBe('[]');
   });
 
-  it('sets the live source automatically when autoConnect is on', () => {
+  it('starts connecting when autoConnect is on', () => {
     renderProvider({ autoConnect: true });
 
     // The app asks for Firebase on mount; with no device answering it reports
     // the connection as failed rather than showing zeros as readings.
-    expect(text('source')).toBe('FIREBASE');
     expect(text('connectionState')).toBe('connecting');
   });
 
@@ -207,75 +204,6 @@ describe('InsoleProvider', () => {
       ctxRef.current.toggleMute();
     });
     expect(localStorage.getItem('isMuted')).toBe('false');
-  });
-
-  it('generates different reading ranges per simulation scenario at 1 Hz', () => {
-    renderProvider();
-
-    // NORMAL_GAIT: all three points between 10 and 30 kPa
-    advance(1000);
-    const normal = currentReadings();
-    expect(normal.forefoot).toBeGreaterThanOrEqual(10);
-    expect(normal.forefoot).toBeLessThanOrEqual(30);
-    expect(normal.midfoot).toBeGreaterThanOrEqual(10);
-    expect(normal.midfoot).toBeLessThanOrEqual(30);
-    expect(normal.heel).toBeGreaterThanOrEqual(10);
-    expect(normal.heel).toBeLessThanOrEqual(30);
-
-    // FOREFOOT_OVERLOAD: forefoot-dominant 45-75 kPa, other points stay low
-    act(() => {
-      ctxRef.current.setSimulationScenario('FOREFOOT_OVERLOAD');
-    });
-    advance(1000);
-    const overload = currentReadings();
-    expect(overload.forefoot).toBeGreaterThanOrEqual(45);
-    expect(overload.forefoot).toBeLessThanOrEqual(75);
-    expect(overload.forefoot).toBeGreaterThan(overload.midfoot);
-    expect(overload.forefoot).toBeGreaterThan(overload.heel);
-
-    // RESTING: unloaded foot, 0-5 kPa
-    act(() => {
-      ctxRef.current.setSimulationScenario('RESTING');
-    });
-    advance(1000);
-    const resting = currentReadings();
-    expect(resting.forefoot).toBeLessThanOrEqual(5);
-    expect(resting.midfoot).toBeLessThanOrEqual(5);
-    expect(resting.heel).toBeLessThanOrEqual(5);
-
-    // PROLONGED_STANDING: sustained 40-65 kPa on every point
-    act(() => {
-      ctxRef.current.setSimulationScenario('PROLONGED_STANDING');
-    });
-    advance(1000);
-    const standing = currentReadings();
-    expect(standing.forefoot).toBeGreaterThanOrEqual(40);
-    expect(standing.forefoot).toBeLessThanOrEqual(65);
-    expect(standing.midfoot).toBeGreaterThanOrEqual(40);
-    expect(standing.midfoot).toBeLessThanOrEqual(65);
-    expect(standing.heel).toBeGreaterThanOrEqual(40);
-    expect(standing.heel).toBeLessThanOrEqual(65);
-  });
-
-  it('stops the simulator interval when the source switches away and resumes after', () => {
-    renderProvider();
-
-    advance(1000);
-    expect(text('historyLength')).toBe('1');
-
-    act(() => {
-      ctxRef.current.setSource('FIREBASE');
-    });
-    expect(text('source')).toBe('FIREBASE');
-
-    advance(5000);
-    expect(text('historyLength')).toBe('1'); // no samples while on FIREBASE
-
-    act(() => {
-      ctxRef.current.setSource('SIMULATOR');
-    });
-    advance(1000);
-    expect(text('historyLength')).toBe('2'); // simulator resumed
   });
 
   it('classifies risk transitions safe -> warning -> safe with sustained duration', () => {

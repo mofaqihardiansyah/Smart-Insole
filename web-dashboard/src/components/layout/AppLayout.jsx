@@ -132,7 +132,7 @@ const AppLayout = ({
       {/* Mobile bar */}
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-border bg-surface px-4 lg:hidden">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-primary-btn">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-tile bg-primary-btn">
             <img src="/icon.svg" alt="" className="h-5 w-5" />
           </span>
           <span className="truncate font-heading text-h4 font-bold text-fg">

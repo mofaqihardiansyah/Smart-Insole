@@ -14,15 +14,17 @@ import * as defaultTransport from '../services/firebaseRealtime';
 /**
  * InsoleContext: the single source of live insole state for the whole app.
  *
- * Two ingestion sources feed one pipeline:
+ * There is exactly ONE ingestion source: FIREBASE, the Realtime Database
+ * listener at `readings/latest`, carrying the real insole hardware's samples.
+ * The demo scenario generator that used to sit beside it was removed on
+ * purpose: a device the app falls back to fabricating numbers for is not a
+ * monitoring tool, and the dashboard must never show a reading the patient's
+ * foot did not produce. When no device answers, the app says so - connection
+ * state `connecting`, then `error` - and shows an empty dashboard instead.
  *
- *   SIMULATOR  the scenario generator, for demos and for when no device is
- *              reachable. Always labelled as such in the UI.
- *   FIREBASE   the real Realtime Database listener at `readings/latest`.
- *
- * Both converge on one `sample` value, and one effect derives sustained
- * duration, risk and history from it. That way there is exactly one place where
- * a reading becomes a risk verdict, and no chance of the two paths drifting.
+ * One effect derives sustained duration, risk and history from the incoming
+ * sample, so there is exactly one place where a reading becomes a risk
+ * verdict.
  *
  * Risk verdict precedence: when the device publishes its own `risk_status` /
  * `fuzzy_risk_score`, those win, because the firmware measured the foot. The
@@ -34,8 +36,6 @@ export const InsoleContext = createContext(undefined);
 
 /** Ring buffer length for the live chart. */
 export const HISTORY_LIMIT = 30;
-
-const SIMULATION_INTERVAL_MS = 1000;
 
 /**
  * How long to wait for the first device packet before declaring the connection
@@ -54,47 +54,6 @@ const INITIAL_SAMPLE = Object.freeze({
   batteryPercent: null,
   timestamp: null,
 });
-
-export const SOURCE = Object.freeze({ SIMULATOR: 'SIMULATOR', FIREBASE: 'FIREBASE' });
-
-const randomKpa = (min, max) =>
-  parseFloat((min + Math.random() * (max - min)).toFixed(2));
-
-/**
- * Simulator scenario generators (anatomical sensor points, values in kPa).
- * Each returns a fresh object so every tick is a new sample.
- */
-const SCENARIO_GENERATORS = {
-  // Comfortable walking pattern: 10-30 kPa everywhere.
-  NORMAL_GAIT: () => ({
-    forefoot: randomKpa(10, 30),
-    midfoot: randomKpa(10, 30),
-    heel: randomKpa(10, 30),
-  }),
-  // Forefoot-dominant overload: forefoot 45-75 kPa, the other points stay low.
-  FOREFOOT_OVERLOAD: () => ({
-    forefoot: randomKpa(45, 75),
-    midfoot: randomKpa(10, 25),
-    heel: randomKpa(12, 30),
-  }),
-  // Sustained standing load: 40-65 kPa on every point.
-  PROLONGED_STANDING: () => ({
-    forefoot: randomKpa(40, 65),
-    midfoot: randomKpa(40, 65),
-    heel: randomKpa(40, 65),
-  }),
-  // Unloaded foot: 0-5 kPa.
-  RESTING: () => ({
-    forefoot: randomKpa(0, 5),
-    midfoot: randomKpa(0, 5),
-    heel: randomKpa(0, 5),
-  }),
-};
-
-export const SIMULATION_SCENARIOS = Object.keys(SCENARIO_GENERATORS);
-
-export const generateSimulatorReadings = (scenario) =>
-  (SCENARIO_GENERATORS[scenario] || SCENARIO_GENERATORS.NORMAL_GAIT)();
 
 export const peakOf = (readings) =>
   Math.max(readings.forefoot, readings.midfoot, readings.heel);
@@ -179,9 +138,10 @@ const readStoredLanguage = () => {
  * @param {object} props
  * @param {React.ReactNode} props.children
  * @param {boolean} [props.autoConnect=false]
- *   When true the provider attempts a Firebase connection on mount and silently
- *   falls back to the simulator if the device never answers. Tests leave this
- *   off so they never open a socket.
+ *   When true the provider attempts a Firebase connection on mount. When the
+ *   device never answers it sits on `connecting` and then `error` with the
+ *   retry button. It never invents readings. Tests leave this off so they
+ *   never open a socket.
  * @param {object} [props.transport]
  *   Injectable Realtime Database transport. Defaults to the real service; tests
  *   pass a stub.
@@ -196,11 +156,8 @@ export const InsoleProvider = ({
   const [risk, setRisk] = useState('safe');
   const [riskScore, setRiskScore] = useState(0);
   const [severity, setSeverity] = useState(0);
-  const [source, setSource] = useState(
-    autoConnect ? SOURCE.FIREBASE : SOURCE.SIMULATOR
-  );
   const [connectionState, setConnectionState] = useState(
-    autoConnect ? 'connecting' : 'simulated'
+    autoConnect ? 'connecting' : 'idle'
   );
   const [sourceReason, setSourceReason] = useState(null);
   const [batteryPercent, setBatteryPercent] = useState(null);
@@ -213,23 +170,18 @@ export const InsoleProvider = ({
     }
   });
   const [language, setLanguage] = useState(readStoredLanguage);
-  const [simulationScenario, setSimulationScenario] = useState('NORMAL_GAIT');
   const [history, setHistory] = useState([]);
   const [incidentLogs, setIncidentLogs] = useState([]);
   const [acknowledgedAt, setAcknowledgedAt] = useState(0);
   /**
    * Bumped by `reconnect`. The subscription effect is keyed on it, so asking
-   * for the same source again actually tears the old listener down and opens a
-   * new one. Setting the source to the value it already holds would be a no-op
-   * and the retry button would be a dead control.
+   * for a new subscription actually tears the old listener down and opens a
+   * new one.
    */
   const [connectNonce, setConnectNonce] = useState(0);
 
   const historyRef = useRef([]);
   const previousRiskRef = useRef('safe');
-  // Set when the user picks a source themselves, so the automatic connection
-  // never overrides a deliberate choice.
-  const manualSourceRef = useRef(false);
   // Identity of the last processed input. It tracks the threshold set as well
   // as the sample, because changing a threshold has to re-derive the verdict
   // from the reading already on screen rather than waiting for the next one.
@@ -266,27 +218,10 @@ export const InsoleProvider = ({
     }
   }, [thresholds]);
 
-  /* ------------------------------- simulator ------------------------------ */
-
-  // 1 Hz scenario engine. Stopped the moment a real source takes over.
-  useEffect(() => {
-    if (source !== SOURCE.SIMULATOR) return undefined;
-    const intervalId = setInterval(() => {
-      setSample({
-        readings: generateSimulatorReadings(simulationScenario),
-        deviceRiskLevel: null,
-        deviceRiskScore: null,
-        batteryPercent: null,
-        timestamp: Date.now(),
-      });
-    }, SIMULATION_INTERVAL_MS);
-    return () => clearInterval(intervalId);
-  }, [source, simulationScenario]);
-
-  /* ------------------------------- firebase ------------------------------- */
+  /* -------------------------------- firebase ------------------------------- */
 
   useEffect(() => {
-    if (source !== SOURCE.FIREBASE) return undefined;
+    if (!autoConnect) return undefined;
 
     setConnectionState('connecting');
     let unsubscribe = () => {};
@@ -309,12 +244,13 @@ export const InsoleProvider = ({
     };
 
     const onError = (error) => {
+      // A device we trust has gone quiet: say so, and wait for the next real
+      // packet or the retry button. The old behaviour silently fell back to a
+      // fabricated reading stream here; that trade (WR-02) was reversed when
+      // the simulator was removed. An empty, honest dashboard beats a full,
+      // invented one.
       setConnectionState('error');
       setSourceReason(error?.message || 'firebase-error');
-      // A device we chose to trust has gone quiet: keep the patient informed
-      // rather than showing a frozen screen. An explicit manual selection is
-      // left alone so the failure stays visible.
-      if (autoConnect) setSource(SOURCE.SIMULATOR);
     };
 
     try {
@@ -326,28 +262,13 @@ export const InsoleProvider = ({
     const graceTimer = setTimeout(() => {
       setConnectionState((prev) => (prev === 'live' ? prev : 'error'));
       setSourceReason((prev) => prev || 'no-device-data');
-      if (autoConnect) setSource(SOURCE.SIMULATOR);
     }, FIREBASE_GRACE_MS);
 
     return () => {
       clearTimeout(graceTimer);
       unsubscribe?.();
     };
-  }, [source, transport, autoConnect, connectNonce]);
-
-  // Reflect the manual simulator choice honestly.
-  useEffect(() => {
-    if (source === SOURCE.SIMULATOR) setConnectionState('simulated');
-  }, [source]);
-
-  // The auth gate resolves after mount, so `autoConnect` typically arrives
-  // late. When it turns on, and the user has not chosen a source themselves,
-  // ask for Firebase. Without this the app would sit on the simulator forever
-  // after a login.
-  useEffect(() => {
-    if (!autoConnect || manualSourceRef.current) return;
-    setSource(SOURCE.FIREBASE);
-  }, [autoConnect]);
+  }, [transport, autoConnect, connectNonce]);
 
   /* ------------------------------ ingestion ------------------------------- */
 
@@ -453,24 +374,14 @@ export const InsoleProvider = ({
   const toggleMute = useCallback(() => setIsMuted((prev) => !prev), []);
 
   /**
-   * Selecting a source by hand is a deliberate choice, so it is recorded and the
-   * automatic connection stops second-guessing it.
-   */
-  const chooseSource = useCallback((next) => {
-    manualSourceRef.current = true;
-    setSource(next);
-  }, []);
-
-  /**
    * Ask the device feed again, right now.
    *
-   * This is what a retry button calls. It re-selects Firebase and forces a new
-   * subscription even when Firebase is already the chosen source, which is the
-   * only way a retry can do anything after an explicit failure.
+   * This is what a retry button calls. Firebase is the only source, so the
+   * retry re-opens the subscription by bumping the nonce: the subscription
+   * effect is keyed on it, and without the bump a retry after an explicit
+   * failure would be a dead control.
    */
   const reconnect = useCallback(() => {
-    manualSourceRef.current = true;
-    setSource(SOURCE.FIREBASE);
     setConnectNonce((prev) => prev + 1);
   }, []);
 
@@ -534,7 +445,7 @@ export const InsoleProvider = ({
     latestIncident !== null &&
     latestIncident.timestamp > acknowledgedAt;
 
-  const isLive = source === SOURCE.FIREBASE && connectionState === 'live';
+  const isLive = connectionState === 'live';
 
   const contextValue = {
     // Live data
@@ -543,8 +454,6 @@ export const InsoleProvider = ({
     risk,
     riskScore,
     severity,
-    source,
-    setSource: chooseSource,
     reconnect,
     connectionState,
     sourceReason,
@@ -565,9 +474,6 @@ export const InsoleProvider = ({
     toggleMute,
     language,
     setLanguage,
-    // Simulator
-    simulationScenario,
-    setSimulationScenario,
     // Escape hatch for tests and manual entry
     setReadings,
   };

@@ -9,7 +9,6 @@ import {
   User,
   Bell,
   Radio,
-  FlaskConical,
   Shield,
 } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
@@ -65,7 +64,9 @@ const Brand = ({ language }) => (
       <img src="/icon.svg" alt="" className="h-7 w-7" />
     </span>
     <div className="min-w-0">
-      <p className="truncate font-heading text-[1.0625rem] font-bold leading-tight text-fg">
+      {/* Same rank as the mobile bar's brand line: text-h4 bold. The previous
+          17px arbitrary value was the one off-token size in the codebase. */}
+      <p className="truncate font-heading text-h4 font-bold leading-tight text-fg">
         {t("app.title", language)}
       </p>
       <p className="truncate text-micro uppercase text-muted">
@@ -77,19 +78,18 @@ const Brand = ({ language }) => (
 
 /** Live data source. Always visible, so the reliability of the numbers is never in doubt. */
 const SourceReadout = () => {
-  const { source, connectionState, isLive, language } = useInsole();
+  const { connectionState, isLive, language } = useInsole();
 
-  const isFirebase = source === "FIREBASE";
-  const label = isFirebase
-    ? isLive
-      ? t("source.live", language)
-      : connectionState === "connecting"
-        ? t("source.connecting", language)
-        : t("source.error", language)
-    : t("source.simulator", language);
+  const label = isLive
+    ? t("source.live", language)
+    : connectionState === "connecting"
+      ? t("source.connecting", language)
+      : connectionState === "error"
+        ? t("source.error", language)
+        : t("source.idle", language);
 
-  const tone = isFirebase ? (isLive ? "text-safe" : "text-warning") : "text-muted";
-  const Icon = isFirebase ? Radio : FlaskConical;
+  const tone = isLive ? "text-safe" : "text-warning";
+  const Icon = Radio;
 
   return (
     <p className={`flex items-center gap-2 text-body-sm ${tone}`}>

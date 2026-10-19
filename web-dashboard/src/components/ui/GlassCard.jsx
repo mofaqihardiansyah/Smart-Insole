@@ -43,15 +43,21 @@ GlassCard.displayName = "GlassCard";
  * PanelHeader — the standard header for a panel.
  *
  * It separates the STRUCTURAL layer from the DATA layer: the header names what
- * the panel is and what it measures, everything below it is numbers. The
- * subtitle is not decoration; on a data panel "peak pressure per second" is the
+ * the panel is and what it measures, everything below it is numbers. The subtitle is not decoration; on a data panel "peak pressure per second" is the
  * unit of the thing being shown, and without it the chart is unreadable.
+ *
+ * `index` is the dashboard's station number ("01", "02", ...), rendered as a
+ * tabular numeral before the title. It is the one decorative touch the system
+ * allows itself, and it earns its place by being navigational: it gives every
+ * panel an unambiguous name that carries into copy, tests and conversation
+ * ("panel 03 has no data"), the way numbered stations do on an instrument.
  */
 const PanelHeader = ({
   label,
   title,
   subtitle,
   icon,
+  index,
   action,
   divided = false,
   padded = true,
@@ -61,7 +67,10 @@ const PanelHeader = ({
   <div
     className={[
       "flex flex-wrap items-start justify-between gap-3",
-      padded ? (action ? "px-6 pb-3 pt-5" : "px-6 pb-2 pt-5") : "",
+      // One header-to-content rhythm for every panel: making the gap depend on
+      // whether a header happens to carry an action put side-by-side panels
+      // (the trend chart and the load donut) 4px out of step.
+      padded ? "px-6 pb-3 pt-5" : "",
       padded && divided ? "border-b border-border pb-4" : "",
       !padded && divided ? "border-b border-border pb-3" : "",
       className,
@@ -76,7 +85,18 @@ const PanelHeader = ({
             {icon}
           </span>
         )}
-        {label || title}
+        {index && (
+          /* Hidden from the accessibility name so the heading keeps
+             announcing exactly its title: the number is wayfinding for
+             sighted users, not copy a screen reader must hear. */
+          <span
+            aria-hidden="true"
+            className="tabular-data shrink-0 text-label text-muted"
+          >
+            {index}
+          </span>
+        )}
+        <span className="truncate">{label || title}</span>
       </Tag>
       {subtitle && (
         <p className="mt-1 max-w-prose text-body-sm text-muted">{subtitle}</p>

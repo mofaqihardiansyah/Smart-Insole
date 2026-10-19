@@ -25,7 +25,7 @@ const AppTopbar = ({ links = [], hasUnread = false, userName, userEmail }) => {
       <div className="ml-auto flex items-center gap-2">
         <Link
           to="/notifications"
-          className="relative grid h-11 w-11 place-items-center rounded-full text-fg-2 transition-colors duration-150 hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          className="relative grid h-11 w-11 place-items-center rounded-control text-fg-2 transition-colors duration-150 hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         >
           <Bell className="h-5 w-5" aria-hidden="true" />
           {hasUnread && (

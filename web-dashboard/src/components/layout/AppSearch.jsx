@@ -159,7 +159,7 @@ const AppSearch = ({ links = [] }) => {
             showPopup && results.length > 0 ? optionId(active) : undefined
           }
           placeholder={t("search.placeholder", language)}
-          className="h-11 w-full rounded-full border border-transparent bg-surface-2 pl-11 pr-10 text-body-base text-fg placeholder:text-muted transition-colors duration-150 hover:bg-surface-3/60 focus:border-border-control focus:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-11 w-full rounded-control border border-transparent bg-surface-2 pl-11 pr-10 text-body-base text-fg placeholder:text-muted transition-colors duration-150 hover:bg-surface-3/60 focus:border-border-control focus:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
         {query && (
           <button
@@ -168,7 +168,7 @@ const AppSearch = ({ links = [] }) => {
               setQuery("");
               inputRef.current?.focus();
             }}
-            className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-muted transition-colors hover:bg-surface-3 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-control text-muted transition-colors hover:bg-surface-3 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <X className="h-4 w-4" aria-hidden="true" />
             <span className="sr-only">{t("search.clear", language)}</span>

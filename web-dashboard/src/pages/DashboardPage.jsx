@@ -31,7 +31,7 @@ import { Chip } from "../components/ui/Chip";
 import { BentoGrid } from "../components/dashboard/BentoGrid";
 import { LoadDonut } from "../components/dashboard/LoadDonut";
 import { RowMenu } from "../components/dashboard/RowMenu";
-import { SimulatorControl } from "../components/dashboard/SimulatorControl";
+
 import { TrendChart } from "../components/monitoring/TrendChart";
 import PlantarHeatmap from "../components/PlantarHeatmap";
 import { downloadCsv, dateStamp } from "../utils/exportCsv";
@@ -78,23 +78,11 @@ const greetingKeyFor = (hour) => {
   return "dashboard.greeting.evening";
 };
 
-const STATUS_TEXT = {
-  safe: "dashboard.statusSafe",
-  warning: "dashboard.statusWarning",
-  danger: "dashboard.statusDanger",
-};
-
-const STATUS_INK = {
-  safe: "text-safe",
-  warning: "text-warning",
-  danger: "text-danger",
-};
-
 const SOURCE_CHIP = {
   live: { tone: "success", key: "source.live" },
   connecting: { tone: "warning", key: "source.connecting" },
   error: { tone: "danger", key: "source.error" },
-  simulated: { tone: "neutral", key: "source.simulator" },
+  idle: { tone: "neutral", key: "source.idle" },
 };
 
 const formatClock = (timestamp, language) =>
@@ -113,7 +101,6 @@ const DashboardPage = () => {
     peakPressure,
     risk,
     riskScore,
-    source,
     connectionState,
     reconnect,
     isLive,
@@ -123,8 +110,6 @@ const DashboardPage = () => {
     thresholds,
     unreadIncidentCount,
     acknowledgeIncidents,
-    simulationScenario,
-    setSimulationScenario,
   } = useInsole();
   const { displayName } = useUser();
   const navigate = useNavigate();
@@ -266,25 +251,25 @@ const DashboardPage = () => {
 
   /* -------------------------------- source ------------------------------- */
 
-  const sourceChip = SOURCE_CHIP[
-    source === "FIREBASE" ? (isLive ? "live" : connectionState) : "simulated"
-  ] || SOURCE_CHIP.simulated;
+  const sourceChip = SOURCE_CHIP[connectionState] || SOURCE_CHIP.connecting;
 
   const sourceBanner = (() => {
-    if (source === "FIREBASE" && connectionState === "error") {
+    if (connectionState === "error") {
       return (
         <StatusBanner tone="danger" title={t("source.errorTitle", language)}>
           {t("source.errorBody", language)}
         </StatusBanner>
       );
     }
-    if (source === "FIREBASE" && connectionState === "connecting") {
+    if (connectionState === "connecting") {
       return <StatePanel variant="loading" title={t("source.connecting", language)} />;
     }
-    if (source === "SIMULATOR") {
+    if (connectionState === "idle") {
+      // No sensor session at all: say so plainly instead of implying that the
+      // numbers came from anywhere.
       return (
-        <StatusBanner tone="warning" title={t("source.simTitle", language)}>
-          {t("source.simBody", language)}
+        <StatusBanner tone="warning" title={t("source.noDeviceTitle", language)}>
+          {t("source.noDeviceBody", language)}
         </StatusBanner>
       );
     }
@@ -421,19 +406,16 @@ const DashboardPage = () => {
         {`${t("risk.status", language)}: ${levelLabel}`}
       </p>
 
+      {/* The verdict is the second thing the eye lands on: the greeting is the
+          h1 anchor, and right under it - before any number - a large status
+          chip answers "is anything wrong". The date stays muted above it; the
+          old inline status word hid the page's most important read in 15px
+          grey text, which is the opposite of where it belongs. */}
       <PageHeader
         title={firstName ? `${greeting}, ${firstName}` : greeting}
-        subtitle={
-          <>
-            {longDate}
-            <span className="mx-2 text-border-control" aria-hidden="true">
-              |
-            </span>
-            {`${t("dashboard.statusLabel", language)}: `}
-            <span className={`font-semibold ${STATUS_INK[risk]}`}>
-              {t(STATUS_TEXT[risk], language)}
-            </span>
-          </>
+        subtitle={longDate}
+        meta={
+          <StatusChip level={risk} label={levelLabel} size="lg" />
         }
         actions={
           <>
@@ -445,8 +427,13 @@ const DashboardPage = () => {
               <Download className="h-4 w-4" aria-hidden="true" />
               {t("dashboard.exportCsv", language)}
             </GlassButton>
+            {/* Prominence follows urgency: the filled rank says "there is
+                work for you now". With an empty alert queue the action has
+                nothing to do, so it retires to the quiet rank instead of
+                sitting there as a disabled navy slab - which would otherwise
+                be the loudest object on a calm page. */}
             <GlassButton
-              variant="filled"
+              variant={unreadIncidentCount === 0 ? "quiet" : "filled"}
               onClick={acknowledgeIncidents}
               disabled={unreadIncidentCount === 0}
             >
@@ -463,18 +450,20 @@ const DashboardPage = () => {
 
       <BentoGrid cards={tiles} columns={4} />
 
-      {/* Trend beside the distribution: one asks where the pressure is going,
-          the other where it is right now. */}
+      {/* Station 01: where the pressure is going. The numbered index is the
+          dashboard's wayfinding motif: every panel names its station, the way
+          a printed instrument numbers its dials. */}
       <div className="grid gap-5 lg:grid-cols-3 lg:gap-6">
-        <GlassCard flush className="lg:col-span-2">
+        <GlassCard flush className="lg:col-span-2" data-panel="trend">
           <PanelHeader
+            index="01"
             title={t("dashboard.trendTitle", language)}
             subtitle={t("dashboard.trendBody", language)}
             action={
               <Chip tone="neutral">{t("dashboard.window", language)}</Chip>
             }
           />
-          <div className="px-6 pb-5">
+          <div className="px-6 pb-6">
             {/* The chart is the arm this panel exists for, so it stays
                 outermost: a state panel may never displace data. Below it the
                 three branches mirror MonitoringPage, in the same order, so a
@@ -522,12 +511,15 @@ const DashboardPage = () => {
           </div>
         </GlassCard>
 
-        <GlassCard>
+        <GlassCard data-panel="donut">
           <PanelHeader
+            index="02"
             title={t("dashboard.loadTitle", language)}
             subtitle={t("dashboard.loadBody", language)}
           />
-          <div className="pt-4">
+          {/* The panel header above now carries the same pb-3 gap as the trend
+              panel, so the two charts in this row start level with each other. */}
+          <div>
             <LoadDonut
               segments={donutSegments}
               total={balance.total.toFixed(0)}
@@ -538,20 +530,36 @@ const DashboardPage = () => {
         </GlassCard>
       </div>
 
-      {/* The live feed. */}
-      <GlassCard flush>
-        <PanelHeader
-          title={t("dashboard.activityTitle", language)}
-          subtitle={t("dashboard.activityBody", language)}
-          action={
-            <Link
-              to="/history"
-              className="inline-flex min-h-[44px] items-center text-body-base font-semibold text-secondary transition-colors hover:text-secondary-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              {t("dashboard.viewAll", language)}
-            </Link>
-          }
-        />
+      {/* Station 03: the live feed. Deliberately NOT a card. A running
+          reading stream held inside a white box is decoration around data;
+          open, ruled edge to edge, it reads as the tape it is. The band
+          carries the page's content-column rules: top rule, own bottom rules
+          via the rows, no side walls. */}
+      <section data-panel="feed" className="border-t border-border">
+        <div className="flex flex-wrap items-start justify-between gap-3 px-6 pb-3 pt-5">
+          <div className="min-w-0">
+            <h2 className="flex items-center gap-2 font-heading text-card-title text-fg">
+              <span
+                aria-hidden="true"
+                className="tabular-data shrink-0 text-label text-muted"
+              >
+                03
+              </span>
+              <span className="truncate">
+                {t("dashboard.activityTitle", language)}
+              </span>
+            </h2>
+            <p className="mt-1 max-w-prose text-body-sm text-muted">
+              {t("dashboard.activityBody", language)}
+            </p>
+          </div>
+          <Link
+            to="/history"
+            className="inline-flex min-h-[44px] shrink-0 items-center text-body-base font-semibold text-secondary transition-colors hover:text-secondary-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {t("dashboard.viewAll", language)}
+          </Link>
+        </div>
 
         {activityRows.length === 0 ? (
           <div className="border-t border-border px-6 py-6">
@@ -603,9 +611,13 @@ const DashboardPage = () => {
                       >
                         <th scope="row" className="px-6 py-4 text-left font-normal">
                           <span className="flex items-center gap-3">
+                            {/* A sensor point, not a person: the marker is a
+                                squared icon tile, the same 12px step the
+                                metric meters use. It was a navy circle before
+                                - an avatar costume on a foot zone. */}
                             <span
                               aria-hidden="true"
-                              className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-btn text-body-sm font-bold text-primary-on"
+                              className="grid h-11 w-11 shrink-0 place-items-center rounded-tile bg-primary-btn text-body-sm font-bold text-primary-on"
                             >
                               {initialOf(zoneLabel)}
                             </span>
@@ -649,7 +661,7 @@ const DashboardPage = () => {
                     <div className="flex items-start gap-3">
                       <span
                         aria-hidden="true"
-                        className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary-btn text-body-sm font-bold text-primary-on"
+                        className="grid h-10 w-10 shrink-0 place-items-center rounded-tile bg-primary-btn text-body-sm font-bold text-primary-on"
                       >
                         {initialOf(zoneLabel)}
                       </span>
@@ -695,14 +707,15 @@ const DashboardPage = () => {
             )}
           </>
         )}
-      </GlassCard>
+      </section>
 
-      {/* The pressure map: the one thing that answers "where exactly". The
-          heading is a focus target so the jump control can land a keyboard
-          user on it rather than merely scrolling past it. */}
-      <GlassCard flush>
+      {/* Station 04: the pressure map, the one thing that answers "where
+          exactly". The heading is a focus target so the jump control can land
+          a keyboard user on it rather than merely scrolling past it. */}
+      <GlassCard flush data-panel="map">
         <div ref={mapHeadingRef} tabIndex={-1}>
           <PanelHeader
+            index="04"
             title={t("dashboard.heatmapTitle", language)}
             subtitle={t("dashboard.heatmapBody", language)}
             action={<StatusChip level={risk} label={levelLabel} size="sm" />}
@@ -744,37 +757,14 @@ const DashboardPage = () => {
         </div>
       </GlassCard>
 
-      {/* The simulator is only offered when it is the active source, and it says
-          what it is rather than pretending to be a sensor. */}
-      {source === "SIMULATOR" && (
-        <SimulatorControl
-          value={simulationScenario}
-          onChange={setSimulationScenario}
-          title={t("sim.title", language)}
-          body={t("sim.body", language)}
-          scenarioLabel={t("sim.scenario", language)}
-          options={[
-            { value: "NORMAL_GAIT", label: t("sim.NORMAL_GAIT", language) },
-            {
-              value: "FOREFOOT_OVERLOAD",
-              label: t("sim.FOREFOOT_OVERLOAD", language),
-            },
-            {
-              value: "PROLONGED_STANDING",
-              label: t("sim.PROLONGED_STANDING", language),
-            },
-            { value: "RESTING", label: t("sim.RESTING", language) },
-          ]}
-        />
-      )}
-
       {/* Jump to the map. Hidden below lg, where the map is one short scroll
           away and a floating button would cover the content it is meant to
-          reveal. */}
+          reveal. Squared to the tile step: the page's only floating control,
+          shaped like the icon tiles it sits among, not like a pill. */}
       <button
         type="button"
         onClick={handleJumpToMap}
-        className="fixed bottom-6 right-6 z-30 hidden h-14 w-14 items-center justify-center rounded-full bg-secondary text-white shadow-fab transition-transform duration-150 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg lg:inline-flex"
+        className="fixed bottom-6 right-6 z-30 hidden h-14 w-14 items-center justify-center rounded-tile bg-secondary text-white shadow-fab transition-transform duration-150 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg lg:inline-flex"
       >
         <MapIcon className="h-6 w-6" aria-hidden="true" />
         <span className="sr-only">{t("dashboard.heatmapTitle", language)}</span>

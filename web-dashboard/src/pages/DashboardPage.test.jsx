@@ -52,9 +52,9 @@ const Driver = () => {
 };
 
 /**
- * A stub device feed. `autoConnect` puts the provider on FIREBASE, which stops
- * the 1 Hz simulator: otherwise the page would gain a reading mid-assertion and
- * the row counts below would be a race.
+ * A stub device feed that never answers. Without a 1 Hz generator there is no
+ * tick to race against any more: readings only enter through `push`, so the
+ * row counts below are deterministic.
  */
 const stubTransport = {
   subscribeToReadings: () => () => {},
@@ -64,9 +64,9 @@ const stubTransport = {
 /**
  * Render the dashboard inside the real providers.
  *
- * `autoConnect` on (the default) puts the provider on FIREBASE with the stub
- * feed, so the connection stays unanswered. Off leaves it on the simulator
- * source, which is the only way to reach the Simulation banner.
+ * `autoConnect` on (the default) puts the provider on the connecting state with
+ * the stub feed, so the connection stays unanswered. Off mounts it idle, which
+ * is the only way to reach the no-device banner.
  */
 const renderDashboard = ({ autoConnect = true } = {}) => {
   const utils = render(
@@ -298,16 +298,18 @@ describe("DashboardPage controls", () => {
   });
 
   /**
-   * FIX-07: the source is always labelled. A live-but-silent device must not be
-   * dressed as live data, and an unanswered one must not be dressed as a
-   * simulator either. Every state says which it is, and the wording comes from
-   * the dictionary so it travels through the same gates as every other string.
+   * FIX-07: the connection is always labelled. A live-but-silent device must
+   * not be dressed as live data, and an unanswered one must not invent data of
+   * any sort: the only source is the real device, so the states are idle,
+   * connecting or error. Every state says which it is, and the wording comes
+   * from the dictionary so it travels through the same gates as every other
+   * string.
    */
   describe("DashboardPage data source labelling (FIX-07)", () => {
-    it("labels the simulator source with the Simulation banner", () => {
+    it("labels an idle provider with the no-device banner, not invented data", () => {
       renderDashboard({ autoConnect: false });
 
-      const title = t("source.simTitle", "id");
+      const title = t("source.noDeviceTitle", "id");
       const banner = screen.getByText(title).closest('[role="status"]');
 
       // role="status" is the warning banner, not the danger variant: this is a
@@ -315,18 +317,19 @@ describe("DashboardPage controls", () => {
       expect(banner).not.toBeNull();
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 
-      // The body is the sentence saying the figures come from the simulator.
-      expect(banner).toHaveTextContent(t("source.simBody", "id"));
+      // The body says why there is nothing on screen: the device has not sent
+      // anything yet.
+      expect(banner).toHaveTextContent(t("source.noDeviceBody", "id"));
 
       // Nothing on the page claims a measured connection.
       expect(screen.queryByText(t("source.live", "id"))).not.toBeInTheDocument();
     });
 
-    it("does not label an unanswered device as a simulator", () => {
+    it("does not label an unanswered device as live", () => {
       renderDashboard();
 
       expect(
-        screen.queryByText(t("source.simTitle", "id"))
+        screen.queryByText(t("source.live", "id"))
       ).not.toBeInTheDocument();
       // The connecting panel is what renders instead.
       expect(
@@ -334,16 +337,16 @@ describe("DashboardPage controls", () => {
       ).toBeGreaterThan(0);
     });
 
-    it("ships the Simulation wording straight from the dictionary", () => {
+    it("ships the no-device wording straight from the dictionary", () => {
       renderDashboard({ autoConnect: false });
 
-      const title = t("source.simTitle", "id");
-      const body = t("source.simBody", "id");
+      const title = t("source.noDeviceTitle", "id");
+      const body = t("source.noDeviceBody", "id");
 
       // Both keys must exist. Without them `t` returns the key itself, and the
       // comparisons below would pass against the key rather than against copy.
-      expect(hasKey("source.simTitle")).toBe(true);
-      expect(hasKey("source.simBody")).toBe(true);
+      expect(hasKey("source.noDeviceTitle")).toBe(true);
+      expect(hasKey("source.noDeviceBody")).toBe(true);
 
       const banner = screen.getByText(title).closest('[role="status"]');
       expect(banner).not.toBeNull();

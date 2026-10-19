@@ -147,11 +147,13 @@ export default {
 
       /**
        * Radius scale. The reference rounds cards to 16px, inner panels and
-       * icon tiles to 12px, and controls to 8px; only avatars, status pills
-       * and the search field reach `full`.
+       * icon tiles to 12px, and controls to 8px; only avatars and indicator
+       * dots are circles. No pill-shaped tag, field, button or bar ships.
        *
        * The landing variant adds its own, larger register: `panel` 16px,
-       * `hero` 28px, `hero-lg` 40px and a true `pill`.
+       * `hero` 28px, `hero-lg` 40px. No `pill` step is declared: pills were
+       * removed from the system, and removing the token makes any
+       * reintroduction fail the design-token build gate instead of shipping.
        */
       borderRadius: {
         DEFAULT: "8px",
@@ -163,7 +165,6 @@ export default {
         tile: "12px",
         control: "8px",
         panel: "16px",
-        pill: "999px",
         hero: "28px",
         "hero-lg": "40px",
         // Landing big-panel register, declared so the page holds no raw pixel

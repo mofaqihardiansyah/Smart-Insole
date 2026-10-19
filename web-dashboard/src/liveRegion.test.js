@@ -18,12 +18,12 @@ import { fileURLToPath } from "node:url";
  *    absence, so adding an `off` attribute AND adding a real region both fail.
  * 2. The polite-region set is exact. The allowlist below names all four and the
  *    purpose each serves, so a fifth region fails and a removed one fails too.
- * 3. `InsoleContext`'s connect guard is untouched. That guard has a known
- *    mismatch — the codebase passes `autoConnect={Boolean(user)}` from the app
- *    while the provider treats the prop as a plain boolean — and the mismatch
- *    is WR-02, deliberately deferred and STILL OPEN. "Cleaning it up" changes
- *    when the device connects, which is a behaviour change and out of scope, so
- *    the guard is asserted verbatim as a source match.
+ * 3. `InsoleContext`'s failure contract holds. WR-02 used to pin the old guard
+ *    that silently fell back to the fabricated simulator stream on failure;
+ *    that trade was REVERSED when the simulator was removed. The contract now
+ *    moves the other way: both failure paths (transport error and the grace
+ *    timeout) must report the connection as `error` and neither may switch to
+ *    a source that invents readings.
  *
  * Comments are stripped before counting, so the docs that describe the rule
  * cannot be mistaken for an occurrence of it.
@@ -128,12 +128,17 @@ describe("the realtime data contract", () => {
     expect(tiles).not.toMatch(/aria-live/);
   });
 
-  it("preserves the provider's connect guard verbatim (WR-02, still open)", () => {
+  it("preserves the provider's failure contract (WR-02, policy reversed)", () => {
     const context = read("context/InsoleContext.jsx");
 
-    const guard = context.match(
-      /if \(autoConnect\) setSource\(SOURCE\.SIMULATOR\);/g
-    );
-    expect(guard, "the connect guard was changed or removed").toHaveLength(2);
+    // Both failure paths report `error`: the transport error handler and the
+    // grace timeout (whose guard only keeps a live connection alive).
+    expect(context).toMatch(/setConnectionState\('error'\);/);
+    expect(context).toMatch(/prev === 'live' \? prev : 'error'/);
+
+    // And no fabricated fallback exists anywhere in the file. Comments are
+    // stripped by read(), so the historical note about the old simulator is
+    // not matched either.
+    expect(context).not.toMatch(/simulator|scenario/i);
   });
 });

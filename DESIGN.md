@@ -221,6 +221,13 @@ Type scale:
 | `caption` | 12px | 500 | Stat captions, timestamps |
 | `micro` | 11px | 600 | The brand tagline and nowhere else |
 
+The `<h1>` element is one per page. Data pages set it at the `h1` size through
+`PageHeader`; the auth pages (Login, Register) hold no panel chrome below their
+heading, so their `h1` renders at the `h2` size, one step above `card-title`
+instead of tying with it. The same count semantic (readings, warnings) renders
+at the `stat` size on both the History summary strip and the Profile session
+blocks, so one metric is one size everywhere it appears.
+
 Sentence-case headings everywhere except table column heads and chips. The
 reference sets its decorative labels in wide-tracked uppercase; uppercase is
 reserved here for things that are genuinely a column or a state, which is what
@@ -240,12 +247,30 @@ Breakpoints are placed where the content stops working, not at device widths.
 
 Dashboard composition, top to bottom:
 
-1. Greeting row: the greeting and the real date and status on the left, the two
-   standing actions (Export CSV, Mark as read) on the right.
-2. Four metric tiles.
-3. Trend panel (two thirds) beside the load distribution donut (one third).
-4. The live reading feed, full width.
-5. The pressure map, full width, with the colour legend under it.
+1. Greeting row: greeting and the real date on the left, the two standing
+   actions (Export CSV, Mark as read) on the right, and directly under the
+   greeting the risk verdict as a large `StatusChip` (level icon, `risk.*`
+   label, level tint). The verdict is the page's answer to "is anything wrong",
+   so it is the second thing the eye lands on after the greeting heading. It
+   no longer sits inside the subtitle as coloured body text: that was the
+   page's most important read rendered at its least prominent size.
+2. The meter band: the four readings in ONE open strip, full content width,
+   hairline ruled top and bottom and between slots on one row, on a white
+   fill. Not four boxed stat cards: numbers in one instrument, not four
+   small posters.
+3. Station 01 / 02: the trend panel (two thirds) beside the load distribution
+   donut (one third). These are cards, because each holds a plot surface.
+4. Station 03: the live reading feed, full width and OPEN: a ruled section
+   with no card walls, because a running tape held inside a white box is
+   decoration around data.
+5. Station 04: the pressure map, full width, in a card, with the colour
+   legend under it.
+
+**Station numbers.** Each numbered panel carries its index (01 to 04) in
+tabular numerals beside the panel title, hidden from the accessibility name;
+the feed repeats the motif in its own open header. The numbers are
+wayfinding, not copy: they give every panel an unambiguous name that carries
+into conversation and tests the way numbered stations do on an instrument.
 
 The order is the order the questions are asked: how is it now, which way is it
 going, where is the load, what just happened, and where exactly.
@@ -266,13 +291,25 @@ overflow is permitted at any width, and nothing is clipped at 200% zoom.
 
 | Element | Radius |
 |---|---|
-| Badges, small tags | 4px (`rounded-sm`) |
-| Buttons, inputs, chips, filter chips | 8px (`rounded-control`) |
-| Icon tiles, inner panels, dropdowns, drawer items | 12px (`rounded-tile`) |
+| Badges, status tags, filter chips | 4px (`rounded-sm`) |
+| Buttons, inputs, controls | 8px (`rounded-control`) |
+| Icon tiles, meter-band tiles, the FAB | 12px (`rounded-tile`) |
 | Cards, modals, dialogs | 16px (`rounded-card`) |
-| Status pills, avatars, search field, FAB | full (`rounded-full`) |
+| Avatars and indicator dots | full (`rounded-full`) |
 
-The app cards are **16px**, matching the reference. Cards are never pills.
+Cards are never pills, and **nothing else is either**. The landing register
+adds its larger steps (`panel` 16px, `hero` 28/40px, `cell` 28px, `section`
+32/36px) under the same law. Circles are reserved for avatars and indicator
+dots alone: a circle around a state tag, a search field, a button or a nav bar
+is an interchangeable shape doing no work, so the `pill` radius token has been
+deleted from the config and a reintroduction fails the build. The no-pill rule
+is what keeps the squared tags, the boxed trend panel, the open meter band and
+the rounded hero from reading as one reusable "rounded thing" beyond the page.
+
+**Atmosphere.** No decorative gradients and no blurred glow blobs, on either
+register. Saturation belongs to data (risk, series, the heatmap), flat
+surfaces carry the rest. The gradients that remain are functional: the
+heatmap's node fills, the trend chart's area fill, and the chart plot grid.
 
 **Elevation.** The app and the landing use two separate shadow languages, and
 conflating them is what previously left the landing with flat panels:
@@ -398,9 +435,10 @@ New primitives added by this pass, with the reason each exists:
 
 - No em dashes in shipped copy. The shipped copy is Indonesian only, so one
   dictionary holds to this rule. A middot or a pipe separates ideas instead.
-- No fabricated telemetry. If a value is not measured, it reads as unavailable
-  or carries an explicit Simulation label. No random numbers dressed as live
-  data.
+- No fabricated telemetry. There is exactly one data source, the real insole
+  through Firebase - the demo simulator was removed, so an unanswered device
+  shows the honest empty states and connection banners, never invented
+  numbers. Values with no source read as unavailable.
 - The reference's four decorative stat-card tints, its invented patient rows,
   its revenue figure and its "Clinic status: Optimal" line are all content
   from a different product. The layout is adopted; the content is not.
@@ -413,6 +451,11 @@ New primitives added by this pass, with the reason each exists:
   reference's "Export PDF" and "New Session" become the two actions this
   product actually has: export the session buffer to CSV, and mark the alert
   queue as read.
+- A filled button is a to-do, not furniture. The alert acknowledge carries the
+  filled rank only while the alert queue has unread items and the quiet rank
+  otherwise, so the loudest control on the page is the one asking for an act.
+  Permanent urgency is no urgency. The same rule scales up the app: a page
+  with nothing that needs doing shows no filled button at all.
 - No skeleton or placeholder blocks used as a product screenshot: the landing
   page shows the real heatmap component running.
 
@@ -424,11 +467,22 @@ The public landing page speaks a warmer register of the same language. The app
 pages keep the clinical console above; the two scales are documented side by
 side, never mixed within one surface.
 
-Structure: floating pill nav, full-viewport hero with drifting tiles and the
-real heatmap, "why" spec band, six-feature grid, dark capabilities panel, three
-split "how it works" rows, three-step start flow, three-layer technology stack,
-and a closing CTA panel. The copy is this product's real content: no studio
-branding, no fabricated testimonials, no sample pricing, no fake customer logos.
+Structure: a flat rectangular nav bar, a full-viewport flat hero with drifting
+tiles and the real heatmap, "why" section with the spec numbers in one ruled
+strip, six-feature grid, dark capabilities panel, three split "how it works"
+rows, three-step start flow, three-layer technology stack, and a closing CTA
+panel. The landing carries no gradient atmosphere and no pill shapes: its hero
+and CTA bands are flat raised surfaces, its nav and CTAs are rectangles. The
+copy is this product's real content: no studio branding, no fabricated
+testimonials, no sample pricing, no fake customer logos.
+
+**Hero contract (above the fold).** The fold answers four questions in reading
+order, one text slot each: the eyebrow tag names the category (what this is),
+the headline fuses what it does with why it matters, the subtitle names WHO it
+is for, and the CTAs are the next step (register first). The measured numbers
+appear exactly once on the page, in the Mengapa band; repeating them in the
+hero duplicates copy, dilutes the answer-first fold, and pushes the heatmap
+below the fold.
 
 The landing is **light-only by design**. `.landing-scope` in `src/index.css`
 re-declares the light semantic tokens, so every in-app component (GlassCard,
@@ -464,11 +518,12 @@ tile step, small panels and drifting-tile tiles `rounded-panel` (16px),
 cards 24px (`rounded-3xl`), dark-panel cells and "how it works" rows
 `rounded-cell` (28px), section bands `rounded-section` (32px) with the dark
 wrapper at `rounded-section-lg` (36px), hero `rounded-hero` (28px, 40px on
-`sm`+ via `rounded-hero-lg`), nav and CTAs `rounded-pill` (999px). Pills are
-the landing's navigation and actions; the app register keeps its 8px control
-scale. Every radius on the page resolves to one of these named hooks - no
-raw `rounded-[26px]`-style values remain, and `rounded-2xl`/`rounded-xl`
-built-ins are folded into the `panel`/`tile` hooks they duplicated.
+`sm`+ via `rounded-hero-lg`), and nav links, CTAs and the nav bar at
+`rounded-tile`. No pill step exists in this project's config: landing tags use
+the squared 4px step and the warm CTAs take the tile step. Every radius on
+the page resolves to one of these named hooks - no raw `rounded-[26px]`-style
+values remain, and `rounded-2xl`/`rounded-xl` built-ins are folded into the
+`panel`/`tile` hooks they duplicated.
 
 Landing headings resolve to three steps and nothing else: `display` (hero),
 `landing-h2` (every section heading and the closing CTA; 30px rising to 48px,

@@ -1,0 +1,43 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v1.0 — Audit, Fix, Rebuild UI/UX Design",
+  "phases": [
+    {
+      "number": "1",
+      "name": "Design-system audit & token lock",
+      "status": "complete"
+    },
+    {
+      "number": "2",
+      "name": "Defect fixes",
+      "status": "complete"
+    },
+    {
+      "number": "3",
+      "name": "Primitive rebuilds",
+      "status": "in_progress"
+    },
+    {
+      "number": "4",
+      "name": "Shell rebuild",
+      "status": "pending"
+    },
+    {
+      "number": "5",
+      "name": "Page-by-page rebuild",
+      "status": "pending"
+    },
+    {
+      "number": "6",
+      "name": "Delivery Gate & oil-ui go/no-go",
+      "status": "pending"
+    }
+  ],
+  "next": {
+    "command": "/gsd:progress --next",
+    "label": "Advance to the next step",
+    "reason": "Phase 3 of 6 · executing"
+  },
+  "updated_at": "2026-10-18T03:42:41.971Z"
+}

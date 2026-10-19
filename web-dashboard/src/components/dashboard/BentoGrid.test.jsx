@@ -66,7 +66,8 @@ const card = (id, iconTone) => ({
   ...(iconTone ? { iconTone } : {}),
 });
 
-const cells = (container) => [...container.querySelectorAll(".rounded-card")];
+/** One slot of the open meter band. The band carries no card radius. */
+const cells = (container) => [...container.querySelectorAll("[data-cell]")];
 
 /** The icon tile inside a cell is the only `rounded-tile` descendant. */
 const tileOf = (cell) => cell.querySelector(".rounded-tile");

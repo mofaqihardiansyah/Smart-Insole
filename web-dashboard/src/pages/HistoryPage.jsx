@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from "react";
-import { ClipboardList, Download, FlaskConical, Radio, RefreshCw } from "lucide-react";
+import { ClipboardList, Download, Radio, RefreshCw } from "lucide-react";
 import {
   GlassButton,
   GlassCard,
@@ -48,7 +48,9 @@ const SummaryCell = ({ label, value, chip }) => (
   <div className="bg-surface px-6 py-5">
     <dt className="text-label uppercase text-muted">{label}</dt>
     <dd className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-      <span className="tabular-data font-heading text-h3 text-fg">{value}</span>
+      {/* text-stat, matching ProfilePage's stat blocks: the same
+          count-as-a-reading semantic renders at the same size everywhere. */}
+      <span className="tabular-data font-heading text-stat text-fg">{value}</span>
       {chip}
     </dd>
   </div>
@@ -63,7 +65,7 @@ const MobileField = ({ label, children }) => (
 );
 
 const HistoryPage = () => {
-  const { incidentLogs, connectionState, source, reconnect, isLive, language } =
+  const { incidentLogs, connectionState, reconnect, isLive, language } =
     useInsole();
 
   const unavailable = t("common.notAvailable", language);
@@ -175,18 +177,14 @@ const HistoryPage = () => {
 
   const sourceIndicator = (
     <span className="inline-flex items-center gap-2 text-body-sm text-muted">
-      {source === "FIREBASE" ? (
-        <Radio className="h-4 w-4" aria-hidden="true" />
-      ) : (
-        <FlaskConical className="h-4 w-4" aria-hidden="true" />
-      )}
-      {source === "FIREBASE"
-        ? isLive
-          ? t("source.live", language)
-          : connecting
-            ? t("source.connecting", language)
-            : t("source.error", language)
-        : t("source.simulator", language)}
+      <Radio className="h-4 w-4" aria-hidden="true" />
+      {isLive
+        ? t("source.live", language)
+        : connecting
+          ? t("source.connecting", language)
+          : connectionState === "error"
+            ? t("source.error", language)
+            : t("source.idle", language)}
     </span>
   );
 
@@ -233,9 +231,9 @@ const HistoryPage = () => {
         }
       />
 
-      {source === "SIMULATOR" && (
-        <StatusBanner tone="info" title={t("source.simTitle", language)}>
-          {t("source.simBody", language)}
+      {connectionState === "idle" && rows.length === 0 && (
+        <StatusBanner tone="warning" title={t("source.noDeviceTitle", language)}>
+          {t("source.noDeviceBody", language)}
         </StatusBanner>
       )}
 

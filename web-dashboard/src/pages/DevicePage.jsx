@@ -38,7 +38,7 @@ const FactRow = ({ label, children }) => (
 );
 
 const DevicePage = () => {
-  const { connectionState, isLive, source, reconnect, batteryPercent, language } =
+  const { connectionState, isLive, reconnect, batteryPercent, language } =
     useInsole();
 
   const connecting = connectionState === "connecting";
@@ -55,12 +55,9 @@ const DevicePage = () => {
       ? { level: "danger", label: t("source.error", language) }
       : isLive
         ? { level: "safe", label: t("source.live", language) }
-        : { level: "warning", label: t("source.simulator", language) };
+        : { level: "warning", label: t("source.idle", language) };
 
-  const sourceLabel =
-    source === "FIREBASE"
-      ? t("source.firebase", language)
-      : t("source.simulator", language);
+  const sourceLabel = t("source.firebase", language);
 
   return (
     <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
@@ -168,7 +165,7 @@ const DevicePage = () => {
                               }}
                             />
                           </div>
-                          <span className="tabular-kpa text-body-sm font-medium text-fg">
+                          <span className="tabular-data text-body-sm font-medium text-fg">
                             {`${Math.round(batteryPercent)}${t("metrics.unit.percent", language)}`}
                           </span>
                         </div>

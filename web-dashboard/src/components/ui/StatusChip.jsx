@@ -13,9 +13,10 @@ import { devWarn } from "../../utils/devWarn";
  *   2. a text label in the current language, in uppercase micro type;
  *   3. the colour.
  *
- * It is a pill because it carries a state, which is the one job the radius
- * scale reserves a pill for. The tint is the accent at 15%, and the label sits
- * at the full accent colour, measured at 4.5:1 or better on white.
+ * It is a squared tag: the radius scale reserves `rounded-full` for avatars
+ * and indicator dots alone, and a pill-shaped state token was one more
+ * interchangeable shape on the page. A 4px tag reads as an instrument label:
+ * a value with a role, not a badge.
  */
 const LEVELS = {
   safe: {
@@ -72,7 +73,7 @@ const StatusChip = ({ level = "safe", label, size = "md", className = "" }) => {
   return (
     <span
       className={[
-        "status-chip inline-flex items-center rounded-full font-semibold uppercase",
+        "status-chip inline-flex items-center rounded-sm font-semibold uppercase",
         config.tone,
         sizing.box,
         className,

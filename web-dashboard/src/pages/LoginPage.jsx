@@ -103,7 +103,9 @@ const LoginPage = () => {
           </div>
         </div>
 
-        <h1 className="font-heading text-h3 text-fg">
+        {/* Page h1 on the smallest pages: one step above the 20px card-title
+            chrome, so the page heading never ties with a panel heading. */}
+        <h1 className="font-heading text-h2 text-fg">
           {t("auth.login.title", language)}
         </h1>
         <p className="mt-1.5 text-body-sm text-muted">

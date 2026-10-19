@@ -331,7 +331,7 @@ body {
   transform: none;
 }
 
-/* The landing nav pill deepens its shadow once the page scrolls. */
+/* The landing nav bar deepens its shadow once the page scrolls. */
 .landing-scope .nav-scrolled {
   box-shadow: 0 18px 44px -14px rgb(23 23 25 / 0.25);
 }

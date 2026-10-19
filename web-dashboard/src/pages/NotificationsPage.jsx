@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Bell,
-  FlaskConical,
   Info,
   Radio,
   Save,
@@ -100,8 +99,7 @@ const NotificationsPage = () => {
     toggleMute,
     isLive,
     connectionState,
-    source,
-    setSource,
+    reconnect,
   } = useInsole();
 
   const [supported] = useState(detectSupport);
@@ -146,11 +144,9 @@ const NotificationsPage = () => {
       ? "source.connecting"
       : connectionState === "error"
         ? "source.error"
-        : source === "FIREBASE"
-          ? "source.firebase"
-          : "source.simulator";
+        : "source.firebase";
 
-  const SourceIcon = source === "FIREBASE" ? Radio : FlaskConical;
+  const SourceIcon = Radio;
 
   return (
     <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
@@ -244,7 +240,7 @@ const NotificationsPage = () => {
               description={t("source.errorBody", language)}
               action={
                 <StateRetry
-                  onRetry={() => setSource("FIREBASE")}
+                  onRetry={() => reconnect()}
                   label={t("common.retry", language)}
                 />
               }

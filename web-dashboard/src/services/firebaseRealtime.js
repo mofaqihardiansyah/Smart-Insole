@@ -119,8 +119,8 @@ export function mapHistory(historyObject, limit = 50) {
  * @param {(reading: NonNullable<ReturnType<typeof mapReadingPacket>>) => void} onData
  *   Called on every device update. Not called for an empty snapshot.
  * @param {(error: Error) => void} onError
- *   Called for permission and network failures so the caller can fall back to
- *   the simulator and say so.
+ *   Called for permission and network failures so the caller can report the
+ *   connection as failed and show the retry control.
  * @returns {() => void} unsubscribe
  */
 export function subscribeToReadings(onData, onError) {

@@ -54,9 +54,9 @@ describe('App shell', () => {
   it('shows the landing page when signed out, with no app navigation', () => {
     render(<App />);
 
-    // The public hero is present.
+    // The public hero is present, and it says what the product watches.
     expect(
-      screen.getByRole('heading', { level: 1, name: /tekanan tinggi/i })
+      screen.getByRole('heading', { level: 1, name: /telapak kaki/i })
     ).toBeInTheDocument();
 
     // And the signed-in navigation is not.

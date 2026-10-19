@@ -29,7 +29,8 @@ const Driver = () => {
 
 /**
  * A stub device feed. `autoConnect` on puts the provider on its connecting
- * state and stops the 1 Hz simulator, so a reading cannot land mid-assertion.
+ * state, where no reading can arrive: incoming samples exist only through
+ * `push`, so no assertion races a 1 Hz tick.
  */
 const stubTransport = {
   subscribeToReadings: () => () => {},
@@ -62,14 +63,16 @@ const renderDashboard = ({ autoConnect = false } = {}) =>
   );
 
 /**
- * A panel region, resolved from its own heading and its surface class.
+ * A panel region, resolved from its own heading and its data-panel hook.
  * `PanelHeader` renders the title as an `h2`, and the nearest ancestor carrying
- * the surface class is that panel's card. The locator asserts it resolved, so a
- * broken locator fails loudly instead of passing vacuously.
+ * `data-panel` is that panel's container: a GlassCard where the panel is
+ * boxed (trend, donut, map) or the open ruled section on the live feed, which
+ * is deliberately not a card. The locator asserts it resolved, so a broken
+ * locator fails loudly instead of passing vacuously.
  */
 const regionFor = (title) => {
   const heading = screen.getByRole("heading", { name: title });
-  const region = heading.closest(".rounded-card");
+  const region = heading.closest("[data-panel]");
   expect(region, `panel titled ${title}`).not.toBeNull();
   return region;
 };

@@ -120,13 +120,13 @@ describe("Chip", () => {
     }
   });
 
-  it("keeps the control radius for a filter chip and the pill for a marker", () => {
-    const filter = renderChip({ tone: "info", pill: false });
-    const marker = renderChip({ tone: "info", pill: true });
+  it("renders every chip as the squared 4px tag step", () => {
+    const filter = renderChip({ tone: "info" });
+    const marker = renderChip({ tone: "danger" });
 
-    expect(filter.chip.className).toContain("rounded-control");
+    expect(filter.chip.className).toContain("rounded-sm");
     expect(filter.chip.className).not.toContain("rounded-full");
-    expect(marker.chip.className).toContain("rounded-full");
+    expect(marker.chip.className).toContain("rounded-sm");
   });
 
   it("appends a caller class without dropping the tone", () => {
@@ -141,7 +141,7 @@ describe("Chip", () => {
   it("grows for a long localised label instead of clipping it", () => {
     const label =
       "Tekanan puncak pada tumit kiri melebihi ambang bahaya selama sesi berjalan";
-    const { container } = render(<Chip tone="warning" pill={true}>{label}</Chip>);
+    const { container } = render(<Chip tone="warning">{label}</Chip>);
 
     const chip = container.firstChild;
     expect(chip.textContent).toBe(label);

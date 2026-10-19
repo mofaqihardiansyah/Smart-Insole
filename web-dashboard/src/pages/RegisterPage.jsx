@@ -92,7 +92,8 @@ const RegisterPage = () => {
           </div>
         </div>
 
-        <h1 className="font-heading text-h3 text-fg">
+        {/* Page h1 at text-h2, matching LoginPage: one step above card-title. */}
+        <h1 className="font-heading text-h2 text-fg">
           {t("auth.register.title", language)}
         </h1>
 

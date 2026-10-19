@@ -333,12 +333,12 @@ const SettingsPage = () => {
                       key={`${row.peakPressure}-${row.sustainedDuration}`}
                     >
                       <GlassTableCell>
-                        <span className="tabular-kpa">
+                        <span className="tabular-data">
                           {`${row.peakPressure} ${unitKpa}`}
                         </span>
                       </GlassTableCell>
                       <GlassTableCell>
-                        <span className="tabular-kpa">
+                        <span className="tabular-data">
                           {`${row.sustainedDuration} ${unitSeconds}`}
                         </span>
                       </GlassTableCell>
@@ -350,7 +350,7 @@ const SettingsPage = () => {
                         />
                       </GlassTableCell>
                       <GlassTableCell>
-                        <span className="tabular-kpa">{row.score}</span>
+                        <span className="tabular-data">{row.score}</span>
                       </GlassTableCell>
                     </GlassTableRow>
                   ))}
@@ -365,7 +365,7 @@ const SettingsPage = () => {
                   className="p-4"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="tabular-kpa text-body-sm font-medium text-fg">
+                    <span className="tabular-data text-body-sm font-medium text-fg">
                       {`${row.peakPressure} ${unitKpa} / ${row.sustainedDuration} ${unitSeconds}`}
                     </span>
                     <StatusChip

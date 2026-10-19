@@ -47,7 +47,6 @@ const MonitoringPage = () => {
     thresholds,
     language,
     connectionState,
-    source,
     reconnect,
     risk,
     riskScore,
@@ -159,9 +158,9 @@ const MonitoringPage = () => {
           )}
         </div>
 
-        {source === "SIMULATOR" && (
+        {connectionState === "idle" && (
           <p className="border-t border-border px-6 py-3 text-body-sm text-muted">
-            {t("source.simBody", language)}
+            {t("source.noDeviceBody", language)}
           </p>
         )}
       </GlassCard>
