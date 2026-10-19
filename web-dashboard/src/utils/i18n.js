@@ -118,17 +118,14 @@ export const DICTIONARY = {
     'metrics.unit.percent': '%',
 
     /* ------------------------- Data source state ----------------------- */
-    'source.simulator': 'Mode simulasi',
+    'source.idle': 'Menunggu perangkat',
     'source.firebase': 'Firebase langsung',
     'source.live': 'Terhubung',
     'source.connecting': 'Menghubungkan',
     'source.error': 'Gagal terhubung',
-    'source.simTitle': 'Data contoh dari simulator',
-    'source.simBody':
-      'Insole belum terhubung ke Firebase. Angka di halaman ini dihasilkan simulator, bukan dari sensor.',
     'source.errorTitle': 'Koneksi Firebase gagal',
     'source.errorBody':
-      'Aplikasi tetap menampilkan data simulator sampai perangkat terhubung kembali.',
+      'Halaman ini tidak menampilkan data apa pun sampai perangkat terhubung kembali.',
     'source.noDeviceTitle': 'Belum ada data dari perangkat',
     'source.noDeviceBody':
       'Insole belum mengirim data ke Firebase. Setelah terkirim, halaman ini akan memperbarui sendiri.',
@@ -144,15 +141,10 @@ export const DICTIONARY = {
     'dashboard.legendLow': 'Rendah',
     'dashboard.legendHigh': 'Tinggi',
     'dashboard.recentIncidents': 'Insiden terakhir',
-    'dashboard.simulator': 'Simulator insole',
     // Greeting header
     'dashboard.greeting.morning': 'Selamat pagi',
     'dashboard.greeting.afternoon': 'Selamat siang',
     'dashboard.greeting.evening': 'Selamat malam',
-    'dashboard.statusLabel': 'Status',
-    'dashboard.statusSafe': 'terkendali',
-    'dashboard.statusWarning': 'perlu perhatian',
-    'dashboard.statusDanger': 'butuh tindakan',
     'dashboard.exportCsv': 'Ekspor CSV',
     'dashboard.acknowledge': 'Tandai dibaca',
     'dashboard.acknowledged': 'Semua peringatan sudah dibaca',
@@ -200,7 +192,7 @@ export const DICTIONARY = {
     'monitoring.empty': 'Belum ada data grafik',
     'monitoring.emptyBody':
       'Grafik terisi setelah sensor mengirim pembacaan pertama.',
-    'monitoring.emptyNext': 'Sambungkan perangkat, atau mulai simulator untuk melihat tren.',
+    'monitoring.emptyNext': 'Sambungkan perangkat untuk mulai melihat tren.',
     'monitoring.loading': 'Memuat grafik',
     'monitoring.summary': 'Ringkasan sesi',
     'monitoring.average': 'Rata-rata',
@@ -336,16 +328,6 @@ export const DICTIONARY = {
     'alert.mute': 'Bungkam suara alarm',
     'alert.unmute': 'Nyalakan suara alarm',
 
-    /* ---------------------------- Simulator ---------------------------- */
-    'sim.title': 'Simulator insole',
-    'sim.body':
-      'Pilih skenario untuk melihat bagaimana dasbor bereaksi. Data ini simulasi, bukan pengukuran sensor.',
-    'sim.scenario': 'Skenario',
-    'sim.NORMAL_GAIT': 'Berjalan normal',
-    'sim.FOREFOOT_OVERLOAD': 'Beban kaki depan',
-    'sim.PROLONGED_STANDING': 'Berdiri lama',
-    'sim.RESTING': 'Tanpa beban',
-
     /* ------------------------------- Auth ------------------------------ */
     'auth.login.title': 'Masuk ke akun',
     'auth.login.subtitle': 'Pantau tekanan telapak kaki pasien.',
@@ -376,14 +358,17 @@ export const DICTIONARY = {
     'common.nextStepCheckConnection': 'Periksa koneksi, lalu coba lagi.',
 
     /* ------------------------------ Landing ---------------------------- */
-    'landing.hero.eyebrow': 'Alat bantu pencegahan ulkus kaki diabetik',
-    'landing.hero.title': 'Deteksi dini tekanan tinggi pada telapak kaki',
+    /* The hero answers four questions in reading order: the eyebrow names
+       the category, the title carries "what it does and why it matters",
+       the subtitle names WHO it is for, the CTAs are the next step. */
+    'landing.hero.eyebrow': 'Insole pintar dengan dasbor pemantauan web',
+    'landing.hero.title': 'Pantau tekanan telapak kaki, sebelum berubah menjadi luka',
     'landing.hero.subtitle':
-      'Tiga sensor pada sol sepatu mengirim tekanan plantar ke dasbor ini setiap detik. Nilai risiko dihitung dengan logika fuzzy untuk memperingatkan sebelum terjadi luka.',
-    'landing.hero.ctaPrimary': 'Masuk ke dasbor',
-    'landing.hero.ctaSecondary': 'Buat akun',
+      'Dirancang untuk pasien diabetes lansia bersama keluarga atau kader yang merawatnya. Sol sepatu dengan tiga sensor mengirim pembacaan tiap detik, dan peringatan muncul sebelum telapak kaki terluka.',
+    'landing.hero.ctaRegister': 'Buat akun',
+    'landing.hero.ctaLogin': 'Masuk',
     'landing.hero.demoNote':
-      'Peta di samping menampilkan komponen yang sama dengan yang dipakai di dasbor.',
+      'Peta ini memakai komponen yang sama dengan yang dipakai di dasbor.',
     'landing.problem.title': 'Mengapa tekanan plantar perlu dipantau',
     'landing.problem.body':
       'Neuropati diabetik menurunkan kemampuan merasakan nyeri pada telapak kaki. Tekanan tinggi yang berlangsung lama dapat menimbulkan luka tanpa disadari. Pemantauan berkelanjutan membantu mengenali titik tekanan sebelum berkembang menjadi ulkus.',
@@ -407,7 +392,7 @@ export const DICTIONARY = {
     'landing.risk.dangerBody':
       'Tekanan tinggi berlangsung lebih dari 30 detik berturut-turut.',
     'landing.footerNote':
-      'Purwarupa tugas akhir. Data berasal dari simulator selama perangkat fisik belum terhubung.',
+      'Purwarupa tugas akhir. Menampilkan data sensor asli dari insole melalui Firebase.',
     'landing.nav.how': 'Cara kerja',
     'landing.nav.sensors': 'Sensor',
     'landing.nav.risk': 'Risiko',
@@ -458,6 +443,7 @@ export const DICTIONARY = {
     'landing.cap.title': 'Dari sensor sampai layar.',
     'landing.step.number': 'Langkah',
     'landing.flow.title': 'Tiga langkah memulai.',
+    'landing.step.demoNote': 'Contoh angka dan status dalam dasbor.',
     'landing.stack.eyebrow': 'Teknologi',
     'landing.stack.title': 'Tiga lapis, satu sistem.',
     'landing.cta.title': 'Mulai pantau kaki Anda',
@@ -597,17 +583,14 @@ export const DICTIONARY = {
     'metrics.unit.percent': '%',
 
     /* ------------------------- Data source state ----------------------- */
-    'source.simulator': 'Simulation mode',
+    'source.idle': 'Waiting for device',
     'source.firebase': 'Firebase live',
     'source.live': 'Connected',
     'source.connecting': 'Connecting',
     'source.error': 'Connection failed',
-    'source.simTitle': 'Sample data from the simulator',
-    'source.simBody':
-      'The insole is not connected to Firebase. The figures on this page come from the simulator, not from the sensors.',
     'source.errorTitle': 'Firebase connection failed',
     'source.errorBody':
-      'The app keeps showing simulator data until the device reconnects.',
+      'This page shows no data at all until the device reconnects.',
     'source.noDeviceTitle': 'No data from the device yet',
     'source.noDeviceBody':
       'The insole has not published to Firebase. This page updates on its own once it does.',
@@ -624,15 +607,10 @@ export const DICTIONARY = {
     'dashboard.legendLow': 'Low',
     'dashboard.legendHigh': 'High',
     'dashboard.recentIncidents': 'Recent incidents',
-    'dashboard.simulator': 'Insole simulator',
     // Greeting header
     'dashboard.greeting.morning': 'Good morning',
     'dashboard.greeting.afternoon': 'Good afternoon',
     'dashboard.greeting.evening': 'Good evening',
-    'dashboard.statusLabel': 'Status',
-    'dashboard.statusSafe': 'under control',
-    'dashboard.statusWarning': 'needs attention',
-    'dashboard.statusDanger': 'needs action',
     'dashboard.exportCsv': 'Export CSV',
     'dashboard.acknowledge': 'Mark as read',
     'dashboard.acknowledged': 'All alerts read',
@@ -679,7 +657,7 @@ export const DICTIONARY = {
     'monitoring.empty': 'No chart data yet',
     'monitoring.emptyBody':
       'The chart fills once the sensor sends its first reading.',
-    'monitoring.emptyNext': 'Connect the device, or start the simulator to see a trend.',
+    'monitoring.emptyNext': 'Connect the device to start seeing a trend.',
     'monitoring.loading': 'Loading chart',
     'monitoring.summary': 'Session summary',
     'monitoring.average': 'Average',
@@ -815,16 +793,6 @@ export const DICTIONARY = {
     'alert.mute': 'Mute alarm',
     'alert.unmute': 'Unmute alarm',
 
-    /* ---------------------------- Simulator ---------------------------- */
-    'sim.title': 'Insole simulator',
-    'sim.body':
-      'Choose a scenario to see how the dashboard reacts. This is simulated data, not a sensor measurement.',
-    'sim.scenario': 'Scenario',
-    'sim.NORMAL_GAIT': 'Normal walking',
-    'sim.FOREFOOT_OVERLOAD': 'Forefoot overload',
-    'sim.PROLONGED_STANDING': 'Prolonged standing',
-    'sim.RESTING': 'Resting, unloaded',
-
     /* ------------------------------- Auth ------------------------------ */
     'auth.login.title': 'Sign in',
     'auth.login.subtitle': 'Monitor a patient plantar pressure.',
@@ -855,14 +823,17 @@ export const DICTIONARY = {
     'common.nextStepCheckConnection': 'Check your connection, then try again.',
 
     /* ------------------------------ Landing ---------------------------- */
-    'landing.hero.eyebrow': 'Diabetic foot ulcer prevention aid',
-    'landing.hero.title': 'Catch high plantar pressure early',
+    /* The hero answers four questions in reading order: the eyebrow names
+       the category, the title carries "what it does and why it matters",
+       the subtitle names WHO it is for, the CTAs are the next step. */
+    'landing.hero.eyebrow': 'A smart insole with a web monitoring dashboard',
+    'landing.hero.title': 'Watch sole pressure before it becomes a wound',
     'landing.hero.subtitle':
-      'Three sensors in a shoe insole send plantar pressure to this dashboard every second. A fuzzy rule base scores the risk so a warning arrives before a wound does.',
-    'landing.hero.ctaPrimary': 'Open the dashboard',
-    'landing.hero.ctaSecondary': 'Create an account',
+      'Designed for elderly diabetic patients together with the family or caregivers who look after them. A three-sensor insole sends a reading every second, and the warning arrives before the foot is hurt.',
+    'landing.hero.ctaRegister': 'Create an account',
+    'landing.hero.ctaLogin': 'Sign in',
     'landing.hero.demoNote':
-      'The map beside this text is the same component the dashboard uses.',
+      'This map is the same component the dashboard uses.',
     'landing.problem.title': 'Why plantar pressure needs watching',
     'landing.problem.body':
       'Diabetic neuropathy reduces the ability to feel pain in the sole. Pressure that stays high for long enough can cause an injury the patient never notices. Continuous monitoring makes those pressure points visible before they become an ulcer.',
@@ -886,7 +857,7 @@ export const DICTIONARY = {
     'landing.risk.dangerBody':
       'High pressure has lasted more than 30 seconds in a row.',
     'landing.footerNote':
-      'Final year project prototype. Data comes from the simulator while no physical device is connected.',
+      'Final year project prototype. Shows real insole sensor data through Firebase.',
     'landing.nav.how': 'How it works',
     'landing.nav.sensors': 'Sensors',
     'landing.nav.risk': 'Risk',
@@ -937,6 +908,7 @@ export const DICTIONARY = {
     'landing.cap.title': 'From sensor to screen.',
     'landing.step.number': 'Step',
     'landing.flow.title': 'Three steps to start.',
+    'landing.step.demoNote': 'Example readings and statuses of the dashboard.',
     'landing.stack.eyebrow': 'Technology',
     'landing.stack.title': 'Three layers, one system.',
     'landing.cta.title': 'Start monitoring your feet',

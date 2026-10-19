@@ -5,13 +5,9 @@ import {
   Activity,
   Footprints,
   BellRing,
-  BookOpen,
   Radio,
   Menu,
   X,
-  Workflow,
-  Bot,
-  Sparkles,
   BrainCircuit,
   History,
   BatteryCharging,
@@ -22,6 +18,8 @@ import {
 } from "lucide-react";
 import { GlassButton } from "../components/ui/GlassButton";
 import { PanelHeader } from "../components/ui/GlassCard";
+import { Chip } from "../components/ui/Chip";
+import { StatusChip } from "../components/ui/StatusChip";
 import PlantarHeatmap from "../components/PlantarHeatmap";
 import { useInsole } from "../context/InsoleContext";
 import { t } from "../utils/i18n";
@@ -69,9 +67,18 @@ const CAPABILITIES = [
 ];
 
 const STEPS = [
-  { icon: Footprints, title: "landing.step.sense.title", body: "landing.step.sense.body" },
-  { icon: Activity, title: "landing.step.judge.title", body: "landing.step.judge.body" },
-  { icon: BellRing, title: "landing.step.warn.title", body: "landing.step.warn.body" },
+  { icon: Footprints, title: "landing.step.sense.title", body: "landing.step.sense.body", vignette: "zones" },
+  { icon: Activity, title: "landing.step.judge.title", body: "landing.step.judge.body", vignette: "levels" },
+  { icon: BellRing, title: "landing.step.warn.title", body: "landing.step.warn.body", vignette: "alarm" },
+];
+
+/* The three sensor points of the example strip, in display order. The labels
+   reuse the app's own anatomy vocabulary; the SHORT labels are the ones the
+   dashboard's own tables use. */
+const ZONE_ROWS = [
+  { key: "forefoot", label: "anatomy.forefoot.short" },
+  { key: "midfoot", label: "anatomy.midfoot.short" },
+  { key: "heel", label: "anatomy.heel.short" },
 ];
 
 const FLOW = [
@@ -155,7 +162,7 @@ const LandingPage = () => {
     return () => cancelAnimationFrame(raf);
   }, [reducedMotion]);
 
-  /* The nav pill deepens its shadow once the page scrolls. */
+  /* The nav bar deepens its shadow once the page scrolls. */
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -184,12 +191,14 @@ const LandingPage = () => {
       {/* The app shell already renders the skip link as the first
           focusable element; do not duplicate it here. */}
 
-      {/* ================= FLOATING PILL NAV ================= */}
+      {/* ================= NAV ================= */}
+      {/* A flat, rectangular instrument bar. The old floating pill - rounded
+          glass with a blur - was decoration doing navigation's job. */}
       <div className="sticky top-3 z-50 flex justify-center px-3 pt-4 sm:top-5 sm:px-4 sm:pt-6">
         <nav
           ref={navRef}
           aria-label={t("app.title", language)}
-          className="flex w-full max-w-[880px] items-center justify-between gap-2 rounded-pill border border-warm-line bg-warm-card/75 py-2.5 pl-5 pr-2.5 shadow-nav backdrop-blur-xl"
+          className="flex w-full max-w-[880px] items-center justify-between gap-2 rounded-tile border border-warm-line bg-warm-card py-2.5 pl-5 pr-2.5 shadow-nav"
         >
           <a
             href="#"
@@ -213,7 +222,7 @@ const LandingPage = () => {
               <a
                 key={link.href}
                 href={link.href}
-                className="inline-flex min-h-[44px] items-center rounded-pill px-3.5 py-2 transition-colors duration-150 hover:bg-warm-dark/5 hover:text-warm-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-card"
+                className="inline-flex min-h-[44px] items-center rounded-tile px-3.5 py-2 transition-colors duration-150 hover:bg-warm-dark/5 hover:text-warm-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-card"
               >
                 {link.label}
               </a>
@@ -224,7 +233,7 @@ const LandingPage = () => {
             <GlassButton
               variant="warmOutline"
               size="sm"
-              className="hidden rounded-pill sm:inline-flex"
+              className="hidden rounded-tile sm:inline-flex"
               onClick={() => go("/login")}
             >
               {t("auth.login.submit", language)}
@@ -232,14 +241,14 @@ const LandingPage = () => {
             <GlassButton
               variant="warm"
               size="sm"
-              className="rounded-pill"
+              className="rounded-tile"
               onClick={() => go("/register")}
             >
               {t("auth.register.submit", language)}
             </GlassButton>
             <button
               type="button"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-pill border border-warm-line bg-warm-card text-warm-ink transition-colors duration-150 hover:bg-warm-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-card md:hidden"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-tile border border-warm-line bg-warm-card text-warm-ink transition-colors duration-150 hover:bg-warm-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-card md:hidden"
               aria-expanded={menuOpen}
               aria-controls="landing-menu"
               onClick={() => setMenuOpen((open) => !open)}
@@ -275,14 +284,14 @@ const LandingPage = () => {
             <div className="mt-3 flex gap-2">
               <GlassButton
                 variant="warmOutline"
-                className="flex-1 rounded-pill"
+                className="flex-1 rounded-tile"
                 onClick={() => go("/login")}
               >
                 {t("auth.login.submit", language)}
               </GlassButton>
               <GlassButton
                 variant="warm"
-                className="flex-1 rounded-pill"
+                className="flex-1 rounded-tile"
                 onClick={() => go("/register")}
               >
                 {t("auth.register.submit", language)}
@@ -294,155 +303,121 @@ const LandingPage = () => {
 
       <main id="main-content" className="mx-auto max-w-[1440px] px-2 pt-2 sm:px-4 sm:pt-4">
         {/* ================= HERO ================= */}
-        <section className="rise relative mt-2 flex min-h-[100svh] flex-col overflow-hidden rounded-hero bg-warm-raised shadow-card sm:mt-4 sm:rounded-hero-lg">
-          {/* Decorative glows: static gradients, aria-hidden. No WebGL,
-              no parallax, no animation loop. */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-40 top-0 h-[720px] w-[720px] rounded-full opacity-70 blur-3xl"
-            style={{
-              background:
-                "radial-gradient(circle at 55% 45%, rgb(var(--warm-accent) / 0.55), rgb(var(--warm-accent-2) / 0.28) 40%, transparent 70%)",
-            }}
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -left-52 top-24 h-[640px] w-[640px] rounded-full opacity-60 blur-3xl"
-            style={{
-              background:
-                "radial-gradient(circle at 50% 50%, rgb(var(--warm-dark) / 0.35), rgb(var(--warm-caption) / 0.15) 45%, transparent 72%)",
-            }}
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-40 right-1/4 h-[420px] w-[560px] rounded-full opacity-40 blur-3xl"
-            style={{
-              background:
-                "radial-gradient(circle at 50% 50%, rgb(var(--warm-accent) / 0.25), transparent 70%)",
-            }}
-          />
-
-          <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-6 pb-28 pt-16 text-center sm:pt-24 lg:pb-36">
-            {/* Badge */}
-            <p
-              className="rise inline-flex items-center gap-2 rounded-pill border border-warm-line bg-warm-card/80 px-4 py-2 text-body-sm font-medium text-warm-accent-deep shadow-card backdrop-blur"
-              style={{ animationDelay: "150ms" }}
-            >
-              <Footprints className="h-4 w-4" aria-hidden="true" />
-              {t("landing.hero.eyebrow", language)}
-            </p>
-
-            {/* Headline with drifting tiles */}
-            <div className="relative mt-7 w-full">
-              <h1
-                className="rise mx-auto max-w-3xl font-heading text-display text-warm-ink"
-                style={{ animationDelay: "300ms" }}
+        {/* Two columns from lg: the fold answers its four questions in the
+            text column, and the real heatmap stands BESIDE it instead of in
+            its own narrow centred row, which left both page margins and the
+            fold empty. The measured numbers are still NOT repeated here: they
+            live once in the Mengapa band. */}
+        <section className="rise relative mt-2 flex min-h-[100svh] items-center overflow-hidden rounded-hero bg-warm-raised shadow-card sm:mt-4 sm:rounded-hero-lg">
+          <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-10 px-6 pb-12 pt-16 text-center sm:pb-14 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-16 lg:text-left">
+            {/* Column one: eyebrow, headline, who it is for, next step. */}
+            <div className="flex flex-col items-center lg:items-start">
+              {/* Eyebrow tag: squared, matching every status tag in the app. */}
+              <p
+                className="rise inline-flex items-center gap-2 rounded-sm border border-warm-line bg-warm-card/80 px-4 py-2 text-body-sm font-medium text-warm-accent-deep shadow-card"
+                style={{ animationDelay: "150ms" }}
               >
-                {t("landing.hero.title", language)}
-              </h1>
-
-              <div
-                data-drift
-                data-rot="6"
-                aria-hidden="true"
-                className="absolute -right-8 -top-10 hidden h-16 w-16 rotate-6 items-center justify-center rounded-panel border border-warm-line bg-warm-card shadow-glow md:flex"
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-tile bg-warm-accent text-white">
-                  <Workflow className="h-5 w-5" />
-                </span>
-              </div>
-              <div
-                data-drift
-                data-rot="-6"
-                aria-hidden="true"
-                className="absolute -right-24 top-16 hidden h-16 w-16 -rotate-6 items-center justify-center rounded-panel border border-warm-line bg-warm-card shadow-glow lg:flex"
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-tile bg-warm-dark text-white">
-                  <Bot className="h-5 w-5" />
-                </span>
-              </div>
-              <div
-                data-drift
-                data-rot="3"
-                aria-hidden="true"
-                className="absolute -bottom-14 right-6 hidden h-16 w-16 rotate-3 items-center justify-center rounded-panel border border-warm-line bg-warm-card shadow-glow md:flex"
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-tile bg-warm-raised text-warm-accent-deep">
-                  <Sparkles className="h-5 w-5" />
-                </span>
-              </div>
-            </div>
-
-            <p
-              className="rise mt-10 max-w-xl text-body-lg leading-relaxed text-warm-body"
-              style={{ animationDelay: "450ms" }}
-            >
-              {t("landing.hero.subtitle", language)}
-            </p>
-
-            {/* CTAs */}
-            <div
-              className="rise mt-9 flex flex-col items-center gap-3 sm:flex-row"
-              style={{ animationDelay: "600ms" }}
-            >
-              <GlassButton
-                variant="warm"
-                size="lg"
-                className="rounded-pill"
-                onClick={() => go("/register")}
-              >
-                {t("landing.hero.ctaSecondary", language)}
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </GlassButton>
-              <GlassButton
-                variant="warmOutline"
-                size="lg"
-                className="rounded-pill"
-                onClick={() => go("/login")}
-              >
-                {t("landing.hero.ctaPrimary", language)}
-              </GlassButton>
-            </div>
-
-            {/* Real product spec row: measured product facts, not
-                invented statistics. */}
-            <div
-              className="rise mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4"
-              style={{ animationDelay: "750ms" }}
-            >
-              {SPECS.map((spec) => (
-                <div key={spec.title} className="text-center">
-                  <p className="font-heading text-h2 font-semibold text-warm-ink">
-                    {t(spec.title, language)}
-                  </p>
-                  <p className="mt-1 text-caption text-warm-caption">
-                    {t(spec.body, language)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* The real heatmap, running with fixed example values. */}
-          <div
-            className="rise relative z-10 mx-auto w-full max-w-md px-6 pb-10 sm:px-0"
-            style={{ animationDelay: "900ms" }}
-          >
-            <div className="rounded-panel border border-warm-line bg-warm-card p-4 shadow-lift transition-transform duration-150 hover:-translate-y-1 sm:p-5">
-              <PanelHeader
-                label={t("dashboard.plantarView", language)}
-                icon={<Activity className="h-4 w-4" />}
-                padded={false}
-              />
-              <div className="plot-surface p-2">
-                <PlantarHeatmap
-                  readingsOverride={EXAMPLE_READINGS}
-                  className="mx-auto max-h-[400px]"
-                />
-              </div>
-              <p className="border-t border-warm-line px-1 pt-3 text-body-sm text-warm-caption">
-                {t("landing.hero.demoNote", language)}
+                <Footprints className="h-4 w-4" aria-hidden="true" />
+                {t("landing.hero.eyebrow", language)}
               </p>
+
+              {/* Headline with drifting tiles. The tiles carry the product's
+                  own instrument icons - live reading, ESP32, battery - not
+                  generic studio glyphs. */}
+              <div className="relative mt-5 w-full">
+                <h1
+                  className="rise mx-auto max-w-3xl font-heading text-display text-warm-ink"
+                  style={{ animationDelay: "300ms" }}
+                >
+                  {t("landing.hero.title", language)}
+                </h1>
+
+                <div
+                  data-drift
+                  data-rot="6"
+                  aria-hidden="true"
+                  className="absolute -top-10 right-0 hidden h-16 w-16 rotate-6 items-center justify-center rounded-panel border border-warm-line bg-warm-card shadow-glow md:flex"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-tile bg-warm-accent text-white">
+                    <Activity className="h-5 w-5" />
+                  </span>
+                </div>
+                <div
+                  data-drift
+                  data-rot="-6"
+                  aria-hidden="true"
+                  className="absolute -left-10 top-8 hidden h-16 w-16 -rotate-6 items-center justify-center rounded-panel border border-warm-line bg-warm-card shadow-glow lg:flex"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-tile bg-warm-dark text-white">
+                    <Cpu className="h-5 w-5" />
+                  </span>
+                </div>
+                <div
+                  data-drift
+                  data-rot="3"
+                  aria-hidden="true"
+                  className="absolute -bottom-12 right-4 hidden h-16 w-16 rotate-3 items-center justify-center rounded-panel border border-warm-line bg-warm-card shadow-glow md:flex"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-tile bg-warm-raised text-warm-accent-deep">
+                    <BatteryCharging className="h-5 w-5" />
+                  </span>
+                </div>
+              </div>
+
+              <p
+                className="rise mt-6 max-w-xl text-body-lg leading-relaxed text-warm-body"
+                style={{ animationDelay: "450ms" }}
+              >
+                {t("landing.hero.subtitle", language)}
+              </p>
+
+              {/* CTAs: the next step, register first. */}
+              <div
+                className="rise mt-7 flex flex-col items-center gap-3 sm:flex-row"
+                style={{ animationDelay: "600ms" }}
+              >
+                <GlassButton
+                  variant="warm"
+                  size="lg"
+                  className="rounded-tile"
+                  onClick={() => go("/register")}
+                >
+                  {t("landing.hero.ctaRegister", language)}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </GlassButton>
+                <GlassButton
+                  variant="warmOutline"
+                  size="lg"
+                  className="rounded-tile"
+                  onClick={() => go("/login")}
+                >
+                  {t("landing.hero.ctaLogin", language)}
+                </GlassButton>
+              </div>
+            </div>
+
+            {/* Column two: the real heatmap, filling the fold's right half
+                instead of a 448px centred card. */}
+            <div
+              className="rise mx-auto w-full max-w-md lg:max-w-none"
+              style={{ animationDelay: "900ms" }}
+            >
+              <div className="rounded-panel border border-warm-line bg-warm-card p-4 shadow-lift transition-transform duration-150 hover:-translate-y-1 sm:p-5">
+                <PanelHeader
+                  label={t("dashboard.plantarView", language)}
+                  icon={<Activity className="h-4 w-4" />}
+                  padded={false}
+                />
+                <div className="plot-surface p-2">
+                  <PlantarHeatmap
+                    readingsOverride={EXAMPLE_READINGS}
+                    className="mx-auto max-h-[360px] lg:max-h-[420px]"
+                  />
+                </div>
+                <p className="border-t border-warm-line px-1 pt-3 text-body-sm text-warm-caption">
+                  {t("landing.hero.demoNote", language)}
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -450,7 +425,7 @@ const LandingPage = () => {
         {/* ================= MENGAPA + SPEC BAND ================= */}
         <section
           id="mengapa"
-          className="scroll-mt-28 px-4 py-24 sm:px-10 lg:px-16 lg:py-32"
+          className="scroll-mt-28 px-4 py-16 sm:px-10 sm:py-20 lg:px-16 lg:py-24"
         >
           <div className="max-w-2xl" data-reveal>
             <p className="text-body-sm font-semibold text-warm-accent-deep">
@@ -464,17 +439,17 @@ const LandingPage = () => {
             </p>
           </div>
 
+          {/* One ruled strip, not three pill-shaped cards: three rounded-full
+              stat capsules was the exact shape language the product drops.
+              The numbers sit in one band, divided by hairlines. */}
           <div
             data-reveal
-            className="relative mt-14 rounded-section border border-warm-line bg-warm-raised p-8 shadow-card sm:p-12"
+            className="relative mt-10 rounded-section border border-warm-line bg-warm-raised shadow-card sm:px-12"
           >
-            <div className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-center lg:-space-x-6">
+            <div className="grid gap-6 px-6 py-8 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-warm-line sm:px-0 sm:py-10">
               {SPECS.map((spec) => (
-                <div
-                  key={spec.title}
-                  className="flex-1 rounded-full border border-warm-line bg-warm-card px-8 py-7 text-center shadow-card"
-                >
-                  <p className="font-heading text-landing-h2 text-warm-ink">
+                <div key={spec.title} className="text-center sm:px-8">
+                  <p className="font-heading text-landing-h2 tabular-data text-warm-ink">
                     {t(spec.title, language)}
                   </p>
                   <p className="mt-1.5 text-body text-warm-body">
@@ -489,7 +464,7 @@ const LandingPage = () => {
         {/* ================= FITUR ================= */}
         <section
           id="fitur"
-          className="scroll-mt-28 px-4 py-24 sm:px-10 lg:px-16 lg:py-32"
+          className="scroll-mt-28 px-4 py-16 sm:px-10 sm:py-20 lg:px-16 lg:py-24"
         >
           <div className="max-w-2xl" data-reveal>
             <p className="text-body-sm font-semibold text-warm-accent-deep">
@@ -503,7 +478,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map(({ icon: Icon, title, body }, index) => (
               <article
                 key={title}
@@ -526,7 +501,7 @@ const LandingPage = () => {
         </section>
 
         {/* ================= KEMAMPUAN (dark panel) ================= */}
-        <section className="px-4 pb-24 sm:px-10 lg:px-16 lg:pb-32">
+        <section className="px-4 pb-16 sm:px-10 lg:px-16 lg:pb-24">
           <div className="max-w-2xl" data-reveal>
             <p className="text-body-sm font-semibold text-warm-accent-deep">
               {t("landing.cap.eyebrow", language)}
@@ -538,13 +513,13 @@ const LandingPage = () => {
 
           <div
             data-reveal
-            className="mt-14 rounded-section-lg bg-warm-dark p-4 shadow-glow sm:p-5"
+            className="mt-10 rounded-section-lg bg-warm-dark p-4 shadow-glow sm:p-5"
           >
             <div className="grid gap-4 lg:grid-cols-3">
               {CAPABILITIES.map(({ icon: Icon, title, body }, index) => (
                 <div
                   key={title}
-                  className="rounded-cell border border-white/5 bg-warm-panel p-8 sm:p-10"
+                  className="rounded-cell border border-white/5 bg-warm-panel p-6 sm:p-8"
                 >
                   <span className="flex h-12 w-12 items-center justify-center rounded-panel bg-white/10 text-warm-accent-2">
                     <Icon className="h-5 w-5" aria-hidden="true" />
@@ -564,7 +539,7 @@ const LandingPage = () => {
         {/* ================= CARA KERJA ================= */}
         <section
           id="cara-kerja"
-          className="scroll-mt-28 px-4 pb-24 sm:px-10 lg:px-16 lg:pb-32"
+          className="scroll-mt-28 px-4 pb-16 sm:px-10 lg:px-16 lg:pb-24"
         >
           <div className="max-w-2xl" data-reveal>
             <p className="text-body-sm font-semibold text-warm-accent-deep">
@@ -575,15 +550,15 @@ const LandingPage = () => {
             </h2>
           </div>
 
-          <div className="mt-14 space-y-6">
-            {STEPS.map(({ icon: Icon, title, body }, index) => (
+          <div className="mt-10 space-y-6">
+            {STEPS.map(({ icon: Icon, title, body, vignette }, index) => (
               <div
                 key={title}
                 data-reveal
                 className="grid overflow-hidden rounded-cell border border-warm-line bg-warm-card shadow-card lg:grid-cols-5"
               >
-                <div className="p-8 sm:p-10 lg:col-span-3">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-warm-raised px-3 py-1.5 text-caption text-warm-body">
+                <div className="p-6 sm:p-8 lg:col-span-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-sm border border-warm-line bg-warm-raised px-3 py-1.5 text-caption text-warm-body">
                     {t("landing.step.number", language)} {String(index + 1).padStart(2, "0")}
                   </span>
                   <h3 className="mt-4 text-h2 font-semibold text-warm-ink">
@@ -593,10 +568,87 @@ const LandingPage = () => {
                     {t(body, language)}
                   </p>
                 </div>
-                <div className="relative flex min-h-[220px] items-center justify-center bg-warm-raised lg:col-span-2">
-                  <span className="flex h-16 w-16 items-center justify-center rounded-panel border border-warm-line bg-warm-card text-warm-accent-deep shadow-card">
-                    <Icon className="h-8 w-8" aria-hidden="true" />
-                  </span>
+                {/* The band beside every step shows what the app actually
+                    renders at that step, in the app's own vocabulary - not a
+                    lone decorative icon adrift in an empty panel. */}
+                <div className="relative flex min-h-[220px] items-center justify-center bg-warm-raised p-6 sm:p-8 lg:col-span-2">
+                  {vignette === "zones" && (
+                    <div className="w-full max-w-xs text-left">
+                      <p className="text-caption text-warm-caption">
+                        {t("landing.sensors.title", language)}
+                      </p>
+                      <div className="mt-1 divide-y divide-warm-line border-y border-warm-line">
+                        {ZONE_ROWS.map(({ key, label }) => (
+                          <div
+                            key={key}
+                            className="flex items-baseline justify-between gap-3 py-3"
+                          >
+                            <span className="text-body text-warm-body">
+                              {t(label, language)}
+                            </span>
+                            <span className="font-heading text-stat tabular-data text-warm-ink">
+                              {EXAMPLE_READINGS[key]}
+                              <span className="ml-1 text-caption font-normal text-warm-caption">
+                                {t("metrics.unit.kpa", language)}
+                              </span>
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-3 text-caption text-warm-caption">
+                        {t("landing.step.demoNote", language)}
+                      </p>
+                    </div>
+                  )}
+                  {vignette === "levels" && (
+                    <div className="flex flex-col items-center gap-4 text-center">
+                      <p className="text-caption text-warm-caption">
+                        {t("landing.risk.title", language)}
+                      </p>
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        <StatusChip
+                          level="safe"
+                          label={t("risk.safe", language)}
+                          size="lg"
+                        />
+                        <StatusChip
+                          level="warning"
+                          label={t("risk.warning", language)}
+                          size="lg"
+                        />
+                        <StatusChip
+                          level="danger"
+                          label={t("risk.danger", language)}
+                          size="lg"
+                        />
+                      </div>
+                      <p className="text-caption text-warm-caption">
+                        {t("landing.step.demoNote", language)}
+                      </p>
+                    </div>
+                  )}
+                  {vignette === "alarm" && (
+                    <div className="flex flex-col items-center gap-4 text-center">
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        <Chip tone="danger" aria-hidden="true" className="px-3 py-2">
+                          <Icon className="h-5 w-5" />
+                        </Chip>
+                        <StatusChip
+                          level="warning"
+                          label={t("risk.warning", language)}
+                          size="lg"
+                        />
+                        <StatusChip
+                          level="danger"
+                          label={t("risk.danger", language)}
+                          size="lg"
+                        />
+                      </div>
+                      <p className="text-caption text-warm-caption">
+                        {t("landing.step.demoNote", language)}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -606,7 +658,7 @@ const LandingPage = () => {
         {/* ================= ALUR ================= */}
         <section
           id="alur"
-          className="scroll-mt-28 px-4 pb-24 sm:px-10 lg:px-16 lg:pb-32"
+          className="scroll-mt-28 px-4 pb-16 sm:px-10 lg:px-16 lg:pb-24"
         >
           <div className="max-w-2xl" data-reveal>
             <p className="text-body-sm font-semibold text-warm-accent-deep">
@@ -617,7 +669,7 @@ const LandingPage = () => {
             </h2>
           </div>
 
-          <div className="mt-14 grid gap-5 lg:grid-cols-3 lg:items-center">
+          <div className="mt-10 grid gap-5 lg:grid-cols-3 lg:items-center">
             {FLOW.map((flow, index) => {
               const featured = index === 1;
               return (
@@ -625,7 +677,7 @@ const LandingPage = () => {
                   key={flow.title}
                   data-reveal
                   style={{ transitionDelay: `${index * 80}ms` }}
-                  className={`rounded-cell p-8 shadow-card ${
+                  className={`rounded-cell p-6 sm:p-7 shadow-card ${
                     featured
                       ? "bg-warm-dark text-white lg:scale-[1.04]"
                       : "border border-warm-line bg-warm-card"
@@ -659,7 +711,7 @@ const LandingPage = () => {
         </section>
 
         {/* ================= TEKNOLOGI ================= */}
-        <section className="px-4 pb-24 sm:px-10 lg:px-16 lg:pb-32">
+        <section className="px-4 pb-16 sm:px-10 lg:px-16 lg:pb-24">
           <div className="max-w-2xl" data-reveal>
             <p className="text-body-sm font-semibold text-warm-accent-deep">
               {t("landing.stack.eyebrow", language)}
@@ -669,18 +721,18 @@ const LandingPage = () => {
             </h2>
           </div>
 
-          <div className="mx-auto mt-14 grid max-w-5xl gap-5 md:grid-cols-3">
+          <div className="mx-auto mt-10 grid max-w-5xl gap-5 md:grid-cols-3">
             {STACK.map(({ icon: Icon, title, body }, index) => (
               <div
                 key={title}
                 data-reveal
                 style={{ transitionDelay: `${index * 80}ms` }}
-                className="flex min-h-[360px] flex-col justify-between rounded-cell bg-gradient-to-br from-warm-panel to-warm-dark p-6 shadow-card"
+                className="rounded-cell bg-warm-dark p-6 shadow-card"
               >
                 <span className="flex h-12 w-12 items-center justify-center rounded-panel bg-white/10 text-white">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <div>
+                <div className="mt-5">
                   <h3 className="text-card-title font-semibold text-white">
                     {t(title, language)}
                   </h3>
@@ -697,26 +749,9 @@ const LandingPage = () => {
         <footer className="px-2 pb-2 sm:px-0 sm:pb-4">
           <div
             data-reveal
-            className="relative overflow-hidden rounded-hero bg-warm-raised px-6 py-20 text-center shadow-card sm:px-12 lg:py-28"
+            className="overflow-hidden rounded-hero bg-warm-raised px-6 py-16 text-center shadow-card sm:px-12 lg:py-24"
           >
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -left-40 bottom-0 h-[520px] w-[520px] rounded-full opacity-60 blur-3xl"
-              style={{
-                background:
-                  "radial-gradient(circle, rgb(var(--warm-accent) / 0.4), transparent 70%)",
-              }}
-            />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-40 -top-20 h-[420px] w-[420px] rounded-full opacity-40 blur-3xl"
-              style={{
-                background:
-                  "radial-gradient(circle, rgb(var(--warm-dark) / 0.3), transparent 70%)",
-              }}
-            />
-
-            <div className="relative mx-auto max-w-3xl">
+            <div className="mx-auto max-w-3xl">
               <h2 className="font-heading text-landing-h2 leading-tight text-warm-ink">
                 {t("landing.cta.title", language)}
               </h2>
@@ -727,7 +762,7 @@ const LandingPage = () => {
                 <GlassButton
                   variant="warm"
                   size="lg"
-                  className="rounded-pill"
+                  className="rounded-tile"
                   onClick={() => go("/register")}
                 >
                   {t("auth.register.submit", language)}
@@ -736,7 +771,7 @@ const LandingPage = () => {
                 <GlassButton
                   variant="warmOutline"
                   size="lg"
-                  className="rounded-pill"
+                  className="rounded-tile"
                   onClick={() => go("/login")}
                 >
                   {t("auth.login.submit", language)}
@@ -744,7 +779,7 @@ const LandingPage = () => {
               </div>
             </div>
 
-            <div className="relative mx-auto mt-16 flex max-w-5xl flex-col items-center justify-between gap-6 border-t border-warm-line pt-8 text-center sm:flex-row sm:text-left">
+            <div className="relative mx-auto mt-12 flex max-w-5xl flex-col items-center justify-between gap-6 border-t border-warm-line pt-8 text-center sm:flex-row sm:text-left">
               <span className="flex items-center gap-2.5">
                 <span className="relative flex h-5 w-8 items-center" aria-hidden="true">
                   <span className="absolute left-0 h-5 w-5 rounded-full bg-warm-dark" />
