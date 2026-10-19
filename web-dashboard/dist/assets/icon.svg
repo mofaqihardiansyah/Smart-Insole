@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="838" height="670" viewBox="0 0 838 670">
+  <defs>
+    <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse">
+      <path d="M 56 0 L 0 0 0 56" fill="none" stroke="#14595d" stroke-width="1.5" opacity="0.6"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="838" height="670" fill="#1d7b80"/>
+  <rect width="838" height="670" fill="url(#grid)"/>
+
+  <g fill="#ffffff">
+    <!-- Left foot toes -->
+    <ellipse cx="298" cy="204" rx="16" ry="11" transform="rotate(-25 298 204)"/>
+    <ellipse cx="316" cy="177" rx="15" ry="20" transform="rotate(-20 316 177)"/>
+    <ellipse cx="343" cy="156" rx="16" ry="23" transform="rotate(-12 343 156)"/>
+    <ellipse cx="375" cy="142" rx="17" ry="26" transform="rotate(-5 375 142)"/>
+    <ellipse cx="416" cy="132" rx="20" ry="31"/>
+
+    <!-- Right foot toes -->
+    <ellipse cx="461" cy="178" rx="15" ry="23" transform="rotate(12 461 178)"/>
+    <ellipse cx="490" cy="189" rx="14" ry="19" transform="rotate(18 490 189)"/>
+    <ellipse cx="515" cy="202" rx="13" ry="16" transform="rotate(25 515 202)"/>
+    <ellipse cx="534" cy="219" rx="12" ry="14" transform="rotate(32 534 219)"/>
+    <ellipse cx="543" cy="240" rx="11" ry="9" transform="rotate(35 543 240)"/>
+
+    <!-- Left sole -->
+    <path d="M 440 172
+             C 380 160 322 190 316 240
+             C 312 290 350 332 402 378
+             C 420 393 455 396 470 380
+             C 477 368 468 354 460 350
+             C 430 344 404 334 402 318
+             C 400 300 420 290 430 266
+             C 438 244 438 212 446 206
+             C 446 190 444 178 440 172 Z"/>
+
+    <!-- Right sole -->
+    <path d="M 446 208
+             C 470 204 520 218 527 258
+             C 532 290 512 320 482 344
+             C 472 352 464 354 460 350
+             C 452 340 440 330 440 300
+             C 440 268 440 236 446 208 Z"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="420" y="505" text-anchor="middle" font-family="Anton, Impact, sans-serif"
+        font-weight="700" font-size="104" fill="#ffffff" letter-spacing="6"
+        textLength="190" lengthAdjust="spacingAndGlyphs">SOLE</text>
+</svg>
