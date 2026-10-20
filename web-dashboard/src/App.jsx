@@ -15,6 +15,8 @@ import { AlertModal } from "./components/dashboard/AlertModal";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import VerifyOtpPage from "./pages/VerifyOtpPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import MonitoringPage from "./pages/MonitoringPage";
 import HistoryPage from "./pages/HistoryPage";
@@ -114,12 +116,7 @@ const Splash = () => {
       aria-live="polite"
       className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 px-4"
     >
-      <span
-        aria-hidden="true"
-        className="grid h-14 w-14 place-items-center rounded-tile bg-primary-btn"
-      >
-        <img src="/icon.svg" alt="" className="h-9 w-9" />
-      </span>
+      <img src="/icon.svg" alt="" aria-hidden="true" className="h-14 w-14" />
       <p className="text-body-sm text-muted">{t("app.loading", language)}</p>
     </div>
   );
@@ -132,6 +129,8 @@ function PublicApp() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-otp" element={<VerifyOtpPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/" element={<LandingPage />} />
       {/* Anything unknown goes home rather than showing a blank screen. */}
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -179,6 +178,8 @@ function ProtectedApp() {
               switching, but they are not linked from the navigation. */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-otp" element={<VerifyOtpPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppLayout>

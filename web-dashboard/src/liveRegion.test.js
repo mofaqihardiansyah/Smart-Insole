@@ -16,8 +16,10 @@ import { fileURLToPath } from "node:url";
  *    exists in the source today — the numbers are simply outside every live
  *    region, which is the stronger form of the same rule. This gate asserts the
  *    absence, so adding an `off` attribute AND adding a real region both fail.
- * 2. The polite-region set is exact. The allowlist below names all four and the
- *    purpose each serves, so a fifth region fails and a removed one fails too.
+ * 2. The polite-region set is exact. The allowlist below names every region
+ *    and the purpose it serves, so an unreviewed region fails. The first four
+ *    are the realtime contract; the last two are the only static-page controls
+ *    that speak, each on a threshold rather than on every value.
  * 3. `InsoleContext`'s failure contract holds. WR-02 used to pin the old guard
  *    that silently fell back to the fabricated simulator stream on failure;
  *    that trade was REVERSED when the simulator was removed. The contract now
@@ -77,10 +79,18 @@ const POLITE_REGIONS = [
     file: "pages/DevicePage.jsx",
     purpose: "the connection line, so a link drop is noticed",
   },
+  {
+    file: "components/auth/PasswordStrength.jsx",
+    purpose: "the strength band, so a screen reader hears the label cross a threshold",
+  },
+  {
+    file: "components/landing/RiskExplorer.jsx",
+    purpose: "the simulated risk level, so a slider change is announced once per level",
+  },
 ];
 
 describe("the realtime data contract", () => {
-  it("keeps exactly the four named polite regions and no fifth", () => {
+  it("keeps only the reviewed polite regions, one entry per occurrence", () => {
     expect(FILES.length, "the walk collected no sources").toBeGreaterThan(20);
 
     // One entry per OCCURRENCE, not per file: a second polite region added

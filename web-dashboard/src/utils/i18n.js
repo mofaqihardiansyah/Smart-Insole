@@ -18,12 +18,12 @@
 export const DICTIONARY = {
   id: {
     /* ------------------------------ Brand ------------------------------ */
-    'app.title': 'Smart Insole IoT',
+    'app.title': 'SOLE',
     'app.tagline': 'Pemantauan Tekanan Telapak Kaki',
     'app.taglineShort': 'Analitik plantar',
     'app.loading': 'Memuat data',
     'app.skipToContent': 'Lewati ke konten utama',
-    'app.footer': 'Tugas Akhir, pemantauan tekanan plantar berbasis IoT',
+    'app.footer': 'Pemantauan tekanan plantar dari insole Anda',
 
     /* --------------------------- Navigation ---------------------------- */
     'nav.dashboard': 'Dasbor',
@@ -76,6 +76,8 @@ export const DICTIONARY = {
     'nav.main': 'Navigasi utama',
     'nav.openMenu': 'Buka menu navigasi',
     'nav.closeMenu': 'Tutup menu navigasi',
+    'nav.hideRail': 'Sembunyikan navigasi',
+    'nav.showRail': 'Tampilkan navigasi',
     // Short forms for the mobile bottom bar, where seven items share a 360px
     // row. Desktop uses the full labels above.
     'nav.dashboard.short': 'Dasbor',
@@ -330,125 +332,303 @@ export const DICTIONARY = {
 
     /* ------------------------------- Auth ------------------------------ */
     'auth.login.title': 'Masuk ke akun',
-    'auth.login.subtitle': 'Pantau tekanan telapak kaki pasien.',
+    'auth.login.subtitle': 'Lanjutkan pemantauan tekanan telapak kaki Anda.',
     'auth.login.submit': 'Masuk',
-    'auth.login.submitting': 'Memproses',
+    'auth.login.submitting': 'Memeriksa',
     'auth.login.noAccount': 'Belum punya akun?',
     'auth.login.register': 'Daftar sekarang',
-    'auth.login.guest': 'Masuk sebagai tamu',
-    'auth.login.guestFailed':
-      'Tamu belum diaktifkan di proyek Firebase ini. Silakan daftar dengan email.',
-    'auth.register.title': 'Daftar akun baru',
-    'auth.register.subtitle': '',
-    'auth.register.submit': 'Daftar',
-    'auth.register.submitting': 'Memproses',
+    'auth.login.secure':
+      'Kata sandi dikirim melalui koneksi terenkripsi dan tidak disimpan di peramban.',
+    'auth.register.title': 'Buat akun',
+    'auth.register.subtitle': 'Satu akun untuk menyimpan sesi dan peringatan.',
+    'auth.register.submit': 'Buat akun',
+    'auth.register.submitting': 'Membuat akun',
     'auth.register.haveAccount': 'Sudah punya akun?',
     'auth.register.login': 'Masuk',
     'auth.register.verification':
       'Email verifikasi dikirim ke alamat Anda. Periksa kotak masuk setelah mendaftar.',
+    'auth.register.secure':
+      'Pendaftaran diamankan oleh Firebase Authentication.',
+
+    /* ------------------------- OTP verification ------------------------ */
+    'auth.otp.title': 'Verifikasi email Anda',
+    'auth.otp.subtitle':
+      'Masukkan kode 6 digit yang kami kirim untuk mengaktifkan akun.',
+    'auth.otp.emailTitle': 'Verifikasi email',
+    'auth.otp.emailSubtitle': 'Masukkan alamat email yang ingin diverifikasi.',
+    'auth.otp.groupLabel': 'Kode verifikasi 6 digit',
+    'auth.otp.digit': 'Digit {index} dari {total}',
+    'auth.otp.sendCode': 'Kirim kode',
+    'auth.otp.sendingCode': 'Mengirim kode ke email Anda.',
+    'auth.otp.sentTo': 'Kode 6 digit dikirim ke {email}.',
+    'auth.otp.expiresIn': 'Kode berlaku {minutes} menit.',
+    'auth.otp.verify': 'Verifikasi kode',
+    'auth.otp.verifying': 'Memeriksa kode',
+    'auth.otp.resend': 'Kirim ulang kode',
+    'auth.otp.resending': 'Mengirim kode',
+    'auth.otp.resendIn': 'Kirim ulang dalam {seconds} detik',
+    'auth.otp.changeEmail': 'Ganti email',
+    'auth.otp.attemptsLeft': 'Sisa percobaan: {count}.',
+    'auth.otp.devCode': 'Mode pengembangan: kode Anda {code}.',
+    'auth.otp.devCodeNext':
+      'Atur kredensial EmailJS untuk mengirim kode melalui email.',
+    'auth.otp.successTitle': 'Email terverifikasi',
+    'auth.otp.successBody': 'Alamat email Anda sudah dikonfirmasi.',
+    'auth.otp.successNote': 'Akun Anda siap digunakan.',
+    'auth.otp.successCta': 'Buka dasbor',
+    'auth.otp.successLogin': 'Masuk ke akun',
+    'auth.otp.backToLogin': 'Kembali ke halaman masuk',
+    'auth.otp.secure':
+      'Kode hanya berlaku sekali dan tidak disimpan di peramban.',
+    'auth.otp.error.required': 'Masukkan 6 digit kode.',
+    'auth.otp.error.invalid': 'Kode tidak sesuai. Periksa kembali.',
+    'auth.otp.error.expired': 'Kode sudah kedaluwarsa. Kirim kode baru.',
+    'auth.otp.error.attempts': 'Terlalu banyak percobaan. Kirim kode baru.',
+    'auth.otp.error.missing': 'Kode tidak ditemukan. Kirim kode baru.',
+    'auth.otp.error.missingEmail': 'Alamat email belum diisi.',
+    'auth.otp.error.send': 'Kode belum dapat dikirim.',
+    'auth.otp.error.sendNext': 'Periksa koneksi, lalu coba lagi.',
+    'auth.otp.error.notConfigured': 'Pengiriman email belum dikonfigurasi.',
+    'auth.otp.error.notConfiguredNext':
+      'Hubungi administrator untuk mengaktifkan pengiriman kode.',
+
+    /* --------------------------- Forgot password ----------------------- */
+    'auth.forgot.title': 'Lupa kata sandi',
+    'auth.forgot.subtitle':
+      'Masukkan email akun. Kami akan mengirim kode verifikasi.',
+    'auth.forgot.otpTitle': 'Masukkan kode verifikasi',
+    'auth.forgot.otpSubtitle': 'Masukkan kode 6 digit untuk melanjutkan.',
+    'auth.forgot.verify': 'Verifikasi kode',
+    'auth.forgot.verifying': 'Memeriksa kode',
+    'auth.forgot.sendCode': 'Kirim kode',
+    'auth.forgot.secure':
+      'Kami tidak mengungkapkan apakah sebuah alamat email terdaftar.',
+    'auth.forgot.linkTitle': 'Cek email Anda',
+    'auth.forgot.linkBody':
+      'Jika alamat ini terdaftar, tautan untuk membuat kata sandi baru sudah dikirim ke {email}.',
+    'auth.forgot.linkNote':
+      'Tautan berlaku 1 jam. Periksa folder spam bila belum terlihat.',
+    'auth.forgot.resendLink': 'Kirim ulang tautan',
+    'auth.forgot.resendingLink': 'Mengirim tautan',
+    'auth.forgot.linkSent': 'Tautan baru sudah dikirim.',
+    'auth.forgot.restart': 'Mulai ulang',
+    'auth.forgot.haveAccount': 'Ingat kata sandi Anda?',
+    'auth.forgot.login': 'Masuk',
+    'auth.forgot.backToLogin': 'Kembali ke halaman masuk',
+    'auth.forgot.resetTitle': 'Buat kata sandi baru',
+    'auth.forgot.resetSubtitle': 'Kata sandi baru untuk {email}.',
+    'auth.forgot.resetChecking': 'Memeriksa tautan reset.',
+    'auth.forgot.resetPreparing': 'Menyiapkan formulir kata sandi baru.',
+    'auth.forgot.resetInvalid':
+      'Tautan reset tidak valid atau sudah kedaluwarsa.',
+    'auth.forgot.resetInvalidNext':
+      'Minta tautan baru dari halaman lupa kata sandi.',
+    'auth.forgot.resetSubmit': 'Simpan kata sandi',
+    'auth.forgot.resetting': 'Menyimpan kata sandi',
+    'auth.forgot.resetSuccessTitle': 'Kata sandi diperbarui',
+    'auth.forgot.resetSuccessBody': 'Masuk dengan kata sandi baru Anda.',
+    'auth.forgot.step.email': 'Email',
+    'auth.forgot.step.code': 'Kode',
+    'auth.forgot.step.password': 'Kata sandi',
+    'auth.footerNote':
+      'SOLE membantu memantau tekanan, bukan menggantikan pemeriksaan tenaga kesehatan.',
     'auth.field.name': 'Nama lengkap',
     'auth.field.email': 'Alamat email',
     'auth.field.password': 'Kata sandi',
     'auth.field.confirmPassword': 'Konfirmasi kata sandi',
+    'auth.field.passwordHint':
+      'Minimal 8 karakter. Panjang lebih penting daripada simbol rumit.',
+    'auth.field.showPassword': 'Tampilkan kata sandi',
+    'auth.field.hidePassword': 'Sembunyikan kata sandi',
+    'auth.password.label': 'Kekuatan kata sandi',
+    'auth.password.empty': 'Belum diisi',
+    'auth.password.weak': 'Lemah',
+    'auth.password.fair': 'Cukup',
+    'auth.password.good': 'Kuat',
+    'auth.password.strong': 'Sangat kuat',
+    'auth.password.caps': 'Caps Lock aktif.',
+    'auth.password.match': 'Kata sandi cocok.',
+    'auth.password.hint.length': 'Tambah {count} karakter lagi.',
+    'auth.password.hint.variety': 'Campur huruf besar dan kecil.',
+    'auth.password.hint.number': 'Tambahkan angka atau simbol.',
+    'auth.password.hint.common': 'Hindari kata yang mudah ditebak.',
+    'auth.password.hint.repeat': 'Hindari karakter atau pola berulang.',
     'auth.error.required': 'Semua kolom harus diisi.',
     'auth.error.email': 'Masukkan alamat email yang valid.',
-    'auth.error.passwordLength': 'Kata sandi minimal 6 karakter.',
+    'auth.error.emailNext': 'Periksa kembali alamat email Anda.',
+    'auth.error.nameLength': 'Nama maksimal 80 karakter.',
+    'auth.error.passwordLength': 'Kata sandi minimal 8 karakter.',
     'auth.error.passwordMismatch': 'Konfirmasi kata sandi tidak cocok.',
+    'auth.error.passwordNext':
+      'Gunakan minimal 8 karakter dengan campuran huruf dan angka.',
+    'auth.error.credentials': 'Email atau kata sandi salah.',
+    'auth.error.credentialsNext': 'Periksa email dan kata sandi, lalu coba lagi.',
+    'auth.error.emailInUse': 'Email ini sudah terdaftar.',
+    'auth.error.emailInUseNext':
+      'Masuk dengan akun tersebut atau gunakan alamat lain.',
+    'auth.error.weakPassword': 'Kata sandi terlalu lemah.',
+    'auth.error.disabled': 'Akun ini dinonaktifkan.',
+    'auth.error.disabledNext':
+      'Hubungi administrator bila akses masih diperlukan.',
+    'auth.error.tooManyRequests': 'Terlalu banyak percobaan.',
+    'auth.error.tooManyNext': 'Tunggu beberapa menit sebelum mencoba lagi.',
+    'auth.error.network': 'Tidak dapat terhubung ke layanan masuk.',
     'auth.error.generic': 'Proses gagal. Periksa kembali data Anda.',
     'common.nextStepCheckConnection': 'Periksa koneksi, lalu coba lagi.',
 
     /* ------------------------------ Landing ---------------------------- */
-    /* The hero answers four questions in reading order: the eyebrow names
-       the category, the title carries "what it does and why it matters",
-       the subtitle names WHO it is for, the CTAs are the next step. */
-    'landing.hero.eyebrow': 'Insole pintar dengan dasbor pemantauan web',
-    'landing.hero.title': 'Pantau tekanan telapak kaki, sebelum berubah menjadi luka',
+    /* The landing leads with the patient, not the hardware. What the product
+       does for a person at risk of a foot ulcer comes first; the one dense
+       technical subsection sits inside "Cara kerja" for readers who want the
+       model. */
+    'landing.hero.eyebrow': 'Insole pintar untuk kaki diabetes',
+    'landing.hero.title': 'Jaga telapak kaki sebelum luka muncul',
     'landing.hero.subtitle':
-      'Dirancang untuk pasien diabetes lansia bersama keluarga atau kader yang merawatnya. Sol sepatu dengan tiga sensor mengirim pembacaan tiap detik, dan peringatan muncul sebelum telapak kaki terluka.',
-    'landing.hero.ctaRegister': 'Buat akun',
+      'Untuk penderita diabetes dan keluarga yang merawatnya. Tiga sensor membaca tekanan sepuluh kali per detik, lalu Random Forest menandai titik yang perlu diistirahatkan sebelum nyeri terasa.',
+    'landing.hero.ctaRegister': 'Buat akun gratis',
     'landing.hero.ctaLogin': 'Masuk',
     'landing.hero.demoNote':
-      'Peta ini memakai komponen yang sama dengan yang dipakai di dasbor.',
-    'landing.problem.title': 'Mengapa tekanan plantar perlu dipantau',
+      'Contoh peta tekanan. Komponen ini sama dengan yang ada di dasbor.',
+    'landing.problem.title': 'Luka kaki sering muncul tanpa rasa sakit',
     'landing.problem.body':
-      'Neuropati diabetik menurunkan kemampuan merasakan nyeri pada telapak kaki. Tekanan tinggi yang berlangsung lama dapat menimbulkan luka tanpa disadari. Pemantauan berkelanjutan membantu mengenali titik tekanan sebelum berkembang menjadi ulkus.',
-    'landing.how.title': 'Cara kerja pemantauan',
+      'Neuropati diabetik melemahkan sensasi nyeri di telapak kaki. Tekanan tinggi yang bertahan dapat melukai kulit tanpa Anda sadari. Memantau tekanan membuat titik rawan terlihat lebih awal, saat masih cukup diistirahatkan.',
+    'landing.problem.signs.title': 'Tanda yang perlu diperhatikan',
+    'landing.problem.signs.1': 'Kesemutan atau mati rasa di kaki',
+    'landing.problem.signs.2': 'Kulit kering, kapalan, atau pecah-pecah',
+    'landing.problem.signs.3': 'Bekas merah setelah melepas sepatu',
+    'landing.problem.signs.note':
+      'Segera hubungi tenaga kesehatan bila ada luka terbuka atau perubahan warna yang menetap.',
+    'landing.spec.sensor.title': '3',
+    'landing.spec.sensor.body': 'Titik ukur: kaki depan, tengah, tumit',
+    'landing.spec.rate.title': '10x',
+    'landing.spec.rate.body': 'Pembacaan sensor per detik',
+    'landing.spec.risk.title': '3',
+    'landing.spec.risk.body': 'Tingkat risiko: aman, waspada, bahaya',
+    'landing.feature.title': 'Yang bisa Anda lakukan',
+    'landing.feature.body':
+      'Dari melihat titik tekanan sampai membawa riwayat saat kontrol.',
+    'landing.feature.1.title': 'Peta tekanan',
+    'landing.feature.1.body':
+      'Lihat kaki depan, tengah, dan tumit dalam satu peta warna. Titik paling terang adalah yang paling perlu diistirahatkan.',
+    'landing.feature.2.title': 'Skor yang bisa dijelaskan',
+    'landing.feature.2.body':
+      'Random Forest memberi skor 0 sampai 100. Anda cukup memahami tiga tingkatnya, bukan cara model bekerja.',
+    'landing.feature.3.title': 'Peringatan dini',
+    'landing.feature.3.body':
+      'Saat tekanan tinggi bertahan, layar, suara, dan notifikasi meminta Anda mengubah posisi kaki.',
+    'landing.feature.4.title': 'Riwayat sesi',
+    'landing.feature.4.body':
+      'Setiap peringatan tersimpan. Bawa riwayat atau ekspor CSV saat kontrol ke tenaga kesehatan.',
+    'landing.feature.5.title': 'Status perangkat',
+    'landing.feature.5.body':
+      'Baterai dan koneksi insole terlihat, sehingga pemantauan tidak berhenti tanpa kabar.',
+    'landing.feature.6.title': 'Batas yang bisa diatur',
+    'landing.feature.6.body':
+      'Ambang tekanan dan durasi dapat disesuaikan bersama tenaga kesehatan.',
+    'landing.audience.eyebrow': 'Untuk siapa',
+    'landing.audience.title': 'Satu alur, tiga peran',
+    'landing.audience.1.title': 'Penderita diabetes',
+    'landing.audience.1.body':
+      'Melihat tekanan dan peringatan dalam bahasa sehari-hari, tanpa perlu membaca grafik teknis.',
+    'landing.audience.2.title': 'Keluarga dan perawat',
+    'landing.audience.2.body':
+      'Menerima peringatan yang sama dan membantu mengatur posisi kaki saat tekanan tinggi.',
+    'landing.audience.3.title': 'Kader dan tenaga kesehatan',
+    'landing.audience.3.body':
+      'Membuka riwayat sesi dan menyesuaikan ambang sesuai kondisi pasien.',
+    'landing.how.title': 'Dari langkah ke peringatan',
     'landing.step.sense.title': 'Ukur',
     'landing.step.sense.body':
-      'Insole membaca tiga titik: kaki depan, kaki tengah, dan tumit.',
+      'Tiga sensor di sol membaca kaki depan, tengah, dan tumit sepuluh kali per detik.',
     'landing.step.judge.title': 'Nilai',
     'landing.step.judge.body':
-      'Logika fuzzy menggabungkan besar tekanan dan lamanya tumpuan menjadi skor risiko.',
+      'Random Forest membaca tekanan puncak dan lama tumpuan, lalu memilih tingkat risiko. Aturan klinis menangani tekanan di atas 70 kPa.',
     'landing.step.warn.title': 'Peringatkan',
     'landing.step.warn.body':
-      'Status waspada dan bahaya memicu peringatan visual serta suara alarm.',
+      'Saat waspada atau bahaya, layar menandai titik yang perlu diistirahatkan dan alarm berbunyi.',
+    'landing.step.number': 'Langkah',
+    'landing.step.demoNote': 'Contoh angka dan status dari dasbor.',
     'landing.sensors.title': 'Tiga titik pengukuran',
-    'landing.sensors.body':
-      'Setiap sensor melaporkan tekanan dalam kilopascal. Titik dengan tekanan tertinggi menentukan status risiko keseluruhan.',
     'landing.risk.title': 'Tiga tingkat risiko',
-    'landing.risk.safeBody': 'Tekanan berada di bawah batas aman.',
-    'landing.risk.warningBody':
-      'Tekanan melewati batas aman, atau tumpuan berlangsung terlalu lama.',
-    'landing.risk.dangerBody':
-      'Tekanan tinggi berlangsung lebih dari 30 detik berturut-turut.',
+    'landing.tech.eyebrow': 'Di balik layar',
+    'landing.tech.title': 'Dari sensor ke skor risiko',
+    'landing.tech.body':
+      'Model yang sama berjalan di perangkat dan di dasbor. Bagian ini merangkum jalurnya dalam satu layar.',
+    'landing.tech.pipeline.1.title': 'Sensor',
+    'landing.tech.pipeline.1.body':
+      'Tiga titik tekanan dibaca 10 kali per detik oleh ESP32.',
+    'landing.tech.pipeline.2.title': 'Fitur',
+    'landing.tech.pipeline.2.body':
+      'Tekanan puncak (kPa) dan durasi tumpuan (detik) menjadi dua masukan model.',
+    'landing.tech.pipeline.3.title': 'Model',
+    'landing.tech.pipeline.3.body':
+      '20 pohon keputusan, kedalaman maksimum 8, dilatih pada 135 pasien dan 81.000 sampel.',
+    'landing.tech.pipeline.4.title': 'Keputusan',
+    'landing.tech.pipeline.4.body':
+      'Random Forest memilih aman atau waspada. Aturan klinis menetapkan bahaya.',
+    'landing.tech.facts.1.label': 'Pasien',
+    'landing.tech.facts.1.value': '135',
+    'landing.tech.facts.2.label': 'Sampel',
+    'landing.tech.facts.2.value': '81.000',
+    'landing.tech.facts.3.label': 'Pohon',
+    'landing.tech.facts.3.value': '20',
+    'landing.tech.facts.4.label': 'Kedalaman',
+    'landing.tech.facts.4.value': '8',
+    'landing.tech.sim.title': 'Coba ambangnya',
+    'landing.tech.sim.body':
+      'Geser tekanan dan durasi untuk melihat keputusan model.',
+    'landing.tech.sim.pressure': 'Tekanan puncak',
+    'landing.tech.sim.duration': 'Lama tumpuan',
+    'landing.tech.sim.result': 'Hasil',
+    'landing.tech.sim.score': 'Skor risiko',
+    'landing.tech.sim.whySafe':
+      'Tekanan di bawah 35 kPa dan tidak bertahan lama.',
+    'landing.tech.sim.whyWarning':
+      'Tekanan mencapai 35 kPa atau tumpuan melewati 20 detik.',
+    'landing.tech.sim.whyDanger':
+      'Tekanan mencapai 70 kPa dan bertahan setidaknya 0,1 detik.',
+    'landing.tech.sim.preset': 'Contoh cepat',
+    'landing.tech.sim.presetWalk': 'Berjalan',
+    'landing.tech.sim.presetStand': 'Berdiri lama',
+    'landing.tech.sim.presetHigh': 'Tekanan tinggi',
+    'landing.tech.sim.disclaimer':
+      'Hitungan memakai model yang sama dengan dasbor. Ini bukan diagnosis.',
+    'landing.flow.title': 'Tiga langkah memulai',
+    'landing.flow.1.title': 'Buat akun',
+    'landing.flow.1.body':
+      'Daftar dengan email. Tautan verifikasi dikirim ke kotak masuk.',
+    'landing.flow.2.title': 'Pasang insole',
+    'landing.flow.2.body':
+      'Letakkan sol di sepatu dan sambungkan ke Wi-Fi rumah.',
+    'landing.flow.3.title': 'Mulai pantau',
+    'landing.flow.3.body':
+      'Buka dasbor. Tekanan dan peringatan muncul saat Anda melangkah.',
+    'landing.faq.eyebrow': 'Pertanyaan umum',
+    'landing.faq.title': 'Hal yang sering ditanyakan',
+    'landing.faq.1.q': 'Apakah SOLE menggantikan pemeriksaan dokter?',
+    'landing.faq.1.a':
+      'Tidak. SOLE membantu memantau tekanan dan memberi peringatan. Pemeriksaan dan diagnosis tetap dilakukan tenaga kesehatan.',
+    'landing.faq.2.q': 'Apakah aman dipakai setiap hari?',
+    'landing.faq.2.a':
+      'Ya. Sol dirancang untuk dipakai di dalam sepatu seperti insole biasa. Lepaskan dan periksa kulit setiap kali melepas sepatu.',
+    'landing.faq.3.q': 'Bagaimana peringatan disampaikan?',
+    'landing.faq.3.a':
+      'Layar menampilkan status dan titik tekanan. Anda juga dapat mengaktifkan suara, getaran, dan notifikasi peramban di pengaturan.',
+    'landing.faq.4.q': 'Siapa yang bisa melihat data saya?',
+    'landing.faq.4.a':
+      'Data tersimpan di akun Anda dan dikirim melalui koneksi terenkripsi. Anda dapat keluar dari perangkat kapan saja.',
+    'landing.cta.title': 'Mulai dari satu langkah hari ini',
+    'landing.cta.body':
+      'Buat akun gratis, pasang insole, dan lihat titik tekanan pertama Anda dalam beberapa menit.',
     'landing.footerNote':
-      'Purwarupa tugas akhir. Menampilkan data sensor asli dari insole melalui Firebase.',
+      'Data sensor dikirim ke dasbor melalui koneksi terenkripsi Firebase.',
+    'landing.footerDisclaimer':
+      'SOLE membantu memantau tekanan, bukan menggantikan pemeriksaan tenaga kesehatan.',
     'landing.nav.how': 'Cara kerja',
-    'landing.nav.sensors': 'Sensor',
-    'landing.nav.risk': 'Risiko',
     'landing.nav.why': 'Mengapa',
     'landing.nav.menu': 'Menu',
     'landing.nav.features': 'Fitur',
     'landing.nav.start': 'Mulai',
-    'landing.feature.1.title': 'Pantau Real-time',
-    'landing.feature.1.body': 'Tekanan telapak kaki tiga sensor tampil langsung di HP.',
-    'landing.feature.2.title': 'Risiko Fuzzy Logic',
-    'landing.feature.2.body': 'Logika fuzzy menilai Aman, Waspada, atau Bahaya seketika.',
-    'landing.feature.3.title': 'Early Warning',
-    'landing.feature.3.body': 'Alarm dan notifikasi saat tekanan berlebih terlalu lama.',
-    'landing.feature.4.title': 'Riwayat & Ekspor',
-    'landing.feature.4.body': 'Sesi pemantauan tersimpan dan bisa diekspor ke CSV.',
-    'landing.feature.5.title': 'Status Perangkat',
-    'landing.feature.5.body': 'Baterai, firmware, dan koneksi insole selalu terpantau.',
-    'landing.feature.6.title': 'Pengaturan Fleksibel',
-    'landing.feature.6.body': 'Batas risiko dan notifikasi disesuaikan kebutuhan.',
-    'landing.spec.sensor.title': '3',
-    'landing.spec.sensor.body': 'Titik pengukuran di telapak kaki',
-    'landing.spec.risk.title': '3',
-    'landing.spec.risk.body': 'Tingkat risiko fuzzy logic',
-    'landing.spec.rate.title': 'Tiap detik',
-    'landing.spec.rate.body': 'Pembaruan tekanan secara berkala',
-    'landing.cap.1.title': 'Pengukuran 3 sensor',
-    'landing.cap.1.body': 'Forefoot, midfoot, dan heel dibaca terus oleh ESP32.',
-    'landing.cap.2.title': 'Fuzzy Logic Assessment',
-    'landing.cap.2.body': 'Risiko dihitung di perangkat, tanpa menunggu server.',
-    'landing.cap.3.title': 'Peringatan Dini',
-    'landing.cap.3.body': 'Alarm suara dan notifikasi saat risiko naik.',
-    'landing.flow.1.title': 'Daftar akun',
-    'landing.flow.1.body': 'Buat akun gratis dengan email.',
-    'landing.flow.2.title': 'Pasang insole',
-    'landing.flow.2.body': 'Hubungkan insole ke Wi-Fi rumah.',
-    'landing.flow.3.title': 'Mulai pantau',
-    'landing.flow.3.body': 'Tekanan dan risiko tampil di dashboard.',
-    'landing.stack.1.title': 'ESP32',
-    'landing.stack.1.body': 'Mikrokontroler pengukur tiga sensor tekanan dan konektivitas Wi-Fi.',
-    'landing.stack.2.title': 'Firebase',
-    'landing.stack.2.body': 'Realtime Database menyalurkan data ke dashboard dengan aman.',
-    'landing.stack.3.title': 'React',
-    'landing.stack.3.body': 'Dashboard PWA yang jalan di HP dan desktop.',
-    'landing.feature.title': 'Enam kemampuan, satu alur',
-    'landing.feature.body':
-      'Semua yang dibutuhkan dari sensor sampai layar, tanpa konfigurasi rumit.',
-    'landing.cap.eyebrow': 'Kemampuan',
-    'landing.cap.title': 'Dari sensor sampai layar.',
-    'landing.step.number': 'Langkah',
-    'landing.flow.title': 'Tiga langkah memulai.',
-    'landing.step.demoNote': 'Contoh angka dan status dalam dasbor.',
-    'landing.stack.eyebrow': 'Teknologi',
-    'landing.stack.title': 'Tiga lapis, satu sistem.',
-    'landing.cta.title': 'Mulai pantau kaki Anda',
-    'landing.cta.body':
-      'Buat akun gratis dan lihat tekanan telapak kaki dalam satu dashboard.',
 
     /* ---------------------------- Top bar ------------------------------- */
     'search.label': 'Cari halaman atau catatan',
@@ -484,12 +664,12 @@ export const DICTIONARY = {
 
   en: {
     /* ------------------------------ Brand ------------------------------ */
-    'app.title': 'Smart Insole IoT',
+    'app.title': 'SOLE',
     'app.tagline': 'Plantar Pressure Monitoring',
     'app.taglineShort': 'Plantar analytics',
     'app.loading': 'Loading data',
     'app.skipToContent': 'Skip to main content',
-    'app.footer': 'Final year project, IoT based plantar pressure monitoring',
+    'app.footer': 'Plantar pressure monitoring from your insole',
 
     /* --------------------------- Navigation ---------------------------- */
     'nav.dashboard': 'Dashboard',
@@ -542,6 +722,8 @@ export const DICTIONARY = {
     'nav.main': 'Main navigation',
     'nav.openMenu': 'Open navigation menu',
     'nav.closeMenu': 'Close navigation menu',
+    'nav.hideRail': 'Hide navigation',
+    'nav.showRail': 'Show navigation',
     // Short forms for the mobile bottom bar, where seven items share a 360px
     // row. Desktop uses the full labels above.
     'nav.dashboard.short': 'Home',
@@ -795,125 +977,302 @@ export const DICTIONARY = {
 
     /* ------------------------------- Auth ------------------------------ */
     'auth.login.title': 'Sign in',
-    'auth.login.subtitle': 'Monitor a patient plantar pressure.',
+    'auth.login.subtitle': 'Continue monitoring your plantar pressure.',
     'auth.login.submit': 'Sign in',
-    'auth.login.submitting': 'Working',
+    'auth.login.submitting': 'Checking',
     'auth.login.noAccount': 'No account yet?',
     'auth.login.register': 'Create one',
-    'auth.login.guest': 'Continue as guest',
-    'auth.login.guestFailed':
-      'Guest access is not enabled on this Firebase project. Please register with an email.',
+    'auth.login.secure':
+      'Your password travels over an encrypted connection and is not stored in the browser.',
     'auth.register.title': 'Create an account',
-    'auth.register.subtitle': '',
+    'auth.register.subtitle': 'One account for your sessions and alerts.',
     'auth.register.submit': 'Create account',
-    'auth.register.submitting': 'Working',
+    'auth.register.submitting': 'Creating account',
     'auth.register.haveAccount': 'Already have an account?',
     'auth.register.login': 'Sign in',
     'auth.register.verification':
       'A verification email is sent to your address. Check your inbox after registering.',
+    'auth.register.secure':
+      'Registration is protected by Firebase Authentication.',
+
+    /* ------------------------- OTP verification ------------------------ */
+    'auth.otp.title': 'Verify your email',
+    'auth.otp.subtitle':
+      'Enter the 6 digit code we sent to activate your account.',
+    'auth.otp.emailTitle': 'Verify email',
+    'auth.otp.emailSubtitle': 'Enter the address you want to verify.',
+    'auth.otp.groupLabel': '6 digit verification code',
+    'auth.otp.digit': 'Digit {index} of {total}',
+    'auth.otp.sendCode': 'Send code',
+    'auth.otp.sendingCode': 'Sending a code to your email.',
+    'auth.otp.sentTo': 'A 6 digit code was sent to {email}.',
+    'auth.otp.expiresIn': 'The code is valid for {minutes} minutes.',
+    'auth.otp.verify': 'Verify code',
+    'auth.otp.verifying': 'Checking the code',
+    'auth.otp.resend': 'Resend code',
+    'auth.otp.resending': 'Sending a code',
+    'auth.otp.resendIn': 'Resend in {seconds} seconds',
+    'auth.otp.changeEmail': 'Change email',
+    'auth.otp.attemptsLeft': 'Attempts left: {count}.',
+    'auth.otp.devCode': 'Development mode: your code is {code}.',
+    'auth.otp.devCodeNext':
+      'Set the EmailJS credentials to deliver codes by email.',
+    'auth.otp.successTitle': 'Email verified',
+    'auth.otp.successBody': 'Your email address is confirmed.',
+    'auth.otp.successNote': 'Your account is ready to use.',
+    'auth.otp.successCta': 'Open the dashboard',
+    'auth.otp.successLogin': 'Sign in to your account',
+    'auth.otp.backToLogin': 'Back to sign in',
+    'auth.otp.secure':
+      'The code works once and is not stored in the browser.',
+    'auth.otp.error.required': 'Enter the 6 digit code.',
+    'auth.otp.error.invalid': 'That code does not match. Check it again.',
+    'auth.otp.error.expired': 'The code expired. Send a new one.',
+    'auth.otp.error.attempts': 'Too many attempts. Send a new code.',
+    'auth.otp.error.missing': 'No code found. Send a new one.',
+    'auth.otp.error.missingEmail': 'The email address is empty.',
+    'auth.otp.error.send': 'The code could not be sent.',
+    'auth.otp.error.sendNext': 'Check the connection, then try again.',
+    'auth.otp.error.notConfigured': 'Email delivery is not configured.',
+    'auth.otp.error.notConfiguredNext':
+      'Ask an administrator to enable code delivery.',
+
+    /* --------------------------- Forgot password ----------------------- */
+    'auth.forgot.title': 'Forgot password',
+    'auth.forgot.subtitle':
+      'Enter the account email. We will send a verification code.',
+    'auth.forgot.otpTitle': 'Enter the verification code',
+    'auth.forgot.otpSubtitle': 'Enter the 6 digit code to continue.',
+    'auth.forgot.verify': 'Verify code',
+    'auth.forgot.verifying': 'Checking the code',
+    'auth.forgot.sendCode': 'Send code',
+    'auth.forgot.secure':
+      'We do not reveal whether an email address is registered.',
+    'auth.forgot.linkTitle': 'Check your email',
+    'auth.forgot.linkBody':
+      'If this address is registered, a link to create a new password was sent to {email}.',
+    'auth.forgot.linkNote':
+      'The link is valid for 1 hour. Check the spam folder if it is missing.',
+    'auth.forgot.resendLink': 'Resend the link',
+    'auth.forgot.resendingLink': 'Sending the link',
+    'auth.forgot.linkSent': 'A new link was sent.',
+    'auth.forgot.restart': 'Start over',
+    'auth.forgot.haveAccount': 'Remember your password?',
+    'auth.forgot.login': 'Sign in',
+    'auth.forgot.backToLogin': 'Back to sign in',
+    'auth.forgot.resetTitle': 'Create a new password',
+    'auth.forgot.resetSubtitle': 'A new password for {email}.',
+    'auth.forgot.resetChecking': 'Checking the reset link.',
+    'auth.forgot.resetPreparing': 'Preparing the new password form.',
+    'auth.forgot.resetInvalid': 'The reset link is invalid or expired.',
+    'auth.forgot.resetInvalidNext':
+      'Request a new link from the forgot password page.',
+    'auth.forgot.resetSubmit': 'Save password',
+    'auth.forgot.resetting': 'Saving the password',
+    'auth.forgot.resetSuccessTitle': 'Password updated',
+    'auth.forgot.resetSuccessBody': 'Sign in with your new password.',
+    'auth.forgot.step.email': 'Email',
+    'auth.forgot.step.code': 'Code',
+    'auth.forgot.step.password': 'Password',
+    'auth.footerNote':
+      'SOLE helps monitor pressure. It does not replace care from a health professional.',
     'auth.field.name': 'Full name',
     'auth.field.email': 'Email address',
     'auth.field.password': 'Password',
     'auth.field.confirmPassword': 'Confirm password',
+    'auth.field.passwordHint':
+      'At least 8 characters. Length matters more than complicated symbols.',
+    'auth.field.showPassword': 'Show password',
+    'auth.field.hidePassword': 'Hide password',
+    'auth.password.label': 'Password strength',
+    'auth.password.empty': 'Not set',
+    'auth.password.weak': 'Weak',
+    'auth.password.fair': 'Fair',
+    'auth.password.good': 'Good',
+    'auth.password.strong': 'Strong',
+    'auth.password.caps': 'Caps Lock is on.',
+    'auth.password.match': 'Passwords match.',
+    'auth.password.hint.length': 'Add {count} more characters.',
+    'auth.password.hint.variety': 'Mix upper and lower case.',
+    'auth.password.hint.number': 'Add a number or symbol.',
+    'auth.password.hint.common': 'Avoid words that are easy to guess.',
+    'auth.password.hint.repeat': 'Avoid repeated characters or patterns.',
     'auth.error.required': 'All fields are required.',
     'auth.error.email': 'Enter a valid email address.',
-    'auth.error.passwordLength': 'The password must be at least 6 characters.',
+    'auth.error.emailNext': 'Check the address, then try again.',
+    'auth.error.nameLength': 'The name must be 80 characters or fewer.',
+    'auth.error.passwordLength': 'The password must be at least 8 characters.',
     'auth.error.passwordMismatch': 'The passwords do not match.',
+    'auth.error.passwordNext':
+      'Use at least 8 characters with a mix of letters and numbers.',
+    'auth.error.credentials': 'Email or password is incorrect.',
+    'auth.error.credentialsNext': 'Check both fields, then try again.',
+    'auth.error.emailInUse': 'That email is already registered.',
+    'auth.error.emailInUseNext':
+      'Sign in with that account or use another address.',
+    'auth.error.weakPassword': 'That password is too weak.',
+    'auth.error.disabled': 'This account is disabled.',
+    'auth.error.disabledNext':
+      'Contact an administrator if you still need access.',
+    'auth.error.tooManyRequests': 'Too many attempts.',
+    'auth.error.tooManyNext': 'Wait a few minutes before trying again.',
+    'auth.error.network': 'Could not reach the sign-in service.',
     'auth.error.generic': 'That did not work. Please check your details.',
     'common.nextStepCheckConnection': 'Check your connection, then try again.',
 
     /* ------------------------------ Landing ---------------------------- */
-    /* The hero answers four questions in reading order: the eyebrow names
-       the category, the title carries "what it does and why it matters",
-       the subtitle names WHO it is for, the CTAs are the next step. */
-    'landing.hero.eyebrow': 'A smart insole with a web monitoring dashboard',
-    'landing.hero.title': 'Watch sole pressure before it becomes a wound',
+    /* The landing leads with the patient, not the hardware. What the product
+       does for a person at risk of a foot ulcer comes first; the one dense
+       technical subsection sits inside "How it works" for readers who want the
+       model. */
+    'landing.hero.eyebrow': 'A smart insole for diabetic feet',
+    'landing.hero.title': 'Protect your soles before a wound starts',
     'landing.hero.subtitle':
-      'Designed for elderly diabetic patients together with the family or caregivers who look after them. A three-sensor insole sends a reading every second, and the warning arrives before the foot is hurt.',
-    'landing.hero.ctaRegister': 'Create an account',
+      'For people living with diabetes and the family who care for them. Three sensors read pressure ten times a second, and a Random Forest marks the points that need rest before pain sets in.',
+    'landing.hero.ctaRegister': 'Create a free account',
     'landing.hero.ctaLogin': 'Sign in',
     'landing.hero.demoNote':
-      'This map is the same component the dashboard uses.',
-    'landing.problem.title': 'Why plantar pressure needs watching',
+      'Example pressure map. This is the same component the dashboard uses.',
+    'landing.problem.title': 'Foot wounds often start without pain',
     'landing.problem.body':
-      'Diabetic neuropathy reduces the ability to feel pain in the sole. Pressure that stays high for long enough can cause an injury the patient never notices. Continuous monitoring makes those pressure points visible before they become an ulcer.',
-    'landing.how.title': 'How monitoring works',
+      'Diabetic neuropathy dulls pain in the sole. Pressure that stays high can damage the skin without you noticing. Monitoring makes those points visible earlier, while rest is still enough.',
+    'landing.problem.signs.title': 'Signs worth checking',
+    'landing.problem.signs.1': 'Tingling or numbness in the feet',
+    'landing.problem.signs.2': 'Dry skin, calluses, or cracks',
+    'landing.problem.signs.3': 'Red marks after taking off shoes',
+    'landing.problem.signs.note':
+      'Contact a clinician promptly if there is an open wound or colour that does not fade.',
+    'landing.spec.sensor.title': '3',
+    'landing.spec.sensor.body': 'Measuring points: forefoot, midfoot, heel',
+    'landing.spec.rate.title': '10x',
+    'landing.spec.rate.body': 'Sensor readings per second',
+    'landing.spec.risk.title': '3',
+    'landing.spec.risk.body': 'Risk levels: safe, warning, danger',
+    'landing.feature.title': 'What you can do',
+    'landing.feature.body':
+      'From seeing the pressure points to taking the history to an appointment.',
+    'landing.feature.1.title': 'Pressure map',
+    'landing.feature.1.body':
+      'See the forefoot, midfoot, and heel in one colour map. The brightest point is the one that needs rest first.',
+    'landing.feature.2.title': 'A score you can explain',
+    'landing.feature.2.body':
+      'The Random Forest gives a score from 0 to 100. You only need the three levels, not how the model works.',
+    'landing.feature.3.title': 'Early warning',
+    'landing.feature.3.body':
+      'When high pressure lasts, the screen, a sound, and a notification ask you to shift your foot.',
+    'landing.feature.4.title': 'Session history',
+    'landing.feature.4.body':
+      'Every alert is stored. Take the history or a CSV export to your next appointment.',
+    'landing.feature.5.title': 'Device status',
+    'landing.feature.5.body':
+      'Battery and insole connection stay visible, so monitoring does not stop without word.',
+    'landing.feature.6.title': 'Limits you can adjust',
+    'landing.feature.6.body':
+      'Pressure and duration thresholds can be set together with your care team.',
+    'landing.audience.eyebrow': 'Who it is for',
+    'landing.audience.title': 'One flow, three roles',
+    'landing.audience.1.title': 'People with diabetes',
+    'landing.audience.1.body':
+      'See pressure and warnings in everyday language, without reading a technical chart.',
+    'landing.audience.2.title': 'Family and carers',
+    'landing.audience.2.body':
+      'Receive the same warnings and help shift the foot when pressure is high.',
+    'landing.audience.3.title': 'Community health workers',
+    'landing.audience.3.body':
+      'Open the session history and adjust the limits to the patient condition.',
+    'landing.how.title': 'From a step to a warning',
     'landing.step.sense.title': 'Measure',
     'landing.step.sense.body':
-      'The insole reads three points: forefoot, midfoot and heel.',
+      'Three sensors in the sole read the forefoot, midfoot, and heel ten times a second.',
     'landing.step.judge.title': 'Judge',
     'landing.step.judge.body':
-      'A fuzzy rule base combines pressure magnitude and load duration into a risk score.',
+      'A Random Forest reads peak pressure and load duration, then picks the risk level. Clinical rules handle pressure above 70 kPa.',
     'landing.step.warn.title': 'Warn',
     'landing.step.warn.body':
-      'Warning and danger states raise a visual alert and a synthesised alarm tone.',
+      'At warning or danger, the screen marks the point to rest and the alarm sounds.',
+    'landing.step.number': 'Step',
+    'landing.step.demoNote': 'Example readings and statuses from the dashboard.',
     'landing.sensors.title': 'Three measurement points',
-    'landing.sensors.body':
-      'Each sensor reports pressure in kilopascals. The highest point decides the overall risk status.',
     'landing.risk.title': 'Three risk levels',
-    'landing.risk.safeBody': 'Pressure sits below the safe limit.',
-    'landing.risk.warningBody':
-      'Pressure crossed the safe limit, or the load has lasted too long.',
-    'landing.risk.dangerBody':
-      'High pressure has lasted more than 30 seconds in a row.',
+    'landing.tech.eyebrow': 'Behind the scenes',
+    'landing.tech.title': 'From sensor to risk score',
+    'landing.tech.body':
+      'The same model runs on the device and in the dashboard. This section condenses the path into one screen.',
+    'landing.tech.pipeline.1.title': 'Sensor',
+    'landing.tech.pipeline.1.body':
+      'Three pressure points, read 10 times a second by the ESP32.',
+    'landing.tech.pipeline.2.title': 'Features',
+    'landing.tech.pipeline.2.body':
+      'Peak pressure (kPa) and load duration (seconds) are the two model inputs.',
+    'landing.tech.pipeline.3.title': 'Model',
+    'landing.tech.pipeline.3.body':
+      '20 decision trees, maximum depth 8, trained on 135 patients and 81,000 samples.',
+    'landing.tech.pipeline.4.title': 'Decision',
+    'landing.tech.pipeline.4.body':
+      'The Random Forest chooses safe or warning. Clinical rules set danger.',
+    'landing.tech.facts.1.label': 'Patients',
+    'landing.tech.facts.1.value': '135',
+    'landing.tech.facts.2.label': 'Samples',
+    'landing.tech.facts.2.value': '81,000',
+    'landing.tech.facts.3.label': 'Trees',
+    'landing.tech.facts.3.value': '20',
+    'landing.tech.facts.4.label': 'Depth',
+    'landing.tech.facts.4.value': '8',
+    'landing.tech.sim.title': 'Try the thresholds',
+    'landing.tech.sim.body':
+      'Move pressure and duration to see the model decide.',
+    'landing.tech.sim.pressure': 'Peak pressure',
+    'landing.tech.sim.duration': 'Load duration',
+    'landing.tech.sim.result': 'Result',
+    'landing.tech.sim.score': 'Risk score',
+    'landing.tech.sim.whySafe':
+      'Pressure is below 35 kPa and does not last long.',
+    'landing.tech.sim.whyWarning':
+      'Pressure reaches 35 kPa or the load passes 20 seconds.',
+    'landing.tech.sim.whyDanger':
+      'Pressure reaches 70 kPa and lasts at least 0.1 seconds.',
+    'landing.tech.sim.preset': 'Quick examples',
+    'landing.tech.sim.presetWalk': 'Walking',
+    'landing.tech.sim.presetStand': 'Standing long',
+    'landing.tech.sim.presetHigh': 'High pressure',
+    'landing.tech.sim.disclaimer':
+      'This uses the same model as the dashboard. It is not a diagnosis.',
+    'landing.flow.title': 'Three steps to start',
+    'landing.flow.1.title': 'Create an account',
+    'landing.flow.1.body':
+      'Register with your email. A verification link is sent to your inbox.',
+    'landing.flow.2.title': 'Set up the insole',
+    'landing.flow.2.body':
+      'Put the sole in your shoe and connect it to the home Wi-Fi.',
+    'landing.flow.3.title': 'Start monitoring',
+    'landing.flow.3.body':
+      'Open the dashboard. Pressure and warnings appear as you walk.',
+    'landing.faq.eyebrow': 'Common questions',
+    'landing.faq.title': 'Questions people ask',
+    'landing.faq.1.q': 'Does SOLE replace a doctor?',
+    'landing.faq.1.a':
+      'No. SOLE helps monitor pressure and gives warnings. Examination and diagnosis stay with a health professional.',
+    'landing.faq.2.q': 'Is it safe to wear every day?',
+    'landing.faq.2.a':
+      'Yes. The sole is made to sit inside a shoe like a regular insole. Take it out and check the skin each time you remove your shoes.',
+    'landing.faq.3.q': 'How are warnings delivered?',
+    'landing.faq.3.a':
+      'The screen shows the status and the pressure point. You can also turn on sound, vibration, and browser notifications in settings.',
+    'landing.faq.4.q': 'Who can see my data?',
+    'landing.faq.4.a':
+      'Data stays in your account and travels over an encrypted connection. You can sign out of a device at any time.',
+    'landing.cta.title': 'Start with one step today',
+    'landing.cta.body':
+      'Create a free account, put the insole in, and see your first pressure point in minutes.',
     'landing.footerNote':
-      'Final year project prototype. Shows real insole sensor data through Firebase.',
+      'Sensor data reaches the dashboard through an encrypted Firebase connection.',
+    'landing.footerDisclaimer':
+      'SOLE helps monitor pressure. It does not replace care from a health professional.',
     'landing.nav.how': 'How it works',
-    'landing.nav.sensors': 'Sensors',
-    'landing.nav.risk': 'Risk',
     'landing.nav.why': 'Why',
     'landing.nav.menu': 'Menu',
     'landing.nav.features': 'Features',
     'landing.nav.start': 'Start',
-    'landing.feature.1.title': 'Real-time Monitoring',
-    'landing.feature.1.body': 'Plantar pressure from three sensors appears on your phone instantly.',
-    'landing.feature.2.title': 'Fuzzy Logic Risk',
-    'landing.feature.2.body': 'Fuzzy logic judges Safe, Caution, or Danger instantly.',
-    'landing.feature.3.title': 'Early Warning',
-    'landing.feature.3.body': 'Alarm and notifications when pressure stays too long.',
-    'landing.feature.4.title': 'History & Export',
-    'landing.feature.4.body': 'Monitoring sessions stored and exportable to CSV.',
-    'landing.feature.5.title': 'Device Status',
-    'landing.feature.5.body': 'Battery, firmware, and insole connection always monitored.',
-    'landing.feature.6.title': 'Flexible Settings',
-    'landing.feature.6.body': 'Risk thresholds and notifications tailored to needs.',
-    'landing.spec.sensor.title': '3',
-    'landing.spec.sensor.body': 'Measurement points on the sole',
-    'landing.spec.risk.title': '3',
-    'landing.spec.risk.body': 'Fuzzy logic risk levels',
-    'landing.spec.rate.title': 'Every second',
-    'landing.spec.rate.body': 'Regular pressure updates',
-    'landing.cap.1.title': '3-sensor Measurement',
-    'landing.cap.1.body': 'Forefoot, midfoot, and heel read continuously by the ESP32.',
-    'landing.cap.2.title': 'Fuzzy Logic Assessment',
-    'landing.cap.2.body': 'Risk computed on the device, no server round-trip.',
-    'landing.cap.3.title': 'Early Warning',
-    'landing.cap.3.body': 'Sound alarm and notifications when risk rises.',
-    'landing.flow.1.title': 'Create an account',
-    'landing.flow.1.body': 'Free account with your email.',
-    'landing.flow.2.title': 'Set up the insole',
-    'landing.flow.2.body': 'Connect the insole to your home Wi-Fi.',
-    'landing.flow.3.title': 'Start monitoring',
-    'landing.flow.3.body': 'Pressure and risk appear in the dashboard.',
-    'landing.stack.1.title': 'ESP32',
-    'landing.stack.1.body': 'Microcontroller measuring three pressure sensors with Wi-Fi.',
-    'landing.stack.2.title': 'Firebase',
-    'landing.stack.2.body': 'Realtime Database streams data securely to the dashboard.',
-    'landing.stack.3.title': 'React',
-    'landing.stack.3.body': 'PWA dashboard that runs on phone and desktop.',
-    'landing.feature.title': 'Six capabilities, one flow',
-    'landing.feature.body':
-      'Everything needed from sensor to screen, without complex setup.',
-    'landing.cap.eyebrow': 'Capabilities',
-    'landing.cap.title': 'From sensor to screen.',
-    'landing.step.number': 'Step',
-    'landing.flow.title': 'Three steps to start.',
-    'landing.step.demoNote': 'Example readings and statuses of the dashboard.',
-    'landing.stack.eyebrow': 'Technology',
-    'landing.stack.title': 'Three layers, one system.',
-    'landing.cta.title': 'Start monitoring your feet',
-    'landing.cta.body':
-      'Create a free account and see plantar pressure in one dashboard.',
 
     /* ---------------------------- Top bar ------------------------------- */
     'search.label': 'Search pages or records',

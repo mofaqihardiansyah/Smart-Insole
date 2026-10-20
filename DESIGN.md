@@ -11,7 +11,7 @@ surface:
 | Surface | Register | Where |
 |---|---|---|
 | The **app** (signed in) | Verdana Health clinical console. Pale slate canvas, white cards, 288px rail, 72px top bar with search. | Dashboard, Monitoring, History, Device, Settings, Profile, Notifications, Login, Register |
-| The **landing** (public) | Warm marketing dialect. Warm grey canvas, larger radii, deeper shadows. | `/` for a signed-out visitor |
+| The **landing** (public) | The app's palette at marketing scale: same slate canvas, ink and navy CTAs, larger radii, deeper shadows. | `/` for a signed-out visitor |
 
 Both draw on one token layer. The landing re-declares its own values under
 `.landing-scope`, so the shared components (GlassCard, GlassButton, StatusChip)
@@ -19,7 +19,8 @@ keep their measured light form there instead of being restyled twice.
 
 The app register is the reference console the owner supplied
 (`verdana-health-design-system-DESIGN.md` plus the desktop reference image).
-The landing keeps the warm dialect it already had.
+The landing shares it, and adds only scale: bigger radii, longer type steps and
+its own shadows.
 
 ---
 
@@ -222,11 +223,11 @@ Type scale:
 | `micro` | 11px | 600 | The brand tagline and nowhere else |
 
 The `<h1>` element is one per page. Data pages set it at the `h1` size through
-`PageHeader`; the auth pages (Login, Register) hold no panel chrome below their
-heading, so their `h1` renders at the `h2` size, one step above `card-title`
-instead of tying with it. The same count semantic (readings, warnings) renders
-at the `stat` size on both the History summary strip and the Profile session
-blocks, so one metric is one size everywhere it appears.
+`PageHeader`; the auth pages (Login, Register, Verify OTP) keep one form card
+under the mark, so their `h1` renders at the `h2` size, one step above
+`card-title` instead of tying with it. The same count semantic (readings,
+warnings) renders at the `stat` size on both the History summary strip and the
+Profile session blocks, so one metric is one size everywhere it appears.
 
 Sentence-case headings everywhere except table column heads and chips. The
 reference sets its decorative labels in wide-tracked uppercase; uppercase is
@@ -295,6 +296,7 @@ overflow is permitted at any width, and nothing is clipped at 200% zoom.
 | Buttons, inputs, controls | 8px (`rounded-control`) |
 | Icon tiles, meter-band tiles, the FAB | 12px (`rounded-tile`) |
 | Cards, modals, dialogs | 16px (`rounded-card`) |
+| Product rail right edge, mobile nav drawer | 24px (`rounded-rail`) |
 | Avatars and indicator dots | full (`rounded-full`) |
 
 Cards are never pills, and **nothing else is either**. The landing register
@@ -320,10 +322,10 @@ conflating them is what previously left the landing with flat panels:
 | `md` | 4px offset, 16px blur, navy 7% | app | a genuinely elevated card |
 | `overlay` | 8px 32px, navy 10% | app | modal dialogs only |
 | `fab` | 10px 30px sage 45% | app | the single floating control |
-| `card` | 14px 30px, warm 25% | landing | warm panels |
-| `lift` | 24px 44px, warm 30% | landing | hovered and hero panels |
-| `nav` | 10px 30px, warm 25% | landing | the floating nav pill |
-| `glow` | 18px 35px, warm 35% | landing | dark feature panels |
+| `card` | 14px 30px, ink 25% | landing | landing panels |
+| `lift` | 24px 44px, ink 30% | landing | hovered and hero panels |
+| `nav` | 10px 30px, ink 25% | landing | the sticky nav bar |
+| `glow` | 18px 35px, ink 35% | landing | dark feature panels |
 
 One elevated token per surface. A page where everything floats has no
 hierarchy left to express.
@@ -461,20 +463,24 @@ New primitives added by this pass, with the reason each exists:
 
 ---
 
-## Landing page variant (warm dialect)
+## Landing page variant
 
-The public landing page speaks a warmer register of the same language. The app
-pages keep the clinical console above; the two scales are documented side by
-side, never mixed within one surface.
+The public landing page shares the app's colour system and differs only in
+scale: larger radii, longer type steps, its own shadows. The one token family
+it owns (`warm-*`) is a landing-only scope, so an app page can never pick up a
+landing value and the two never mix within one surface.
 
-Structure: a flat rectangular nav bar, a full-viewport flat hero with drifting
-tiles and the real heatmap, "why" section with the spec numbers in one ruled
-strip, six-feature grid, dark capabilities panel, three split "how it works"
-rows, three-step start flow, three-layer technology stack, and a closing CTA
-panel. The landing carries no gradient atmosphere and no pill shapes: its hero
-and CTA bands are flat raised surfaces, its nav and CTAs are rectangles. The
-copy is this product's real content: no studio branding, no fabricated
-testimonials, no sample pricing, no fake customer logos.
+Structure: a flat rectangular nav bar that sits flush on the top edge of the
+page and lifts into a floating bar once the visitor scrolls, a full-viewport
+flat hero with drifting tiles and the real heatmap, "why" section with the
+warning signs and the spec numbers in one ruled strip, six-feature grid, a dark
+audience panel, three "how it works" rows plus one dense technical subsection
+(pipeline, model facts, and an interactive risk simulator that runs the real
+inference module), a three-step start flow, an FAQ, and a closing CTA panel.
+The landing carries no gradient atmosphere and no pill shapes: its hero and CTA
+bands are flat raised surfaces, its nav and CTAs are rectangles. The copy is
+this product's real content: no studio branding, no fabricated testimonials, no
+sample pricing, no fake customer logos.
 
 **Hero contract (above the fold).** The fold answers four questions in reading
 order, one text slot each: the eyebrow tag names the category (what this is),
@@ -487,31 +493,32 @@ below the fold.
 The landing is **light-only by design**. `.landing-scope` in `src/index.css`
 re-declares the light semantic tokens, so every in-app component (GlassCard,
 StatusChip, GlassButton focus rings) renders in its measured light form on the
-warm surface. There is no theme switch on the landing: on a light-only page it
-would be a dead control. The language switch is still present and still works,
-but the stored-preference reader now forces Indonesian for any preference left
-behind, and removing the switch is the Indonesian-only requirement owned by
+shared app surface. There is no theme switch on the landing: on a light-only
+page it would be a dead control. The language switch is still present and still
+works, but the stored-preference reader now forces Indonesian for any preference
+left behind, and removing the switch is the Indonesian-only requirement owned by
 Phase 5 (LANG-01).
 
-Palette, all measured on `#F4F5F5` raised:
+Palette, all measured on `#F1F5F9` raised:
 
 | Token | Hex | Role | Measured |
 |---|---|---|---|
-| `warm-canvas` | `#ECEDEE` | page canvas | - |
-| `warm-raised` | `#F4F5F5` | hero panel, spec band | - |
-| `warm-card` | `#FFFFFF` | cards, nav pill | - |
-| `warm-ink` | `#2E3034` | headings | 11.3:1 on canvas (AAA) |
-| `warm-body` | `#55575c` | body text | 6.62:1 on raised (AA) |
-| `warm-caption` | `#5A6270` | captions | 5.64:1 on raised (AA) |
-| `warm-accent-deep` | `#C93A24` | text-safe accent, button fill | 4.70:1 on raised; white on it 5.13:1 (AA) |
-| `warm-accent` | `#E34A32` | graphics only | 3.98:1: clears the 3:1 graphical-object bar, fails text AA |
-| `warm-accent-2` | `#F05A3C` | dark-panel icons | decorative |
-| `warm-dark` | `#171719` | dark panels, featured card | - |
-| `warm-panel` ... `warm-panel-4` | `#202024`-`#34343a` | dark panel cells | white/55 on panel is about 6.4:1 |
+| `warm-canvas` | `#F8FAFC` | page canvas (app `bg`) | - |
+| `warm-raised` | `#F1F5F9` | hero panel, spec band (app `surface-2`) | - |
+| `warm-card` | `#FFFFFF` | cards, nav bar (app `surface`) | - |
+| `warm-ink` | `#0F172A` | headings (app `fg`) | 16.30:1 on raised (AAA) |
+| `warm-body` | `#334155` | body text (app `fg-2`) | 9.45:1 on raised (AAA) |
+| `warm-caption` | `#5E6D7E` | captions | 4.83:1 on raised (AA) |
+| `warm-accent-deep` | `#0F172A` | labels and button fill (app `primary`) | 16.30:1 on raised; white on it 17.85:1 (AAA) |
+| `warm-accent` | `#0F172A` | graphics only (app `primary`) | decorative |
+| `warm-accent-2` | `#0EA5E9` | dark-panel icons (app `tertiary`) | 5.28:1 on `warm-panel` |
+| `warm-dark` | `#0F172A` | dark panels, featured card (app `primary`) | - |
+| `warm-panel` ... `warm-panel-4` | `#1E293B`-`#475569` | dark panel cells | white/55 on panel is about 5.7:1 |
 
-`warm-caption` replaces the reference export's `#8a8c91`, which measured 3.1:1
-and failed AA for 12px text. `warm-accent` is never used for a label;
-`warm-accent-deep` is its text-safe form.
+`warm-caption` is the app's `muted` slate darkened one step: `#64748B` measures
+4.34:1 on `#F1F5F9`, just under AA, so the landing caption ships at 4.83:1. The
+teal in the product mark (`#1D7B80`) stays a brand colour: it is not used for
+UI text or controls.
 
 Radius: landing tiles use `rounded-tile` (12px), inner icon chips the same
 tile step, small panels and drifting-tile tiles `rounded-panel` (16px),
@@ -533,11 +540,13 @@ one fluid step so no heading jumps size at a breakpoint), and the app-wide
 `text-lg`, `text-xs` built-ins are deleted from the page.
 
 Motion budget: hero rise-in (420ms), scroll reveal via one IntersectionObserver
-(700ms, opacity and translate only), hover and focus transitions at 150ms,
-drifting headline tiles (one rAF loop), smooth scrolling. All of it is disabled
-under `prefers-reduced-motion`. No WebGL, no parallax, no char-weight rAF: the
-reference export's continuous animations were removed because the audience
-includes elderly users on low-end devices, and the app pages stay at MOTION 1.
+(700ms, opacity and translate only), hover and focus transitions at 150ms, the
+nav's one state change from attached to floating (300ms, interpolating its own
+width, radius and shadow), drifting headline tiles (one rAF loop), smooth
+scrolling. All of it is disabled under `prefers-reduced-motion`. No WebGL, no
+parallax, no char-weight rAF: the reference export's continuous animations were
+removed because the audience includes elderly users on low-end devices, and the
+app pages stay at MOTION 1.
 
 Deliberately not adopted from the reference: fabricated testimonials, fake
 customer logos, sample pricing, external stock photos, and the placeholder

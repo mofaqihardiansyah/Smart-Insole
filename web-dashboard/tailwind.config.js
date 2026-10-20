@@ -64,7 +64,8 @@ export default {
         tertiary: token("tertiary"), // info blue: informational
 
         /* ---------------------- Landing variant ----------------------- */
-        /* Warm, light-only marketing surface. Light-independent: the
+        /* Landing-only palette, light-only. It now carries the app's values
+           at marketing scale rather than a second, warmer palette; the
            values are re-declared under `.landing-scope` in index.css so
            in-app components keep their measured light form there. */
         warm: {
@@ -164,6 +165,10 @@ export default {
         card: "16px",
         tile: "12px",
         control: "8px",
+        // The product rail's right edge. One step above a card: the rail is
+        // 288px of full-height surface, and a 16px corner reads as square at
+        // that size.
+        rail: "24px",
         panel: "16px",
         hero: "28px",
         "hero-lg": "40px",
@@ -181,7 +186,7 @@ export default {
        * The APP uses `panel`: a hairline lift that separates a white card from
        * the pale canvas without making the page float. The LANDING uses the
        * warmer, deeper `card` / `lift` / `nav` / `glow` set, measured against
-       * the warm canvas. Reusing one value for both is what produced a landing
+       * the landing canvas. Reusing one value for both is what produced a landing
        * whose panels had no depth at all.
        */
       boxShadow: {

@@ -49,6 +49,9 @@ const AppLayout = ({
 }) => {
   const { language } = useInsole();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // The rail's open state lives here because the content column, the rail and
+  // the top bar's toggle all have to agree on it.
+  const [railOpen, setRailOpen] = useState(true);
   const location = useLocation();
   const drawerRef = useRef(null);
   const triggerRef = useRef(null);
@@ -119,8 +122,21 @@ const AppLayout = ({
 
   return (
     <div className="min-h-[100dvh] bg-bg">
-      {/* Desktop rail */}
-      <div className="fixed left-0 top-0 z-40 hidden h-[100dvh] w-72 border-r border-border lg:block">
+      {/* Desktop rail. Closing animates the width rather than unmounting, so the
+          rail slides out and the column reclaims the space in one motion. The
+          inner rail keeps its 288px width (`min-w-72`) so its text never
+          reflows while the wrapper clips it. `inert` keeps the closed rail out
+          of the tab order and the accessibility tree. */}
+      <div
+        id="app-rail"
+        aria-hidden={railOpen ? undefined : "true"}
+        inert={railOpen ? undefined : ""}
+        className={[
+          "fixed left-0 top-0 z-40 hidden h-[100dvh] overflow-hidden lg:block",
+          "transition-[width] duration-200 ease-out motion-reduce:transition-none",
+          railOpen ? "w-72" : "w-0",
+        ].join(" ")}
+      >
         <AppSidebar
           links={links}
           userName={userName}
@@ -132,9 +148,7 @@ const AppLayout = ({
       {/* Mobile bar */}
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-border bg-surface px-4 lg:hidden">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-tile bg-primary-btn">
-            <img src="/icon.svg" alt="" className="h-5 w-5" />
-          </span>
+          <img src="/icon.svg" alt="" className="h-8 w-8 shrink-0" />
           <span className="truncate font-heading text-h4 font-bold text-fg">
             {t("app.title", language)}
           </span>
@@ -191,13 +205,11 @@ const AppLayout = ({
             role="dialog"
             aria-modal="true"
             aria-label={t("nav.main", language)}
-            className="absolute inset-y-0 left-0 flex w-[19rem] max-w-[88vw] flex-col overflow-y-auto border-r border-border bg-surface"
+            className="absolute inset-y-0 left-0 flex w-[19rem] max-w-[88vw] flex-col overflow-y-auto rounded-r-rail border-y border-r border-border bg-surface"
           >
             <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-4">
               <div className="flex min-w-0 items-center gap-2">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-tile bg-primary-btn">
-                  <img src="/icon.svg" alt="" className="h-6 w-6" />
-                </span>
+                <img src="/icon.svg" alt="" className="h-9 w-9 shrink-0" />
                 <div className="min-w-0">
                   <p className="truncate font-heading text-h4 font-bold leading-tight text-fg">
                     {t("app.title", language)}
@@ -250,12 +262,19 @@ const AppLayout = ({
       )}
 
       {/* Content column */}
-      <div className="lg:pl-72">
+      <div
+        className={[
+          "transition-[padding-left] duration-200 ease-out motion-reduce:transition-none",
+          railOpen ? "lg:pl-72" : "lg:pl-0",
+        ].join(" ")}
+      >
         <AppTopbar
           links={links}
           hasUnread={hasUnread}
           userName={userName}
           userEmail={userEmail}
+          railOpen={railOpen}
+          onToggleRail={() => setRailOpen((open) => !open)}
         />
 
         <main

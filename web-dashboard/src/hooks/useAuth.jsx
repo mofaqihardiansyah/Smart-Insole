@@ -74,7 +74,9 @@ export const useAuth = () => {
   // Fungsi login dengan email & password
   const doLogin = useCallback(
     async (email, password) => {
-      setLoading(true);
+      // `loading` belongs to the auth listener (the first paint), not to a
+      // form submit. Toggling it here unmounted the whole login page and
+      // showed the splash for the duration of the request.
       try {
         const userCred = await signInWithEmailAndPassword(auth, email, password);
         // Simpan/perbarui profil pendek di Firestore (gagal = tidak fatal)
@@ -91,10 +93,10 @@ export const useAuth = () => {
         setDisplayName(userCred.user.displayName || "User");
         return { success: true, user: userCred.user };
       } catch (err) {
-        console.error("Login error:", err);
-        return { success: false, error: err.message };
-      } finally {
-        setLoading(false);
+        console.error("Login error:", err?.code || err?.message);
+        // Return the code, never the raw message: the pages translate a known
+        // code and keep one generic answer for credential failures.
+        return { success: false, code: err?.code };
       }
     },
     []
@@ -103,7 +105,6 @@ export const useAuth = () => {
   // Fungsi registrasi baru
   const doRegister = useCallback(
     async (email, password, name) => {
-      setLoading(true);
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         // Simpan profil dasar ke Firestore (gagal = tidak fatal)
@@ -129,10 +130,8 @@ export const useAuth = () => {
         setDisplayName(name);
         return { success: true, user: cred.user };
       } catch (err) {
-        console.error("Register error:", err);
-        return { success: false, error: err.message };
-      } finally {
-        setLoading(false);
+        console.error("Register error:", err?.code || err?.message);
+        return { success: false, code: err?.code };
       }
     },
     []

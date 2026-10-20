@@ -1,19 +1,51 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Smart Insole">
   <!--
-    Provisional app mark: a left-sole outline with the three measured
-    pressure points (forefoot, midfoot, heel) called out. It states what the
-    product measures rather than inventing a brand identity, and it is meant
-    to be replaced by the real mark when one exists.
+    SOLE lockup from the brand asset, refit for a square 64×64 tile.
+    The feet are scaled to a 52×56 fit and centred; the "SOLE" wordmark is
+    omitted because it drops below legible size everywhere the mark is used
+    (20–36px in the app, 16px in the browser tab).
   -->
-  <rect width="64" height="64" rx="14" fill="#1D4ED8" />
-  <path
-    d="M32 9c6.2 0 10.4 4.4 11.2 11.2.5 4.4.2 8.4.2 12.6 0 4.6.6 7.4.6 11.4 0 6.6-4.6 10.8-12 10.8s-12-4.2-12-10.8c0-4-.6-6.8-.6-11.4 0-4.2-.3-8.2.2-12.6C20.4 13.4 25.8 9 32 9Z"
-    fill="none"
-    stroke="#FFFFFF"
-    stroke-width="2.6"
-    stroke-linejoin="round"
-  />
-  <circle cx="32" cy="20" r="3.4" fill="#FFFFFF" />
-  <circle cx="30.5" cy="33" r="3.4" fill="#FFFFFF" fill-opacity="0.72" />
-  <circle cx="32" cy="46" r="3.4" fill="#FFFFFF" />
+  <defs>
+    <pattern id="grid" width="9.3" height="9.3" patternUnits="userSpaceOnUse">
+      <path d="M 9.3 0 L 0 0 0 9.3" fill="none" stroke="#14595d" stroke-width="0.25" opacity="0.6" />
+    </pattern>
+  </defs>
+
+  <rect width="64" height="64" rx="14" fill="#1d7b80" />
+  <rect width="64" height="64" rx="14" fill="url(#grid)" />
+
+  <g fill="#ffffff" transform="translate(-48.72 -15.50) scale(0.1931)">
+    <!-- Left foot toes -->
+    <ellipse cx="298" cy="204" rx="16" ry="11" transform="rotate(-25 298 204)" />
+    <ellipse cx="316" cy="177" rx="15" ry="20" transform="rotate(-20 316 177)" />
+    <ellipse cx="343" cy="156" rx="16" ry="23" transform="rotate(-12 343 156)" />
+    <ellipse cx="375" cy="142" rx="17" ry="26" transform="rotate(-5 375 142)" />
+    <ellipse cx="416" cy="132" rx="20" ry="31" />
+
+    <!-- Right foot toes -->
+    <ellipse cx="461" cy="178" rx="15" ry="23" transform="rotate(12 461 178)" />
+    <ellipse cx="490" cy="189" rx="14" ry="19" transform="rotate(18 490 189)" />
+    <ellipse cx="515" cy="202" rx="13" ry="16" transform="rotate(25 515 202)" />
+    <ellipse cx="534" cy="219" rx="12" ry="14" transform="rotate(32 534 219)" />
+    <ellipse cx="543" cy="240" rx="11" ry="9" transform="rotate(35 543 240)" />
+
+    <!-- Left sole -->
+    <path d="M 440 172
+             C 380 160 322 190 316 240
+             C 312 290 350 332 402 378
+             C 420 393 455 396 470 380
+             C 477 368 468 354 460 350
+             C 430 344 404 334 402 318
+             C 400 300 420 290 430 266
+             C 438 244 438 212 446 206
+             C 446 190 444 178 440 172 Z" />
+
+    <!-- Right sole -->
+    <path d="M 446 208
+             C 470 204 520 218 527 258
+             C 532 290 512 320 482 344
+             C 472 352 464 354 460 350
+             C 452 340 440 330 440 300
+             C 440 268 440 236 446 208 Z" />
+  </g>
 </svg>

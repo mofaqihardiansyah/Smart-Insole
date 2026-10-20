@@ -19,6 +19,10 @@ import React from "react";
  *
  * The field uses tabular figures, because most fields here hold a kPa or a
  * second count.
+ *
+ * `suffix` is a read-only unit (kPa, s). `trailing` is an interactive control
+ * docked in the same slot, such as the password reveal button: it resets the
+ * right padding and keeps its own 44px target.
  */
 const GlassInput = ({
   type = "text",
@@ -28,6 +32,7 @@ const GlassInput = ({
   id,
   className = "",
   suffix,
+  trailing,
   ...props
 }) => {
   const inputId = id || React.useId();
@@ -36,6 +41,7 @@ const GlassInput = ({
   const describedBy = [error ? errorId : null, hint ? hintId : null]
     .filter(Boolean)
     .join(" ");
+  const hasAdornment = Boolean(suffix || trailing);
 
   return (
     <div className="space-y-1.5">
@@ -62,7 +68,7 @@ const GlassInput = ({
             error
               ? "border-danger"
               : "border-border-control hover:border-primary focus:border-primary",
-            suffix ? "pr-12" : "",
+            hasAdornment ? "pr-12" : "",
             className,
           ]
             .filter(Boolean)
@@ -72,6 +78,11 @@ const GlassInput = ({
         {suffix && (
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-body-sm text-muted">
             {suffix}
+          </span>
+        )}
+        {trailing && (
+          <span className="absolute right-1 top-1/2 -translate-y-1/2">
+            {trailing}
           </span>
         )}
       </div>

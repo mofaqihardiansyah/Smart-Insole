@@ -60,9 +60,9 @@ const initialsOf = (value) => {
 
 const Brand = ({ language }) => (
   <div className="flex items-center gap-3 px-5 py-5">
-    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-tile bg-primary-btn">
-      <img src="/icon.svg" alt="" className="h-7 w-7" />
-    </span>
+    {/* The mark carries its own rounded tile. Wrapping it in a filled tile drew
+        a dark rim around it, which read as an outline on the icon. */}
+    <img src="/icon.svg" alt="" className="h-10 w-10 shrink-0" />
     <div className="min-w-0">
       {/* Same rank as the mobile bar's brand line: text-h4 bold. The previous
           17px arbitrary value was the one off-token size in the codebase. */}
@@ -106,12 +106,16 @@ const AccountCard = ({ name, email, onSignOut, language, className = "" }) => {
   return (
     <div className={`rounded-tile bg-surface-2 p-3 ${className}`.trim()}>
       <div className="flex items-center gap-3">
-        <span
-          aria-hidden="true"
-          className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-btn text-body-sm font-bold text-primary-on"
-        >
-          {initials || <img src="/icon.svg" alt="" className="h-7 w-7" />}
-        </span>
+        {initials ? (
+          <span
+            aria-hidden="true"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-btn text-body-sm font-bold text-primary-on"
+          >
+            {initials}
+          </span>
+        ) : (
+          <img src="/icon.svg" alt="" className="h-11 w-11 shrink-0" />
+        )}
         <div className="min-w-0">
           <p className="truncate text-body-sm font-bold text-fg">
             {name || email || t("common.notAvailable", language)}
@@ -157,7 +161,7 @@ const AppSidebar = ({
   return (
     <nav
       aria-label={t("nav.main", language)}
-      className={`flex h-full flex-col bg-sidebar ${className}`.trim()}
+      className={`flex h-full min-w-72 flex-col rounded-r-rail border-y border-r border-border bg-sidebar ${className}`.trim()}
     >
       <Brand language={language} />
 

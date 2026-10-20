@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { Bell, PanelLeft } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
 import { AppSearch } from "./AppSearch";
@@ -14,12 +14,32 @@ import { initialsOf } from "./AppSidebar";
  * search and the account controls. Nothing here is decoration, so every control
  * has a destination or a state to report.
  */
-const AppTopbar = ({ links = [], hasUnread = false, userName, userEmail }) => {
+const AppTopbar = ({
+  links = [],
+  hasUnread = false,
+  userName,
+  userEmail,
+  railOpen = true,
+  onToggleRail,
+}) => {
   const { language, unreadIncidentCount } = useInsole();
   const initials = initialsOf(userName) || initialsOf(userEmail);
 
   return (
     <header className="sticky top-0 z-30 hidden h-[72px] items-center gap-6 border-b border-border bg-surface px-6 lg:flex lg:px-8">
+      <button
+        type="button"
+        onClick={onToggleRail}
+        aria-expanded={railOpen}
+        aria-controls="app-rail"
+        className="grid h-11 w-11 shrink-0 place-items-center rounded-control text-fg-2 transition-colors duration-150 hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+      >
+        <PanelLeft className="h-5 w-5" aria-hidden="true" />
+        <span className="sr-only">
+          {railOpen ? t("nav.hideRail", language) : t("nav.showRail", language)}
+        </span>
+      </button>
+
       <AppSearch links={links} />
 
       <div className="ml-auto flex items-center gap-2">
@@ -45,11 +65,17 @@ const AppTopbar = ({ links = [], hasUnread = false, userName, userEmail }) => {
 
         <Link
           to="/profile"
-          className="grid h-10 w-10 place-items-center rounded-full bg-primary-btn text-body-sm font-bold text-primary-on focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          className={[
+            "grid h-10 w-10 place-items-center rounded-full",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+            initials ? "bg-primary-btn text-body-sm font-bold text-primary-on" : "",
+          ].join(" ")}
         >
-          <span aria-hidden="true">
-            {initials || <img src="/icon.svg" alt="" className="h-6 w-6" />}
-          </span>
+          {initials ? (
+            <span aria-hidden="true">{initials}</span>
+          ) : (
+            <img src="/icon.svg" alt="" className="h-10 w-10" />
+          )}
           <span className="sr-only">{t("topbar.account", language)}</span>
         </Link>
       </div>

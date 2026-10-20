@@ -454,6 +454,50 @@ describe("SHELL-05: the drawer is a real dialog", () => {
   });
 });
 
+describe("SHELL-07: the rail closes and reopens", () => {
+  const toggle = () => document.querySelector('[aria-controls="app-rail"]');
+
+  it("releases the content column when it closes", async () => {
+    const user = userEvent.setup();
+    const { container } = renderShell();
+
+    expect(toggle()).toHaveAttribute("aria-expanded", "true");
+    expect(layout(container, "w-72")).toHaveLength(1);
+    expect(layout(container, "lg:pl-72")).toHaveLength(1);
+
+    await user.click(toggle());
+
+    expect(toggle()).toHaveAttribute("aria-expanded", "false");
+    expect(layout(container, "w-72")).toHaveLength(0);
+    expect(layout(container, "lg:pl-0")).toHaveLength(1);
+
+    // A clipped rail is still a rail: without `inert` its links stay tabbable
+    // at zero width, which is the worst of both states.
+    expect(document.getElementById("app-rail")).toHaveAttribute("inert");
+    expect(document.getElementById("app-rail")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    await user.click(toggle());
+
+    expect(toggle()).toHaveAttribute("aria-expanded", "true");
+    expect(layout(container, "w-72")).toHaveLength(1);
+    expect(layout(container, "lg:pl-72")).toHaveLength(1);
+  });
+
+  it("keeps the close a bounded, reduced-motion-aware transition", () => {
+    renderShell();
+    const railEl = document.getElementById("app-rail");
+
+    // MOTION 1 allows this one because the user asked for the movement; it stays
+    // a state transition, short, and it stops entirely when motion is reduced.
+    expect(railEl).toHaveClass("transition-[width]");
+    expect(railEl).toHaveClass("duration-200");
+    expect(railEl).toHaveClass("motion-reduce:transition-none");
+  });
+});
+
 describe("SHELL-06: labels, and no motion the dial forbids", () => {
   it("gives every control in the shell an accessible name", () => {
     const { container } = renderShell({ hasUnread: true });

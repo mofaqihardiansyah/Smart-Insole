@@ -20,3 +20,6 @@ firmware/.pio/
 
 # PlatformIO IDE generated config
 firmware/.vscode/
+
+# Real device credentials (only the .example template is committed)
+firmware/include/config.h

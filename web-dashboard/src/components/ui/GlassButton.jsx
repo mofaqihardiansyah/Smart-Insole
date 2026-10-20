@@ -39,12 +39,13 @@ const VARIANTS = {
   // token layer exists to prevent. The missing token is recorded for the owner
   // as backlog 999.3 instead.
   danger: "bg-danger text-white border border-transparent",
-  // Landing register. `warm` fills on `warm-accent-deep` (#C93A24), the only
-  // accent measured safe behind white text (5.13:1) and never a label. Its
-  // `hover:opacity-90` is the historical hover and stays: it is instant state
-  // feedback rather than a transition (`transition-colors` does not cover
-  // opacity), so it sits outside MOTION 1's transition list, and the warm set
-  // declares no hover-fill token to put in its place.
+  // Landing register. `warm` fills on `warm-accent-deep` (the app's navy
+  // primary, #0F172A), which keeps white text at 17.85:1 and puts the landing
+  // CTAs on the same register as every app button. Its `hover:opacity-90` is
+  // the historical hover and stays: it is instant state feedback rather than a
+  // transition (`transition-colors` does not cover opacity), so it sits outside
+  // MOTION 1's transition list, and the landing set declares no hover-fill
+  // token to put in its place.
   warm: "bg-warm-accent-deep text-white hover:opacity-90 border border-transparent",
   warmOutline:
     "border border-warm-line bg-warm-card text-warm-ink hover:bg-warm-raised",
