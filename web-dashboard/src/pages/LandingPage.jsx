@@ -13,14 +13,17 @@ import {
   BatteryCharging,
   SlidersHorizontal,
   Cpu,
-  Database,
-  MonitorSmartphone,
+  Users,
+  Stethoscope,
+  CheckCircle2,
+  ChevronDown,
 } from "lucide-react";
 import { GlassButton } from "../components/ui/GlassButton";
 import { PanelHeader } from "../components/ui/GlassCard";
 import { Chip } from "../components/ui/Chip";
 import { StatusChip } from "../components/ui/StatusChip";
 import PlantarHeatmap from "../components/PlantarHeatmap";
+import RiskExplorer from "../components/landing/RiskExplorer";
 import { useInsole } from "../context/InsoleContext";
 import { t } from "../utils/i18n";
 
@@ -60,10 +63,16 @@ const SPECS = [
   { title: "landing.spec.rate.title", body: "landing.spec.rate.body" },
 ];
 
-const CAPABILITIES = [
-  { icon: Footprints, title: "landing.cap.1.title", body: "landing.cap.1.body" },
-  { icon: BrainCircuit, title: "landing.cap.2.title", body: "landing.cap.2.body" },
-  { icon: BellRing, title: "landing.cap.3.title", body: "landing.cap.3.body" },
+const AUDIENCE = [
+  { icon: Footprints, title: "landing.audience.1.title", body: "landing.audience.1.body" },
+  { icon: Users, title: "landing.audience.2.title", body: "landing.audience.2.body" },
+  { icon: Stethoscope, title: "landing.audience.3.title", body: "landing.audience.3.body" },
+];
+
+const SIGNS = [
+  "landing.problem.signs.1",
+  "landing.problem.signs.2",
+  "landing.problem.signs.3",
 ];
 
 const STEPS = [
@@ -87,18 +96,33 @@ const FLOW = [
   { title: "landing.flow.3.title", body: "landing.flow.3.body" },
 ];
 
-const STACK = [
-  { icon: Cpu, title: "landing.stack.1.title", body: "landing.stack.1.body" },
-  { icon: Database, title: "landing.stack.2.title", body: "landing.stack.2.body" },
-  { icon: MonitorSmartphone, title: "landing.stack.3.title", body: "landing.stack.3.body" },
+const PIPELINE = [
+  { title: "landing.tech.pipeline.1.title", body: "landing.tech.pipeline.1.body" },
+  { title: "landing.tech.pipeline.2.title", body: "landing.tech.pipeline.2.body" },
+  { title: "landing.tech.pipeline.3.title", body: "landing.tech.pipeline.3.body" },
+  { title: "landing.tech.pipeline.4.title", body: "landing.tech.pipeline.4.body" },
+];
+
+const FACTS = [
+  { label: "landing.tech.facts.1.label", value: "landing.tech.facts.1.value" },
+  { label: "landing.tech.facts.2.label", value: "landing.tech.facts.2.value" },
+  { label: "landing.tech.facts.3.label", value: "landing.tech.facts.3.value" },
+  { label: "landing.tech.facts.4.label", value: "landing.tech.facts.4.value" },
+];
+
+const FAQ = [
+  { q: "landing.faq.1.q", a: "landing.faq.1.a" },
+  { q: "landing.faq.2.q", a: "landing.faq.2.a" },
+  { q: "landing.faq.3.q", a: "landing.faq.3.a" },
+  { q: "landing.faq.4.q", a: "landing.faq.4.a" },
 ];
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { language } = useInsole();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [navFloating, setNavFloating] = useState(false);
   const rootRef = useRef(null);
-  const navRef = useRef(null);
   const [reducedMotion] = useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
       return false;
@@ -162,12 +186,11 @@ const LandingPage = () => {
     return () => cancelAnimationFrame(raf);
   }, [reducedMotion]);
 
-  /* The nav bar deepens its shadow once the page scrolls. */
+  /* The nav bar sits flush on the page edge at the top and lifts into a
+     floating bar once the page scrolls. It is a state change, not a
+     transition: MOTION 1 keeps the movement budget for the content. */
   useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    const onScroll = () =>
-      nav.classList.toggle("nav-scrolled", window.scrollY > 24);
+    const onScroll = () => setNavFloating(window.scrollY > 24);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -192,13 +215,28 @@ const LandingPage = () => {
           focusable element; do not duplicate it here. */}
 
       {/* ================= NAV ================= */}
-      {/* A flat, rectangular instrument bar. The old floating pill - rounded
-          glass with a blur - was decoration doing navigation's job. */}
-      <div className="sticky top-3 z-50 flex justify-center px-3 pt-4 sm:top-5 sm:px-4 sm:pt-6">
+      {/* Flush on the page edge at the top, a floating bar once the visitor
+          scrolls: the nav is part of the page until the page moves. The two
+          states differ only in max-width, radius, shadow and the wrapper's
+          inset, so the change interpolates instead of jumping. */}
+      <div
+        className={[
+          "sticky z-50 flex justify-center",
+          "transition-[padding,top] duration-300 ease-out motion-reduce:transition-none",
+          navFloating
+            ? "top-3 px-3 pt-4 sm:top-5 sm:px-4 sm:pt-6"
+            : "top-0 px-0 pt-0",
+        ].join(" ")}
+      >
         <nav
-          ref={navRef}
           aria-label={t("app.title", language)}
-          className="flex w-full max-w-[880px] items-center justify-between gap-2 rounded-tile border border-warm-line bg-warm-card py-2.5 pl-5 pr-2.5 shadow-nav"
+          className={[
+            "flex w-full items-center justify-between gap-2 border border-warm-line bg-warm-card py-2.5 pl-5 pr-2.5",
+            "transition-[max-width,border-radius,box-shadow] duration-300 ease-out motion-reduce:transition-none",
+            navFloating
+              ? "max-w-[880px] rounded-tile shadow-nav"
+              : "max-w-[100vw] rounded-none shadow-none",
+          ].join(" ")}
         >
           <a
             href="#"
@@ -208,10 +246,7 @@ const LandingPage = () => {
             }}
             className="flex min-h-[44px] min-w-0 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-card"
           >
-            <span className="relative flex h-6 w-9 shrink-0 items-center" aria-hidden="true">
-              <span className="absolute left-0 h-6 w-6 rounded-full bg-warm-dark" />
-              <span className="absolute left-3.5 h-6 w-6 rounded-full bg-warm-accent" />
-            </span>
+            <img src="/icon.svg" alt="" className="h-7 w-7 shrink-0" />
             <span className="truncate text-body font-semibold leading-tight">
               {t("app.title", language)}
             </span>
@@ -301,14 +336,14 @@ const LandingPage = () => {
         </div>
       )}
 
-      <main id="main-content" className="mx-auto max-w-[1440px] px-2 pt-2 sm:px-4 sm:pt-4">
+      <main id="main-content" className="mx-auto max-w-[1440px] px-2 pt-0 sm:px-4">
         {/* ================= HERO ================= */}
         {/* Two columns from lg: the fold answers its four questions in the
             text column, and the real heatmap stands BESIDE it instead of in
             its own narrow centred row, which left both page margins and the
             fold empty. The measured numbers are still NOT repeated here: they
             live once in the Mengapa band. */}
-        <section className="rise relative mt-2 flex min-h-[100svh] items-center overflow-hidden rounded-hero bg-warm-raised shadow-card sm:mt-4 sm:rounded-hero-lg">
+        <section className="rise relative mt-2 flex min-h-[100svh] items-center overflow-hidden rounded-hero bg-warm-raised shadow-card sm:rounded-hero-lg">
           <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-10 px-6 pb-12 pt-16 text-center sm:pb-14 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-16 lg:text-left">
             {/* Column one: eyebrow, headline, who it is for, next step. */}
             <div className="flex flex-col items-center lg:items-start">
@@ -427,16 +462,43 @@ const LandingPage = () => {
           id="mengapa"
           className="scroll-mt-28 px-4 py-16 sm:px-10 sm:py-20 lg:px-16 lg:py-24"
         >
-          <div className="max-w-2xl" data-reveal>
-            <p className="text-body-sm font-semibold text-warm-accent-deep">
-              {t("landing.nav.why", language)}
-            </p>
-            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
-              {t("landing.problem.title", language)}
-            </h2>
-            <p className="mt-4 text-body-lg leading-relaxed text-warm-body">
-              {t("landing.problem.body", language)}
-            </p>
+          <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+            <div className="max-w-2xl" data-reveal>
+              <p className="text-body-sm font-semibold text-warm-accent-deep">
+                {t("landing.nav.why", language)}
+              </p>
+              <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
+                {t("landing.problem.title", language)}
+              </h2>
+              <p className="mt-4 text-body-lg leading-relaxed text-warm-body">
+                {t("landing.problem.body", language)}
+              </p>
+            </div>
+
+            <div
+              data-reveal
+              className="rounded-section border border-warm-line bg-warm-card p-6 shadow-card sm:p-8"
+            >
+              <p className="text-body-sm font-semibold text-warm-accent-deep">
+                {t("landing.problem.signs.title", language)}
+              </p>
+              <ul className="mt-4 divide-y divide-warm-line border-y border-warm-line">
+                {SIGNS.map((key) => (
+                  <li key={key} className="flex items-start gap-3 py-3">
+                    <CheckCircle2
+                      className="mt-0.5 h-4 w-4 shrink-0 text-warm-accent-deep"
+                      aria-hidden="true"
+                    />
+                    <span className="text-body leading-relaxed text-warm-body">
+                      {t(key, language)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-body-sm leading-relaxed text-warm-caption">
+                {t("landing.problem.signs.note", language)}
+              </p>
+            </div>
           </div>
 
           {/* One ruled strip, not three pill-shaped cards: three rounded-full
@@ -504,10 +566,10 @@ const LandingPage = () => {
         <section className="px-4 pb-16 sm:px-10 lg:px-16 lg:pb-24">
           <div className="max-w-2xl" data-reveal>
             <p className="text-body-sm font-semibold text-warm-accent-deep">
-              {t("landing.cap.eyebrow", language)}
+              {t("landing.audience.eyebrow", language)}
             </p>
             <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
-              {t("landing.cap.title", language)}
+              {t("landing.audience.title", language)}
             </h2>
           </div>
 
@@ -516,7 +578,7 @@ const LandingPage = () => {
             className="mt-10 rounded-section-lg bg-warm-dark p-4 shadow-glow sm:p-5"
           >
             <div className="grid gap-4 lg:grid-cols-3">
-              {CAPABILITIES.map(({ icon: Icon, title, body }, index) => (
+              {AUDIENCE.map(({ icon: Icon, title, body }) => (
                 <div
                   key={title}
                   className="rounded-cell border border-white/5 bg-warm-panel p-6 sm:p-8"
@@ -653,6 +715,70 @@ const LandingPage = () => {
               </div>
             ))}
           </div>
+
+          {/* The one dense technical block: the pipeline, the model facts, and
+              a simulator that runs the real inference module. It sits inside
+              "Cara kerja" because that is the question a technical reader is
+              already asking, and it keeps the rest of the page patient-facing. */}
+          <div
+            id="teknologi"
+            className="mt-16 scroll-mt-28 border-t border-warm-line pt-12 sm:mt-20 sm:pt-16"
+          >
+            <div className="max-w-2xl" data-reveal>
+              <p className="text-body-sm font-semibold text-warm-accent-deep">
+                {t("landing.tech.eyebrow", language)}
+              </p>
+              <h3 className="mt-3 font-heading text-h2 leading-tight text-warm-ink">
+                {t("landing.tech.title", language)}
+              </h3>
+              <p className="mt-3 text-body leading-relaxed text-warm-body">
+                {t("landing.tech.body", language)}
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+              <div data-reveal className="space-y-6">
+                <ol className="grid gap-3 sm:grid-cols-2">
+                  {PIPELINE.map((item, index) => (
+                    <li
+                      key={item.title}
+                      className="rounded-cell border border-warm-line bg-warm-card p-5"
+                    >
+                      <span className="tabular-data text-caption text-warm-caption">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <h4 className="mt-2 text-body-lg font-semibold text-warm-ink">
+                        {t(item.title, language)}
+                      </h4>
+                      <p className="mt-1.5 text-body-sm leading-relaxed text-warm-body">
+                        {t(item.body, language)}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+
+                <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {FACTS.map((fact) => (
+                    <div
+                      key={fact.label}
+                      className="rounded-cell border border-warm-line bg-warm-raised p-4"
+                    >
+                      <dt className="text-caption text-warm-caption">
+                        {t(fact.label, language)}
+                      </dt>
+                      <dd className="mt-1 font-heading text-h4 tabular-data text-warm-ink">
+                        {t(fact.value, language)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              <div data-reveal>
+                <RiskExplorer language={language} />
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* ================= ALUR ================= */}
@@ -708,40 +834,33 @@ const LandingPage = () => {
               );
             })}
           </div>
-        </section>
 
-        {/* ================= TEKNOLOGI ================= */}
-        <section className="px-4 pb-16 sm:px-10 lg:px-16 lg:pb-24">
-          <div className="max-w-2xl" data-reveal>
-            <p className="text-body-sm font-semibold text-warm-accent-deep">
-              {t("landing.stack.eyebrow", language)}
-            </p>
-            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
-              {t("landing.stack.title", language)}
-            </h2>
-          </div>
+          <div className="mt-16 border-t border-warm-line pt-12 sm:mt-20">
+            <div className="max-w-2xl" data-reveal>
+              <p className="text-body-sm font-semibold text-warm-accent-deep">
+                {t("landing.faq.eyebrow", language)}
+              </p>
+              <h3 className="mt-3 font-heading text-h2 leading-tight text-warm-ink">
+                {t("landing.faq.title", language)}
+              </h3>
+            </div>
 
-          <div className="mx-auto mt-10 grid max-w-5xl gap-5 md:grid-cols-3">
-            {STACK.map(({ icon: Icon, title, body }, index) => (
-              <div
-                key={title}
-                data-reveal
-                style={{ transitionDelay: `${index * 80}ms` }}
-                className="rounded-cell bg-warm-dark p-6 shadow-card"
-              >
-                <span className="flex h-12 w-12 items-center justify-center rounded-panel bg-white/10 text-white">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <div className="mt-5">
-                  <h3 className="text-card-title font-semibold text-white">
-                    {t(title, language)}
-                  </h3>
-                  <p className="mt-2 text-body-sm leading-relaxed text-white/60">
-                    {t(body, language)}
+            <div className="mt-6 divide-y divide-warm-line border-y border-warm-line">
+              {FAQ.map((item) => (
+                <details key={item.q} className="group">
+                  <summary className="flex min-h-[56px] cursor-pointer list-none items-center justify-between gap-4 py-4 text-body-lg font-medium text-warm-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-warm-canvas">
+                    <span>{t(item.q, language)}</span>
+                    <ChevronDown
+                      className="h-5 w-5 shrink-0 text-warm-caption transition-transform duration-150 group-open:rotate-180"
+                      aria-hidden="true"
+                    />
+                  </summary>
+                  <p className="max-w-prose pb-5 text-body leading-relaxed text-warm-body">
+                    {t(item.a, language)}
                   </p>
-                </div>
-              </div>
-            ))}
+                </details>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -781,10 +900,7 @@ const LandingPage = () => {
 
             <div className="relative mx-auto mt-12 flex max-w-5xl flex-col items-center justify-between gap-6 border-t border-warm-line pt-8 text-center sm:flex-row sm:text-left">
               <span className="flex items-center gap-2.5">
-                <span className="relative flex h-5 w-8 items-center" aria-hidden="true">
-                  <span className="absolute left-0 h-5 w-5 rounded-full bg-warm-dark" />
-                  <span className="absolute left-3 h-5 w-5 rounded-full bg-warm-accent" />
-                </span>
+                <img src="/icon.svg" alt="" className="h-6 w-6 shrink-0" />
                 <span className="text-body font-semibold">{t("app.title", language)}</span>
               </span>
               <nav
@@ -806,6 +922,10 @@ const LandingPage = () => {
                 {t("landing.footerNote", language)}
               </p>
             </div>
+
+            <p className="mx-auto mt-4 max-w-5xl text-caption leading-relaxed text-warm-caption">
+              {t("landing.footerDisclaimer", language)}
+            </p>
           </div>
         </footer>
       </main>
