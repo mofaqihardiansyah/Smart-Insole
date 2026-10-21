@@ -75,7 +75,11 @@ const LoginPage = () => {
       const result = await login(email.trim().toLowerCase(), password);
 
       if (result.success) {
-        navigate("/");
+        // A signed-in account that never followed the verification link gets
+        // the one page that can resend it. Verified accounts go straight in.
+        navigate(result.user?.emailVerified ? "/" : "/verify-email", {
+          replace: true,
+        });
         return;
       }
 

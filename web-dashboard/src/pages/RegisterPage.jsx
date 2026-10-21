@@ -101,7 +101,9 @@ const RegisterPage = () => {
       );
 
       if (result.success) {
-        navigate("/");
+        // The account exists but is not verified yet. Send the reader to the
+        // page that explains the link Firebase has just mailed them.
+        navigate("/verify-email", { replace: true });
         return;
       }
 

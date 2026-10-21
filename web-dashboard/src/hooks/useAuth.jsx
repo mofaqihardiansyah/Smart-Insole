@@ -3,7 +3,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  sendEmailVerification,
+  updateProfile,
   signOut,
 } from "firebase/auth";
 import {
@@ -14,6 +14,7 @@ import {
   getUserDoc,
   getStorageInstance,
 } from "../services/firebaseConfig";
+import { sendVerificationEmail } from "../utils/authMail";
 
 // `firebase/storage` is loaded on demand inside uploadProfilePhoto instead of
 // at module scope. Nothing on the critical path needs it, and it is a large
@@ -79,13 +80,19 @@ export const useAuth = () => {
       // showed the splash for the duration of the request.
       try {
         const userCred = await signInWithEmailAndPassword(auth, email, password);
-        // Simpan/perbarui profil pendek di Firestore (gagal = tidak fatal)
+        // Simpan/perbarui profil pendek di Firestore (gagal = tidak fatal).
+        // `displayName` is written only when Auth actually has one: setDoc
+        // merges, and writing null here would erase the name stored at
+        // registration for accounts created before Auth carried a name.
         try {
-          await createUserDoc(userCred.user.uid, {
+          const profile = {
             email: userCred.user.email,
-            displayName: userCred.user.displayName,
             lastLogin: new Date().toISOString(),
-          });
+          };
+          if (userCred.user.displayName) {
+            profile.displayName = userCred.user.displayName;
+          }
+          await createUserDoc(userCred.user.uid, profile);
         } catch (e) {
           console.warn("Gagal simpan profil (Firestore):", e?.message);
         }
@@ -107,6 +114,16 @@ export const useAuth = () => {
     async (email, password, name) => {
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+        // Keep the Auth profile in step with the Firestore doc. The Firestore
+        // copy supplies role and the admin console; this one is available to
+        // the auth listener even when the network read has not finished.
+        try {
+          await updateProfile(cred.user, { displayName: name });
+        } catch (e) {
+          console.warn("Gagal simpan nama (Auth):", e?.message);
+        }
+
         // Simpan profil dasar ke Firestore (gagal = tidak fatal)
         try {
           await createUserDoc(cred.user.uid, {
@@ -120,12 +137,15 @@ export const useAuth = () => {
         } catch (e) {
           console.warn("Gagal simpan profil (Firestore):", e?.message);
         }
-        // Kirim email verifikasi (gagal = tidak fatal)
+
+        // Firebase owns delivery, expiry and the verified flag. The continue
+        // URL brings the reader back to the page that explains the next step.
         try {
-          await sendEmailVerification(cred.user);
+          await sendVerificationEmail(cred.user);
         } catch (e) {
           console.warn("Gagal kirim email verifikasi:", e?.message);
         }
+
         setUser(cred.user);
         setDisplayName(name);
         return { success: true, user: cred.user };
@@ -143,6 +163,7 @@ export const useAuth = () => {
       await signOut(auth);
       setUser(null);
       setDisplayName("");
+      setRole("");
     } catch (err) {
       console.error("Logout error:", err);
     }

@@ -3,16 +3,18 @@ import { ChevronRight } from "lucide-react";
 import { t } from "../../utils/i18n";
 
 /**
- * AuthSteps: the three stops of the password reset journey.
+ * AuthSteps: the two stops of the password reset journey.
  *
  * The list is not a progress bar. A bar would promise that time is the measure;
  * this flow is measured in what the person has proved so far. The current stop
  * carries `aria-current="step"`, so the same fact reaches a screen reader
  * without a live region that would announce every transition twice.
+ *
+ * The wait for the emailed link belongs to the Email stop: the reader has
+ * supplied an address, and has not yet proved anything else.
  */
 const STEPS = [
   { key: "email", label: "auth.forgot.step.email" },
-  { key: "code", label: "auth.forgot.step.code" },
   { key: "password", label: "auth.forgot.step.password" },
 ];
 

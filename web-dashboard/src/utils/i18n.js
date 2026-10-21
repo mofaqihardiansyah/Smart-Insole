@@ -350,57 +350,47 @@ export const DICTIONARY = {
     'auth.register.secure':
       'Pendaftaran diamankan oleh Firebase Authentication.',
 
-    /* ------------------------- OTP verification ------------------------ */
-    'auth.otp.title': 'Verifikasi email Anda',
-    'auth.otp.subtitle':
-      'Masukkan kode 6 digit yang kami kirim untuk mengaktifkan akun.',
-    'auth.otp.emailTitle': 'Verifikasi email',
-    'auth.otp.emailSubtitle': 'Masukkan alamat email yang ingin diverifikasi.',
-    'auth.otp.groupLabel': 'Kode verifikasi 6 digit',
-    'auth.otp.digit': 'Digit {index} dari {total}',
-    'auth.otp.sendCode': 'Kirim kode',
-    'auth.otp.sendingCode': 'Mengirim kode ke email Anda.',
-    'auth.otp.sentTo': 'Kode 6 digit dikirim ke {email}.',
-    'auth.otp.expiresIn': 'Kode berlaku {minutes} menit.',
-    'auth.otp.verify': 'Verifikasi kode',
-    'auth.otp.verifying': 'Memeriksa kode',
-    'auth.otp.resend': 'Kirim ulang kode',
-    'auth.otp.resending': 'Mengirim kode',
-    'auth.otp.resendIn': 'Kirim ulang dalam {seconds} detik',
-    'auth.otp.changeEmail': 'Ganti email',
-    'auth.otp.attemptsLeft': 'Sisa percobaan: {count}.',
-    'auth.otp.devCode': 'Mode pengembangan: kode Anda {code}.',
-    'auth.otp.devCodeNext':
-      'Atur kredensial EmailJS untuk mengirim kode melalui email.',
-    'auth.otp.successTitle': 'Email terverifikasi',
-    'auth.otp.successBody': 'Alamat email Anda sudah dikonfirmasi.',
-    'auth.otp.successNote': 'Akun Anda siap digunakan.',
-    'auth.otp.successCta': 'Buka dasbor',
-    'auth.otp.successLogin': 'Masuk ke akun',
-    'auth.otp.backToLogin': 'Kembali ke halaman masuk',
-    'auth.otp.secure':
-      'Kode hanya berlaku sekali dan tidak disimpan di peramban.',
-    'auth.otp.error.required': 'Masukkan 6 digit kode.',
-    'auth.otp.error.invalid': 'Kode tidak sesuai. Periksa kembali.',
-    'auth.otp.error.expired': 'Kode sudah kedaluwarsa. Kirim kode baru.',
-    'auth.otp.error.attempts': 'Terlalu banyak percobaan. Kirim kode baru.',
-    'auth.otp.error.missing': 'Kode tidak ditemukan. Kirim kode baru.',
-    'auth.otp.error.missingEmail': 'Alamat email belum diisi.',
-    'auth.otp.error.send': 'Kode belum dapat dikirim.',
-    'auth.otp.error.sendNext': 'Periksa koneksi, lalu coba lagi.',
-    'auth.otp.error.notConfigured': 'Pengiriman email belum dikonfigurasi.',
-    'auth.otp.error.notConfiguredNext':
-      'Hubungi administrator untuk mengaktifkan pengiriman kode.',
+    /* ------------------------ Email verification ----------------------- */
+    'auth.verify.title': 'Verifikasi email Anda',
+    'auth.verify.subtitle': 'Kami mengirim tautan verifikasi ke {email}.',
+    'auth.verify.sentTo': 'Tautan verifikasi dikirim ke {email}.',
+    'auth.verify.checking': 'Memeriksa status verifikasi.',
+    'auth.verify.checkingNote':
+      'Kami menanyakan Firebase apakah tautan sudah dibuka.',
+    'auth.verify.openEmail':
+      'Buka kotak masuk email Anda, lalu klik tautan verifikasi.',
+    'auth.verify.spam': 'Periksa folder spam bila email belum terlihat.',
+    'auth.verify.resend': 'Kirim ulang email',
+    'auth.verify.resending': 'Mengirim email',
+    'auth.verify.resendIn': 'Kirim ulang dalam {seconds} detik',
+    'auth.verify.sent': 'Email verifikasi baru sudah dikirim.',
+    'auth.verify.tooMany': 'Terlalu banyak permintaan. Coba lagi nanti.',
+    'auth.verify.checkAgain': 'Periksa lagi',
+    'auth.verify.signIn': 'Masuk ke akun',
+    'auth.verify.backToLogin': 'Kembali ke halaman masuk',
+    'auth.verify.signedOutTitle': 'Verifikasi email',
+    'auth.verify.signedOutBody':
+      'Buka tautan verifikasi dari email Anda. Untuk meminta tautan baru, masuk ke akun Anda.',
+    'auth.verify.secure':
+      'Tautan verifikasi hanya berlaku sekali dan dikirim oleh Firebase.',
+    'auth.verify.invalidTitle': 'Tautan verifikasi tidak valid',
+    'auth.verify.invalidBody':
+      'Tautan mungkin sudah dipakai atau kedaluwarsa.',
+    'auth.verify.invalidBanner': 'Kami tidak dapat memakai tautan ini.',
+    'auth.verify.invalidNext':
+      'Masuk ke akun Anda, lalu minta tautan verifikasi baru.',
+    'auth.verify.successTitle': 'Email terverifikasi',
+    'auth.verify.successBody': 'Alamat email Anda sudah dikonfirmasi.',
+    'auth.verify.successNote': 'Akun Anda siap digunakan.',
+    'auth.verify.successCta': 'Buka dasbor',
+    'auth.verify.successLogin': 'Masuk ke akun',
 
     /* --------------------------- Forgot password ----------------------- */
     'auth.forgot.title': 'Lupa kata sandi',
     'auth.forgot.subtitle':
-      'Masukkan email akun. Kami akan mengirim kode verifikasi.',
-    'auth.forgot.otpTitle': 'Masukkan kode verifikasi',
-    'auth.forgot.otpSubtitle': 'Masukkan kode 6 digit untuk melanjutkan.',
-    'auth.forgot.verify': 'Verifikasi kode',
-    'auth.forgot.verifying': 'Memeriksa kode',
-    'auth.forgot.sendCode': 'Kirim kode',
+      'Masukkan email akun. Kami akan mengirim tautan untuk membuat kata sandi baru.',
+    'auth.forgot.sendLink': 'Kirim tautan reset',
+    'auth.forgot.changeEmail': 'Ganti email',
     'auth.forgot.secure':
       'Kami tidak mengungkapkan apakah sebuah alamat email terdaftar.',
     'auth.forgot.linkTitle': 'Cek email Anda',
@@ -428,7 +418,6 @@ export const DICTIONARY = {
     'auth.forgot.resetSuccessTitle': 'Kata sandi diperbarui',
     'auth.forgot.resetSuccessBody': 'Masuk dengan kata sandi baru Anda.',
     'auth.forgot.step.email': 'Email',
-    'auth.forgot.step.code': 'Kode',
     'auth.forgot.step.password': 'Kata sandi',
     'auth.footerNote':
       'SOLE membantu memantau tekanan, bukan menggantikan pemeriksaan tenaga kesehatan.',
@@ -995,57 +984,46 @@ export const DICTIONARY = {
     'auth.register.secure':
       'Registration is protected by Firebase Authentication.',
 
-    /* ------------------------- OTP verification ------------------------ */
-    'auth.otp.title': 'Verify your email',
-    'auth.otp.subtitle':
-      'Enter the 6 digit code we sent to activate your account.',
-    'auth.otp.emailTitle': 'Verify email',
-    'auth.otp.emailSubtitle': 'Enter the address you want to verify.',
-    'auth.otp.groupLabel': '6 digit verification code',
-    'auth.otp.digit': 'Digit {index} of {total}',
-    'auth.otp.sendCode': 'Send code',
-    'auth.otp.sendingCode': 'Sending a code to your email.',
-    'auth.otp.sentTo': 'A 6 digit code was sent to {email}.',
-    'auth.otp.expiresIn': 'The code is valid for {minutes} minutes.',
-    'auth.otp.verify': 'Verify code',
-    'auth.otp.verifying': 'Checking the code',
-    'auth.otp.resend': 'Resend code',
-    'auth.otp.resending': 'Sending a code',
-    'auth.otp.resendIn': 'Resend in {seconds} seconds',
-    'auth.otp.changeEmail': 'Change email',
-    'auth.otp.attemptsLeft': 'Attempts left: {count}.',
-    'auth.otp.devCode': 'Development mode: your code is {code}.',
-    'auth.otp.devCodeNext':
-      'Set the EmailJS credentials to deliver codes by email.',
-    'auth.otp.successTitle': 'Email verified',
-    'auth.otp.successBody': 'Your email address is confirmed.',
-    'auth.otp.successNote': 'Your account is ready to use.',
-    'auth.otp.successCta': 'Open the dashboard',
-    'auth.otp.successLogin': 'Sign in to your account',
-    'auth.otp.backToLogin': 'Back to sign in',
-    'auth.otp.secure':
-      'The code works once and is not stored in the browser.',
-    'auth.otp.error.required': 'Enter the 6 digit code.',
-    'auth.otp.error.invalid': 'That code does not match. Check it again.',
-    'auth.otp.error.expired': 'The code expired. Send a new one.',
-    'auth.otp.error.attempts': 'Too many attempts. Send a new code.',
-    'auth.otp.error.missing': 'No code found. Send a new one.',
-    'auth.otp.error.missingEmail': 'The email address is empty.',
-    'auth.otp.error.send': 'The code could not be sent.',
-    'auth.otp.error.sendNext': 'Check the connection, then try again.',
-    'auth.otp.error.notConfigured': 'Email delivery is not configured.',
-    'auth.otp.error.notConfiguredNext':
-      'Ask an administrator to enable code delivery.',
+    /* ------------------------ Email verification ----------------------- */
+    'auth.verify.title': 'Verify your email',
+    'auth.verify.subtitle': 'We sent a verification link to {email}.',
+    'auth.verify.sentTo': 'A verification link was sent to {email}.',
+    'auth.verify.checking': 'Checking the verification status.',
+    'auth.verify.checkingNote':
+      'We are asking Firebase whether the link has been opened.',
+    'auth.verify.openEmail': 'Open your inbox, then click the verification link.',
+    'auth.verify.spam': 'Check the spam folder if the email is not there.',
+    'auth.verify.resend': 'Resend email',
+    'auth.verify.resending': 'Sending email',
+    'auth.verify.resendIn': 'Resend in {seconds} seconds',
+    'auth.verify.sent': 'A new verification email was sent.',
+    'auth.verify.tooMany': 'Too many requests. Try again later.',
+    'auth.verify.checkAgain': 'Check again',
+    'auth.verify.signIn': 'Sign in to your account',
+    'auth.verify.backToLogin': 'Back to sign in',
+    'auth.verify.signedOutTitle': 'Verify email',
+    'auth.verify.signedOutBody':
+      'Open the verification link from your email. To request a new link, sign in to your account.',
+    'auth.verify.secure':
+      'The verification link works once and is sent by Firebase.',
+    'auth.verify.invalidTitle': 'This verification link is not valid',
+    'auth.verify.invalidBody':
+      'The link may have been used already or it may have expired.',
+    'auth.verify.invalidBanner': 'We could not use this link.',
+    'auth.verify.invalidNext':
+      'Sign in to your account, then request a new verification link.',
+    'auth.verify.successTitle': 'Email verified',
+    'auth.verify.successBody': 'Your email address is confirmed.',
+    'auth.verify.successNote': 'Your account is ready to use.',
+    'auth.verify.successCta': 'Open the dashboard',
+    'auth.verify.successLogin': 'Sign in to your account',
 
     /* --------------------------- Forgot password ----------------------- */
     'auth.forgot.title': 'Forgot password',
     'auth.forgot.subtitle':
-      'Enter the account email. We will send a verification code.',
-    'auth.forgot.otpTitle': 'Enter the verification code',
-    'auth.forgot.otpSubtitle': 'Enter the 6 digit code to continue.',
-    'auth.forgot.verify': 'Verify code',
-    'auth.forgot.verifying': 'Checking the code',
-    'auth.forgot.sendCode': 'Send code',
+      'Enter the account email. We will send a link to create a new password.',
+    'auth.forgot.sendLink': 'Send reset link',
+    'auth.forgot.changeEmail': 'Change email',
     'auth.forgot.secure':
       'We do not reveal whether an email address is registered.',
     'auth.forgot.linkTitle': 'Check your email',
@@ -1072,7 +1050,6 @@ export const DICTIONARY = {
     'auth.forgot.resetSuccessTitle': 'Password updated',
     'auth.forgot.resetSuccessBody': 'Sign in with your new password.',
     'auth.forgot.step.email': 'Email',
-    'auth.forgot.step.code': 'Code',
     'auth.forgot.step.password': 'Password',
     'auth.footerNote':
       'SOLE helps monitor pressure. It does not replace care from a health professional.',

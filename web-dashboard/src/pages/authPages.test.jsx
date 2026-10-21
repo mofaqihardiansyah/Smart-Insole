@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
 import React from "react";
 
 /**
@@ -39,6 +39,20 @@ const renderPage = (Page, route) =>
     <MemoryRouter initialEntries={[route]}>
       <InsoleProvider>
         <Page />
+      </InsoleProvider>
+    </MemoryRouter>
+  );
+
+/** Renders the page as a route so a successful submit can be followed. */
+const renderNavigating = (Page, route) =>
+  render(
+    <MemoryRouter initialEntries={[route]}>
+      <InsoleProvider>
+        <Routes>
+          <Route path={route} element={<Page />} />
+          <Route path="/verify-email" element={<p>halaman verifikasi</p>} />
+          <Route path="/" element={<p>dasbor</p>} />
+        </Routes>
       </InsoleProvider>
     </MemoryRouter>
   );
@@ -124,6 +138,32 @@ describe("login page", () => {
       "/forgot-password"
     );
   });
+
+  it("sends an unverified account to the verification page", async () => {
+    mockAuth.login.mockResolvedValue({
+      success: true,
+      user: { email: "kader@example.com", emailVerified: false },
+    });
+
+    renderNavigating(LoginPage, "/login");
+    fillLogin();
+    submitLogin();
+
+    expect(await screen.findByText("halaman verifikasi")).toBeInTheDocument();
+  });
+
+  it("lets a verified account straight into the dashboard", async () => {
+    mockAuth.login.mockResolvedValue({
+      success: true,
+      user: { email: "kader@example.com", emailVerified: true },
+    });
+
+    renderNavigating(LoginPage, "/login");
+    fillLogin();
+    submitLogin();
+
+    expect(await screen.findByText("dasbor")).toBeInTheDocument();
+  });
 });
 
 describe("register page", () => {
@@ -206,5 +246,36 @@ describe("register page", () => {
     expect(
       await screen.findByText("Email ini sudah terdaftar.")
     ).toBeInTheDocument();
+  });
+
+  it("sends a new account to the verification page", async () => {
+    mockAuth.register.mockResolvedValue({
+      success: true,
+      user: { email: "kader@example.com", emailVerified: false },
+    });
+
+    renderNavigating(RegisterPage, "/register");
+
+    fireEvent.change(screen.getByLabelText("Nama lengkap"), {
+      target: { value: "Kader Satu" },
+    });
+    fireEvent.change(screen.getByLabelText("Alamat email"), {
+      target: { value: "kader@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Kata sandi"), {
+      target: { value: "Bunga-Melati-2026" },
+    });
+    fireEvent.change(screen.getByLabelText("Konfirmasi kata sandi"), {
+      target: { value: "Bunga-Melati-2026" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Buat akun" }));
+
+    expect(await screen.findByText("halaman verifikasi")).toBeInTheDocument();
+    expect(mockAuth.register).toHaveBeenCalledWith(
+      "kader@example.com",
+      "Bunga-Melati-2026",
+      "Kader Satu"
+    );
   });
 });

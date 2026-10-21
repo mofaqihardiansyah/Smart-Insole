@@ -1,20 +1,18 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   confirmPasswordReset,
-  sendPasswordResetEmail,
   verifyPasswordResetCode,
 } from "firebase/auth";
 import { CheckCircle2, MailCheck, ShieldCheck } from "lucide-react";
 import { auth } from "../services/firebaseConfig";
 import { useInsole } from "../context/InsoleContext";
-import { useOtpChallenge } from "../hooks/useOtpChallenge";
-import { OTP_MAX_ATTEMPTS } from "../utils/otpChallenge";
 import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "../utils/passwordStrength";
 import { authErrorCopy } from "../utils/authErrors";
+import { sendResetEmail } from "../utils/authMail";
 import { t } from "../utils/i18n";
 import {
   GlassButton,
@@ -23,7 +21,6 @@ import {
 } from "../components/ui/GlassComponents";
 import AuthShell from "../components/auth/AuthShell";
 import AuthSteps from "../components/auth/AuthSteps";
-import OtpForm from "../components/auth/OtpForm";
 import PasswordField from "../components/auth/PasswordField";
 import PasswordStrength from "../components/auth/PasswordStrength";
 
@@ -31,32 +28,19 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const EMAIL_MAX = 254;
 const LINK_RESEND_SECONDS = 60;
 
-const OTP_ERROR_KEYS = {
-  required: "auth.otp.error.required",
-  invalid: "auth.otp.error.invalid",
-  expired: "auth.otp.error.expired",
-  attempts: "auth.otp.error.attempts",
-  missing: "auth.otp.error.missing",
-  "missing-email": "auth.otp.error.missingEmail",
-  "send-failed": "auth.otp.error.send",
-  "not-configured": "auth.otp.error.notConfigured",
-};
-
 /**
- * ForgotPasswordPage: prove the address, then let Firebase reset the password.
+ * ForgotPasswordPage: ask Firebase for a reset link, then let the link open the
+ * form that sets the new password.
  *
- * The journey is deliberately three stops:
+ * There is no code step. Firebase mints the single-use link and delivers it
+ * only to the account address, so a visitor cannot reset somebody else's
+ * password by guessing an address here. The same page handles the link's
+ * `oobCode`: it verifies the code before showing a password field, so an
+ * expired link fails with an explanation rather than after the reader has
+ * typed a new password.
  *
- *   1. address       - where the code and the reset link go;
- *   2. code          - a six digit code sent to that address;
- *   3. new password  - the page Firebase's reset link opens.
- *
- * The OTP is a UX gate, not the authority. After the code matches, this page
- * asks Firebase to mint its own single-use reset link. The link is what can
- * actually change the password, and it is still delivered only to the account
- * address. A visitor who skips the code in their own browser gains nothing:
- * they still cannot receive that link. This is also why an unknown address gets
- * the same confirmation as a known one.
+ * An unknown address gets the same confirmation as a known one, which keeps
+ * this page from becoming an account-enumeration oracle.
  */
 const ForgotPasswordPage = () => {
   const { language } = useInsole();
@@ -72,7 +56,6 @@ const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [manualEmail, setManualEmail] = useState("");
   const [emailError, setEmailError] = useState(null);
-  const [code, setCode] = useState("");
 
   const [linkSending, setLinkSending] = useState(false);
   const [linkCooldown, setLinkCooldown] = useState(0);
@@ -126,45 +109,16 @@ const ForgotPasswordPage = () => {
     return () => clearTimeout(timer);
   }, [linkCooldown]);
 
-  const otp = useOtpChallenge({
-    email,
-    purpose: "reset",
-    autoSend: Boolean(email) && step === "otp",
-  });
-
-  const otpError = useMemo(() => {
-    if (!otp.errorCode || otp.status === "error") return null;
-    return t(OTP_ERROR_KEYS[otp.errorCode] || "auth.otp.error.invalid", language);
-  }, [language, otp.errorCode, otp.status]);
-
-  const sendResetLink = async ({ announce = false } = {}) => {
-    if (!email || linkSending) return;
-    if (linkCooldown > 0) return;
+  const sendResetLink = async (targetEmail = email, { announce = false } = {}) => {
+    const address = String(targetEmail || "").trim().toLowerCase();
+    if (!address || linkSending || linkCooldown > 0) return;
 
     setLinkSending(true);
     setLinkError(null);
     setLinkNotice(false);
 
-    const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
-    const continueUrl = `${window.location.origin}${base}/forgot-password?mode=resetPassword`;
-    const actionCodeSettings = {
-      url: continueUrl,
-      handleCodeInApp: false,
-    };
-
     try {
-      try {
-        await sendPasswordResetEmail(auth, email, actionCodeSettings);
-      } catch (error) {
-        // A deployment that has not whitelisted the continue URL can still
-        // send the Firebase-hosted reset page. The account owner gets a working
-        // link either way.
-        if (error?.code === "auth/unauthorized-continue-uri") {
-          await sendPasswordResetEmail(auth, email);
-        } else {
-          throw error;
-        }
-      }
+      await sendResetEmail(auth, address);
 
       setLinkCooldown(LINK_RESEND_SECONDS);
       if (announce) setLinkNotice(true);
@@ -202,40 +156,23 @@ const ForgotPasswordPage = () => {
 
     setEmailError(null);
     setEmail(clean);
-    setStep("otp");
-  };
-
-  const handleVerify = async (event) => {
-    event.preventDefault();
-    const result = await otp.verify(code);
-    if (!result.ok) return;
-
     setStep("link");
-    await sendResetLink();
-  };
-
-  const handleResendCode = async () => {
-    setCode("");
-    await otp.send();
+    sendResetLink(clean);
   };
 
   const handleChangeEmail = () => {
-    otp.reset();
     setStep("email");
     setEmail("");
     setManualEmail("");
-    setCode("");
     setLinkError(null);
     setLinkNotice(false);
     setLinkCooldown(0);
   };
 
   const resetAll = () => {
-    otp.reset();
     setStep("email");
     setEmail("");
     setManualEmail("");
-    setCode("");
     setEmailError(null);
     setLinkError(null);
     setLinkNotice(false);
@@ -307,14 +244,10 @@ const ForgotPasswordPage = () => {
   let subtitle = t("auth.forgot.subtitle", language);
   let stepKey = "email";
 
-  if (step === "otp") {
-    title = t("auth.forgot.otpTitle", language);
-    subtitle = t("auth.forgot.otpSubtitle", language, { email });
-    stepKey = "code";
-  } else if (step === "link") {
+  if (step === "link") {
     title = t("auth.forgot.linkTitle", language);
     subtitle = t("auth.forgot.linkBody", language, { email });
-    stepKey = "password";
+    stepKey = "email";
   } else if (step === "reset") {
     stepKey = "password";
     if (resetState === "invalid") {
@@ -336,7 +269,7 @@ const ForgotPasswordPage = () => {
   }
 
   const footer = (
-    <p className="mt-5 text-center text-body-sm text-muted">
+    <p className="mt-5 text-center text-body-sm text-muted sm:mt-6">
       {t("auth.forgot.haveAccount", language)}{" "}
       <Link
         to="/login"
@@ -533,12 +466,12 @@ const ForgotPasswordPage = () => {
             type="button"
             variant="outline"
             className="w-full sm:flex-1"
-            onClick={() => sendResetLink({ announce: true })}
+            onClick={() => sendResetLink(email, { announce: true })}
             disabled={linkSending || linkCooldown > 0}
           >
             <MailCheck className="h-4 w-4" aria-hidden="true" />
             {linkCooldown > 0
-              ? t("auth.otp.resendIn", language, { seconds: linkCooldown })
+              ? t("auth.verify.resendIn", language, { seconds: linkCooldown })
               : linkSending
                 ? t("auth.forgot.resendingLink", language)
                 : t("auth.forgot.resendLink", language)}
@@ -548,115 +481,11 @@ const ForgotPasswordPage = () => {
             type="button"
             variant="ghost"
             className="w-full sm:flex-1"
-            onClick={resetAll}
+            onClick={handleChangeEmail}
           >
-            {t("auth.forgot.restart", language)}
+            {t("auth.forgot.changeEmail", language)}
           </GlassButton>
         </div>
-      </AuthShell>
-    );
-  }
-
-  if (step === "otp") {
-    if (otp.status === "error") {
-      const isConfig = otp.errorCode === "not-configured";
-      const isMissing = otp.errorCode === "missing-email";
-
-      return (
-        <AuthShell
-          language={language}
-          title={title}
-          subtitle={subtitle}
-          footer={footer}
-        >
-          {steps}
-          <StatusBanner
-            tone="danger"
-            className="mt-2"
-            title={t(
-              isConfig
-                ? "auth.otp.error.notConfigured"
-                : isMissing
-                  ? "auth.otp.error.missingEmail"
-                  : "auth.otp.error.send",
-              language
-            )}
-            nextAction={t(
-              isConfig
-                ? "auth.otp.error.notConfiguredNext"
-                : "auth.otp.error.sendNext",
-              language
-            )}
-            action={
-              !isConfig && !isMissing ? (
-                <GlassButton
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={otp.send}
-                >
-                  {t("common.retry", language)}
-                </GlassButton>
-              ) : undefined
-            }
-          />
-
-          <button
-            type="button"
-            onClick={handleChangeEmail}
-            className="mt-4 inline-flex min-h-[44px] items-center rounded-control px-2 text-body-sm font-medium text-primary underline underline-offset-2 transition-colors duration-150 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-          >
-            {t("auth.otp.changeEmail", language)}
-          </button>
-        </AuthShell>
-      );
-    }
-
-    if (otp.status === "idle" || otp.status === "sending") {
-      return (
-        <AuthShell
-          language={language}
-          title={title}
-          subtitle={subtitle}
-          footer={footer}
-        >
-          {steps}
-          <p className="mt-2 flex items-center gap-2 text-body-sm text-muted">
-            <MailCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
-            {t("auth.otp.sendingCode", language)}
-          </p>
-        </AuthShell>
-      );
-    }
-
-    return (
-      <AuthShell
-        language={language}
-        title={title}
-        subtitle={subtitle}
-        footer={footer}
-      >
-        {steps}
-        <OtpForm
-          id="reset-otp"
-          language={language}
-          email={email}
-          code={code}
-          onCodeChange={setCode}
-          onSubmit={handleVerify}
-          submitting={otp.status === "verifying"}
-          error={otpError}
-          attemptsLeft={otp.attemptsLeft}
-          maxAttempts={OTP_MAX_ATTEMPTS}
-          onResend={handleResendCode}
-          resending={otp.status === "sending"}
-          resendIn={otp.cooldown}
-          onChangeEmail={handleChangeEmail}
-          submitLabel={t("auth.forgot.verify", language)}
-          submittingLabel={t("auth.forgot.verifying", language)}
-          expiresMinutes={otp.expiresMinutes}
-          devCode={otp.devCode}
-        />
       </AuthShell>
     );
   }
@@ -691,7 +520,7 @@ const ForgotPasswordPage = () => {
 
         <GlassButton type="submit" variant="filled" className="w-full">
           <MailCheck className="h-4 w-4" aria-hidden="true" />
-          {t("auth.forgot.sendCode", language)}
+          {t("auth.forgot.sendLink", language)}
         </GlassButton>
       </form>
 

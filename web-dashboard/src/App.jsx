@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 import { InsoleProvider, useInsole } from "./context/InsoleContext";
@@ -15,7 +16,7 @@ import { AlertModal } from "./components/dashboard/AlertModal";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import VerifyOtpPage from "./pages/VerifyOtpPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import MonitoringPage from "./pages/MonitoringPage";
@@ -129,7 +130,7 @@ function PublicApp() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/verify-otp" element={<VerifyOtpPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/" element={<LandingPage />} />
       {/* Anything unknown goes home rather than showing a blank screen. */}
@@ -152,8 +153,17 @@ function ProtectedApp() {
     toggleMute,
   } = useInsole();
   const { user, displayName, role, signOut } = useUser();
+  const location = useLocation();
 
   const links = buildNavLinks(language, role);
+
+  // The verification page is a full-page auth task, not a dashboard view. It
+  // renders outside AppLayout so it does not nest a second <main> (and a
+  // second #main-content) inside the shell while the account is still being
+  // confirmed.
+  if (location.pathname.replace(/\/+$/, "") === "/verify-email") {
+    return <VerifyEmailPage />;
+  }
 
   return (
     <>
@@ -178,7 +188,6 @@ function ProtectedApp() {
               switching, but they are not linked from the navigation. */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

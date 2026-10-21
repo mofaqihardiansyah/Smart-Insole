@@ -343,8 +343,8 @@ const LandingPage = () => {
             its own narrow centred row, which left both page margins and the
             fold empty. The measured numbers are still NOT repeated here: they
             live once in the Mengapa band. */}
-        <section className="rise relative mt-2 flex min-h-[100svh] items-center overflow-hidden rounded-hero bg-warm-raised shadow-card sm:rounded-hero-lg">
-          <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-10 px-6 pb-12 pt-16 text-center sm:pb-14 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-16 lg:text-left">
+        <section className="rise relative mt-1 flex items-center overflow-hidden rounded-hero bg-warm-raised shadow-card sm:rounded-hero-lg">
+          <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 px-6 pb-10 pt-8 text-center sm:pb-12 sm:pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-12 lg:pt-12 lg:text-left">
             {/* Column one: eyebrow, headline, who it is for, next step. */}
             <div className="flex flex-col items-center lg:items-start">
               {/* Eyebrow tag: squared, matching every status tag in the app. */}
