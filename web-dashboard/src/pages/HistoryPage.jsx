@@ -43,10 +43,21 @@ const formatTimestamp = (timestamp, language, fallback) =>
 /** Quote every field so a localised date containing a comma cannot split a row. */
 const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
 
-/** One count in the summary strip. */
-const SummaryCell = ({ label, value, chip }) => (
-  <div className="bg-surface px-6 py-5">
-    <dt className="text-label uppercase text-muted">{label}</dt>
+/** One count in the summary strip, as a Cadra stat card.
+ *
+ * The strip keeps its `dl` semantics; only the paint changes. The total is
+ * informational and earns the blue tint, but the two risk counts stay on the
+ * plain white fill: pastel-cream for a danger count would read as decoration
+ * over a vital sign, and colour stays a verdict on this product.
+ */
+const SummaryCell = ({ label, value, chip, tint = false }) => (
+  <div
+    className={[
+      "rounded-card border border-border px-6 py-5 shadow-panel",
+      tint ? "bg-tint-blue" : "bg-surface",
+    ].join(" ")}
+  >
+    <dt className="text-label uppercase text-fg-2">{label}</dt>
     <dd className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
       {/* text-stat, matching ProfilePage's stat blocks: the same
           count-as-a-reading semantic renders at the same size everywhere. */}
@@ -257,8 +268,9 @@ const HistoryPage = () => {
               icon={<ClipboardList className="h-4 w-4" />}
             />
 
-            <dl className="grid grid-cols-1 gap-px border-t border-border bg-border sm:grid-cols-3">
+            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <SummaryCell
+                tint
                 label={t("history.totalIncidents", language)}
                 value={rows.length}
               />
