@@ -22,40 +22,71 @@
 :root {
   color-scheme: light;
 
-  --bg: 242 242 244; /* #F8FAFC page canvas */
-  --surface: 248 248 252; /* #FFFFFF card, top bar */
-  --surface-2: 242 242 246; /* #F1F5F9 table head, search field, chips */
-  --surface-3: 230 230 235; /* #E2E8F0 inset well, avatar fallback */
-  --sidebar: 242 242 244; /* #F8FAFC product rail */
+  /* Cadra light register: warm neutral canvas, white cards, near-black ink.
+     Measured pairs live on the line that carries the value. */
+  --bg: 239 239 236; /* #EFEFEC page canvas: fg on it 17.14:1 (AAA) */
+  --surface: 255 255 255; /* #FFFFFF card, top bar, nav pill: fg on it 19.75:1 (AAA) */
+  --surface-2: 247 247 245; /* #F7F7F5 warm raised: muted on it 8.70:1 */
+  --surface-3: 235 235 231; /* #EBEBE7 inset well, avatar fallback (decorative) */
+  --sidebar: 239 239 236; /* same as bg; retired with the rail in the shell task */
 
-  /* Card and row edge. The reference draws cards almost entirely with the
-     shadow, so the edge is a touch lighter than the standard slate
-     hairline. Decoration only: it never delimits a control. */
-  --border: 230 230 235; /* #EAEFF4 */
-  --border-strong: 225 225 230; /* #E2E8F0 raised panel edge, row divider */
-  --border-control: 120 120 130; /* #7C8695 3.47:1 on bg. Inputs and outlines. */
+  /* Card and row edge. Cards separate from the warm canvas with the shadow
+     carrying most of it; the hairline is a touch lighter than slate's.
+     Decoration only: it never delimits a control (1.11:1 on bg, 1.27:1 on
+     surface). */
+  --border: 228 228 224; /* #E4E4E0 */
+  --border-strong: 220 220 216; /* #DCDCD8 raised panel edge, row divider */
+  --border-control: 120 120 130; /* #78787F 3.80:1 on bg, 4.38:1 on surface. Inputs and outlines. */
 
-  --fg: 10 10 15; /* #0F172A 18.1:1 on surface */
-  --fg-2: 40 40 50; /* #334155 12.6:1 on surface */
-  --muted: 70 70 80; /* #64748B 4.8:1 on surface */
+  --fg: 10 10 15; /* #0A0A0F: 19.75:1 on surface, 17.14:1 on bg (AAA) */
+  --fg-2: 40 40 50; /* #282832: 14.59:1 on surface (AAA) */
+  --muted: 70 70 80; /* #46464F: 9.34:1 on surface, 8.10:1 on bg (AAA) */
 
-  /* The reference labels its stat captions in #94A3B8, which measures
+  /* The archive labels its stat captions in #94A3B8, which measures
      2.6:1 on white and fails AA for text. The caption ships in `muted`
-     (4.8:1) with an italic voice instead, so the register is still
-     visibly lighter without dropping the label below 4.5:1. */
+     (9.3:1) instead, so the register still reads lighter without
+     dropping the label below 4.5:1. */
 
-  --primary: 10 10 20; /* #0F172A navy. 18.1:1 on surface */
-  --primary-btn: 10 10 20; /* #0F172A */
-  --primary-on: 255 255 255; /* 18.1:1 on primary-btn */
-  --primary-hover: 1 1 3; /* #020617 button hover fill */
+  --primary: 10 10 15; /* #0A0A0F ink. 19.75:1 on surface */
+  --primary-btn: 10 10 15; /* #0A0A0F: white on it 19.69:1 (AAA) */
+  --primary-on: 255 255 255;
+  --primary-hover: 0 0 0; /* button hover fill */
 
-  --secondary: 5 130 100; /* #059669 sage. 4.6:1 on surface */
-  --tertiary: 10 150 200; /* #0EA5E9 info. 3.0:1: graphics and large text only */
+  --secondary: 4 100 76; /* #04644C sage. 7.16:1 on surface, 6.22:1 on bg (AA, link-safe) */
+  --tertiary: 9 135 184; /* #0987B8 info. 4.06:1 on surface, 3.53:1 on bg: graphics and large text only */
 
-  --safe: 20 140 65; /* #16A34A 4.5:1 on surface */
-  --warning: 180 110 0; /* #CA8A04 4.6:1 on surface */
-  --danger: 180 30 30; /* #DC2626 5.9:1 on surface */
-  --danger-hover: 180 30 30; /* #DC2626 button hover fill */
+  --safe: 21 128 61; /* #15803D 5.02:1 on surface (AA), 4.35:1 on bg as a graphic */
+  --warning: 161 98 7; /* #A16207 4.92:1 on surface (AA), 4.27:1 on bg as a graphic */
+  --danger: 180 30 30; /* #B41E1E 6.68:1 on surface (AA) */
+  --danger-hover: 150 20 20; /* button hover fill */
+
+  /* ------------------------------------------------------------------
+     Cadra stat-card tints: light pastel fills for the meter band, each
+     carrying #0F172A-class ink (the fg token). Measured:
+       fg on cream  13.53:1
+       fg on mint   13.63:1
+       fg on blue   12.77:1
+     Decorative by role; the MEANING on a tinted card still travels
+     through the ink/semantic pair rules below, never through the tint.
+     ------------------------------------------------------------------ */
+  --tint-cream: 243 223 166; /* #F3DFA6 */
+  --tint-mint: 203 232 212; /* #CBE8D4 */
+  --tint-blue: 202 220 241; /* #CADCF1 */
+
+  /* ------------------------------------------------------------------
+     Inverted card. One metric tile per page renders on near-black with
+     its own text ramp, so the darkest surface is reliably the one place
+     the headline number lives. Measured against #141414:
+       white 18.42:1 (AAA) | muted 7.82:1 (AAA)
+       safe (bright) 8.08:1 | warning 9.61:1 | danger 6.66:1 | sage 9.58:1
+     ------------------------------------------------------------------ */
+  --inverted-bg: 20 20 20; /* #141414 */
+  --inverted-fg: 255 255 255;
+  --inverted-muted: 169 169 166; /* #A9A9A6 captions on dark: 7.82:1 */
+  --inverted-safe: 34 197 94; /* #22C55E */
+  --inverted-warning: 234 179 8; /* #EAB308 */
+  --inverted-danger: 248 113 113; /* #F87171 */
+  --inverted-secondary: 52 211 153; /* #34D399 */
 
   /* ------------------------------------------------------------------
      "Ink" forms of the accents, for TEXT AND GLYPHS ON A TINT.

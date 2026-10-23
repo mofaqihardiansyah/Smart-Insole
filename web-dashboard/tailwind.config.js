@@ -101,6 +101,31 @@ export default {
         "warning-ink": token("warning-ink"),
         "danger-ink": token("danger-ink"),
         "secondary-ink": token("secondary-ink"),
+
+        /* ---------------------- Cadra meter-band tints -------------------- */
+        /* Light pastel card fills for the dashboard's meter band and
+           History's summary strip. Decorative by role: the meaning on a
+           tinted card still travels through the fg/ink tokens, never
+           through the tint itself. Measured in index.css. */
+        tint: {
+          cream: token("tint-cream"),
+          mint: token("tint-mint"),
+          blue: token("tint-blue"),
+        },
+
+        /* ---------------------- Inverted metric card ---------------------- */
+        /* One tile per page renders on near-black. The text ramp is its
+           own because the normal ink/accent pairs invert badly on dark
+           (see the measurement block in index.css). */
+        inverted: {
+          DEFAULT: token("inverted-bg"), // card fill
+          fg: token("inverted-fg"),
+          muted: token("inverted-muted"),
+          safe: token("inverted-safe"),
+          warning: token("inverted-warning"),
+          danger: token("inverted-danger"),
+          secondary: token("inverted-secondary"),
+        },
       },
 
       fontFamily: {
@@ -165,6 +190,10 @@ export default {
         card: "16px",
         tile: "12px",
         control: "8px",
+        // The Candra nav pill and the avatar control that pairs with it,
+        // plus nothing else: a pill radius elsewhere in the app is caught
+        // by code review against this comment rather than the build gate.
+        pill: "9999px",
         // The product rail's right edge. One step above a card: the rail is
         // 288px of full-height surface, and a 16px corner reads as square at
         // that size.
