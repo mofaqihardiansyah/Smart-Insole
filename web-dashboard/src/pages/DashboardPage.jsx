@@ -95,6 +95,16 @@ const RISK_BAR = {
   danger: "bg-danger",
 };
 
+/**
+ * A reading that never lies: a corrupt or missing zone value coerces to 0,
+ * the same rule Sparkline applies. A NaN must never become "NaN kPa" on the
+ * feed or a full-width bar from invalid CSS.
+ */
+const finiteOf = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+};
+
 const formatClock = (timestamp, language) =>
   new Date(timestamp).toLocaleTimeString(language === "id" ? "id-ID" : "en-GB", {
     hour: "2-digit",
@@ -711,7 +721,7 @@ const DashboardPage = () => {
                               states the value, and the verdict chip beside
                               the row already carries the meaning. */}
                           <span className="tabular-data block whitespace-nowrap text-body-base text-fg-2">
-                            {`${Number(record.readings?.[zone] ?? 0).toFixed(1)} kPa`}
+                            {`${finiteOf(record.readings?.[zone]).toFixed(1)} kPa`}
                           </span>
                           <span
                             className="mt-1.5 block h-1.5 w-28 overflow-hidden rounded-full bg-surface-3"
@@ -726,8 +736,8 @@ const DashboardPage = () => {
                                 width: `${Math.min(
                                   100,
                                   Math.max(
-                                    2,
-                                    (Number(record.readings?.[zone] ?? 0) /
+                                    0,
+                                    (finiteOf(record.readings?.[zone]) /
                                       (thresholds.dangerKpa || 1)) *
                                       100
                                   )
@@ -777,7 +787,7 @@ const DashboardPage = () => {
                           {t(`anatomy.${zone}`, language)}
                         </p>
                         <p className="tabular-data text-body-sm text-muted">
-                          {`${Number(record.readings?.[zone] ?? 0).toFixed(1)} kPa`}
+                          {`${finiteOf(record.readings?.[zone]).toFixed(1)} kPa`}
                           <span className="mx-2 text-border-control" aria-hidden="true">
                             |
                           </span>
@@ -794,8 +804,8 @@ const DashboardPage = () => {
                               width: `${Math.min(
                                 100,
                                 Math.max(
-                                  2,
-                                  (Number(record.readings?.[zone] ?? 0) /
+                                  0,
+                                  (finiteOf(record.readings?.[zone]) /
                                     (thresholds.dangerKpa || 1)) *
                                     100
                                 )

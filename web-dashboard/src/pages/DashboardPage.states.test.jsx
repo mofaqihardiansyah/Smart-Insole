@@ -289,4 +289,19 @@ describe("the meter band's Cadra vocabulary", () => {
       expect(fill.getAttribute("aria-hidden")).toBe("true");
     }
   });
+
+  it("paints a zero reading with an empty bar, never a fabricated fill", () => {
+    // A genuine 0 kPa reading is a real sample, but the thing the bar draws is
+    // distance FROM the threshold, and there is none. It must not be painted
+    // into a small coloured falsehood by a cosmetic floor.
+    renderDashboard({ autoConnect: true });
+    push({ forefoot: 0, midfoot: 0, heel: 0 });
+
+    const feed = feedRegion();
+    const fills = feed.querySelectorAll("[data-feed-fill]");
+    expect(fills.length).toBeGreaterThanOrEqual(1);
+    for (const fill of fills) {
+      expect(Number.parseFloat(fill.style.width)).toBe(0);
+    }
+  });
 });

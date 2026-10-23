@@ -42,6 +42,9 @@ const HeroTimeline = ({ records = [], language = "id" }) => {
   }
 
   const times = records.map((rec) => Number(rec?.timestamp || 0));
+  // Mutation local to the closure on purpose: the duplicate run is consumed
+  // while walking the records, in buffer order.
+  let duplicateRun = 0;
   const oldest = Math.min(...times);
   const newest = Math.max(...times);
   const span = newest - oldest || 1;
@@ -74,9 +77,15 @@ const HeroTimeline = ({ records = [], language = "id" }) => {
         />
         {records.map((rec, index) => {
           const time = Number(rec?.timestamp || 0);
-          // Duplicate timestamps (a packet burst) clamp progressively so two
-          // dots on one ms still stack visibly instead of overwriting.
-          const pct = (((time - oldest) / span) * 0.94 + index * 0.002) * 100;
+          // Duplicate timestamps (a packet burst) stack progressively so two
+          // dots on one ms stay visible instead of overwriting. The nudge is
+          // a run-length on equality, not index times a constant: a buffer
+          // with distinct times must have its dots sit exactly at their
+          // elapsed time, and only the duplicates walk right.
+          const run =
+            index > 0 && times[index - 1] === time ? duplicateRun + 1 : 0;
+          duplicateRun = run;
+          const pct = (((time - oldest) / span) * 0.94 + run * 0.002) * 100;
           const clamped = Math.min(97.5, Math.max(2.5, pct));
           const tone = RISK_DOT[rec?.risk] || RISK_DOT.safe;
           return (

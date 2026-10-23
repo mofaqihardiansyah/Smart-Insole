@@ -126,6 +126,7 @@ semantics. Neutrals do not count toward that limit.
 | `safe` | `#15803D` | risk: Aman / Safe | 5.02:1 on white (AA) |
 | `warning` | `#A16207` | risk: Waspada / Warning | 4.92:1 on white (AA) |
 | `danger` | `#B41E1E` | risk: Bahaya / Danger | 6.68:1 on white (AA) |
+| `danger-hover` | `#961414` | danger button hover fill | white on it 8.72:1 (AAA) |
 | `safe-ink` | `#12552D` | written ON `bg-safe/15` | 7.25:1 (AA) |
 | `warning-ink` | `#823700` | on `bg-warning/15` | 6.90:1 (AA) |
 | `danger-ink` | `#821414` | on `bg-danger/15` | 7.89:1 (AA) |

@@ -31,7 +31,11 @@ const FunnelBars = ({ zones = [], language = "id" }) => {
   return (
     <ul className="pb-6">
       {zones.map((zone) => {
-        const value = Number(zone?.value || 0);
+        // A corrupt payload can survive the page's coercion as a truthy
+        // non-number. A NaN must become 0 before the division below, or the
+        // invalid "NaN%" width resolves to a full-width fabricated bar.
+        const raw = Number(zone?.value || 0);
+        const value = Number.isFinite(raw) ? raw : 0;
         const share = (value / total) * 100;
         return (
           <li

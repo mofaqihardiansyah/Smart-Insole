@@ -6,14 +6,15 @@ import { devWarn } from "../../utils/devWarn";
  *
  * The name is historical (the brief forbids renaming exports).
  *
- * Verdana Health button spec (the app register):
- * - Primary: navy #0F172A fill, white text, #020617 hover fill.
- * - Secondary: white fill, navy text, 1px #E2E8F0 border, slate/5 hover fill.
- *   The reference puts this beside the primary action, so it keeps the card
- *   surface rather than being transparent: on a pale canvas a transparent
- *   button reads as a link.
- * - Ghost: transparent, slate #475569 text, #F1F5F9 hover fill.
- * - Danger: red #DC2626 fill, white text, with no hover step (see `danger`).
+ * The app register's ranks, read off the Cadra light reference (values live in
+ * `index.css` and are measured in `DESIGN.md`; no hex is repeated here so the
+ * token layer keeps exactly one home):
+ * - Primary (`filled`): ink fill, white text, darker ink hover.
+ * - Secondary (`outline`): white fill, ink text, 1px hairline border, tinted
+ *   hover fill. It sits beside the primary rank with the card surface rather
+ *   than transparency: on a warm canvas a transparent button reads as a link.
+ * - Subtle (`quiet`): transparent, muted ink text, tinted hover fill.
+ * - Danger (`danger`): danger fill, white text, with a darkened hover step.
  *
  * The landing register's two CTA ranks (`warm`, `warmOutline`) belong to this
  * same map rather than to a landing-only button. `DESIGN.md` keeps the `Glass*`
@@ -31,14 +32,13 @@ const VARIANTS = {
     "border border-border-strong bg-surface text-fg hover:bg-surface-2",
   ghost: "text-fg-2 hover:bg-surface-2 border border-transparent",
   quiet: "border border-border-strong bg-surface-2 text-fg hover:bg-surface-3",
-  // `danger` carries no hover step on purpose. `--danger-hover` (index.css:58)
-  // is byte-identical to `--danger` (:57), so the danger hover utility (the
-  // `bg-danger-hover` fill) changed nothing, and `DESIGN.md` declares no second
-  // red. Inventing a darker hex
-  // here would put a raw colour in a component, which is the one thing the
-  // token layer exists to prevent. The missing token is recorded for the owner
-  // as backlog 999.3 instead.
-  danger: "bg-danger text-white border border-transparent",
+  // `danger` darkens on hover through the real `bg-danger-hover` token
+  // (index.css `--danger-hover`, #961414, measured in `DESIGN.md`). The old
+  // note that the token was byte-identical to `--danger` no longer holds: the
+  // Cadra pass darkened it to a real step, so the hover is wired here rather
+  // than left as a dead key in the token layer.
+  danger:
+    "bg-danger text-white hover:bg-danger-hover border border-transparent",
   // Landing register. `warm` fills on `warm-accent-deep` (the app's navy
   // primary, #0F172A), which keeps white text at 17.85:1 and puts the landing
   // CTAs on the same register as every app button. Its `hover:opacity-90` is

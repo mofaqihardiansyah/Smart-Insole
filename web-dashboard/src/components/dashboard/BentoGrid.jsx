@@ -145,7 +145,7 @@ const BentoCell = ({ card, index = 0, columns = 3, cardMode = false }) => {
 
       {card.spark && <div className="mt-2 max-w-full">{card.spark}</div>}
 
-      {card.meter && card.meter.max > 0 && (
+      {card.meter && card.meter.max > 0 && Number.isFinite(Number(card.meter.value)) && (
         <div
           className={`mt-3 h-1.5 w-full rounded-full ${
             dark ? INVERTED.meterTrack : "bg-surface-3"
@@ -160,7 +160,7 @@ const BentoCell = ({ card, index = 0, columns = 3, cardMode = false }) => {
             style={{
               width: `${Math.min(
                 100,
-                Math.max(0, (card.meter.value / card.meter.max) * 100)
+                Math.max(0, (Number(card.meter.value) / card.meter.max) * 100)
               )}%`,
             }}
           />
