@@ -10,24 +10,24 @@ surface:
 
 | Surface | Register | Where |
 |---|---|---|
-| The **app** (signed in) | Verdana Health clinical console. Pale slate canvas, white cards, 288px rail, 72px top bar with search. | Dashboard, Monitoring, History, Device, Settings, Profile, Notifications, Login, Register |
-| The **landing** (public) | The app's palette at marketing scale: same slate canvas, ink and navy CTAs, larger radii, deeper shadows. | `/` for a signed-out visitor |
+| The **app** (signed in, and the auth forms that share its tokens) | Cadra light clinical console. Warm `#EFEFEC` canvas, white cards, one floating dark nav pill over a 1400px content column. | Dashboard, Monitoring, History, Device, Settings, Profile, Notifications, Login, Register |
+| The **landing** (public) | The app's palette at marketing scale: same light canvas, ink and navy CTAs, larger radii, deeper shadows. | `/` for a signed-out visitor |
 
 Both draw on one token layer. The landing re-declares its own values under
 `.landing-scope`, so the shared components (GlassCard, GlassButton, StatusChip)
 keep their measured light form there instead of being restyled twice.
 
-The app register is the reference console the owner supplied
-(`verdana-health-design-system-DESIGN.md` plus the desktop reference image).
-The landing shares it, and adds only scale: bigger radii, longer type steps and
-its own shadows.
+The app register follows the Cadra light reference the owner supplied
+(`docs/reference-design/DefaultVersion_ExporttoFigma...Dashboard · Cadra.svg`),
+re-read for this product: its composition and its stat-card vocabulary are
+adopted; its clinic content is not.
 
 ---
 
 ## Design Read
 
 Reading this as a realtime clinical plantar-pressure console for elderly
-diabetic patients and their caregivers, in a calm, light, trustworthy clinical
+diabetic patients and their caregivers, in a calm, warm, trustworthy clinical
 language: **ENERGY 2 / RHYTHM 2 / MOTION 1**.
 
 | Dial | Value | Why |
@@ -40,7 +40,7 @@ language: **ENERGY 2 / RHYTHM 2 / MOTION 1**.
 
 **Colour is a vital sign.**
 
-The chrome is near-monochrome navy and white. Saturation is reserved
+The chrome is near-monochrome ink, white and warm grey. Saturation is reserved
 *exclusively* for pressure and risk. Nothing decorative is ever saturated.
 
 That single rule does four jobs at once: it makes the pressure map the
@@ -49,12 +49,16 @@ logo swap (the design is still recognisable with the wordmark removed), and it
 means that when something on screen is coloured, it is because a foot needs
 attention.
 
-**This is why the metric tiles are not tinted by position.** The reference
-image gives its four stat cards four decorative pastel icon tiles (indigo,
-blue, grey, mint). That is four hues doing no work. Here the icon tile takes the
-*metric's own semantic colour*: sage while the reading is good, amber or red
-when it is not. The reference's visual rhythm survives, and the colour now means
-something.
+**This is why the pastel tints are assignments, not rhythm.** The Cadra
+reference paints its stat cards with four decorative pastels by position: four
+hues doing no work. Here each pastel is *assigned to one job by plan* and used
+by name: sage for the score tile, cream for the duration tile, blue for the
+informational battery and totals. Two hard rules ride along: every tinted card
+still takes the semantic ink for its verdict-bearing parts, so the reading
+never depends on the pastel, and the one risk-count card stays on plain white
+(a cream card behind a danger count would read as decoration over a vital
+sign). The darkest surface on the page, `#141414`, exists for exactly one job:
+the headline metric the user is watching.
 
 ## Risk inference: Random Forest
 
@@ -83,7 +87,7 @@ The clinical contract is asserted in `randomForestRisk.test.js` across
 the whole sweep: if a future change makes a 40 kPa reading "safe", the
 test fails before a patient is told they are fine.
 
-The expert rules themselves stay in `src/utils/fuzzyRisk.js` as the
+The expert rules themselves are kept in `src/utils/fuzzyRisk.js` as the
 labelling function for the training data — they are the clinical source
 of truth, not the runtime inference path.
 
@@ -95,49 +99,76 @@ surface than from the reverse.
 
 Because exactly one theme ships, there is no half-built toggle to break, and
 no `dark:` variants exist anywhere. `index.html` carries no theme class and
-`color-scheme: light` only.
+`color-scheme: light` only. The one dark surface in the app is a single
+metric card per page (the inverted tile), which is a card fill, not a theme.
 
 ## Palette
 
-Maximum one chromatic chrome colour (the accent) plus the three risk semantics.
-Neutrals do not count toward that limit.
+Maximum one chromatic chrome colour (the sage accent) plus the three risk
+semantics. Neutrals do not count toward that limit.
 
 | Token | Hex | Role | Measured |
 |---|---|---|---|
-| `bg` | `#F8FAFC` | page canvas, rail | - |
-| `surface` | `#FFFFFF` | card surface, top bar | - |
-| `surface-2` | `#F1F5F9` | table head, search field, account card | - |
-| `surface-3` | `#E2E8F0` | inset well, avatar fallback | - |
-| `fg` | `#0F172A` | primary ink | 18.1:1 on white (AAA) |
-| `fg-2` | `#334155` | secondary text | 12.6:1 on white (AAA) |
-| `muted` | `#64748B` | captions, units, nav idle | 4.8:1 on white (AA) |
-| `primary` | `#0F172A` | navy: actions, links, focus | 18.1:1 on white (AAA) |
-| `primary-hover` | `#020617` | button hover fill | - |
-| `secondary` | `#059669` | sage: interactive, positive states | 4.6:1 on white (AA) |
-| `tertiary` | `#0EA5E9` | info blue | 3.0:1: tints and large text only, never a 12px label |
-| `border` | `#EAEFF4` | card edge, hairline | 1.1:1 - decorative only |
-| `border-strong` | `#E2E8F0` | panel and row divider edge | 1.3:1 - decorative only |
-| `border-control` | `#7C8695` | input and control outlines | 3.47:1 on bg (passes non-text) |
-| `safe` | `#16A34A` | risk: Aman / Safe, on white | 4.5:1 on white (AA) |
-| `warning` | `#CA8A04` | risk: Waspada / Warning, on white | 4.6:1 on white (AA) |
-| `danger` | `#DC2626` | risk: Bahaya / Danger, on white | 5.9:1 on white (AA) |
-| `safe-ink` | `#166534` | the same meaning, written ON `bg-safe/15` | 6.03:1 (AA) |
-| `warning-ink` | `#92400E` | on `bg-warning/15` | 6.10:1 (AA) |
-| `danger-ink` | `#991B1B` | on `bg-danger/15` | 6.56:1 (AA) |
-| `secondary-ink` | `#065F46` | sage text/glyph on `bg-secondary/15` | 6.40:1 (AA) |
+| `bg` | `#EFEFEC` | page canvas | fg on it 17.14:1 (AAA) |
+| `surface` | `#FFFFFF` | card, hero card, nav row | fg on it 19.75:1 (AAA) |
+| `surface-2` | `#F7F7F5` | table head, search field, hover rows | muted on it 8.70:1 (AAA) |
+| `surface-3` | `#EBEBE7` | inset well, avatar fallback, meter track | decorative |
+| `fg` | `#0A0A0F` | primary ink | 19.75:1 on white (AAA) |
+| `fg-2` | `#282832` | secondary text | 14.59:1 on white (AAA) |
+| `muted` | `#46464F` | captions, units, idle | 9.34:1 on white (AAA) |
+| `primary` | `#0A0A0F` | ink: actions, links, focus | 19.75:1 on white (AAA) |
+| `primary-hover` | `#000000` | button hover fill | - |
+| `secondary` | `#04644C` | sage: interactive, positive states | 7.16:1 on white, 6.22:1 on bg (AA) |
+| `tertiary` | `#0987B8` | info blue | 4.06:1 on white, 3.53:1 on bg: tints and large text only, never a 12px label |
+| `border` | `#E4E4E0` | card edge, hairline | 1.11:1 on bg - decorative only |
+| `border-strong` | `#DCDCD8` | panel and row divider edge | decorative |
+| `border-control` | `#78787F` | input and control outlines | 3.80:1 on bg (passes non-text) |
+| `safe` | `#15803D` | risk: Aman / Safe | 5.02:1 on white (AA) |
+| `warning` | `#A16207` | risk: Waspada / Warning | 4.92:1 on white (AA) |
+| `danger` | `#B41E1E` | risk: Bahaya / Danger | 6.68:1 on white (AA) |
+| `safe-ink` | `#12552D` | written ON `bg-safe/15` | 7.25:1 (AA) |
+| `warning-ink` | `#823700` | on `bg-warning/15` | 6.90:1 (AA) |
+| `danger-ink` | `#821414` | on `bg-danger/15` | 7.89:1 (AA) |
+| `secondary-ink` | `#054B37` | sage text/glyph on `bg-secondary/15` | 8.03:1 (AA) |
+
+### The Cadra stat-card tints
+
+Pastel card fills for the meter band and informational strips. Decorative by
+role: the meaning on a tinted card still travels through the fg/ink pairs,
+and the ink on every tint is the primary `#0A0A0F` ramp:
+
+| Tint | Hex | Assigned to | fg on it |
+|---|---|---|---|
+| `tint-cream` | `#F3DFA6` | the duration tile | 13.53:1 |
+| `tint-mint` | `#CBE8D4` | the score tile | 13.63:1 |
+| `tint-blue` | `#CADCF1` | the battery tile, the history total | 12.77:1 |
+
+### The inverted card
+
+One metric tile per page renders on `#141414` with its own text ramp, so the
+darkest surface is reliably the one place the headline number lives:
+
+| Token | Hex | Measured on `#141414` |
+|---|---|---|
+| `inverted-fg` | `#FFFFFF` | 18.42:1 (AAA) |
+| `inverted-muted` | `#A9A9A6` | 7.82:1 (AAA) |
+| `inverted-safe` | `#22C55E` | 8.08:1 on dark; 6.17:1 over the `bg-white/10` chip fill |
+| `inverted-warning` | `#EAB308` | 9.61:1; 7.33:1 over `bg-white/10` |
+| `inverted-danger` | `#F87171` | 6.66:1; 5.08:1 over `bg-white/10` |
+| `inverted-secondary` | `#34D399` | 9.58:1; 7.31:1 over `bg-white/10` |
 
 ### Why there are ink tokens at all
 
 Every accent above is measured against **white**. A status chip is that accent
 at 15 percent, and the meaning is written on top of the tint, where the accent
-drops well below what 12px text needs:
+drops below what 12px text needs:
 
 | Pair | Measured | Verdict |
 |---|---|---|
-| `#16A34A` on `bg-safe/15` | 2.78:1 | fails AA text, fails the 3:1 a glyph needs |
-| `#CA8A04` on `bg-warning/15` | 2.53:1 | fails both |
-| `#DC2626` on `bg-danger/15` | 3.81:1 | fails AA text |
-| `#059669` on `bg-secondary/15` | 3.14:1 | passes as a glyph, fails as text |
+| `#15803D` on `bg-safe/15` | 4.09:1 | fails AA text |
+| `#A16207` on `bg-warning/15` | 4.04:1 | fails AA text |
+| `#B41E1E` on `bg-danger/15` | 5.17:1 | passes text, still one voice short |
+| `#04644C` on `bg-secondary/15` | 5.66:1 | passes text |
 
 So one meaning owns exactly one **pair**: the bright accent for strokes, fills
 and text on a white surface, and the ink for anything sitting on that meaning's
@@ -145,19 +176,20 @@ tint. The chip label, the chip glyph, the stat-card icon tile and the banner
 icon all take the ink. Nothing else may use either.
 
 The bright risk values (`#22C55E`, `#EAB308`, `#EF4444`) fail AA as text on
-light surfaces (roughly 2.2 to 3.3:1), and they also measure under the 3:1 a
-graphical object needs against the light sole fill the heatmap draws on. They
-are therefore not shipped at all. The darkened versions above are used
-everywhere a risk colour appears.
+light surfaces (roughly 2.2 to 3.3:1). They are therefore used only inside the
+inverted card's own ramp, where the `#141414` fill reverses the math and each
+measures 5:1 or better. No bright green, yellow or red exists on any light
+surface.
 
 Two further documented refusals:
 
-- The reference labels its stat captions in `#94A3B8`, which measures **2.6:1**
-  on white. It fails AA for text. Captions ship in `muted` (4.8:1) with an
-  italic voice, so the register still reads lighter without dropping below 4.5:1.
+- The Cadra reference labels its stat captions in `#94A3B8`, which measures
+  **2.6:1** on white. It fails AA for text. Captions ship in `muted`
+  (9.3:1) with an italic voice, so the register still reads lighter without
+  dropping below 4.5:1.
 - The reference's "in progress" chip is light blue with `#3B82F6` text. The
   informational chip here keeps the blue tint but takes **navy ink**, because
-  `tertiary` as a 12px label measures 3.0:1 and fails AA.
+  `tertiary` as a 12px label fails AA.
 
 ### Data visualisation
 
@@ -172,9 +204,9 @@ colour-vision-deficiency-safe categorical set:
 
 **Single source:** these three values are defined once, in the `SERIES` array in
 `web-dashboard/src/utils/series.js`. Every consumer reads that module: the live
-waveform (`TelemetryChart`), the peak trend (`TrendChart`) and the zone donut
-(`LoadDonut`). The values themselves stay in `index.css` as `--series-1`,
-`--series-2` and `--series-3`, so this module names those custom properties and
+waveform (`TelemetryChart`) and the peak trend (`TrendChart`). The values
+themselves stay in `index.css` as `--series-1`, `--series-2` and
+`--series-3`, so this module names those custom properties and
 never a hex. The Heatmap uses the risk tokens instead, because the heatmap
 encodes pressure magnitude, which is a risk question, not a series-identity
 question.
@@ -182,14 +214,17 @@ question.
 `TrendChart` draws one trace that is deliberately *not* one of these three. It is
 the non-identity `--secondary` sage line, because that panel answers "is the peak
 climbing", never "which zone is worst", and giving it a series key would re-encode
-one trend as a three-series categorical chart. The carve-out is recorded rather
-than removed.
+one trend as a three-series categorical chart. The same sage carries the
+stat-card sparkline for the same reason: a sparkline under one score is one
+trend, not three series. The carve-out is recorded rather than removed.
 
 **Quarantine rule:** the three series colours appear *only* inside the chart.
 They never touch buttons, badges, navigation or headings. An automated gate walks
 the shipped `.jsx` and `.js` sources and fails on a raw `--series-N` reference in
 any file other than `index.css` and `utils/series.js`, so the rule is enforced
-rather than intended.
+rather than intended. The zone-load funnel takes no series colour: each bar is
+one accent, and the sensor point's identity travels in its row label, so the
+palette cannot imply a categorical chart where there is none.
 
 ---
 
@@ -210,7 +245,7 @@ Type scale:
 | `display` | `clamp(2.5rem, 5vw, 4.5rem)` | 700 | Landing hero only |
 | `landing-h2` | `clamp(1.875rem, 2.2vw + 0.9rem, 3rem)` | 600 | Landing section headings and the closing CTA |
 | `stat` | 30px | 700 | A metric value (the four dashboard tiles) |
-| `h1` | 30px | 700 | One per page. On the dashboard it is the greeting. |
+| `h1` | 30px | 700 | One per page. On the dashboard it is the hero greeting. |
 | `h2` | 24px | 600 | Rare; a nested section title |
 | `card-title` | 20px | 700 | Every `PanelHeader` |
 | `h4` | 16px | 500 | Compact card headings, mobile brand line |
@@ -223,16 +258,16 @@ Type scale:
 | `micro` | 11px | 600 | The brand tagline and nowhere else |
 
 The `<h1>` element is one per page. Data pages set it at the `h1` size through
-`PageHeader`; the auth pages (Login, Register, Verify OTP) keep one form card
-under the mark, so their `h1` renders at the `h2` size, one step above
-`card-title` instead of tying with it. The same count semantic (readings,
-warnings) renders at the `stat` size on both the History summary strip and the
-Profile session blocks, so one metric is one size everywhere it appears.
+`PageHeader` (dashboard uses the hero card's own `h1`); the auth pages (Login,
+Register, Verify OTP) keep one form card under the mark, so their `h1` renders
+at the `h2` size, one step above `card-title` instead of tying with it. The
+same count semantic (readings, warnings) renders at the `stat` size on both
+the History summary strip and the Profile session blocks, so one metric is one
+size everywhere it appears.
 
 Sentence-case headings everywhere except table column heads and chips. The
-reference sets its decorative labels in wide-tracked uppercase; uppercase is
-reserved here for things that are genuinely a column or a state, which is what
-antislop R-06 asks for.
+archive sets its decorative labels in wide-tracked uppercase; uppercase is
+reserved here for things that are genuinely a column or a state.
 
 ---
 
@@ -242,29 +277,34 @@ Breakpoints are placed where the content stops working, not at device widths.
 
 | Width | State |
 |---|---|
-| `< 640px` | One column. Sticky 64px top bar with brand, bell and a Menu drawer. Tables become stacked definition rows. |
-| `640px - 1023px` | Two-column tile grid. Search moves into the drawer. |
-| `>= 1024px` | Fixed 288px rail, sticky 72px top bar with search and account controls, content column capped at 1400px with 32px gutters. |
+| `< 640px` | One column. Sticky top bar: compact brand, bell and a Menu drawer. Tables become stacked definition rows. |
+| `640px - 1023px` | Same bar; two-column tile grid. Search stays in the drawer. |
+| `>= 1024px` | One sticky header over the warm canvas: white brand card on the left, the dark nav pill beside it, search, bell and the account menu on its right. The content column caps at 1400px with 32px gutters. |
+
+**The shell is a header, not a rail.** The earlier 288px left rail is gone.
+Destinations live in one place: the dark nav pill. A brand card anchors its
+left, and three state controls (search, bell, account) close its right. The
+header is sticky so the controls never scroll away, and it paints in the
+canvas colour rather than white, so the cards below it stay the brightest
+terrain on the page.
 
 Dashboard composition, top to bottom:
 
-1. Greeting row: greeting and the real date on the left, the two standing
-   actions (Export CSV, Mark as read) on the right, and directly under the
-   greeting the risk verdict as a large `StatusChip` (level icon, `risk.*`
-   label, level tint). The verdict is the page's answer to "is anything wrong",
-   so it is the second thing the eye lands on after the greeting heading. It
-   no longer sits inside the subtitle as coloured body text: that was the
-   page's most important read rendered at its least prominent size.
-2. The meter band: the four readings in ONE open strip, full content width,
-   hairline ruled top and bottom and between slots on one row, on a white
-   fill. Not four boxed stat cards: numbers in one instrument, not four
-   small posters.
-3. Station 01 / 02: the trend panel (two thirds) beside the load distribution
-   donut (one third). These are cards, because each holds a plot surface.
-4. Station 03: the live reading feed, full width and OPEN: a ruled section
+1. **The hero card.** Greeting `h1`, long date, the risk verdict as a large
+   `StatusChip` directly under it (icon, `risk.*` label, level tint), the two
+   standing actions (Export CSV, Mark as read) pinned right, and across the
+   card's foot the real buffer's event strip (`HeroTimeline`).
+2. **The meter band.** The four readings as Cadra stat cards: pastel-tinted
+   fills, rounded corners, soft shadows, with one inverted dark card for the
+   headline peak. The duration and battery tiles carry proportion meters; the
+   score tile carries the buffer's sparkline.
+3. **Station 01 / 02:** the trend panel (two thirds) beside the zone-load
+   funnel (one third). These are cards, because each holds a plot surface.
+4. **Station 03:** the live reading feed, full width and OPEN: a ruled section
    with no card walls, because a running tape held inside a white box is
-   decoration around data.
-5. Station 04: the pressure map, full width, in a card, with the colour
+   decoration around data. Each row's pressure reads against the danger
+   threshold as a mini bar painted by that row's own verdict.
+5. **Station 04:** the pressure map, full width, in a card, with the colour
    legend under it.
 
 **Station numbers.** Each numbered panel carries its index (01 to 04) in
@@ -277,11 +317,10 @@ The order is the order the questions are asked: how is it now, which way is it
 going, where is the load, what just happened, and where exactly.
 
 The map sits last even though it is the product's focal visual, because the
-reference composition is what the owner asked to match and because the page
-reads better as a funnel than as a map with footnotes. A 56px floating control
-in the bottom-right jumps to it, and that control is hidden below `lg`, where
-the map is one short scroll away and the button would cover the content it
-exists to reveal.
+page reads better as a funnel than as a map with footnotes. A 56px floating
+control in the bottom-right jumps to it, and that control is hidden below
+`lg`, where the map is one short scroll away and the button would cover the
+content it exists to reveal.
 
 Nothing is `100vh`; full-height sections use `min-h-[100dvh]`. No horizontal
 overflow is permitted at any width, and nothing is clipped at 200% zoom.
@@ -296,17 +335,16 @@ overflow is permitted at any width, and nothing is clipped at 200% zoom.
 | Buttons, inputs, controls | 8px (`rounded-control`) |
 | Icon tiles, meter-band tiles, the FAB | 12px (`rounded-tile`) |
 | Cards, modals, dialogs | 16px (`rounded-card`) |
-| Product rail right edge, mobile nav drawer | 24px (`rounded-rail`) |
+| The nav pill, the brand card, the account trigger | full (`rounded-pill`) |
+| Mobile nav drawer | 24px (`rounded-rail`) |
 | Avatars and indicator dots | full (`rounded-full`) |
 
-Cards are never pills, and **nothing else is either**. The landing register
-adds its larger steps (`panel` 16px, `hero` 28/40px, `cell` 28px, `section`
-32/36px) under the same law. Circles are reserved for avatars and indicator
-dots alone: a circle around a state tag, a search field, a button or a nav bar
-is an interchangeable shape doing no work, so the `pill` radius token has been
-deleted from the config and a reintroduction fails the build. The no-pill rule
-is what keeps the squared tags, the boxed trend panel, the open meter band and
-the rounded hero from reading as one reusable "rounded thing" beyond the page.
+The pill radius exists for **three named elements**: the nav pill, the brand
+card that anchors it, and the avatar roundel that opens the account menu. That
+is the whole list. A pill radius elsewhere in the app is caught in review
+against this comment rather than the build gate, because the shapes it
+duplicates are exactly the ones the no-pill law existed to refuse. Circles
+are still reserved for avatars and indicator dots.
 
 **Atmosphere.** No decorative gradients and no blurred glow blobs, on either
 register. Saturation belongs to data (risk, series, the heatmap), flat
@@ -318,9 +356,9 @@ conflating them is what previously left the landing with flat panels:
 
 | Token | Shadow | Owner | Use |
 |---|---|---|---|
-| `panel` | 1px offset, 2px blur, navy 4% | app | every card. The card reads as a panel because of edge plus this one lift, not because it floats. |
-| `md` | 4px offset, 16px blur, navy 7% | app | a genuinely elevated card |
-| `overlay` | 8px 32px, navy 10% | app | modal dialogs only |
+| `panel` | 1px offset, 2px blur, ink 4% | app | every card and nav pill. The card reads as a panel because of edge plus this one lift, not because it floats. |
+| `md` | 4px offset, 16px blur, ink 7% | app | a genuinely elevated card |
+| `overlay` | 8px 32px, ink 10% | app | modal dialogs only |
 | `fab` | 10px 30px sage 45% | app | the single floating control |
 | `card` | 14px 30px, ink 25% | landing | landing panels |
 | `lift` | 24px 44px, ink 30% | landing | hovered and hero panels |
@@ -345,8 +383,8 @@ hierarchy left to express.
   `prefers-reduced-motion: no-preference`. It jumps instantly otherwise.
 
 Forbidden on the app pages: scroll reveals, parallax, entrance animations,
-floating elements, `window.addEventListener('scroll')`, and anything that
-ignores `prefers-reduced-motion`.
+floating elements, `window.addEventListener('scroll')`, tailwind `animate-*`
+utilities, and anything that ignores `prefers-reduced-motion`.
 
 The landing keeps its own, separately documented motion budget below.
 
@@ -354,27 +392,38 @@ The landing keeps its own, separately documented motion budget below.
 
 ## Navigation structure
 
-Six destinations in the rail, each a distinct task rather than a page type:
-Dashboard, Monitoring, History, Device, Settings, Profile.
+Six destinations in the nav pill, each a distinct task rather than a page
+type: Dashboard, Monitoring, History, Device, Settings, Profile.
 
-**Notifications is not in the rail.** It lives on the bell in the top bar (with
-a live unread dot), and on the same bell in the mobile header, because an alert
-queue is a state of the app rather than a place in it. Listing it in both the
-rail and the header would be two controls for one destination.
+**Notifications is not in the pill.** It lives on the bell at the header's
+right (with a live unread dot), and on the same bell in the mobile header,
+because an alert queue is a state of the app rather than a place in it.
+Listing it in the pill too would be two controls for one destination.
 
-The top bar carries the two things that are about *state* rather than *place*:
-search, and the account controls (notifications, profile). The language switch
-existed here and is gone: the interface speaks Indonesian only (LANG-01, closed
-2026-10-18), so a second language would be a dead control, which this page's
-own rules refuse.
+**The pill owns every destination exactly once.** The brand card is not a
+link: the pill's first item is the dashboard, and a clickable logo would make
+`a[href="/"]` a repeat. The drawer and the account menu ship their menus
+closed, so no destination link is ever mounted twice below `lg` either.
+
+The header's right group carries the three things that are about *state*
+rather than *place*: search, the bell, and the account menu (profile link,
+sign out). The language switch existed here and is gone: the interface speaks
+Indonesian only (LANG-01, closed 2026-10-18), so a second language would be a
+dead control, which this page's own rules refuse.
 
 Mobile uses a drawer rather than a bottom bar. A six-item bottom row cannot
 hold a readable label at 360px, and an icon-only row is the failure mode this
 product's elderly audience cannot afford.
 
+**The account menu is a disclosure.** Its trigger states its name and its
+state (`aria-expanded`, `aria-controls`), lists the two account acts it owns
+(profile, sign out), closes on Escape with focus returned to the trigger, and
+closes on an outside click. Keyboard users never lose their place when it
+shuts.
+
 ### The search is real
 
-The top bar search is a combobox, not decoration. It offers two kinds of
+The header search is a combobox, not decoration. It offers two kinds of
 result, because this product has exactly two things worth jumping to:
 
 - **Pages**: the six destinations, matched by label.
@@ -383,7 +432,7 @@ result, because this product has exactly two things worth jumping to:
 
 Arrow keys, Enter, Escape and the outside-click all work. Every result
 navigates somewhere that exists, which is what separates it from the
-reference's placeholder field.
+archive's placeholder field.
 
 ---
 
@@ -393,18 +442,20 @@ The `Glass*` component names are retained (`GlassCard`, `GlassButton`,
 `GlassInput`, `GlassTable`, `GlassForm`) because the design brief forbids
 renaming exports and the pages import them by name. The styling is not glass:
 all `backdrop-blur` was removed. The names are historical identifiers, not a
-description of the surface treatment. The same applies to `BentoGrid`, which is
-now a plain four-up metric row rather than a mosaic.
+description of the surface treatment. The same applies to `BentoGrid`, which
+carries the meter band rather than a mosaic.
 
-New primitives added by this pass, with the reason each exists:
+Primitives, with the reason each exists:
 
 | Component | Why it exists |
 |---|---|
 | `Chip` | Filter labels, deltas and state tokens need one tint vocabulary. Tones are the semantic set only; there is no arbitrary colour prop. |
-| `TrendChart` | The dashboard's trend panel. One series, because the donut and the map already answer "which zone". Its single trace is the non-identity `--secondary` sage carve-out, not one of the three series values; a later reader who "fixes" the odd one out by giving it a series key would triple the ink for one answer. |
-| `LoadDonut` | Three parts of one whole, with the whole stated in the ring's centre. |
+| `TrendChart` | The dashboard's trend panel. One series, because the funnel and the map already answer "which zone". Its single trace is the non-identity `--secondary` sage carve-out, not one of the three series values. |
+| `Sparkline` | The stat card's small trend, drawn from the real buffer. Skips dropped samples, draws nothing under two points, and takes only the non-identity sage stroke. |
+| `HeroTimeline` | The hero card's event strip: one dot per buffered reading over elapsed time, painted by that reading's verdict, with a summary label built from real counts. |
+| `FunnelBars` | The zone-load panel: one row per sensor point, its share as a bar, its real kPa beside it. One accent; identity in labels. Replaced `LoadDonut`. |
 | `RowMenu` | The per-row actions overflow. A real menu, so the trigger is not a dead glyph. |
-| `AppLayout` / `AppSidebar` / `AppTopbar` / `AppSearch` | The reference shell. `FloatingNavbar` was removed with it: it had been a rail for three redesigns and the name had stopped describing anything. |
+| `AppLayout` / `AppNavPill` / `AppTopbar` / `AppSidebar` / `AppSearch` | The Cadra shell. `AppSidebar` survives only as a helper module (icon registry, initials, the drawer's account card); `AppTopbar` is the header's right group; `AppNavPill` owns the destinations. |
 | `UserContext` | One auth listener, read by the shell and the pages, instead of one listener per caller. |
 
 ---
@@ -415,19 +466,27 @@ New primitives added by this pass, with the reason each exists:
 - Every interactive target is at least 44x44px on touch, and only drops to
   34 to 40px from `lg`, where a pointer is doing the clicking.
 - Every interactive element is reachable and operable by keyboard, with a
-  visible focus ring at 3:1 or better.
+  visible focus ring at 3:1 or better. The nav pill's focus ring is white and
+  inset, because the pill itself is the darkest surface a Tab order ever
+  crosses.
 - Risk is never conveyed by colour alone: icon **and** text label **and**
-  colour, always.
+  colour, always. On the inverted card the same rule holds through the
+  `inverted-*` ramp.
 - Every data view has a loading, empty and error state, and the copy names the
-  cause and the next action rather than saying "No data".
+  cause and the next action rather than saying "No data". The timeline and the
+  sparkline degrade the same way: an empty buffer leaves a bare line and draws
+  nothing, never an invented shape.
 - Live pressure numbers are `aria-live="off"`. Only a *change in risk level* is
   announced, through one `aria-live="polite"` region. Announcing three numbers
-  every second would make the page unusable with a screen reader.
+  every second would make the page unusable with a screen reader, and no
+  second live region exists anywhere in the shell.
 - A `<table>` is only rendered from `md` up; below that the same rows render as
   stacked definition rows, because a table cannot reflow and horizontal scroll
   on a phone is not a layout.
-- The mobile drawer is a real dialog: focus moves in, Escape closes, the page
-  behind cannot scroll, and focus returns to the trigger.
+- The mobile drawer is a real dialog: focus moves in, Tab is trapped, Escape
+  closes, the page behind cannot scroll, and focus returns to the trigger.
+- The account menu is a disclosure with the same guarantees, minus the scroll
+  lock a popover does not need.
 - Forms label above the input, errors below in text. Fields scroll into view
   above the on-screen keyboard.
 
@@ -438,21 +497,24 @@ New primitives added by this pass, with the reason each exists:
 - No em dashes in shipped copy. The shipped copy is Indonesian only, so one
   dictionary holds to this rule. A middot or a pipe separates ideas instead.
 - No fabricated telemetry. There is exactly one data source, the real insole
-  through Firebase - the demo simulator was removed, so an unanswered device
-  shows the honest empty states and connection banners, never invented
-  numbers. Values with no source read as unavailable.
-- The reference's four decorative stat-card tints, its invented patient rows,
-  its revenue figure and its "Clinic status: Optimal" line are all content
-  from a different product. The layout is adopted; the content is not.
-- The two chips that look like the reference's trend markers are computed from
-  the real ring buffer (mean peak of the newer half against the older half,
-  with a 3 percent dead band), not written into the markup.
+  through Firebase. An unanswered device shows the honest empty states and
+  connection banners, never invented numbers. Values with no source read as
+  unavailable. The restyle's new shapes obey the same law: the timeline's dots
+  are buffered readings, the sparkline is buffer peaks, the funnel bars are
+  zone loads with the total stated, and each shape collapses to its empty
+  state when the data has not arrived.
+- The Cadra reference's invented patient rows, its revenue figure and its
+  "Clinic status: Optimal" line are content from a different product. The
+  composition is adopted; the content is not. "BUY THIS TEMPLATE" and any
+  comparable banner has no counterpart here.
+- The two chips that look like trend markers are computed from the real ring
+  buffer (mean peak of the newer half against the older half, with a 3 percent
+  dead band), not written into the markup.
 - No invented statistics, testimonials, compliance claims or user counts. This
   is a thesis instrument; the only evidence shown is real measured output.
 - No dead controls. A button that cannot act is a defect, not decoration. The
-  reference's "Export PDF" and "New Session" become the two actions this
-  product actually has: export the session buffer to CSV, and mark the alert
-  queue as read.
+  two standing actions are the two this product actually has: export the
+  session buffer to CSV, and mark the alert queue as read.
 - A filled button is a to-do, not furniture. The alert acknowledge carries the
   filled rank only while the alert queue has unread items and the quiet rank
   otherwise, so the loudest control on the page is the one asking for an act.
@@ -515,10 +577,10 @@ Palette, all measured on `#F1F5F9` raised:
 | `warm-dark` | `#0F172A` | dark panels, featured card (app `primary`) | - |
 | `warm-panel` ... `warm-panel-4` | `#1E293B`-`#475569` | dark panel cells | white/55 on panel is about 5.7:1 |
 
-`warm-caption` is the app's `muted` slate darkened one step: `#64748B` measures
-4.34:1 on `#F1F5F9`, just under AA, so the landing caption ships at 4.83:1. The
-teal in the product mark (`#1D7B80`) stays a brand colour: it is not used for
-UI text or controls.
+`warm-caption` is one slate step darker than `#64748B` (4.34:1 on `#F1F5F9`,
+just under AA), so the landing caption ships at 4.83:1. The teal in the
+product mark (`#1D7B80`) stays a brand colour: it is not used for UI text or
+controls.
 
 Radius: landing tiles use `rounded-tile` (12px), inner icon chips the same
 tile step, small panels and drifting-tile tiles `rounded-panel` (16px),
@@ -526,11 +588,11 @@ cards 24px (`rounded-3xl`), dark-panel cells and "how it works" rows
 `rounded-cell` (28px), section bands `rounded-section` (32px) with the dark
 wrapper at `rounded-section-lg` (36px), hero `rounded-hero` (28px, 40px on
 `sm`+ via `rounded-hero-lg`), and nav links, CTAs and the nav bar at
-`rounded-tile`. No pill step exists in this project's config: landing tags use
-the squared 4px step and the warm CTAs take the tile step. Every radius on
-the page resolves to one of these named hooks - no raw `rounded-[26px]`-style
-values remain, and `rounded-2xl`/`rounded-xl` built-ins are folded into the
-`panel`/`tile` hooks they duplicated.
+`rounded-tile`. The app's `rounded-pill` is an app-shell hook only; no pill
+step exists in the landing's markup. Every radius on the page resolves to one
+of these named hooks: no raw `rounded-[26px]`-style values remain, and
+`rounded-2xl`/`rounded-xl` built-ins are folded into the `panel`/`tile` hooks
+they duplicated.
 
 Landing headings resolve to three steps and nothing else: `display` (hero),
 `landing-h2` (every section heading and the closing CTA; 30px rising to 48px,
