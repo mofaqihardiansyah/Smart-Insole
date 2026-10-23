@@ -159,6 +159,10 @@ export const DICTIONARY = {
     'dashboard.loadTitle': 'Distribusi beban',
     'dashboard.loadBody': 'Bagian setiap titik sensor',
     'dashboard.totalLoad': 'Total kPa',
+    // Funnel empty state (zero readings) and hero timeline labels
+    'dashboard.funnel.empty': 'Belum ada bacaan yang datang',
+    'dashboard.timeline.now': 'Sekarang',
+    'dashboard.timeline.notes': 'catatan terakhir',
     // Activity table
     'dashboard.activityTitle': 'Aktivitas terbaru',
     'dashboard.activityBody': 'Aliran pembacaan langsung dari insole',
@@ -795,6 +799,10 @@ export const DICTIONARY = {
     'dashboard.loadTitle': 'Load distribution',
     'dashboard.loadBody': 'Share of each sensor point',
     'dashboard.totalLoad': 'Total kPa',
+    // Funnel empty state (zero readings) and hero timeline labels
+    'dashboard.funnel.empty': 'No readings have arrived',
+    'dashboard.timeline.now': 'Now',
+    'dashboard.timeline.notes': 'recent records',
     // Activity table
     'dashboard.activityTitle': 'Recent activity',
     'dashboard.activityBody': 'Live feed of readings from the insole',

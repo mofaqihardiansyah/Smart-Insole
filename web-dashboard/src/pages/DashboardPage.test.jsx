@@ -242,7 +242,7 @@ describe("DashboardPage controls", () => {
   describe("DashboardPage standing actions (FIX-05)", () => {
     it("exposes exactly two standing actions in the header", () => {
       const { container } = renderDashboard();
-      const header = container.querySelector("header");
+      const header = container.querySelector('[data-panel="hero"]');
 
       expect(header).not.toBeNull();
       // Two, and only two: the count is what a reintroduced dead control breaks.
@@ -262,16 +262,16 @@ describe("DashboardPage controls", () => {
 
     it("still exposes exactly two after the reading state changes", () => {
       const { container } = renderDashboard();
-      expect(within(container.querySelector("header")).getAllByRole("button")).toHaveLength(2);
+      expect(within(container.querySelector('[data-panel="hero"]')).getAllByRole("button")).toHaveLength(2);
 
       // Push readings so both actions become meaningful (Export CSV leaves its
       // disabled state, the feed fills up). The count is a property of the
       // markup, so a state transition that added a control would fail here.
       push(6);
 
-      expect(within(container.querySelector("header")).getAllByRole("button")).toHaveLength(2);
+      expect(within(container.querySelector('[data-panel="hero"]')).getAllByRole("button")).toHaveLength(2);
       expect(
-        within(container.querySelector("header")).getByRole("button", {
+        within(container.querySelector('[data-panel="hero"]')).getByRole("button", {
           name: /ekspor csv/i,
         })
       ).toBeEnabled();

@@ -2,8 +2,10 @@
  * series — the single source for the chart series set.
  *
  * The three CVD-safe Okabe-Ito series colours are declared once, here, and
- * every consumer reads this module: the live waveform (`TelemetryChart`), the
- * peak trend (`TrendChart`) and the zone donut (`LoadDonut`). The values
+ * every consumer reads this module: the live waveform (`TelemetryChart`) and
+ * the peak trend (`TrendChart`). The Cadra restyle removed the zone donut in
+ * favour of `FunnelBars`, whose one-accent bars carry zone identity in their
+ * row labels, not in series colours. The values
  * themselves stay in `index.css` as `--series-1`, `--series-2` and
  * `--series-3`; this module names those custom properties and never a hex, so
  * the measured palette keeps exactly one home and a chart cannot drift from the

@@ -205,3 +205,88 @@ describe("the score tile's semantic tone", () => {
     assertTone("danger");
   });
 });
+
+/**
+ * The meter band's Cadra vocabulary (cadra-2): the four tiles are assigned
+ * specific completions by the restyle plan, and the assignment is data on the
+ * card, never its position: the peak tile earns the one inverted dark card,
+ * duration and battery read as proportion meters, and the score tile carries
+ * the real trend sparkline.
+ */
+describe("the meter band's Cadra vocabulary", () => {
+  const tileOfClass = (key) => {
+    const title = screen.getByText(t(key, LANGUAGE));
+    const tile = title.closest("[data-cell]");
+    expect(tile, `tile titled ${key}`).not.toBeNull();
+    return tile;
+  };
+
+  it("assigns each tile its planned completion", () => {
+    // Two samples: the score tile's sparkline needs at least two finite points,
+    // and the feed needs a row for its mini bar.
+    renderDashboard({ autoConnect: true });
+    push({ forefoot: 30, midfoot: 15, heel: 12 });
+    push({ forefoot: 34, midfoot: 16, heel: 11 });
+
+    const peak = tileOfClass("metrics.peakPressure");
+    const duration = tileOfClass("metrics.sustainedDuration");
+    const score = tileOfClass("risk.score");
+    const supply = tileOfClass("device.battery");
+
+    expect(peak.className).toContain("bg-inverted");
+    expect(peak.querySelector(".tabular-data").className).toContain(
+      "text-inverted-fg"
+    );
+
+    expect(duration.className).toContain("bg-tint-cream");
+    expect(duration.querySelector("[data-meter-fill]")).not.toBeNull();
+
+    expect(score.className).toContain("bg-tint-mint");
+    expect(score.querySelector("svg polyline")).not.toBeNull();
+
+    expect(supply.className).toContain("bg-tint-blue");
+    // The meter presence or absence for this tile is its own state contract
+    // below ("reads the battery meter only when a battery value exists");
+    // a setReadings-driven sample never carries a battery value, so the
+    // honest assertion here is the tint, not a filled meter.
+  });
+
+  it("inverts exactly one tile, the one carrying the plan's dark card", () => {
+    renderDashboard({ autoConnect: true });
+    push({ forefoot: 30, midfoot: 15, heel: 12 });
+
+    const dark = [...document.querySelectorAll("[data-cell]")].filter((cell) =>
+      cell.className.includes("bg-inverted")
+    );
+    expect(dark).toHaveLength(1);
+    expect(dark[0].textContent).toContain(t("metrics.peakPressure", LANGUAGE));
+  });
+
+  it("reads the battery meter only when a battery value exists", () => {
+    // The stub supply arrives without a battery field, so the meter that would
+    // draw a division by NaN must not exist at all; the tile still stands.
+    renderDashboard({ autoConnect: true });
+    push({ forefoot: 30, midfoot: 15, heel: 12 });
+
+    const supply = tileOfClass("device.battery");
+    expect(supply.querySelector("[data-meter-fill]")).toBeNull();
+    expect(supply.className).toContain("bg-tint-blue");
+  });
+
+  it("gives each feed row a pressure-vs-threshold mini bar", () => {
+    renderDashboard({ autoConnect: true });
+    push({ forefoot: 30, midfoot: 15, heel: 12 });
+    push({ forefoot: 34, midfoot: 16, heel: 11 });
+
+    const feed = feedRegion();
+    const fills = feed.querySelectorAll("[data-feed-fill]");
+    // Two records are in the visible window, so two rows carry the bar.
+    expect(fills.length).toBeGreaterThanOrEqual(2);
+
+    // The bar is a decoration over a number the row already states in text,
+    // so it is hidden from the accessibility tree rather than read twice.
+    for (const fill of fills) {
+      expect(fill.getAttribute("aria-hidden")).toBe("true");
+    }
+  });
+});

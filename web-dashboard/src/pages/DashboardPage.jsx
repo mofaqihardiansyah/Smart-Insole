@@ -24,12 +24,13 @@ import {
   StatusBanner,
   StatePanel,
   StateRetry,
-  PageHeader,
   GlassButton,
 } from "../components/ui/GlassComponents";
 import { Chip } from "../components/ui/Chip";
 import { BentoGrid } from "../components/dashboard/BentoGrid";
-import { LoadDonut } from "../components/dashboard/LoadDonut";
+import { Sparkline } from "../components/dashboard/Sparkline";
+import { HeroTimeline } from "../components/dashboard/HeroTimeline";
+import { FunnelBars } from "../components/dashboard/FunnelBars";
 import { RowMenu } from "../components/dashboard/RowMenu";
 
 import { TrendChart } from "../components/monitoring/TrendChart";
@@ -39,11 +40,13 @@ import { downloadCsv, dateStamp } from "../utils/exportCsv";
 /**
  * DashboardPage — the live console, and the focal point of the product.
  *
- * The composition follows the Verdana Health reference: a greeting row with the
- * two standing actions, four metric tiles, a wide trend panel beside a load
- * donut, the live reading feed, and the pressure map. Mobile collapses to one
- * column with the map last, because the page reads top-down as "how is it now,
- * which way is it going, what just happened, where exactly".
+ * The composition follows the Cadra light register: a hero card that opens
+ * with the greeting, the verdict chip and the buffer's event strip, the meter
+ * band of pastel-tinted stat cards around one inverted dark headline, a wide
+ * trend panel beside the zone-load funnel, the live reading feed with
+ * pressure-vs-threshold mini bars, and the pressure map. Mobile collapses to
+ * one column with the map last, because the page reads top-down as "how is it
+ * now, which way is it going, what just happened, where exactly".
  *
  * Every value here is measured, explicitly simulated, or shown as unavailable.
  * There is no placeholder number dressed up as a reading, and the two chips
@@ -83,6 +86,13 @@ const SOURCE_CHIP = {
   connecting: { tone: "warning", key: "source.connecting" },
   error: { tone: "danger", key: "source.error" },
   idle: { tone: "neutral", key: "source.idle" },
+};
+
+/** Whole literals on purpose: Tailwind must be able to see each class. */
+const RISK_BAR = {
+  safe: "bg-safe",
+  warning: "bg-warning",
+  danger: "bg-danger",
 };
 
 const formatClock = (timestamp, language) =>
@@ -297,29 +307,80 @@ const DashboardPage = () => {
     </Chip>
   );
 
+  /**
+   * The peak tile renders on the one inverted dark card, where the light Chip
+   * vocabulary's ink-on-tint pairs invert badly (dark ink on dark surface).
+   * The dark chip carries the same three verdicts with the `inverted-*` text
+   * ramp on a `bg-white/10` fill, measured in index.css against #141414.
+   */
+  const DARK_TREND = {
+    up: {
+      ink: "text-inverted-danger",
+      icon: <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />,
+    },
+    down: {
+      ink: "text-inverted-safe",
+      icon: <TrendingDown className="h-3.5 w-3.5" aria-hidden="true" />,
+    },
+    flat: {
+      ink: "text-inverted-muted",
+      icon: <Minus className="h-3.5 w-3.5" aria-hidden="true" />,
+    },
+  };
+
+  const trendChipDark = trend && (
+    <span
+      className={[
+        "inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-caption font-semibold",
+        "bg-white/10",
+        DARK_TREND[trend.direction]?.ink || DARK_TREND.flat.ink,
+      ].join(" ")}
+    >
+      {DARK_TREND[trend.direction]?.icon || DARK_TREND.flat.icon}
+      {trend.direction === "flat"
+        ? t("dashboard.deltaSteady", language)
+        : `${trend.delta > 0 ? "+" : ""}${trend.delta.toFixed(1)}%`}
+    </span>
+  );
+
   const duration = Number(readings.sustainedDuration || 0);
   const overDurationLimit = duration >= thresholds.dangerSeconds;
 
+  /**
+   * The spark reads the buffer's real peaks, new end last (the timeline of the
+   * sparkline runs left to right). The designTokens sweep sees `w-24 h-7` etc.
+   * only as whole literals, so the size stays literal.
+   */
+  const sparkData = useMemo(
+    () => history.slice(-24).map((record) => Number(record.peakPressure || 0)),
+    [history]
+  );
+
   const tiles = [
     {
+      /* The headline answer gets the one inverted dark card: the darkest
+         surface on the page is reserved for the number being watched. */
       id: "peak",
+      inverted: true,
       title: t("metrics.peakPressure", language),
       icon: <Gauge className="h-5 w-5" />,
       iconTone: risk === "safe" ? "success" : risk,
       value: Number(peakPressure || 0).toFixed(1),
       unit: t("metrics.unit.kpa", language),
-      badge: trendChip,
+      badge: trendChipDark,
       caption: t("dashboard.caption.threshold", language, {
         value: thresholds.dangerKpa,
       }),
     },
     {
       id: "duration",
+      tint: "cream",
       title: t("metrics.sustainedDuration", language),
       icon: <Timer className="h-5 w-5" />,
       iconTone: overDurationLimit ? "danger" : "neutral",
       value: String(duration),
       unit: t("metrics.unit.seconds", language),
+      meter: { value: duration, max: thresholds.dangerSeconds },
       badge: (
         <Chip tone={overDurationLimit ? "danger" : "success"}>
           {overDurationLimit
@@ -333,16 +394,21 @@ const DashboardPage = () => {
     },
     {
       id: "score",
+      tint: "mint",
       title: t("risk.score", language),
       icon: <Activity className="h-5 w-5" />,
       iconTone: risk === "safe" ? "success" : risk,
       value: String(riskScore),
       unit: "/ 100",
+      spark: (
+        <Sparkline data={sparkData} className="h-7 w-full max-w-[128px]" />
+      ),
       badge: <StatusChip level={risk} label={levelLabel} size="sm" />,
       caption: t("dashboard.caption.scoreRange", language),
     },
     {
       id: "supply",
+      tint: "blue",
       title: t("device.battery", language),
       icon: <BatteryMedium className="h-5 w-5" />,
       iconTone: "neutral",
@@ -352,6 +418,9 @@ const DashboardPage = () => {
       unit: Number.isFinite(batteryPercent)
         ? t("metrics.unit.percent", language)
         : "",
+      meter: Number.isFinite(batteryPercent)
+        ? { value: batteryPercent, max: 100 }
+        : undefined,
       badge: <Chip tone={sourceChip.tone}>{t(sourceChip.key, language)}</Chip>,
       caption: Number.isFinite(batteryPercent)
         ? t("dashboard.caption.battery", language, {
@@ -361,25 +430,7 @@ const DashboardPage = () => {
     },
   ];
 
-  /* --------------------------------- donut ------------------------------- */
-
-  const donutSegments = [
-    {
-      key: "forefoot",
-      label: t("anatomy.forefoot.short", language),
-      value: balance.perZone[0],
-    },
-    {
-      key: "midfoot",
-      label: t("anatomy.midfoot.short", language),
-      value: balance.perZone[1],
-    },
-    {
-      key: "heel",
-      label: t("anatomy.heel.short", language),
-      value: balance.perZone[2],
-    },
-  ];
+  /* ------------------------- zone load (funnel data) --------------------- */
 
   const rowMenuItems = (record) => [
     {
@@ -406,53 +457,67 @@ const DashboardPage = () => {
         {`${t("risk.status", language)}: ${levelLabel}`}
       </p>
 
-      {/* The verdict is the second thing the eye lands on: the greeting is the
-          h1 anchor, and right under it - before any number - a large status
-          chip answers "is anything wrong". The date stays muted above it; the
-          old inline status word hid the page's most important read in 15px
-          grey text, which is the opposite of where it belongs. */}
-      <PageHeader
-        title={firstName ? `${greeting}, ${firstName}` : greeting}
-        subtitle={longDate}
-        meta={
-          <StatusChip level={risk} label={levelLabel} size="lg" />
-        }
-        actions={
-          <>
-            <GlassButton
-              variant="outline"
-              onClick={handleExport}
-              disabled={history.length === 0}
-            >
-              <Download className="h-4 w-4" aria-hidden="true" />
-              {t("dashboard.exportCsv", language)}
-            </GlassButton>
-            {/* Prominence follows urgency: the filled rank says "there is
-                work for you now". With an empty alert queue the action has
-                nothing to do, so it retires to the quiet rank instead of
-                sitting there as a disabled navy slab - which would otherwise
-                be the loudest object on a calm page. */}
-            <GlassButton
-              variant={unreadIncidentCount === 0 ? "quiet" : "filled"}
-              onClick={acknowledgeIncidents}
-              disabled={unreadIncidentCount === 0}
-            >
-              <Check className="h-4 w-4" aria-hidden="true" />
-              {unreadIncidentCount === 0
-                ? t("dashboard.acknowledged", language)
-                : t("dashboard.acknowledge", language)}
-            </GlassButton>
-          </>
-        }
-      />
+      {/* The hero card is the Cadra opener: greeting and standing actions in
+          one white card, the large verdict chip answering "is anything wrong"
+          before any number, and the real buffer's event strip across it. The
+          date stays muted above the chip; a bare status word in 15px grey
+          would hide the page's most important read. */}
+      <GlassCard flush data-panel="hero">
+        <div className="px-6 pt-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="font-heading text-h1 text-fg">
+                {firstName ? `${greeting}, ${firstName}` : greeting}
+              </h1>
+              <p className="mt-1.5 max-w-prose text-body-base text-muted">
+                {longDate}
+              </p>
+              <div className="mt-3">
+                <StatusChip level={risk} label={levelLabel} size="lg" />
+              </div>
+            </div>
+
+            <div className="flex shrink-0 flex-wrap items-center gap-2 sm:pt-1">
+              <GlassButton
+                variant="outline"
+                onClick={handleExport}
+                disabled={history.length === 0}
+              >
+                <Download className="h-4 w-4" aria-hidden="true" />
+                {t("dashboard.exportCsv", language)}
+              </GlassButton>
+              {/* Prominence follows urgency: the filled rank says "there is
+                  work for you now". With an empty alert queue the action has
+                  nothing to do, so it retires to the quiet rank instead of
+                  sitting there as a disabled navy slab - which would otherwise
+                  be the loudest object on a calm page. */}
+              <GlassButton
+                variant={unreadIncidentCount === 0 ? "quiet" : "filled"}
+                onClick={acknowledgeIncidents}
+                disabled={unreadIncidentCount === 0}
+              >
+                <Check className="h-4 w-4" aria-hidden="true" />
+                {unreadIncidentCount === 0
+                  ? t("dashboard.acknowledged", language)
+                  : t("dashboard.acknowledge", language)}
+              </GlassButton>
+            </div>
+          </div>
+
+          {/* The strip reads the real buffer: one dot per reading, painted by
+              that reading's verdict. With an empty buffer it leaves the line
+              standing and draws nothing, exactly like the numbers above it. */}
+          <HeroTimeline records={history} language={language} />
+        </div>
+      </GlassCard>
 
       {sourceBanner}
 
       <BentoGrid cards={tiles} columns={4} />
 
-      {/* Station 01: where the pressure is going. The numbered index is the
-          dashboard's wayfinding motif: every panel names its station, the way
-          a printed instrument numbers its dials. */}
+      {/* Station 02: where the pressure sits. The Cadra funnel replaces the
+          donut: proportions read as one-decision bars, each row naming its
+          sensor point and carrying the real kPa the bar is drawn from. */}
       <div className="grid gap-5 lg:grid-cols-3 lg:gap-6">
         <GlassCard flush className="lg:col-span-2" data-panel="trend">
           <PanelHeader
@@ -511,20 +576,32 @@ const DashboardPage = () => {
           </div>
         </GlassCard>
 
-        <GlassCard data-panel="donut">
+        <GlassCard flush data-panel="funnel">
           <PanelHeader
             index="02"
             title={t("dashboard.loadTitle", language)}
             subtitle={t("dashboard.loadBody", language)}
           />
-          {/* The panel header above now carries the same pb-3 gap as the trend
-              panel, so the two charts in this row start level with each other. */}
-          <div>
-            <LoadDonut
-              segments={donutSegments}
-              total={balance.total.toFixed(0)}
-              unit={t("dashboard.totalLoad", language)}
-              totalLabel={t("metrics.balance", language)}
+          <div className="px-6">
+            <FunnelBars
+              zones={[
+                {
+                  key: "forefoot",
+                  label: t("anatomy.forefoot.short", language),
+                  value: balance.perZone[0],
+                },
+                {
+                  key: "midfoot",
+                  label: t("anatomy.midfoot.short", language),
+                  value: balance.perZone[1],
+                },
+                {
+                  key: "heel",
+                  label: t("anatomy.heel.short", language),
+                  value: balance.perZone[2],
+                },
+              ]}
+              language={language}
             />
           </div>
         </GlassCard>
@@ -626,8 +703,38 @@ const DashboardPage = () => {
                             </span>
                           </span>
                         </th>
-                        <td className="tabular-data whitespace-nowrap px-6 py-4 text-body-base text-fg-2">
-                          {`${Number(record.readings?.[zone] ?? 0).toFixed(1)} kPa`}
+                        <td className="px-6 py-4">
+                          {/* The reading and, under it, how far it stands
+                              from the danger threshold. The bar's length is
+                              the same claim in inches that the number makes
+                              in text, so it is aria-hidden: the row already
+                              states the value, and the verdict chip beside
+                              the row already carries the meaning. */}
+                          <span className="tabular-data block whitespace-nowrap text-body-base text-fg-2">
+                            {`${Number(record.readings?.[zone] ?? 0).toFixed(1)} kPa`}
+                          </span>
+                          <span
+                            className="mt-1.5 block h-1.5 w-28 overflow-hidden rounded-full bg-surface-3"
+                          >
+                            <span
+                              data-feed-fill
+                              aria-hidden="true"
+                              className={`block h-full rounded-full ${
+                                RISK_BAR[record.risk] || RISK_BAR.warning
+                              }`}
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  Math.max(
+                                    2,
+                                    (Number(record.readings?.[zone] ?? 0) /
+                                      (thresholds.dangerKpa || 1)) *
+                                      100
+                                  )
+                                ).toFixed(1)}%`,
+                              }}
+                            />
+                          </span>
                         </td>
                         <td className="tabular-data whitespace-nowrap px-6 py-4 text-body-base text-fg-2">
                           {formatClock(record.timestamp, language)}
@@ -676,6 +783,26 @@ const DashboardPage = () => {
                           </span>
                           {formatClock(record.timestamp, language)}
                         </p>
+                        <span className="mt-2 block h-1.5 w-full max-w-[180px] overflow-hidden rounded-full bg-surface-3">
+                          <span
+                            data-feed-fill
+                            aria-hidden="true"
+                            className={`block h-full rounded-full ${
+                              RISK_BAR[record.risk] || RISK_BAR.warning
+                            }`}
+                            style={{
+                              width: `${Math.min(
+                                100,
+                                Math.max(
+                                  2,
+                                  (Number(record.readings?.[zone] ?? 0) /
+                                    (thresholds.dangerKpa || 1)) *
+                                    100
+                                )
+                              ).toFixed(1)}%`,
+                            }}
+                          />
+                        </span>
                       </div>
                       <RowMenu
                         label={t("dashboard.col.actions", language)}
