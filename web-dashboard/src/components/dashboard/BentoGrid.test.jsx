@@ -305,3 +305,128 @@ describe("a bento cell's floor is its content", () => {
     }
   });
 });
+
+/**
+ * The Cadra vocabulary (cadra-1): pastel-tinted stat cards, one inverted dark
+ * metric card, a sparkline slot and a proportion meter.
+ *
+ * The tone rule carries over unchanged: a tint is chosen by CARD DATA, never
+ * by position, and an inverted card is data (one metric per page earns the
+ * dark tile), never decoration.
+ */
+
+const TINT_CLASSES = Object.fromEntries(
+  [
+    ...GRID_SOURCE.match(/const TINT_CLASSES = \{([\s\S]*?)\};/)[1].matchAll(
+      /(\w+):\s*"([^"]+)"/g
+    ),
+  ].map(([, key, value]) => [key, value])
+);
+
+describe("the Cadra card vocabulary", () => {
+  it("paints a tinted card with its own tint and none of the others", () => {
+    const order = ["cream", "mint", "blue"];
+    const { container } = render(
+      <BentoGrid cards={order.map((tint, i) => cardWith({ id: `t${i}`, tint }))} />
+    );
+
+    order.forEach((tint, i) => {
+      const cell = cells(container)[i];
+      expect(cell.className, `tint ${i}`).toContain(TINT_CLASSES[tint]);
+      for (const other of Object.values(TINT_CLASSES)) {
+        if (other === TINT_CLASSES[tint]) continue;
+        expect(cell.className, `tint ${i} borrows ${other}`).not.toContain(other);
+      }
+    });
+  });
+
+  it("gives an inverted card the dark surface and its own text ramp", () => {
+    const { container } = render(
+      <BentoGrid cards={[cardWith({ inverted: true })]} />
+    );
+    const cell = cells(container)[0];
+
+    expect(cell.className).toContain("bg-inverted");
+    // The ramp: value reads white, captions read the inverted muted token.
+    expect(cell.textContent).toContain("Tekanan puncak");
+    expect(cell.querySelector(".tabular-data").className).toContain(
+      "text-inverted-fg"
+    );
+    expect([...cell.querySelectorAll("p")].some((p) =>
+      p.className.includes("text-inverted-muted")
+    )).toBe(true);
+    // The normal inks never appear on the dark surface.
+    expect(cell.className).not.toContain("text-fg");
+  });
+
+  it("tints and inversion are per card, so a mixed band keeps plain white cells", () => {
+    const { container } = render(
+      <BentoGrid
+        cards={[
+          cardWith({ id: "a", tint: "mint" }),
+          cardWith({ id: "b" }),
+          cardWith({ id: "c", inverted: true }),
+        ]}
+      />
+    );
+
+    expect(cells(container)[0].className).toContain(TINT_CLASSES.mint);
+    expect(cells(container)[1].className).toContain("bg-surface");
+    expect(cells(container)[1].className).not.toContain("bg-inverted");
+    expect(cells(container)[2].className).toContain("bg-inverted");
+  });
+
+  it("renders the spark slot only where the card carries one", () => {
+    const { container } = render(
+      <BentoGrid
+        cards={[
+          cardWith({ id: "with", spark: <svg data-testid="spark-line" /> }),
+          cardWith({ id: "without" }),
+        ]}
+      />
+    );
+
+    expect(cells(container)[0].querySelector('[data-testid="spark-line"]')).not.toBeNull();
+    expect(cells(container)[1].querySelector('[data-testid="spark-line"]')).toBeNull();
+  });
+
+  it("renders a proportion meter scaled to the card's own max", () => {
+    const { container } = render(
+      <BentoGrid cards={[cardWith({ meter: { value: 35, max: 100 } })]} />
+    );
+    const cell = cells(container)[0];
+
+    const fill = cell.querySelector('[data-meter-fill]');
+    expect(fill).not.toBeNull();
+    expect(fill.style.width).toBe("35%");
+    // The bar is the fourth read of a number already on the card: decorative.
+    expect(fill.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("renders no meter for a zero max or a missing meter", () => {
+    const nobody = render(<BentoGrid cards={[cardWith({ id: "x" })]} />);
+    expect(nobody.container.querySelector("[data-meter-fill]")).toBeNull();
+    nobody.unmount();
+
+    const zeroMax = render(
+      <BentoGrid cards={[cardWith({ meter: { value: 3, max: 0 } })]} />
+    );
+    expect(zeroMax.container.querySelector("[data-meter-fill]")).toBeNull();
+  });
+
+  it("tints, inversion and meters still never clip or floor a cell", () => {
+    const { container } = render(
+      <BentoGrid
+        cards={[
+          cardWith({ tint: "cream", meter: { value: 5, max: 10 }, caption: "kaki kiri" }),
+          cardWith({ id: "inv", inverted: true, meter: { value: 5, max: 10 } }),
+        ]}
+      />
+    );
+
+    for (const cell of cells(container)) {
+      expect(cell.className, cell.textContent.slice(0, 16)).not.toMatch(HEIGHT_UTILITY);
+      expect(cell.className, cell.textContent.slice(0, 16)).not.toMatch(CLIPPING_UTILITY);
+    }
+  });
+});
