@@ -22,40 +22,40 @@
 :root {
   color-scheme: light;
 
-  --bg: 248 250 252; /* #F8FAFC page canvas */
-  --surface: 255 255 255; /* #FFFFFF card, top bar */
-  --surface-2: 241 245 249; /* #F1F5F9 table head, search field, chips */
-  --surface-3: 226 232 240; /* #E2E8F0 inset well, avatar fallback */
-  --sidebar: 248 250 252; /* #F8FAFC product rail */
+  --bg: 242 242 244; /* #F8FAFC page canvas */
+  --surface: 248 248 252; /* #FFFFFF card, top bar */
+  --surface-2: 242 242 246; /* #F1F5F9 table head, search field, chips */
+  --surface-3: 230 230 235; /* #E2E8F0 inset well, avatar fallback */
+  --sidebar: 242 242 244; /* #F8FAFC product rail */
 
   /* Card and row edge. The reference draws cards almost entirely with the
      shadow, so the edge is a touch lighter than the standard slate
      hairline. Decoration only: it never delimits a control. */
-  --border: 234 239 244; /* #EAEFF4 */
-  --border-strong: 226 232 240; /* #E2E8F0 raised panel edge, row divider */
-  --border-control: 124 134 149; /* #7C8695 3.47:1 on bg. Inputs and outlines. */
+  --border: 230 230 235; /* #EAEFF4 */
+  --border-strong: 225 225 230; /* #E2E8F0 raised panel edge, row divider */
+  --border-control: 120 120 130; /* #7C8695 3.47:1 on bg. Inputs and outlines. */
 
-  --fg: 15 23 42; /* #0F172A 18.1:1 on surface */
-  --fg-2: 51 65 85; /* #334155 12.6:1 on surface */
-  --muted: 100 116 139; /* #64748B 4.8:1 on surface */
+  --fg: 10 10 15; /* #0F172A 18.1:1 on surface */
+  --fg-2: 40 40 50; /* #334155 12.6:1 on surface */
+  --muted: 70 70 80; /* #64748B 4.8:1 on surface */
 
   /* The reference labels its stat captions in #94A3B8, which measures
      2.6:1 on white and fails AA for text. The caption ships in `muted`
      (4.8:1) with an italic voice instead, so the register is still
      visibly lighter without dropping the label below 4.5:1. */
 
-  --primary: 15 23 42; /* #0F172A navy. 18.1:1 on surface */
-  --primary-btn: 15 23 42; /* #0F172A */
+  --primary: 10 10 20; /* #0F172A navy. 18.1:1 on surface */
+  --primary-btn: 10 10 20; /* #0F172A */
   --primary-on: 255 255 255; /* 18.1:1 on primary-btn */
-  --primary-hover: 2 6 23; /* #020617 button hover fill */
+  --primary-hover: 1 1 3; /* #020617 button hover fill */
 
-  --secondary: 5 150 105; /* #059669 sage. 4.6:1 on surface */
-  --tertiary: 14 165 233; /* #0EA5E9 info. 3.0:1: graphics and large text only */
+  --secondary: 5 130 100; /* #059669 sage. 4.6:1 on surface */
+  --tertiary: 10 150 200; /* #0EA5E9 info. 3.0:1: graphics and large text only */
 
-  --safe: 22 163 74; /* #16A34A 4.5:1 on surface */
-  --warning: 202 138 4; /* #CA8A04 4.6:1 on surface */
-  --danger: 220 38 38; /* #DC2626 5.9:1 on surface */
-  --danger-hover: 220 38 38; /* #DC2626 button hover fill */
+  --safe: 20 140 65; /* #16A34A 4.5:1 on surface */
+  --warning: 180 110 0; /* #CA8A04 4.6:1 on surface */
+  --danger: 180 30 30; /* #DC2626 5.9:1 on surface */
+  --danger-hover: 180 30 30; /* #DC2626 button hover fill */
 
   /* ------------------------------------------------------------------
      "Ink" forms of the accents, for TEXT AND GLYPHS ON A TINT.
@@ -82,12 +82,12 @@
      strokes and fills on a white surface, the ink for anything sitting
      on that meaning's tint. Nothing else may use either.
      ------------------------------------------------------------------ */
-  --safe-ink: 22 101 52;
-  --warning-ink: 146 64 14;
-  --danger-ink: 153 27 27;
-  --secondary-ink: 6 95 70;
+  --safe-ink: 18 85 45;
+  --warning-ink: 130 55 0;
+  --danger-ink: 130 20 20;
+  --secondary-ink: 5 75 55;
 
-  --focus: 15 23 42; /* #0F172A, focus indicator */
+  --focus: 10 10 15; /* #0F172A, focus indicator */
 
   /* Chart series. Okabe-Ito, measured at 5.19, 3.87 and 3.42 against
      white: all clear the 3:1 a graphical object needs. */
@@ -98,8 +98,8 @@
   /* Structural tints */
   --inner-glow: 255 255 255; /* inset highlight, retained for legacy callers */
   --inner-glow-a: 0.7;
-  --grid: 15 23 42; /* plot grid ink */
-  --scrim: 15 23 42;
+  --grid: 10 10 15; /* plot grid ink */
+  --scrim: 10 10 15;
 
   /* Landing page variant. It runs on the app palette so the public page and
      the signed-in console read as one product; the `warm-*` hooks stay as the
@@ -115,7 +115,7 @@
   --warm-caption: 94 109 126; /* #5E6D7E muted, darkened to clear AA on raised */
   --warm-accent: 15 23 42; /* #0F172A app primary, graphics only */
   --warm-accent-deep: 15 23 42; /* #0F172A app primary: labels and button fill */
-  --warm-dark: 15 23 42; /* #0F172A app primary: dark bands */
+  --warm-panel-text: 15 23 42; /* #0F172A app primary: dark bands */
   --warm-line: 234 239 244; /* #EAEFF4 app border hairline */
   /* Dark panel shades for the landing capabilities section. */
   --warm-panel: 30 41 59; /* #1E293B */
@@ -258,37 +258,37 @@ body {
    are untouched. */
 .landing-scope {
   color-scheme: light;
-  --bg: 248 250 252;
-  --surface: 255 255 255;
-  --surface-2: 241 245 249;
-  --surface-3: 226 232 240;
-  --sidebar: 248 250 252;
-  --border: 234 239 244;
-  --border-strong: 226 232 240;
-  --border-control: 124 134 149;
-  --fg: 15 23 42;
-  --fg-2: 51 65 85;
-  --muted: 100 116 139;
-  --primary: 15 23 42;
-  --primary-btn: 15 23 42;
+  --bg: 242 242 244;
+  --surface: 248 248 252;
+  --surface-2: 242 242 246;
+  --surface-3: 230 230 235;
+  --sidebar: 242 242 244;
+  --border: 230 230 235;
+  --border-strong: 225 225 230;
+  --border-control: 120 120 130;
+  --fg: 10 10 15;
+  --fg-2: 40 40 50;
+  --muted: 70 70 80;
+  --primary: 10 10 20;
+  --primary-btn: 10 10 20;
   --primary-on: 255 255 255;
-  --secondary: 5 150 105;
-  --tertiary: 14 165 233;
-  --safe: 22 163 74;
-  --warning: 202 138 4;
-  --danger: 220 38 38;
-  --safe-ink: 22 101 52;
-  --warning-ink: 146 64 14;
-  --danger-ink: 153 27 27;
-  --secondary-ink: 6 95 70;
-  --focus: 15 23 42;
+  --secondary: 5 130 100;
+  --tertiary: 10 150 200;
+  --safe: 20 140 65;
+  --warning: 180 110 0;
+  --danger: 180 30 30;
+  --safe-ink: 18 85 45;
+  --warning-ink: 130 55 0;
+  --danger-ink: 130 20 20;
+  --secondary-ink: 5 75 55;
+  --focus: 10 10 15;
   --series-1: 0 114 178;
   --series-2: 213 94 0;
   --series-3: 0 158 115;
   --inner-glow: 255 255 255;
   --inner-glow-a: 0.7;
-  --grid: 15 23 42;
-  --scrim: 15 23 42;
+  --grid: 10 10 15;
+  --scrim: 10 10 15;
 }
 
 /* ------------------------------------------------------------------
