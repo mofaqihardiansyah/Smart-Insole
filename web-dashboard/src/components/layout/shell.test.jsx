@@ -8,18 +8,18 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
- * The shell's contract — SHELL-01 to SHELL-06.
+ * The shell's contract - SHELL-01 to SHELL-07.
  *
  * `App.test.jsx` exercises the shell through the real `App`, which is the right
  * place for "does signing in reveal the navigation". This file is the other
  * half: the shell's own promises, asserted where they are made, so a rebuild of
- * `AppLayout` cannot quietly drop the frame, the dialog behaviour or the six
- * destinations while the integrated smoke tests stay green.
+ * `AppLayout` cannot quietly drop the header, the dialog behaviour, the account
+ * menu or the six destinations while the integrated smoke tests stay green.
  *
- * What is deliberately NOT here: the three-viewport click-through. jsdom has no
- * layout engine, so nothing in this file can show that the rail *looks* 288px
- * wide. It asserts the class that carries that width, which is the part a
- * refactor can break.
+ * The shell is the Cadra light header: a brand card, a dark nav pill that owns
+ * every destination, and a right-hand group carrying the three state controls
+ * (search, bell, avatar). Below `lg` all of that collapses into the existing
+ * mobile bar and drawer.
  */
 
 vi.mock("../../hooks/useAuth", () => ({
@@ -114,7 +114,7 @@ const renderShell = (props = {}) =>
     </MemoryRouter>
   );
 
-const rail = () => screen.getByRole("navigation");
+const pill = () => screen.getByRole("navigation");
 
 /* ================================ tests ================================== */
 
@@ -126,40 +126,43 @@ afterEach(() => {
   document.body.style.overflow = "";
 });
 
-describe("SHELL-01: the measured frame", () => {
-  it("holds a 288px rail, a 72px top bar, a 1400px cap and 32px gutters", () => {
+describe("SHELL-01: the Cadra frame", () => {
+  it("has no left rail at all - the pill owns the destinations", () => {
     const { container } = renderShell();
 
-    // Tailwind's `w-72` is 18rem, and the root font size is 16px, so this class
-    // is the 288px the requirement names. The class is asserted rather than a
-    // computed width because jsdom applies no stylesheets.
-    expect(layout(container, "w-72")).toHaveLength(1);
-    expect(layout(container, "h-[72px]")).toHaveLength(1);
+    // The 288px rail and its content offset are gone, not restyled: any of
+    // them surviving means the old frame is still mounted somewhere.
+    expect(layout(container, "w-72")).toHaveLength(0);
+    expect(layout(container, "lg:pl-72")).toHaveLength(0);
+    expect(document.getElementById("app-rail")).toBeNull();
+    expect(document.querySelector('[aria-controls="app-rail"]')).toBeNull();
+  });
 
-    // The content column: offset past the rail, capped, with 32px gutters.
-    expect(layout(container, "lg:pl-72")).toHaveLength(1);
+  it("keeps the content column capped, with 32px gutters at lg", () => {
+    const { container } = renderShell();
+
     expect(layout(container, "lg:px-8").length).toBeGreaterThan(0);
     expect(layout(container, "max-w-[1400px]").length).toBeGreaterThan(0);
   });
 
-  it("puts the rail before the content column, so Tab reads it first", () => {
+  it("puts the pillar nav before the content column, so Tab reads it first", () => {
     const { container } = renderShell();
-    const railEl = rail();
+    const nav = pill();
     const main = container.querySelector("#main-content");
 
-    expect(railEl).not.toBeNull();
+    expect(nav).not.toBeNull();
     expect(main).not.toBeNull();
     expect(
-      railEl.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING
+      nav.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
   });
 });
 
-describe("SHELL-02: six destinations, alerts on the bell", () => {
+describe("SHELL-02: one nav pill for the destinations", () => {
   it("carries exactly the six clinical destinations, in order", () => {
     renderShell();
 
-    const hrefs = within(rail())
+    const hrefs = within(pill())
       .getAllByRole("link")
       .map((anchor) => anchor.getAttribute("href"));
 
@@ -173,14 +176,26 @@ describe("SHELL-02: six destinations, alerts on the bell", () => {
     ]);
   });
 
-  it("keeps the alert queue off the rail and on the bell", () => {
+  it("marks the active destination with aria-current inside the pill", () => {
+    renderShell();
+
+    const active = within(pill())
+      .getAllByRole("link")
+      .find((anchor) => anchor.getAttribute("aria-current") === "page");
+
+    expect(active).toBeDefined();
+    expect(active.getAttribute("href")).toBe("/");
+  });
+
+  it("keeps the alert queue off the pill and on the bell", () => {
     const { container } = renderShell({ hasUnread: true });
 
-    // The rail is places; the alert queue is a state of the app. Listing it in
+    // The pill is places; the alert queue is a state of the app. Listing it in
     // both would be two controls for one destination.
-    expect(rail().querySelector('a[href="/notifications"]')).toBeNull();
+    expect(pill().querySelector('a[href="/notifications"]')).toBeNull();
 
     // The bell reaches it, marks it, and says so rather than reading as "bell".
+    // One bell per breakpoint row (mobile bar, desktop header), one visible.
     const bells = Array.from(container.querySelectorAll('a[href="/notifications"]'));
     expect(bells.length).toBeGreaterThan(0);
     expect(bells.some((bell) => bell.textContent.trim() !== "")).toBe(true);
@@ -219,29 +234,30 @@ describe("SHELL-02: six destinations, alerts on the bell", () => {
   });
 });
 
-describe("SHELL-03: the top bar carries state, not place", () => {
-  it("puts the combobox, the bell and the account control on the 72px bar", () => {
+describe("SHELL-03: the header carries state, not a second place", () => {
+  it("holds the combobox, the bell and the account trigger together", () => {
     const { container } = renderShell();
-    const topbar = layout(container, "h-[72px]")[0];
+    const header = screen.getByRole("navigation").closest("header");
 
-    expect(topbar.tagName).toBe("HEADER");
-    expect(within(topbar).getByRole("combobox")).toBeInTheDocument();
-    expect(topbar.querySelector('a[href="/notifications"]')).not.toBeNull();
-    expect(topbar.querySelector('a[href="/profile"]')).not.toBeNull();
+    expect(header).not.toBeNull();
+    expect(within(container).getAllByRole("combobox").length).toBeGreaterThan(0);
+    expect(header.querySelector('a[href="/notifications"]')).not.toBeNull();
+
+    // The account control is a trigger for the menu, not a stale link.
+    expect(document.querySelector('[aria-controls="account-menu"]')).not.toBeNull();
   });
 
-  it("does not repeat a destination in the top bar", () => {
+  it("renders each destination exactly once across the whole shell", () => {
     const { container } = renderShell();
-    const topbar = layout(container, "h-[72px]")[0];
 
-    // `/profile` is the one exception, and it is not a repetition: the top bar's
-    // avatar *is* the account control, which is why DESIGN.md puts the account
-    // controls here and the destinations in the rail.
-    for (const link of LINKS.filter((item) => item.to !== "/profile")) {
+    for (const link of LINKS) {
+      const found = container.querySelectorAll(`a[href="${link.to}"]`);
+      // The pill is the one owner (the drawer and the account menu ship their
+      // menus closed, so nothing else renders a destination link).
       expect(
-        topbar.querySelector(`a[href="${link.to}"]`),
-        `${link.to} is in the rail and in the top bar`
-      ).toBeNull();
+        found.length,
+        `${link.to} rendered ${found.length} times`
+      ).toBe(1);
     }
   });
 });
@@ -454,47 +470,48 @@ describe("SHELL-05: the drawer is a real dialog", () => {
   });
 });
 
-describe("SHELL-07: the rail closes and reopens", () => {
-  const toggle = () => document.querySelector('[aria-controls="app-rail"]');
+describe("SHELL-07: the account menu is a real disclosure", () => {
+  const trigger = () => document.querySelector('[aria-controls="account-menu"]');
+  const menu = () => screen.getByRole("group", { name: /menu akun|akun/i });
 
-  it("releases the content column when it closes", async () => {
+  it("opens on the trigger, balances aria-expanded, and holds the two account acts", async () => {
     const user = userEvent.setup();
-    const { container } = renderShell();
+    const { container } = renderShell({ userName: "Noor Hidayah" });
 
-    expect(toggle()).toHaveAttribute("aria-expanded", "true");
-    expect(layout(container, "w-72")).toHaveLength(1);
-    expect(layout(container, "lg:pl-72")).toHaveLength(1);
+    expect(document.getElementById("account-menu")).toBeNull();
 
-    await user.click(toggle());
+    await user.click(trigger());
 
-    expect(toggle()).toHaveAttribute("aria-expanded", "false");
-    expect(layout(container, "w-72")).toHaveLength(0);
-    expect(layout(container, "lg:pl-0")).toHaveLength(1);
+    expect(trigger()).toHaveAttribute("aria-expanded", "true");
+    expect(document.getElementById("account-menu")).not.toBeNull();
 
-    // A clipped rail is still a rail: without `inert` its links stay tabbable
-    // at zero width, which is the worst of both states.
-    expect(document.getElementById("app-rail")).toHaveAttribute("inert");
-    expect(document.getElementById("app-rail")).toHaveAttribute(
-      "aria-hidden",
-      "true"
+    const menuEl = menu();
+    // The menu owns exactly two account acts: the profile destination and the
+    // shell's one destructive control.
+    expect(menuEl.querySelectorAll('a[href="/profile"]').length).toBe(1);
+    expect(within(menuEl).getAllByRole("button", { name: /keluar/i }).length).toBe(1);
+
+    // The signed-in name reaches the trigger, so the menu is discoverable
+    // without opening it.
+    expect(container.querySelector('[aria-controls="account-menu"]').textContent).toMatch(
+      /noor/i
     );
 
-    await user.click(toggle());
-
-    expect(toggle()).toHaveAttribute("aria-expanded", "true");
-    expect(layout(container, "w-72")).toHaveLength(1);
-    expect(layout(container, "lg:pl-72")).toHaveLength(1);
+    await user.keyboard("{Escape}");
+    expect(document.getElementById("account-menu")).toBeNull();
+    expect(trigger()).toHaveAttribute("aria-expanded", "false");
+    expect(document.activeElement).toBe(trigger());
   });
 
-  it("keeps the close a bounded, reduced-motion-aware transition", () => {
+  it("closes when the pointer lands outside it", async () => {
+    const user = userEvent.setup();
     renderShell();
-    const railEl = document.getElementById("app-rail");
 
-    // MOTION 1 allows this one because the user asked for the movement; it stays
-    // a state transition, short, and it stops entirely when motion is reduced.
-    expect(railEl).toHaveClass("transition-[width]");
-    expect(railEl).toHaveClass("duration-200");
-    expect(railEl).toHaveClass("motion-reduce:transition-none");
+    await user.click(trigger());
+    expect(document.getElementById("account-menu")).not.toBeNull();
+
+    await user.click(screen.getByTestId("route"));
+    expect(document.getElementById("account-menu")).toBeNull();
   });
 });
 
@@ -512,11 +529,11 @@ describe("SHELL-06: labels, and no motion the dial forbids", () => {
     expect(unnamed.map((el) => el.outerHTML.slice(0, 72))).toEqual([]);
   });
 
-  it("names the rail and the drawer rather than leaving two anonymous lists", async () => {
+  it("names the pillar nav and the drawer rather than leaving two anonymous lists", async () => {
     const user = userEvent.setup();
     renderShell();
 
-    expect(rail()).toHaveAccessibleName();
+    expect(pill()).toHaveAccessibleName();
 
     await user.click(document.querySelector('[aria-controls="nav-drawer"]'));
     expect(screen.getByRole("dialog")).toHaveAccessibleName();

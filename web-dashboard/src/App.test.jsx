@@ -204,11 +204,20 @@ describe('Shell controls', () => {
     expect(window.location.pathname).toBe('/');
   });
 
-  it('signs out from the rail account card', async () => {
+  it('signs out from the account menu in the header', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getAllByRole('button', { name: /keluar/i })[0]);
+    await user.click(
+      screen.getAllByRole('button', { name: /akun|keluar|profil/i })[0]
+    );
+    // The disclosure is open; the sign-out control is the one destructive act
+    // it owns.
+    const signOut = screen
+      .getAllByRole('button', { name: /keluar/i })
+      .find((button) => button.closest('#account-menu'));
+    expect(signOut).toBeDefined();
+    await user.click(signOut);
 
     expect(mockAuth.logout).toHaveBeenCalled();
   });

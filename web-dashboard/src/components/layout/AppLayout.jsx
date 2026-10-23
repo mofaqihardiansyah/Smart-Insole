@@ -3,21 +3,22 @@ import { NavLink, Link, useLocation } from "react-router-dom";
 import { Bell, Menu, X } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
-import { AppSidebar, AccountCard, renderIcon } from "./AppSidebar";
-import { AppTopbar } from "./AppTopbar";
+import { AccountCard, renderIcon } from "./AppSidebar";
+import { AppTopbar, BrandCard } from "./AppTopbar";
+import { AppNavPill } from "./AppNavPill";
 import { AppSearch } from "./AppSearch";
 
 /**
- * AppLayout — the application shell.
+ * AppLayout — the application shell, in the Cadra light register.
  *
- *   >= lg   a fixed 288px rail on the left, a sticky 72px top bar over the
- *           content column, content capped so a very wide monitor does not
- *           stretch a line of text across the screen.
- *   <  lg   a sticky top bar with the brand and a Menu button that opens a
- *           drawer. A drawer rather than a bottom bar because a seven item
- *           bottom row cannot hold a readable label at 360px, and an icon-only
- *           row is the failure mode this product's elderly audience cannot
- *           afford.
+ *   >= lg   a sticky header over the warm canvas: a white brand card on the
+ *           left, the dark nav pill beside it, and search, bell and the
+ *           account menu on its right. Content below runs to a 1400px cap.
+ *   <  lg   the same header collapses to a compact brand row with the bell
+ *           and a Menu button that opens the drawer. A drawer rather than a
+ *           bottom bar because a seven item bottom row cannot hold a readable
+ *           label at 360px, and an icon-only row is the failure mode this
+ *           product's elderly audience cannot afford.
  *
  * The drawer is a real dialog: focus moves into it, Tab stays inside it, Escape
  * closes it, the page behind it cannot scroll, and focus returns to the button
@@ -49,9 +50,6 @@ const AppLayout = ({
 }) => {
   const { language } = useInsole();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  // The rail's open state lives here because the content column, the rail and
-  // the top bar's toggle all have to agree on it.
-  const [railOpen, setRailOpen] = useState(true);
   const location = useLocation();
   const drawerRef = useRef(null);
   const triggerRef = useRef(null);
@@ -122,72 +120,70 @@ const AppLayout = ({
 
   return (
     <div className="min-h-[100dvh] bg-bg">
-      {/* Desktop rail. Closing animates the width rather than unmounting, so the
-          rail slides out and the column reclaims the space in one motion. The
-          inner rail keeps its 288px width (`min-w-72`) so its text never
-          reflows while the wrapper clips it. `inert` keeps the closed rail out
-          of the tab order and the accessibility tree. */}
-      <div
-        id="app-rail"
-        aria-hidden={railOpen ? undefined : "true"}
-        inert={railOpen ? undefined : ""}
-        className={[
-          "fixed left-0 top-0 z-40 hidden h-[100dvh] overflow-hidden lg:block",
-          "transition-[width] duration-200 ease-out motion-reduce:transition-none",
-          railOpen ? "w-72" : "w-0",
-        ].join(" ")}
-      >
-        <AppSidebar
-          links={links}
-          userName={userName}
-          userEmail={userEmail}
-          onSignOut={onSignOut}
-        />
-      </div>
+      {/* Header: one sticky bar over the warm canvas, two breakpoint rows.
+          The mobile row keeps the compact brand and the drawer trigger; the
+          desktop row pairs the brand card with the nav pill and the state
+          controls. Destinations render in exactly one of the rows at a time
+          and in exactly one element: the pill below `lg` gives way to the
+          drawer, which is a dialog, not a second navigation. */}
+      <header className="sticky top-0 z-40 bg-bg">
+        {/* Mobile row */}
+        <div className="flex h-16 items-center justify-between gap-3 border-b border-border px-4 sm:px-6 lg:hidden">
+          <div className="flex min-w-0 items-center gap-2">
+            <img src="/icon.svg" alt="" className="h-8 w-8 shrink-0" />
+            <span className="truncate font-heading text-h4 font-bold text-fg">
+              {t("app.title", language)}
+            </span>
+          </div>
 
-      {/* Mobile bar */}
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-border bg-surface px-4 lg:hidden">
-        <div className="flex min-w-0 items-center gap-2">
-          <img src="/icon.svg" alt="" className="h-8 w-8 shrink-0" />
-          <span className="truncate font-heading text-h4 font-bold text-fg">
-            {t("app.title", language)}
-          </span>
+          <div className="flex items-center gap-1">
+            {/* The alert queue lives on the bell, not in the rail, so a phone
+                needs the same reach as a desktop. */}
+            <Link
+              to="/notifications"
+              className="relative inline-flex h-11 w-11 items-center justify-center rounded-control text-fg-2 transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Bell className="h-5 w-5" aria-hidden="true" />
+              {hasUnread && (
+                <span
+                  aria-hidden="true"
+                  className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-safe ring-2 ring-surface"
+                />
+              )}
+              <span className="sr-only">
+                {hasUnread
+                  ? t("topbar.unread", language, {
+                      count: Number(unreadLabel) || 0,
+                    })
+                  : t("topbar.notifications", language)}
+              </span>
+            </Link>
+
+            <button
+              ref={triggerRef}
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              aria-expanded={drawerOpen}
+              aria-controls="nav-drawer"
+              className="relative inline-flex h-11 w-11 items-center justify-center rounded-control text-fg-2 transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Menu className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">{t("nav.openMenu", language)}</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-1">
-          {/* The alert queue lives on the bell, not in the rail, so a phone
-              needs the same reach as a desktop. */}
-          <Link
-            to="/notifications"
-            className="relative inline-flex h-11 w-11 items-center justify-center rounded-control text-fg-2 transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <Bell className="h-5 w-5" aria-hidden="true" />
-            {hasUnread && (
-              <span
-                aria-hidden="true"
-                className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-safe ring-2 ring-surface"
-              />
-            )}
-            <span className="sr-only">
-              {hasUnread
-                ? t("topbar.unread", language, {
-                    count: Number(unreadLabel) || 0,
-                  })
-                : t("topbar.notifications", language)}
-            </span>
-          </Link>
-
-          <button
-            ref={triggerRef}
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            aria-expanded={drawerOpen}
-            aria-controls="nav-drawer"
-            className="relative inline-flex h-11 w-11 items-center justify-center rounded-control text-fg-2 transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <Menu className="h-5 w-5" aria-hidden="true" />
-            <span className="sr-only">{t("nav.openMenu", language)}</span>
-          </button>
+        {/* Desktop row: brand card, nav pill, state controls. */}
+        <div className="mx-auto hidden max-w-[1400px] items-center gap-3 px-4 pb-3 pt-4 sm:px-6 lg:flex lg:px-8">
+          <BrandCard />
+          <AppNavPill links={links} />
+          <AppTopbar
+            links={links}
+            hasUnread={hasUnread}
+            userName={userName}
+            userEmail={userEmail}
+            onSignOut={onSignOut}
+          />
         </div>
       </header>
 
@@ -262,21 +258,7 @@ const AppLayout = ({
       )}
 
       {/* Content column */}
-      <div
-        className={[
-          "transition-[padding-left] duration-200 ease-out motion-reduce:transition-none",
-          railOpen ? "lg:pl-72" : "lg:pl-0",
-        ].join(" ")}
-      >
-        <AppTopbar
-          links={links}
-          hasUnread={hasUnread}
-          userName={userName}
-          userEmail={userEmail}
-          railOpen={railOpen}
-          onToggleRail={() => setRailOpen((open) => !open)}
-        />
-
+      <div>
         <main
           id="main-content"
           className="w-full px-4 pb-16 pt-6 sm:px-6 lg:px-8 lg:pt-8"

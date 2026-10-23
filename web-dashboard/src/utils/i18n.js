@@ -629,6 +629,7 @@ export const DICTIONARY = {
     'search.hint': 'Tekan Enter untuk membuka hasil teratas',
     'topbar.notifications': 'Notifikasi',
     'topbar.account': 'Buka profil',
+    'topbar.accountMenu': 'Menu akun',
     'topbar.unread': '{count} peringatan belum dibaca',
 
     /* ------------------------------ Common ----------------------------- */
@@ -1261,6 +1262,7 @@ export const DICTIONARY = {
     'search.hint': 'Press Enter to open the top result',
     'topbar.notifications': 'Notifications',
     'topbar.account': 'Open profile',
+    'topbar.accountMenu': 'Account menu',
     'topbar.unread': '{count} unread alerts',
 
     /* ------------------------------ Common ----------------------------- */

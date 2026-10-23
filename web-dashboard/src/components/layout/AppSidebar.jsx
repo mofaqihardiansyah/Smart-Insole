@@ -1,5 +1,4 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Activity,
@@ -11,24 +10,16 @@ import {
   Radio,
   Shield,
 } from "lucide-react";
-import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
 
 /**
- * AppSidebar — the 288px product rail.
+ * Shared shell helpers.
  *
- * It carries the whole navigation, because the reference console puts every
- * destination in the rail and reserves the top bar for search and account
- * controls. That split is deliberate: destinations on the left, state and
- * search on the top.
- *
- * The active item is marked by a filled tile (`aria-current` is set by
- * NavLink), so the state is carried by position and surface as well as by
- * colour.
- *
- * The account card is pinned to the foot of the rail and holds the one
- * destructive control in the shell, separated from the navigation so a
- * mis-click cannot sign the user out.
+ * This file used to own the 288px product rail. The Cadra light restyle
+ * replaces the rail with the `AppNavPill` header, so the rail component itself
+ * is gone; what survives here is what the shell still needs: the icon registry
+ * the pill and the drawer share, the initials helper the avatar controls share,
+ * and the account card the mobile drawer pins to its foot.
  */
 
 const ICONS = {
@@ -42,14 +33,14 @@ const ICONS = {
   Shield,
 };
 
-const renderIcon = (icon, className = "h-5 w-5") => {
+export const renderIcon = (icon, className = "h-5 w-5") => {
   if (React.isValidElement(icon)) return icon;
   const Icon = ICONS[icon] || LayoutDashboard;
   return <Icon className={className} aria-hidden="true" />;
 };
 
 /** Initials for the avatar. Falls back to the product mark, never a stock face. */
-const initialsOf = (value) => {
+export const initialsOf = (value) => {
   const source = String(value || "").trim();
   if (!source) return null;
   const words = source.replace(/@.*/, "").split(/[\s._-]+/).filter(Boolean);
@@ -58,49 +49,8 @@ const initialsOf = (value) => {
   return letters.join("").toUpperCase();
 };
 
-const Brand = ({ language }) => (
-  <div className="flex items-center gap-3 px-5 py-5">
-    {/* The mark carries its own rounded tile. Wrapping it in a filled tile drew
-        a dark rim around it, which read as an outline on the icon. */}
-    <img src="/icon.svg" alt="" className="h-10 w-10 shrink-0" />
-    <div className="min-w-0">
-      {/* Same rank as the mobile bar's brand line: text-h4 bold. The previous
-          17px arbitrary value was the one off-token size in the codebase. */}
-      <p className="truncate font-heading text-h4 font-bold leading-tight text-fg">
-        {t("app.title", language)}
-      </p>
-      <p className="truncate text-micro uppercase text-muted">
-        {t("app.taglineShort", language)}
-      </p>
-    </div>
-  </div>
-);
-
-/** Live data source. Always visible, so the reliability of the numbers is never in doubt. */
-const SourceReadout = () => {
-  const { connectionState, isLive, language } = useInsole();
-
-  const label = isLive
-    ? t("source.live", language)
-    : connectionState === "connecting"
-      ? t("source.connecting", language)
-      : connectionState === "error"
-        ? t("source.error", language)
-        : t("source.idle", language);
-
-  const tone = isLive ? "text-safe" : "text-warning";
-  const Icon = Radio;
-
-  return (
-    <p className={`flex items-center gap-2 text-body-sm ${tone}`}>
-      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-      <span className="truncate">{label}</span>
-    </p>
-  );
-};
-
-/** The account card at the foot of the rail. */
-const AccountCard = ({ name, email, onSignOut, language, className = "" }) => {
+/** The account card at the foot of the mobile drawer. */
+export const AccountCard = ({ name, email, onSignOut, language, className = "" }) => {
   const initials = initialsOf(name) || initialsOf(email);
 
   return (
@@ -138,61 +88,3 @@ const AccountCard = ({ name, email, onSignOut, language, className = "" }) => {
     </div>
   );
 };
-
-const AppSidebar = ({
-  links = [],
-  userName,
-  userEmail,
-  onSignOut,
-  className = "",
-}) => {
-  const { language } = useInsole();
-
-  const railItem = ({ isActive }) =>
-    [
-      "flex min-h-[46px] items-center gap-3 rounded-tile px-3 text-body font-medium",
-      "transition-colors duration-150",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
-      isActive
-        ? "bg-surface-3/70 font-semibold text-fg"
-        : "text-muted hover:bg-surface-2 hover:text-fg",
-    ].join(" ");
-
-  return (
-    <nav
-      aria-label={t("nav.main", language)}
-      className={`flex h-full min-w-72 flex-col rounded-r-rail border-y border-r border-border bg-sidebar ${className}`.trim()}
-    >
-      <Brand language={language} />
-
-      <ul className="flex-1 space-y-1 overflow-y-auto px-3 pb-4">
-        {links.map((link) => (
-          <li key={link.id}>
-            <NavLink
-              to={link.to}
-              end={link.to === "/"}
-              className={railItem}
-              aria-label={link.accessibilityLabel || link.label}
-            >
-              {renderIcon(link.icon)}
-              <span className="truncate">{link.label}</span>
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-
-      <div className="space-y-3 border-t border-border-strong px-3 py-4">
-        <SourceReadout />
-        <AccountCard
-          name={userName}
-          email={userEmail}
-          onSignOut={onSignOut}
-          language={language}
-        />
-      </div>
-    </nav>
-  );
-};
-
-export { AppSidebar, AccountCard, Brand, renderIcon, initialsOf };
-export default AppSidebar;
