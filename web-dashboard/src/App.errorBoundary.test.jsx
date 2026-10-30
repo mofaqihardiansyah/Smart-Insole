@@ -45,7 +45,7 @@ vi.mock('./pages/DashboardPage', () => ({
 const App = (await import('./App')).default;
 
 const signedIn = {
-  user: { uid: 'u1', email: 'kader@example.com', displayName: 'Kader' },
+  user: { uid: 'u1', email: 'kader@example.com', displayName: 'Kader', emailVerified: true },
   loading: false,
   displayName: 'Kader',
 };

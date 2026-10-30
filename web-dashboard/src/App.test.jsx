@@ -35,7 +35,7 @@ const App = (await import('./App')).default;
 const DASHBOARD_H1 = /selamat/i;
 
 const signedIn = {
-  user: { uid: 'u1', email: 'kader@example.com', displayName: 'Kader' },
+  user: { uid: 'u1', email: 'kader@example.com', displayName: 'Kader', emailVerified: true },
   loading: false,
   displayName: 'Kader',
 };

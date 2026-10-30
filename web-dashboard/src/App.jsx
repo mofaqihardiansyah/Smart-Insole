@@ -157,10 +157,7 @@ function ProtectedApp() {
 
   const links = buildNavLinks(language, role);
 
-  // The verification page is a full-page auth task, not a dashboard view. It
-  // renders outside AppLayout so it does not nest a second <main> (and a
-  // second #main-content) inside the shell while the account is still being
-  // confirmed.
+  // The verification page is a full-page auth task, not a dashboard view.
   if (location.pathname.replace(/\/+$/, "") === "/verify-email") {
     return <VerifyEmailPage />;
   }

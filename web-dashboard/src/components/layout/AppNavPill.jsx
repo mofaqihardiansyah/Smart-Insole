@@ -23,16 +23,16 @@ const AppNavPill = ({ links = [], className = "" }) => {
     [
       "flex h-9 min-h-[36px] items-center gap-2 rounded-pill px-3.5 text-body-sm font-medium",
       "transition-colors duration-150",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
       isActive
-        ? "bg-white/10 text-inverted-fg"
-        : "text-inverted-muted hover:text-inverted-fg",
+        ? "bg-secondary/15 text-secondary-ink font-semibold"
+        : "text-fg-2 hover:bg-surface-2 hover:text-fg",
     ].join(" ");
 
   return (
     <nav
       aria-label={t("nav.main", language)}
-      className={`hidden items-center gap-1 rounded-pill bg-inverted/95 p-1.5 shadow-panel lg:flex ${className}`.trim()}
+      className={`hidden items-center gap-1 rounded-pill border border-border bg-surface p-1.5 shadow-panel lg:flex ${className}`.trim()}
     >
       {links.map((link) => (
         <NavLink

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import { Bell, Menu, X } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
@@ -49,6 +50,7 @@ const AppLayout = ({
   children,
 }) => {
   const { language } = useInsole();
+  const shouldReduceMotion = useReducedMotion();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const drawerRef = useRef(null);
@@ -263,7 +265,15 @@ const AppLayout = ({
           id="main-content"
           className="w-full px-4 pb-16 pt-6 sm:px-6 lg:px-8 lg:pt-8"
         >
-          <div className="mx-auto w-full max-w-[1400px]">{children}</div>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="mx-auto w-full max-w-[1400px]"
+          >
+            {children}
+          </motion.div>
 
           <footer className="mx-auto mt-12 max-w-[1400px] border-t border-border pt-4 text-body-sm text-muted">
             {t("app.footer", language)}

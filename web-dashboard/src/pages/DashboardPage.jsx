@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Activity,
   BatteryMedium,
@@ -460,8 +461,34 @@ const DashboardPage = () => {
     },
   ];
 
+  const shouldReduceMotion = useReducedMotion();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: shouldReduceMotion ? 0 : 0.08,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 12 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.35, ease: "easeOut" },
+    },
+  };
+
   return (
-    <section className="space-y-5 lg:space-y-6">
+    <motion.section
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-5 lg:space-y-6"
+    >
       {/* Risk level changes are announced; the numbers deliberately are not. */}
       <p className="sr-only" aria-live="polite">
         {`${t("risk.status", language)}: ${levelLabel}`}
@@ -472,7 +499,8 @@ const DashboardPage = () => {
           before any number, and the real buffer's event strip across it. The
           date stays muted above the chip; a bare status word in 15px grey
           would hide the page's most important read. */}
-      <GlassCard flush data-panel="hero">
+      <motion.div variants={itemVariants}>
+        <GlassCard flush data-panel="hero">
         <div className="px-6 pt-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
@@ -520,15 +548,23 @@ const DashboardPage = () => {
           <HeroTimeline records={history} language={language} />
         </div>
       </GlassCard>
+      </motion.div>
 
-      {sourceBanner}
+      {sourceBanner && (
+        <motion.div variants={itemVariants}>{sourceBanner}</motion.div>
+      )}
 
-      <BentoGrid cards={tiles} columns={4} />
+      <motion.div variants={itemVariants}>
+        <BentoGrid cards={tiles} columns={4} />
+      </motion.div>
 
       {/* Station 02: where the pressure sits. The Cadra funnel replaces the
           donut: proportions read as one-decision bars, each row naming its
           sensor point and carrying the real kPa the bar is drawn from. */}
-      <div className="grid gap-5 lg:grid-cols-3 lg:gap-6">
+      <motion.div
+        variants={itemVariants}
+        className="grid gap-5 lg:grid-cols-3 lg:gap-6"
+      >
         <GlassCard flush className="lg:col-span-2" data-panel="trend">
           <PanelHeader
             index="01"
@@ -615,14 +651,11 @@ const DashboardPage = () => {
             />
           </div>
         </GlassCard>
-      </div>
+      </motion.div>
 
-      {/* Station 03: the live feed. Deliberately NOT a card. A running
-          reading stream held inside a white box is decoration around data;
-          open, ruled edge to edge, it reads as the tape it is. The band
-          carries the page's content-column rules: top rule, own bottom rules
-          via the rows, no side walls. */}
-      <section data-panel="feed" className="border-t border-border">
+      {/* Station 03: the live feed. Held in a clean ruled card container for visual consistency. */}
+      <motion.div variants={itemVariants}>
+        <section data-panel="feed" className="rounded-card border border-border bg-surface shadow-panel overflow-hidden">
         <div className="flex flex-wrap items-start justify-between gap-3 px-6 pb-3 pt-5">
           <div className="min-w-0">
             <h2 className="flex items-center gap-2 font-heading text-card-title text-fg">
@@ -845,11 +878,13 @@ const DashboardPage = () => {
           </>
         )}
       </section>
+      </motion.div>
 
       {/* Station 04: the pressure map, the one thing that answers "where
           exactly". The heading is a focus target so the jump control can land
           a keyboard user on it rather than merely scrolling past it. */}
-      <GlassCard flush data-panel="map">
+      <motion.div variants={itemVariants}>
+        <GlassCard flush data-panel="map">
         <div ref={mapHeadingRef} tabIndex={-1}>
           <PanelHeader
             index="04"
@@ -893,6 +928,7 @@ const DashboardPage = () => {
           </div>
         </div>
       </GlassCard>
+      </motion.div>
 
       {/* Jump to the map. Hidden below lg, where the map is one short scroll
           away and a floating button would cover the content it is meant to
@@ -906,7 +942,7 @@ const DashboardPage = () => {
         <MapIcon className="h-6 w-6" aria-hidden="true" />
         <span className="sr-only">{t("dashboard.heatmapTitle", language)}</span>
       </button>
-    </section>
+    </motion.section>
   );
 };
 

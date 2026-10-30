@@ -342,6 +342,21 @@ const VerifyEmailPage = () => {
         </GlassButton>
       </div>
 
+      {user && (
+        <div className="mt-3">
+          <GlassButton
+            type="button"
+            variant="ghost"
+            className="w-full text-secondary hover:text-secondary-ink font-medium"
+            onClick={() => navigate("/")}
+          >
+            {language === "id"
+              ? "Lewati verifikasi untuk saat ini (Lanjut ke Dasbor)"
+              : "Skip verification for now (Continue to Dashboard)"}
+          </GlassButton>
+        </div>
+      )}
+
       <p className="mt-4 flex items-start gap-2 text-body-sm text-muted">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
         <span>{t("auth.verify.secure", language)}</span>
