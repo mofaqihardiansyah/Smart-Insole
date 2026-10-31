@@ -19,17 +19,24 @@
 
 import { ref, onValue, query, limitToLast, set } from 'firebase/database';
 import { realtimeDb } from './firebaseConfig';
+import type {
+  GlobalRiskConfig,
+  HistoryEntry,
+  MappedReading,
+  RiskLevel,
+  WireReadingPacket,
+} from '../types/insole';
 
 export const READINGS_PATH = 'readings/latest';
 export const HISTORY_PATH = 'readings/history';
 export const GLOBAL_CONFIG_PATH = 'config/global';
 
 /** The three sensor points, in anatomical order. */
-export const SENSOR_KEYS = ['forefoot', 'midfoot', 'heel'];
+export const SENSOR_KEYS = ['forefoot', 'midfoot', 'heel'] as const;
 
-const toFiniteNumber = (value) => {
+const toFiniteNumber = (value: unknown): number | null => {
   const n = typeof value === 'string' ? Number(value) : value;
-  return Number.isFinite(n) ? n : null;
+  return typeof n === 'number' && Number.isFinite(n) ? n : null;
 };
 
 /**
@@ -40,17 +47,19 @@ const toFiniteNumber = (value) => {
  * place the reading in 1970 and break ordering, so values below the
  * millisecond epoch of 2001 are read as seconds.
  */
-const toMillis = (value) => {
+const toMillis = (value: unknown): number | null => {
   const n = toFiniteNumber(value);
   if (n === null) return null;
   return n < 1e12 ? Math.round(n * 1000) : Math.round(n);
 };
 
 /** 'DANGER' | 'danger' -> 'danger'. Anything unrecognised -> null. */
-const normaliseRiskLevel = (value) => {
+const normaliseRiskLevel = (value: unknown): RiskLevel | null => {
   if (typeof value !== 'string') return null;
   const lowered = value.trim().toLowerCase();
-  return ['safe', 'warning', 'danger'].includes(lowered) ? lowered : null;
+  return lowered === 'safe' || lowered === 'warning' || lowered === 'danger'
+    ? lowered
+    : null;
 };
 
 /**
@@ -58,57 +67,43 @@ const normaliseRiskLevel = (value) => {
  *
  * Returns `null` for an empty snapshot so callers can distinguish "the device
  * has never written" from "the device wrote zeros".
- *
- * @param {object|null|undefined} packet
- * @returns {null | {
- *   readings: { forefoot: number, midfoot: number, heel: number, sustainedDuration: number },
- *   peakPressure: number,
- *   riskLevel: 'safe'|'warning'|'danger'|null,
- *   riskScore: number|null,
- *   batteryPercent: number|null,
- *   deviceId: string|null,
- *   timestamp: number|null
- * }}
  */
-export function mapReadingPacket(packet) {
+export function mapReadingPacket(packet: unknown): MappedReading | null {
   if (!packet || typeof packet !== 'object') return null;
+  const wire = packet as WireReadingPacket;
 
   const readings = {
-    forefoot: toFiniteNumber(packet.forefoot_kpa) ?? 0,
-    midfoot: toFiniteNumber(packet.midfoot_kpa) ?? 0,
-    heel: toFiniteNumber(packet.heel_kpa) ?? 0,
-    sustainedDuration: toFiniteNumber(packet.sustained_duration_sec) ?? 0,
+    forefoot: toFiniteNumber(wire.forefoot_kpa) ?? 0,
+    midfoot: toFiniteNumber(wire.midfoot_kpa) ?? 0,
+    heel: toFiniteNumber(wire.heel_kpa) ?? 0,
+    sustainedDuration: toFiniteNumber(wire.sustained_duration_sec) ?? 0,
   };
 
-  const riskScore = toFiniteNumber(packet.fuzzy_risk_score);
+  const riskScore = toFiniteNumber(wire.fuzzy_risk_score);
 
   return {
     readings,
     peakPressure: Math.max(readings.forefoot, readings.midfoot, readings.heel),
-    riskLevel: normaliseRiskLevel(packet.risk_status),
+    riskLevel: normaliseRiskLevel(wire.risk_status),
     riskScore: riskScore === null ? null : Math.round(riskScore),
-    batteryPercent: toFiniteNumber(packet.battery_percent),
-    deviceId: typeof packet.deviceId === 'string' ? packet.deviceId : null,
-    timestamp: toMillis(packet.timestamp),
+    batteryPercent: toFiniteNumber(wire.battery_percent),
+    deviceId: typeof wire.deviceId === 'string' ? wire.deviceId : null,
+    timestamp: toMillis(wire.timestamp),
   };
 }
 
 /**
  * Map the `readings/history` object into an array, newest first.
- *
- * @param {object|null|undefined} historyObject
- * @param {number} [limit=50]
- * @returns {Array<ReturnType<typeof mapReadingPacket> & { id: string }>}
  */
-export function mapHistory(historyObject, limit = 50) {
+export function mapHistory(historyObject: unknown, limit = 50): HistoryEntry[] {
   if (!historyObject || typeof historyObject !== 'object') return [];
 
-  return Object.entries(historyObject)
-    .map(([id, packet]) => {
+  return Object.entries(historyObject as Record<string, unknown>)
+    .map(([id, packet]): HistoryEntry | null => {
       const mapped = mapReadingPacket(packet);
       return mapped ? { id, ...mapped } : null;
     })
-    .filter(Boolean)
+    .filter((entry): entry is HistoryEntry => entry !== null)
     .sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0))
     .slice(0, limit);
 }
@@ -116,14 +111,15 @@ export function mapHistory(historyObject, limit = 50) {
 /**
  * Subscribe to the latest reading.
  *
- * @param {(reading: NonNullable<ReturnType<typeof mapReadingPacket>>) => void} onData
- *   Called on every device update. Not called for an empty snapshot.
- * @param {(error: Error) => void} onError
- *   Called for permission and network failures so the caller can report the
- *   connection as failed and show the retry control.
- * @returns {() => void} unsubscribe
+ * @param onData Called on every device update. Not called for an empty snapshot.
+ * @param onError Called for permission and network failures so the caller can
+ *   report the connection as failed and show the retry control.
+ * @returns unsubscribe
  */
-export function subscribeToReadings(onData, onError) {
+export function subscribeToReadings(
+  onData: (reading: MappedReading) => void,
+  onError?: (error: Error) => void
+): () => void {
   const readingRef = ref(realtimeDb, READINGS_PATH);
 
   const unsubscribe = onValue(
@@ -142,13 +138,12 @@ export function subscribeToReadings(onData, onError) {
 
 /**
  * Subscribe to recent history entries, newest first.
- *
- * @param {(rows: ReturnType<typeof mapHistory>) => void} onData
- * @param {(error: Error) => void} onError
- * @param {number} [limit=50]
- * @returns {() => void} unsubscribe
  */
-export function subscribeToHistory(onData, onError, limit = 50) {
+export function subscribeToHistory(
+  onData: (rows: HistoryEntry[]) => void,
+  onError?: (error: Error) => void,
+  limit = 50
+): () => void {
   const historyQuery = query(ref(realtimeDb, HISTORY_PATH), limitToLast(limit));
 
   const unsubscribe = onValue(
@@ -170,12 +165,11 @@ export function subscribeToHistory(onData, onError, limit = 50) {
  * Battery lives on the same `readings/latest` packet, so this is a convenience
  * alias that reads the same node and reports only the percentage. It exists so
  * the Device page does not have to know the packet layout.
- *
- * @param {(percent: number|null) => void} onData
- * @param {(error: Error) => void} onError
- * @returns {() => void} unsubscribe
  */
-export function subscribeToBattery(onData, onError) {
+export function subscribeToBattery(
+  onData: (percent: number | null) => void,
+  onError?: (error: Error) => void
+): () => void {
   return subscribeToReadings(
     (reading) => onData(reading.batteryPercent),
     onError
@@ -184,18 +178,17 @@ export function subscribeToBattery(onData, onError) {
 
 /**
  * Subscribe to the global risk thresholds (admin-configured).
- *
- * @param {(config: { safeThreshold: number, dangerThreshold: number }) => void} onData
- * @param {(error: Error) => void} onError
- * @returns {() => void} unsubscribe
  */
-export function subscribeToGlobalConfig(onData, onError) {
+export function subscribeToGlobalConfig(
+  onData: (config: GlobalRiskConfig) => void,
+  onError?: (error: Error) => void
+): () => void {
   const configRef = ref(realtimeDb, GLOBAL_CONFIG_PATH);
 
   const unsubscribe = onValue(
     configRef,
     (snapshot) => {
-      const value = snapshot.val();
+      const value = snapshot.val() as Partial<GlobalRiskConfig> | null;
       onData({
         safeThreshold: Number(value?.safeThreshold) || 35,
         dangerThreshold: Number(value?.dangerThreshold) || 70,
@@ -210,12 +203,10 @@ export function subscribeToGlobalConfig(onData, onError) {
 }
 
 /**
- * Write the global risk thresholds (admin only).
- *
- * @param {{ safeThreshold: number, dangerThreshold: number }} config
- * @returns {Promise<void>}
+ * Write the global risk thresholds (admin only; the RTDB rules are what
+ * actually enforce that — this function does not check).
  */
-export function setGlobalConfig(config) {
+export function setGlobalConfig(config: GlobalRiskConfig): Promise<void> {
   return set(ref(realtimeDb, GLOBAL_CONFIG_PATH), config);
 }
 

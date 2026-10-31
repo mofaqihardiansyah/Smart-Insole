@@ -33,8 +33,10 @@
  * uses.
  */
 
+import type { RiskLevel, RiskThresholds } from '../types/insole';
+
 /** Clinical thresholds, in kPa and seconds. */
-export const RISK_THRESHOLDS = Object.freeze({
+export const RISK_THRESHOLDS: Readonly<RiskThresholds> = Object.freeze({
   warningKpa: 35,
   dangerKpa: 70,
   warningSeconds: 20,
@@ -63,17 +65,32 @@ export const SCORE_BANDS = Object.freeze({
  * are inclusive for the same reason: a patient at exactly 0 kPa is fully
  * "low pressure", not outside every set.
  */
-export function trapezoid(x, a, b, c, d) {
+export function trapezoid(
+  x: number | null | undefined,
+  a: number,
+  b: number,
+  c: number,
+  d: number
+): number {
   if (!Number.isFinite(x)) return 0;
-  if (x < a || x > d) return 0;
-  if (x >= b && x <= c) return 1;
-  if (x < b) return b - a > 0 ? (x - a) / (b - a) : 1;
-  return d - c > 0 ? (d - x) / (d - c) : 1;
+  const value = x as number;
+  if (value < a || value > d) return 0;
+  if (value >= b && value <= c) return 1;
+  if (value < b) return b - a > 0 ? (value - a) / (b - a) : 1;
+  return d - c > 0 ? (d - value) / (d - c) : 1;
 }
 
 /** Triangular membership, expressed through the same trapezoid maths. */
-export function triangle(x, a, b, c) {
+export function triangle(x: number, a: number, b: number, c: number): number {
   return trapezoid(x, a, b, b, c);
+}
+
+/** A membership set as trapezoid corners [a, b, c, d]. */
+export type Trapezoid = readonly [number, number, number, number];
+
+export interface FuzzySets {
+  pressure: { low: Trapezoid; medium: Trapezoid; high: Trapezoid };
+  duration: { brief: Trapezoid; moderate: Trapezoid; prolonged: Trapezoid };
 }
 
 /**
@@ -83,10 +100,8 @@ export function triangle(x, a, b, c) {
  * are the constants the inference uses, not a separate copy that only changes a
  * label. Every formula below is written so the default thresholds
  * (35 / 70 kPa, 20 / 30 s) reproduce the tuned breakpoints exactly.
- *
- * @param {{ warningKpa: number, dangerKpa: number, warningSeconds: number, dangerSeconds: number }} [thresholds]
  */
-export function buildSets(thresholds = RISK_THRESHOLDS) {
+export function buildSets(thresholds: RiskThresholds = RISK_THRESHOLDS): FuzzySets {
   const w = thresholds.warningKpa;
   const d = thresholds.dangerKpa;
   const ws = thresholds.warningSeconds;
@@ -111,18 +126,29 @@ export function buildSets(thresholds = RISK_THRESHOLDS) {
 
 const DEFAULT_SETS = buildSets(RISK_THRESHOLDS);
 
-export const PRESSURE_SETS = Object.freeze(DEFAULT_SETS.pressure);
-export const DURATION_SETS = Object.freeze(DEFAULT_SETS.duration);
+export const PRESSURE_SETS: Readonly<FuzzySets['pressure']> = Object.freeze(DEFAULT_SETS.pressure);
+export const DURATION_SETS: Readonly<FuzzySets['duration']> = Object.freeze(DEFAULT_SETS.duration);
 
 /**
  * Representative severity per consequence, on the 0-100 readout scale. These
  * are the singletons the Sugeno step averages.
  */
-export const CONSEQUENT_SEVERITY = Object.freeze({
+export const CONSEQUENT_SEVERITY: Readonly<Record<RiskLevel, number>> = Object.freeze({
   safe: 16,
   warning: 63,
   danger: 94,
 });
+
+/** The linguistic labels each premise of a rule can take. */
+export type PressureLabel = keyof FuzzySets['pressure'];
+export type DurationLabel = keyof FuzzySets['duration'];
+
+/** One rule of the base: pressure x duration -> consequence. */
+export interface FuzzyRule {
+  pressure: PressureLabel;
+  duration: DurationLabel;
+  consequence: RiskLevel;
+}
 
 /**
  * The rule base: pressure x duration -> consequence.
@@ -133,7 +159,7 @@ export const CONSEQUENT_SEVERITY = Object.freeze({
  * `low` row warns on prolonged loading, because a diabetic foot is at risk from
  * sustained load even below the pressure threshold.
  */
-export const RULES = Object.freeze([
+export const RULES: readonly FuzzyRule[] = Object.freeze([
   { pressure: 'low', duration: 'brief', consequence: 'safe' },
   { pressure: 'low', duration: 'moderate', consequence: 'warning' },
   { pressure: 'low', duration: 'prolonged', consequence: 'warning' },
@@ -148,41 +174,51 @@ export const RULES = Object.freeze([
 ]);
 
 /** Severity order, most severe first. Used only to break exact ties. */
-const SEVERITY_ORDER = ['danger', 'warning', 'safe'];
+const SEVERITY_ORDER: readonly RiskLevel[] = ['danger', 'warning', 'safe'];
+
+/** One fired rule, with the strength at which it fired. */
+export interface Firing {
+  rule: FuzzyRule;
+  strength: number;
+}
+
+/** The full result of one inference. */
+export interface FuzzyVerdict {
+  level: RiskLevel;
+  score: number;
+  severity: number;
+  firings: Firing[];
+  strengthsByConsequence: Record<RiskLevel, number>;
+}
 
 /**
  * Run the full inference.
- *
- * @param {{ peakPressure?: number, sustainedDuration?: number }} input
- * @returns {{
- *   level: 'safe' | 'warning' | 'danger',
- *   score: number,
- *   severity: number,
- *   firings: Array<{ rule: object, strength: number }>,
- *   strengthsByConsequence: { safe: number, warning: number, danger: number }
- * }}
  */
 export function inferRisk({
   peakPressure,
   sustainedDuration = 0,
   thresholds = RISK_THRESHOLDS,
-} = {}) {
-  const pressure = Number.isFinite(peakPressure) ? Math.max(0, peakPressure) : 0;
+}: {
+  peakPressure?: number;
+  sustainedDuration?: number;
+  thresholds?: RiskThresholds;
+} = {}): FuzzyVerdict {
+  const pressure = Number.isFinite(peakPressure) ? Math.max(0, peakPressure as number) : 0;
   const duration = Number.isFinite(sustainedDuration)
-    ? Math.max(0, sustainedDuration)
+    ? Math.max(0, sustainedDuration as number)
     : 0;
 
   // Rebuilt per call so a clinician's threshold change takes effect
   // immediately. This is cheap: six arrays of four numbers.
   const sets = buildSets(thresholds);
 
-  const pressureMemberships = {
+  const pressureMemberships: Record<PressureLabel, number> = {
     low: trapezoid(pressure, ...sets.pressure.low),
     medium: trapezoid(pressure, ...sets.pressure.medium),
     high: trapezoid(pressure, ...sets.pressure.high),
   };
 
-  const durationMemberships = {
+  const durationMemberships: Record<DurationLabel, number> = {
     brief: trapezoid(duration, ...sets.duration.brief),
     moderate: trapezoid(duration, ...sets.duration.moderate),
     prolonged: trapezoid(duration, ...sets.duration.prolonged),
@@ -190,7 +226,7 @@ export function inferRisk({
 
   // Rule evaluation. AND is the minimum, the usual Mamdani choice: a rule fires
   // only as strongly as its weakest premise.
-  const firings = RULES.map((rule) => ({
+  const firings: Firing[] = RULES.map((rule) => ({
     rule,
     strength: Math.min(
       pressureMemberships[rule.pressure],
@@ -200,7 +236,7 @@ export function inferRisk({
 
   const active = firings.filter((f) => f.strength > 0);
 
-  const strengthsByConsequence = { safe: 0, warning: 0, danger: 0 };
+  const strengthsByConsequence: Record<RiskLevel, number> = { safe: 0, warning: 0, danger: 0 };
   for (const { rule, strength } of active) {
     // Aggregation across rules that share a consequence is MAX, so the most
     // confident rule for a consequence sets its contribution.
@@ -214,7 +250,7 @@ export function inferRisk({
   // consequences' representative severities. Monotone by construction.
   let weighted = 0;
   let total = 0;
-  for (const consequence of ['safe', 'warning', 'danger']) {
+  for (const consequence of SEVERITY_ORDER) {
     const strength = strengthsByConsequence[consequence];
     if (strength <= 0) continue;
     weighted += strength * CONSEQUENT_SEVERITY[consequence];
@@ -224,13 +260,17 @@ export function inferRisk({
 
   // The level is decided by the strongest firing rule, with exact ties resolved
   // toward the more cautious consequence.
-  let level = 'safe';
+  let level: RiskLevel = 'safe';
   if (active.length > 0) {
     const strongest = Math.max(...active.map((f) => f.strength));
     const tied = active.filter((f) => strongest - f.strength < 1e-9);
-    level = SEVERITY_ORDER.find((candidate) =>
-      tied.some((f) => f.rule.consequence === candidate)
-    );
+    // SEVERITY_ORDER holds every level, so a tie always contains a match;
+    // the fallback keeps the strict compiler satisfied without changing
+    // the outcome.
+    level =
+      SEVERITY_ORDER.find((candidate) =>
+        tied.some((f) => f.rule.consequence === candidate)
+      ) ?? 'safe';
   }
 
   return {
@@ -247,12 +287,8 @@ export function inferRisk({
  * number and the level can never contradict each other. Without this a blend of
  * "safe" and "warning" firings can report `warning` next to a score of 46,
  * which reads as a bug to a clinician even though the maths is correct.
- *
- * @param {number} score raw severity, 0-100
- * @param {'safe' | 'warning' | 'danger'} level
- * @returns {number}
  */
-export function alignScoreToLevel(score, level) {
+export function alignScoreToLevel(score: number, level: RiskLevel): number {
   if (level === 'danger') {
     return Math.min(100, Math.max(SCORE_BANDS.warningMax + 1, score));
   }
@@ -269,12 +305,15 @@ export function alignScoreToLevel(score, level) {
  * Convenience wrapper returning just the level, for call sites that do not need
  * the score or the trace.
  *
- * @param {number} peakPressure kPa
- * @param {number} sustainedDuration seconds
- * @param {object} [thresholds] optional threshold overrides
- * @returns {'safe' | 'warning' | 'danger'}
+ * @param peakPressure kPa
+ * @param sustainedDuration seconds
+ * @param thresholds optional threshold overrides
  */
-export function classifyRisk(peakPressure, sustainedDuration = 0, thresholds) {
+export function classifyRisk(
+  peakPressure: number,
+  sustainedDuration = 0,
+  thresholds?: RiskThresholds
+): RiskLevel {
   return inferRisk({ peakPressure, sustainedDuration, thresholds }).level;
 }
 
