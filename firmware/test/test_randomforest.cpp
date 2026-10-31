@@ -6,6 +6,7 @@
  */
 
 #include <unity.h>
+#include <cstdio>
 #include "RandomForest.h"
 
 static RandomForest rf;
