@@ -158,6 +158,8 @@ ESP32 Pin Mapping (per insole):
 │  FSR Forefoot  →  GPIO 34 (ADC1)   │
 │  FSR Midfoot   →  GPIO 35 (ADC1)   │
 │  FSR Heel      →  GPIO 32 (ADC1)   │
+│  Buzzer (+)    →  GPIO 27 (alarm   │
+│                  lokal, offline)   │
 │                                     │
 │  VCC (3.3V)    →  FSR voltage       │
 │                  divider            │

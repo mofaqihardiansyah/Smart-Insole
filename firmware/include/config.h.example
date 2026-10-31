@@ -15,29 +15,47 @@
 #define WIFI_PASSWORD "PASSWORD_WIFI_ANDA"
 
 // ---------- Firebase Realtime Database ----------
-#define FIREBASE_HOST "smart-insole-ta-default-rtdb.firebaseio.com"
+// FIREBASE_HOST hanya hostname (tanpa https://), contoh:
+//   "sole-3b2e8-default-rtdb.asia-southeast1.firebasedatabase.app"
+// Nilai placeholder di bawah membuat firmware melewati Firebase
+// (alarm lokal + serial tetap jalan) sampai diisi.
+#define FIREBASE_HOST "your-project.firebaseio.com"
 #define FIREBASE_AUTH "FIREBASE_DATABASE_SECRET_ANDA"
 
 // ---------- Konfigurasi Perangkat ----------
-// ID unik per alat, dipakai sebagai key di Firebase
+// ID unik per alat, dikirim sebagai field `deviceId` di tiap paket
 #define DEVICE_ID     "insole-01"
 
 // ---------- Pin FSR 402 (3 sensor) ----------
 //   - Forefoot  -> GPIO 34 (ADC1_CH6)
 //   - Midfoot   -> GPIO 35 (ADC1_CH7)
 //   - Heel      -> GPIO 32 (ADC1_CH4)
+//   ADC2 yang bentrok dengan WiFi. ADC1 aman dipakai bersama WiFi.
 #define PIN_FSR_FOREFOOT 34
 #define PIN_FSR_MIDFOOT  35
 #define PIN_FSR_HEEL     32
 
+// ---------- Buzzer alarm lokal ----------
+// Buzzer aktif (+ ke GPIO, − ke GND). GPIO 27 bebas di papan yang
+// dipakai (34/35/32 terisi FSR, 34-35 input-only, tidak bisa output).
+// Alarm berbunyi dari perangkat, TANPA internet: lihat updateBuzzer()
+// di main.cpp.
+#define PIN_BUZZER 27
+
 // ---------- Kalibrasi Sensor ----------
-// Nilai ADC saat tidak ditekan (dengan berat tubuh)
-#define FSR_IDLE_ADC   4095
-// Nilai ADC saat tekanan maksimum
-#define FSR_SAT_ADC    0
-// Batas atas tekanan yang dianggap valid (kPa)
-#define FSR_MAX_KPA    200.0f
+// Linear: kPa = (adc_value − ADC_OFFSET) × ADC_TO_KPA
+// Lihat prosedur kalibrasi di docs/HARDWARE-SPEC.md.
+// Wiring sesuai spesifikasi (Vout = Vcc × R_div / (R_fsr + R_div)):
+// tekanan naik → ADC naik. GANTI dua nilai ini setelah kalibrasi.
+#define ADC_OFFSET   0.0f
+#define ADC_TO_KPA   0.085f   // 4095 × 0.085 ≈ 348 kPa maksimum
+
+// ---------- Waktu (NTP) ----------
+// Timestamp dikirim dalam milidetik epoch. Tanpa sinkronisasi NTP,
+// push ke Firebase DITUNDA (timestamp 1970 merusak urutan riwayat).
+#define NTP_SERVER_1 "pool.ntp.org"
+#define NTP_SERVER_2 "time.nist.gov"
 
 // ---------- Interval Pengambilan Data ----------
 #define SAMPLE_INTERVAL_MS   1000   // 1 detik
-#define FIREBASE_PUSH_MS     2000   // 2 detik
+#define FIREBASE_PUSH_MS     2000   // 2 detik (latest + history)
