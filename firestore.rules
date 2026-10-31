@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// Bootstrap admin: role lives in this Firestore collection AND is mirrored to
+// RTDB at users/<uid>/role (RTDB rules cannot read Firestore). To promote the
+// first admin, set role: "admin" in users/<uid> here, then set the same field
+// at users/<uid>/role in the Realtime Database console.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /users/{uid} {
+      // Reading: your own profile, or any profile for an admin.
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+
+      // Listing the collection (admin console): admin only.
+      allow list: if isAdmin();
+
+      // Registration: you may create only your own document, and the role is
+      // pinned to "user" so nobody self-promotes at sign-up.
+      allow create: if isSignedIn() &&
+        request.auth.uid == uid &&
+        request.resource.data.role == 'user';
+
+      // Self-update: photo/name only. Role and active stay put; only an admin
+      // may change those (active gates the dashboard, role gates the console).
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (
+          request.auth.uid == uid &&
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.active == resource.data.active
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Everything else in this project has no business existing.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

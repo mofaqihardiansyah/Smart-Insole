@@ -1,0 +1,20 @@
+rules_version = '2';
+
+// Profile photos only. Read is open to signed-in users because avatars appear
+// in the admin console and top bar; write is limited to the owner's own folder.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    match /profiles/{uid}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null &&
+        request.auth.uid == uid &&
+        request.resource.size < 2 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

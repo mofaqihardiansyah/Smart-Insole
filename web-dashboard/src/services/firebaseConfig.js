@@ -13,18 +13,14 @@ import { getDatabase } from "firebase/database";
 // Note on these values being committed: the Firebase web config (apiKey,
 // authDomain, databaseURL, ...) is a public project identifier, not a secret.
 // It is shipped to every browser by design. Access control lives in the
-// Realtime Database security rules, which must require authentication:
+// security rules, versioned at the repository root:
 //
-//   {
-//     "rules": {
-//       "readings": {
-//         ".read": "auth != null",
-//         ".write": false
-//       }
-//     }
-//   }
+//   database.rules.json    readings: auth read, no client write
+//   firestore.rules        users: self or admin, role pinned at sign-up
+//   storage.rules          profiles/<uid>: owner-only write
 //
-// The ESP32 writes with its own credentials; the web client only reads.
+// Deploy them with `firebase deploy --only database,firestore:rules,storage`.
+// The ESP32 writes with its own database secret; the web client only reads.
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyA3qPDVxf-TMtkZtuUQG34cdN4DRUmlZfM",

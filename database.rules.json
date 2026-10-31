@@ -1,0 +1,25 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "readings": {
+      ".read": "auth != null",
+      ".write": false
+    },
+
+    "config": {
+      "global": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+        ".validate": "newData.hasChildren(['safeThreshold', 'dangerThreshold']) && newData.child('safeThreshold').isNumber() && newData.child('dangerThreshold').isNumber() && newData.child('safeThreshold').val() > 0 && newData.child('dangerThreshold').val() > newData.child('safeThreshold').val()"
+      }
+    },
+
+    "users": {
+      "$uid": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      }
+    }
+  }
+}
