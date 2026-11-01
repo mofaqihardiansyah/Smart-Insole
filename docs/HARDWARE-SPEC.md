@@ -6,9 +6,28 @@ Smart Insole IoT — Tugas Akhir
 
 Dokumen ini menjelaskan spesifikasi hardware, daftar bahan, dan panduan pembuatan smart insole untuk monitoring tekanan plantar pada pasien diabetes.
 
-**Status:** Draft — Last updated: 14 Oktober 2026
+**Status:** Draft — Last updated: 1 November 2026
 
 **Reference Design:** Billings et al. (2024) — Smart Compression Sock for Early Detection of Diabetic Foot Ulcers. *Sensors*, 24(21), 6928.
+
+## Daftar Isi
+
+- [System Architecture](#system-architecture)
+- [Sensor Configuration](#sensor-configuration)
+- [Microcontroller: ESP32](#microcontroller-esp32)
+- [Power Supply](#power-supply)
+- [Insole Material: EVA Foam](#insole-material-eva-foam)
+- [ESP32 Pouch (Sock-Top Design)](#esp32-pouch-sock-top-design)
+- [Complete Shopping List](#complete-shopping-list)
+- [Build Guide](#build-guide)
+- [Wiring Diagram (Detailed)](#wiring-diagram-detailed)
+- [Firmware Pin Mapping](#firmware-pin-mapping)
+- [Appendix A: Test Sketch](#appendix-a-test-sketch)
+- [Appendix B: Calibration Procedure](#appendix-b-calibration-procedure)
+- [Troubleshooting](#troubleshooting)
+- [References](#references)
+- [Document History](#document-history)
+- [Contact & Resources](#contact--resources)
 
 ---
 
@@ -634,7 +653,7 @@ FSR Forefoot: 1023 ← ditekan kuat
    ```
    - Cut shallow channel (2mm depth) dari each pocket
    - Channel menuju HEEL AREA (bukan ke electronics)
-   - Wire akan NAKE dari heel ke ankle (ke pouch)
+   - Wire akan NAIK dari heel ke ankle (ke pouch)
    ```
 
 5. **Mount FSR sensors**
@@ -1097,6 +1116,7 @@ void loop() {
 |---|---|---|
 | 14 Okt 2026 | 1.0 | Initial hardware spec & build guide |
 | 14 Okt 2026 | 1.1 | **Updated pouch design:** Changed from heel pouch (WRONG) to sock-top pouch (following Billings et al., 2024). Heel area sekarang PURE FOAM ONLY, tidak ada elektronik. |
+| 1 Nov 2026 | 1.2 | Penambahan daftar isi; koreksi typo pada panduan fabrication. |
 
 ---
 
@@ -1110,6 +1130,6 @@ void loop() {
 ---
 
 *Document created: 14 Oktober 2026*
-*Last updated: 14 Oktober 2026 (v1.1 — sock-top pouch design)*
+*Last updated: 1 November 2026 (v1.2 — daftar isi & koreksi typo)*
 *Author: Smart Insole IoT Team*
 

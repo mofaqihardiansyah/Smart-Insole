@@ -1,4 +1,4 @@
-# `Smart Insole IoT — Plantar Pressure Monitoring System
+# Smart Insole IoT — Sistem Pemantauan Tekanan Plantar
 
 > **Rancang Bangun Smart Insole Berbasis IoT Menggunakan Metode Random Forest untuk Monitoring Tekanan Plantar Pasien Diabetes Mellitus Menggunakan Platform Web**
 
@@ -8,37 +8,69 @@
 [![Database: Firebase](https://img.shields.io/badge/Cloud-Firebase_Realtime_DB-FFCA28?logo=firebase)](https://firebase.google.com/)
 [![Hardware: ESP32](https://img.shields.io/badge/Hardware-ESP32-000000?logo=espressif)](https://www.espressif.com/)
 
----
+## Daftar Isi
+
+- [Deskripsi Proyek](#deskripsi-proyek)
+- [Fitur Utama](#fitur-utama)
+- [Tech Stack](#tech-stack)
+- [Arsitektur & Alur Data](#arsitektur--alur-data)
+- [Struktur Folder](#struktur-folder)
+- [Panduan Memulai (Quick Start)](#panduan-mulai-quick-start)
+- [Dokumentasi](#dokumentasi)
+- [Catatan Keamanan](#catatan-keamanan)
+- [Lisensi](#lisensi)
 
 ## Deskripsi Proyek
 
-**Smart Insole IoT** adalah sistem pemantauan tekanan telapak kaki (_plantar pressure_) secara _real-time_ berbasis perangkat lunak web dan sistem tertanam (_embedded system_). Sistem ini dirancang untuk membantu penderita **Diabetes Mellitus (DM)** yang mengalami _Diabetic Peripheral Neuropathy_ (DPN) atau hilangnya _loss of protective sensation_ dalam mencegah terjadinya **Ulkus Kaki Diabetik (_Diabetic Foot Ulcer_ / DFU)**.
+**Smart Insole IoT** adalah sistem pemantauan tekanan telapak kaki (_plantar
+pressure_) secara _real-time_ yang terdiri dari perangkat keras tertanam
+(_embedded system_) dan aplikasi web. Sistem ini dirancang untuk membantu
+penderita **Diabetes Mellitus (DM)** yang mengalami _Diabetic Peripheral
+Neuropathy_ (DPN) — hilangnya _loss of protective sensation_ — dalam mencegah
+terjadinya **Ulkus Kaki Diabetik (_Diabetic Foot Ulcer_ / DFU)**.
 
-Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada titik anatomis kritis (_forefoot_, _midfoot_, _heel_) dan dikendalikan oleh mikrokontroler **ESP32**. Algoritma **Random Forest** dilatih pada _dataset_ tekanan plantar pasien diabetes (DFN-DS, 135 pasien) untuk mengevaluasi kombinasi besaran tekanan (kPa) dan durasi tumpuan (_sustained pressure duration_) ke dalam 3 kategori tingkat risiko: **Aman**, **Waspada**, dan **Bahaya**. Data ditransmisikan nirkabel ke **Google Firebase Realtime Database** dan ditayangkan pada **Web Dashboard Multiplatform (_Mobile-First Responsive Design_)**.
-
----
+Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada
+titik anatomis kritis (_forefoot_, _midfoot_, _heel_) dan dikendalikan oleh
+mikrokontroler **ESP32**. Model **Random Forest** dilatih pada _dataset_
+tekanan plantar pasien diabetes (DFN-DS, 135 pasien) untuk mengevaluasi
+kombinasi besaran tekanan (kPa) dan durasi tumpuan (_sustained pressure
+duration_) ke dalam 3 kategori tingkat risiko: **Aman**, **Waspada**, dan
+**Bahaya**. Data ditransmisikan nirkabel ke **Google Firebase Realtime
+Database** dan ditayangkan pada **Web Dashboard Multiplatform (_Mobile-First
+Responsive Design_)**.
 
 ## Fitur Utama
 
-- **Real-time Plantar Heatmap** — visualisasi gradasi warna kontur tekanan telapak kaki secara langsung pada layar _browser_ HP maupun PC (komponen SVG dari Task 5).
-- **Random Forest Risk Assessment** — klasifikasi risiko berbasis _machine learning_ yang dilatih dari data pasien diabetes asli (_Aman_, _Waspada_, _Bahaya_) tanpa ketergantungan pemrosesan _server-side_.
-- **Sustained Pressure Monitoring** — mengukur akumulasi durasi waktu tumpuan berulang untuk mencegah pembentukan lesi jaringan lunak.
-- **Early Warning System (EWS)** — pemicuan notifikasi web (_Web Notification API_) dan peringatan alarm audio/getar pada ponsel saat risiko mencapai kategori _Waspada_ atau _Bahaya_ (Web Audio API Synthesizer dari Task 3).
-- **Histori & Analytics** — rekam medis kuantitatif pola tumpuan harian pasien untuk membantu rekomendasi terapi dokter/_orthotics_ (halaman Riwayat).
-- **Cross-Platform Responsive Web** — antarmuka web yang ringan, cepat, dan ramah akses melalui _browser_ perangkat apa pun (Android, iOS, Windows, Mac) tanpa perlu instalasi APK.
-- **Bilingual Support (ID/EN)** — toggle bahasa instan untuk presentasi akademis dan evaluasi klinis.
-- **Floating Navigation** — navigasi mobile floating di atas konten dengan 6 item utama (Task 6–9).
-- **Bento Grid Layout** — layout grid asymmetris untuk dashboard berbasis "bento box" design pattern (Task 6).
+- **Real-time Plantar Heatmap** — visualisasi gradasi warna kontur tekanan
+  telapak kaki secara langsung di layar browser, baik HP maupun PC
+  (komponen SVG `PlantarHeatmap`).
+- **Random Forest Risk Assessment** — klasifikasi risiko berbasis _machine
+  learning_ (hybrid Random Forest + rule klinis) yang dilatih dari data pasien
+  diabetes asli, dijalankan di sisi client tanpa pemrosesan _server-side_.
+- **Sustained Pressure Monitoring** — mengukur akumulasi durasi waktu tumpuan
+  berulang untuk mencegah pembentukan lesi jaringan lunak.
+- **Early Warning System (EWS)** — pemicuan notifikasi web (_Web Notification
+  API_) dan alarm audio (_Web Audio API_) saat risiko mencapai kategori
+  Waspada atau Bahaya.
+- **Histori & Analytics** — rekam medis kuantitatif pola tumpuan harian
+  beserta ekspor CSV untuk membantu rekomendasi terapi dokter/_orthotics_.
+- **Panel Admin** — pengelolaan pengguna dan konfigurasi sistem tanpa menyentuh
+  kode atau database secara langsung.
+- **Cross-Platform Responsive Web** — antarmuka web yang ringan dan dapat
+  diakses melalui browser perangkat apa pun (Android, iOS, Windows, Mac)
+  tanpa instalasi aplikasi tambahan.
+- **Navigasi Adaptif & Bento Grid** — sidebar penuh di desktop, nav-pill
+  ringkas di mobile; layout kartu asimetris (_bento box_) untuk dashboard.
+- **Multibahasa (kamus i18n)** — kamus ID/EN tersedia di `src/utils/i18n.ts`;
+  permukaan yang dikirim saat ini hanya bahasa Indonesia (LANG-01).
 
----
-
-## Tech Stack & Komponen
+## Tech Stack
 
 ### Hardware & Firmware
 
 - **Mikrokontroler**: ESP32 Dev Module / WROOM-32
 - **Sensor**: 3x Force Sensitive Resistor (FSR 402 Series)
-- **Power Management**: Baterai LiPo 3.7V + Modul TP4056 Charger + Step-Up Boost Converter 5V
+- **Power Management**: baterai LiPo 3.7V + modul TP4056 _charger_ + _step-up boost converter_ 5V
 - **Bahasa Pemrograman**: C++ (PlatformIO)
 - **Pustaka Utama**: `WiFi.h`, `FirebaseESP32.h`
 
@@ -50,14 +82,13 @@ Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada t
 
 ### Frontend Web Dashboard
 
-- **Framework**: React.js
-- **Styling**: Tailwind CSS (_Mobile-First Responsive Design_)
-- **Visualisasi**: HTML5 Canvas / Custom CSS Gradients (_plantar heatmap_), Chart.js / Recharts
+- **Framework**: React 18 + Vite 5 (migrasi TypeScript berlangsung)
+- **Styling**: Tailwind CSS 3 (_Mobile-First Responsive Design_)
+- **Visualisasi**: SVG/HTML5 Canvas (_plantar heatmap_, grafik tekanan)
 - **Notifikasi**: Web Notification API & Web Audio API
+- **Pengujian**: Vitest
 - **Deployment / Hosting**: Vercel / Netlify / Firebase Hosting
 - **Version Control**: Git & GitHub
-
----
 
 ## Arsitektur & Alur Data
 
@@ -74,76 +105,96 @@ Sistem menggunakan **3 sensor Force Sensitive Resistor (FSR 402 Series)** pada t
                                                    │
                                        (Web Notification & Alarm)
 ```
-```
 
-## Struktur Folder Repositori
+## Struktur Folder
 
 ```text
 smart-insole-ta/
-├── firmware/                   # Kode C++/PlatformIO untuk ESP32
-│   ├── platformio.ini
+├── firmware/                    # Firmware ESP32 (PlatformIO, C++)
+│   ├── platformio.ini           # Konfigurasi build & dependensi
 │   ├── include/
-│   │   ├── config.h            # Kredensial Wi-Fi & Firebase (tidak di-commit)
-│   │   └── config.h.example    # Templat kredensial
-│   ├── lib/
+│   │   ├── config.h.example     # Templat kredensial Wi-Fi & Firebase
+│   │   ├── RandomForest.h       # Deklarasi model Random Forest
+│   │   └── rf-model-data.h      # Model ter-ekspor sebagai array C++
 │   ├── src/
-│   │   ├── main.cpp            # Program utama, Wi-Fi, & Firebase Sync
-│   │   ├── RandomForest.cpp    # Inference Random Forest (model ter-trained)
-│   │   ├── RandomForest.h
-│   │   ├── SensorFSR.cpp       # Pembacaan ADC & kalibrasi ke kPa
-│   │   └── FirebaseHandler.cpp # Transmisi data ke Firebase
+│   │   ├── main.cpp             # Program utama: ADC → filter → inferensi → Firebase
+│   │   └── RandomForest.cpp     # Inference Random Forest (majority vote + rule)
+│   ├── test/                    # Unit test native (PlatformIO)
 │   └── README.md
 │
-├── web-dashboard/              # Frontend React.js + Tailwind CSS (Mobile-First / PWA)
+├── web-dashboard/               # Frontend React + Tailwind (mobile-first)
 │   ├── public/
-│   │   ├── index.html          # Halaman utama + PWA manifest (link manifest, icons)
-│   │   ├── manifest.json       # Konfigurasi PWA (name, short_name, start_url, display, theme_color)
-│   │   └── favicon.ico
 │   ├── src/
-│   │   ├── App.jsx             # Root dengan Router + Auth guard + FloatingNavbar
-│   │   ├── main.jsx
-│   │   ├── index.css
-│   │   ├── setupTests.js
-│ │   ├── routes/
-│ │   │   └── route.js        # Semua rute didefinisikan sini
-│ │   ├── components/
-│ │   │   ├── layout/
-│ │   │   │   ├── FloatingNavbar.jsx    # Navigasi floating di atas konten
-│ │   │   │   └── TopBar.jsx            # Header dengan title + logout (mobile)
-│ │   │   ├── components/
-│ │   │   │   ├── auth/
-│ │   │   │   │   ├── LoginForm.jsx
-│ │   │   │   │   └── RegisterForm.jsx
-│ │   │   │   ├── dashboard/
-│ │   │   │   │   ├── PlantarHeatmap.jsx          # dari Task 5 (SVG heatmap)
-│ │   │   │   ├── StatusCard.jsx                  # Kartu status risiko
-│ │   │   │   ├── MetricCards.jsx                 # Kartu metrik instan
-│ │   │   │   ├── EarlyWarningAlert.jsx           # Modal alarm + audio\n│ │   │   │   ├── BentoGrid.jsx                   # Layout grid asymmetris\n│ │   │   │   ├── GlassButton.jsx                 # Tombol glassmorphism\n│ │   │   │   └── GlassInput.jsx                  # Input field glassmorphism\n│ │   │   ├── pages/
-│ │   │   ├── LandingPage.jsx         # Halaman publik (Landing)\n│ │   │   ├── LoginPage.jsx           # Halaman masuk akun\n│ │   │   ├── RegisterPage.jsx        # Halaman daftar akun\n│ │   │   ├── DashboardPage.jsx       # Halaman dashboard real-time\n│ │   │   ├── MonitoringPage.jsx      # Halaman grafik tren\n│ │   │   ├── HistoryPage.jsx         # Halaman riwayat sesi\n│ │   │   ├── DevicePage.jsx          # Halaman status perangkat\n│ │   │   ├── SettingsPage.jsx        # Halaman pengaturan\n│ │   │   └── ProfilePage.jsx         # Halaman profil pengguna\n│ │   ├── hooks/
-│ │   │   └── useAuth.jsx             # Firebase Auth state manager\n│ │   ├── services/
-│ │   │   ├── firebaseConfig.js       # Konfigurasi Firebase (env vars)\n│ │   │   └── firebaseRealTimeDB.js   # Real-time DB listener\n│ │   ├── utils/
-│ │   │   └── i18n.js                 # Kamus bilingual ID/EN (dari Task 2)\n│ │   └── ui/
-│ │       └── GlassButton.jsx         # Tombol glassmorphism\n│ │       └── GlassInput.jsx          # Input field glassmorphism\n│   ├── .env.example\n│   ├── package.json\n│   ├── tailwind.config.js\n│   └── vite.config.js\n│\n├── docs/
-│   ├── schematics/             # Skematik rangkaian (FSR, ESP32, TP4056)
-│   ├── 3d-enclosure/           # Desain 3D wadah (.STL / CAD)\n│   ├── diagrams/               # Diagram blok & flowchart sistem\n│   └── superpowers/
-│       ├── specs/                # Design specification docs\n│       │   └── 2026-10-06-smart-insole-web-dashboard-design.md\n│       └── plans/                # Implementation plans\n│           └── 2026-10-06-smart-insole-web-dashboard.md\n│\n├── .gitignore\n├── LICENSE\n└── README.md                   # Penjelasan projek, setup guide, & tech stack\n
+│   │   ├── App.tsx              # Root: router + auth guard + layout
+│   │   ├── main.tsx
+│   │   ├── pages/               # 12 halaman (.tsx): Landing, Login, Register,
+│   │   │                        #   VerifyEmail, ForgotPassword, Dashboard,
+│   │   │                        #   Monitoring, History, Device, Settings,
+│   │   │                        #   Profile, Admin
+│   │   ├── components/
+│   │   │   ├── layout/          # AppLayout, AppSidebar, AppNavPill, AppTopbar
+│   │   │   ├── dashboard/       # BentoGrid, AlertModal, Sparkline, dll.
+│   │   │   ├── monitoring/      # TelemetryChart, TrendChart
+│   │   │   ├── auth/            # AuthShell, PasswordField, PasswordStrength
+│   │   │   ├── landing/         # RiskExplorer
+│   │   │   ├── ui/              # GlassCard, GlassButton, StatusChip, dll.
+│   │   │   └── PlantarHeatmap.tsx
+│   │   ├── context/             # InsoleContext (readings + risk + source)
+│   │   ├── hooks/               # useAuth (Firebase Auth state)
+│   │   ├── services/            # firebaseConfig.ts, firebaseRealtime.ts
+│   │   ├── types/               # Tipe TypeScript bersama
+│   │   └── utils/               # randomForestRisk.ts, rf-model.json,
+│   │                            #   i18n.ts, audioAlert.ts, exportCsv.ts, dll.
+│   ├── .env.example
+│   ├── package.json
+│   ├── tailwind.config.js
+│   ├── tsconfig.json
+│   └── vite.config.js
+│
+├── docs/                        # Dokumentasi proyek (lihat docs/README.md)
+│   ├── HARDWARE-SPEC.md         # Spesifikasi hardware & build guide
+│   ├── DESIGN-BRIEF.md          # Brief desain dashboard (historis)
+│   ├── ROADMAP-RF.md            # Roadmap pelatihan model Random Forest
+│   ├── rf-model-report.md       # Laporan hasil pelatihan model
+│   ├── diagrams/                # Diagram blok & flowchart
+│   ├── schematics/              # Skematik rangkaian
+│   └── reference-design/        # Referensi visual dashboard
+│
+├── models/                      # rf-model.json + training-data.json
+├── scripts/                     # prepare-dataset.py, train-model.js,
+│                                #   export-model-cpp.js
+├── datasets/                    # DFN-DS, Figshare DFU, OptiTrack (lokal)
+├── tasks/                       # PRD & dokumen tugas
+│
+├── AGENTS.md                    # Routing untuk coding agent
+├── DESIGN.md                    # Otoritas arah desain visual dashboard
+├── DISCUSSION-GUIDE.md          # Panduan diskusi & checkpoint mingguan
+├── firebase.json                # Konfigurasi Firebase Hosting/Rules
+├── firestore.rules
+├── database.rules.json
+├── storage.rules
+├── LICENSE
+└── README.md                    # Berkas ini
+```
 
----
-
-## Panduan Memulai (Quick Start)
+## Panduan Mulai (Quick Start)
 
 ### 1. Hardware & Firmware Setup
 
 1. Instal **PlatformIO Core** atau gunakan ekstensi **PlatformIO IDE** di VS Code.
 2. Buka folder `firmware/` sebagai proyek PlatformIO.
-3. Salin `include/config.h.example` menjadi `include/config.h`, lalu isi kredensial Anda:
+3. Salin `include/config.h.example` menjadi `include/config.h`, lalu isi
+   kredensial Anda:
+
    ```cpp
    #define WIFI_SSID     "Nama_WiFi_Anda"
    #define WIFI_PASSWORD "Password_WiFi"
    #define FIREBASE_HOST "smartinsole-project.firebaseio.com"
    #define FIREBASE_AUTH "Firebase_Database_Secret"
    ```
-4. Hubungkan ESP32 ke komputer melalui kabel Micro-USB, lalu build & upload:
+
+4. Hubungkan ESP32 ke komputer melalui kabel Micro-USB, lalu _build_ & _upload_:
+
    ```bash
    cd firmware
    pio run
@@ -154,25 +205,36 @@ smart-insole-ta/
 ### 2. Frontend Web Dashboard Setup
 
 1. Masuk ke direktori web:
+
    ```bash
    cd web-dashboard
    ```
+
 2. Install seluruh dependensi paket:
+
    ```bash
    npm install
    ```
+
 3. Salin `.env.example` menjadi `.env.local` dan isi konfigurasi Firebase Anda:
+
    ```env
    VITE_FIREBASE_API_KEY=your_api_key
    VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   VITE_FIREBASE_DATABASE_URL=https://your_project.firebaseio.com
+   VITE_FIREBASE_DATABASE_URL=https://your_project-default-rtdb.firebaseio.com
    VITE_FIREBASE_PROJECT_ID=your_project_id
    ```
+
 4. Jalankan server pengembangan lokal:
+
    ```bash
    npm run dev
    ```
-5. Buka _browser_ di `http://localhost:5173`.
+
+5. Buka browser di `http://localhost:5173`.
+
+Perintah lain yang tersedia: `npm test` (Vitest), `npm run typecheck`
+(TypeScript), dan `npm run build`.
 
 ### 3. Deployment
 
@@ -181,16 +243,33 @@ cd web-dashboard
 npm run build      # output statis di dist/
 ```
 
-Deploy folder `dist/` ke **Vercel**, **Netlify**, atau **Firebase Hosting** (free tier). Tidak ada _backend_ tambahan yang perlu di-_deploy_ — ESP32 menulis langsung ke Firebase.
+Deploy folder `dist/` ke **Vercel**, **Netlify**, atau **Firebase Hosting**
+(_free tier_). Tidak ada backend tambahan yang perlu di-_deploy_ — ESP32
+menulis langsung ke Firebase.
 
----
+## Dokumentasi
+
+Dokumentasi lanjutan ada di folder [`docs/`](docs/README.md):
+
+| Dokumen | Isi |
+| --- | --- |
+| [`docs/HARDWARE-SPEC.md`](docs/HARDWARE-SPEC.md) | Spesifikasi hardware, daftar bahan, dan panduan perakitan |
+| [`docs/ROADMAP-RF.md`](docs/ROADMAP-RF.md) | Roadmap pelatihan dan integrasi model Random Forest |
+| [`docs/rf-model-report.md`](docs/rf-model-report.md) | Hasil pelatihan model, metrik evaluasi, dan clinical contract |
+| [`docs/DESIGN-BRIEF.md`](docs/DESIGN-BRIEF.md) | Brief desain dashboard (dokumen historis) |
+| [`DESIGN.md`](DESIGN.md) | Otoritas arah desain visual dashboard saat ini |
+| [`DISCUSSION-GUIDE.md`](DISCUSSION-GUIDE.md) | Panduan diskusi tim dan checkpoint mingguan |
 
 ## Catatan Keamanan
 
-- `firmware/include/config.h` dan `web-dashboard/.env.local` **tidak** di-_commit_ ke repositori (sudah masuk `.gitignore`).
+- `firmware/include/config.h` dan `web-dashboard/.env.local` **tidak**
+  di-_commit_ ke repositori (sudah masuk `.gitignore`).
 - Yang di-_commit_ hanya berkas `.example` sebagai templat.
-- Kredensial Firebase untuk _web_ (`VITE_FIREBASE_*`) bersifat _public by design_ — andalkan proteksi lewat **Firebase Realtime Database Rules**, bukan dengan menyembunyikan _API key_.
+- Kredensial Firebase untuk web (`VITE_FIREBASE_*`) bersifat _public by
+  design_ — andalkan proteksi lewat **Firebase Realtime Database Rules**,
+  bukan dengan menyembunyikan _API key_.
 - Aturan _database_ minimum yang disarankan:
+
   ```json
   {
     "rules": {
@@ -204,8 +283,7 @@ Deploy folder `dist/` ke **Vercel**, **Netlify**, atau **Firebase Hosting** (fre
   }
   ```
 
----
-
 ## Lisensi
 
-Proyek ini dilisensikan di bawah [MIT License](LICENSE) — bebas digunakan dan dikembangkan untuk kepentingan akademis dan riset non-komersial.
+Proyek ini dilisensikan di bawah [MIT License](LICENSE) — bebas digunakan dan
+dikembangkan untuk kepentingan akademis dan riset non-komersial.

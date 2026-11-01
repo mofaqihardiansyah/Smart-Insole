@@ -1,21 +1,39 @@
 # Web Dashboard — Smart Insole
 
-Frontend **React.js + Tailwind CSS** untuk menampilkan data tekanan telapak
-kaki secara *real-time* dari Firebase, lengkap dengan *plantar heatmap* dan
-*Early Warning System*.
+Frontend **React 18 + Vite 5 + Tailwind CSS** untuk menampilkan data tekanan
+telapak kaki secara _real-time_ dari Firebase, lengkap dengan _plantar
+heatmap_, grafik tren, dan _Early Warning System_.
+
+> Catatan: basis kode sedang dimigrasikan ke TypeScript secara bertahap.
+> Berkas sumber utama sudah `.tsx`/`.ts`; sebagian berkas uji masih `.jsx`.
 
 ## Isi Folder
 
 | Path | Keterangan |
 | --- | --- |
-| `src/pages/Dashboard.jsx` | Halaman utama: status real-time + heatmap |
-| `src/pages/History.jsx` | Grafik histori tekanan & durasi tumpuan |
-| `src/pages/Settings.jsx` | Konfigurasi ambang batas & perangkat |
-| `src/components/Heatmap.jsx` | Visualisasi plantar heatmap (Canvas) |
-| `src/components/StatusCard.jsx` | Kartu status risiko (Aman/Waspada/Bahaya) |
-| `src/components/AlertModal.jsx` | Notifikasi & alarm audio |
-| `src/config/firebase.js` | Inisialisasi Firebase Web SDK |
-| `src/hooks/useInsoleData.js` | Hook listener *realtime* dari Firebase |
+| `src/pages/DashboardPage.tsx` | Halaman utama: status real-time + heatmap |
+| `src/pages/MonitoringPage.tsx` | Grafik tren tekanan 3 sensor (live) |
+| `src/pages/HistoryPage.tsx` | Statistik & tabel riwayat sesi + ekspor CSV |
+| `src/pages/DevicePage.tsx` | Status perangkat: baterai, firmware, koneksi |
+| `src/pages/SettingsPage.tsx` | Konfigurasi ambang batas & notifikasi |
+| `src/pages/ProfilePage.tsx` | Identitas akun & statistik |
+| `src/pages/AdminPage.tsx` | Panel admin: kelola pengguna & konfigurasi |
+| `src/pages/LandingPage.tsx` | Halaman publik (landing) |
+| `src/pages/LoginPage.tsx` / `RegisterPage.tsx` | Halaman masuk / daftar akun |
+| `src/pages/VerifyEmailPage.tsx` / `ForgotPasswordPage.tsx` | Verifikasi email & reset kata sandi |
+| `src/components/PlantarHeatmap.tsx` | Visualisasi plantar heatmap (SVG) |
+| `src/components/dashboard/AlertModal.tsx` | Notifikasi & alarm audio |
+| `src/components/dashboard/BentoGrid.tsx` | Layout grid asimetris (bento box) |
+| `src/components/monitoring/TelemetryChart.tsx` | Grafik tekanan live |
+| `src/components/layout/` | Kerangka aplikasi: `AppLayout`, `AppSidebar`, `AppNavPill`, `AppTopbar` |
+| `src/components/ui/` | Primitif UI: `GlassCard`, `GlassButton`, `StatusChip`, dll. |
+| `src/context/InsoleContext.tsx` | State readings + risiko + sumber data (live/simulasi) |
+| `src/hooks/useAuth.ts` | Listener status autentikasi Firebase |
+| `src/services/firebaseConfig.ts` | Inisialisasi Firebase Web SDK |
+| `src/services/firebaseRealtime.ts` | Listener _realtime_ dari Firebase RTDB |
+| `src/utils/randomForestRisk.ts` | Inferensi risiko (hybrid RF + rule) |
+| `src/utils/rf-model.json` | Model Random Forest ter-ekspor |
+| `src/utils/i18n.ts` | Kamus teks ID/EN (permukaan terkirim: Indonesia) |
 
 ## Setup
 
@@ -25,21 +43,23 @@ cp .env.example .env.local     # lalu isi kredensial Firebase
 npm run dev                    # http://localhost:5173
 ```
 
-## Build & Deploy
+## Pengujian & Build
 
 ```bash
+npm test                       # Vitest (sekali jalan)
+npm run typecheck              # TypeScript: tsc --noEmit
 npm run build                  # output di dist/
 ```
 
-Upload folder `dist/` ke Vercel / Netlify / Firebase Hosting (free tier).
-Backend tidak perlu di-*deploy* — ESP32 menulis langsung ke Firebase.
+Upload folder `dist/` ke Vercel / Netlify / Firebase Hosting (_free tier_).
+Backend tidak perlu di-_deploy_ — ESP32 menulis langsung ke Firebase.
 
 ## Catatan Notifikasi
 
 Izin notifikasi hanya bisa diminta setelah halaman dimuat di konteks
-*secure* (`https://` atau `localhost`) dan **tidak** bisa di-*prompt* di
+_secure_ (`https://` atau `localhost`) dan **tidak** bisa di-_prompt_ di
 seluler non-HTTPS. Untuk uji coba di HP via jaringan lokal, gunakan
-`localhost` dengan *port forwarding* atau deploy ke domain HTTPS.
+`localhost` dengan _port forwarding_ atau deploy ke domain HTTPS.
 
 ## Verifikasi Email dan Lupa Kata Sandi
 

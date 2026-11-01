@@ -1,44 +1,51 @@
 # Roadmap: Random Forest Risk Classifier
 
-> Timeline dari hari ini (14 Okt 2026). Asumsi: 2-3 jam kerja per hari.
-> Deliverable akhir: model RF ter-trained + ter-validasi, inference module
-> untuk web (`randomForestRisk.js`) dan firmware (`RandomForest.cpp`).
+> Asumsi: 2-3 jam kerja per hari. Deliverable akhir: model RF ter-trained +
+> ter-validasi, inference module untuk web (`randomForestRisk.ts`) dan
+> firmware (`RandomForest.cpp`).
+>
+> Terakhir diperbarui: 1 November 2026.
 
 ## Status sekarang
 
-- [x] Inference RF dasar (`randomForestRisk.js`) — trained on synthetic data
+- [x] Inference RF dasar (`randomForestRisk.ts`) — trained on synthetic data
       dari aturan expert, 25 tests lolos
 - [x] Dataset DFN-DS terunduh & terverifikasi (135 pasien, 8 sensor/kaki)
 - [x] Dataset Figshare DFU terverifikasi (threshold reference)
 - [x] **Fase 1 selesai**: `models/training-data.json` (8.3 MB, 81k samples,
       kalibrasi kuantil p75→35 kPa, split 107/28 pasien, warning threshold 5s)
-- [x] Fase 2: training dengan class weighting (data imbalance) - completed: hybrid RF + rule, 100% accuracy, clinical contract all PASS
+- [x] **Fase 2 selesai**: training dengan class weighting (data imbalance) —
+      hybrid RF + rule, 100% accuracy, clinical contract all PASS
+      (lihat [`rf-model-report.md`](rf-model-report.md))
+- [x] **Fase 4 selesai**: model asli jalan di web dashboard (157 tests lolos)
+- [ ] Fase 5: tinggal 5.4 (uji di hardware nyata)
 
-## Fase 1 — Data Preparation (1-2 hari)
+Fase 3 (validasi) dan Fase 6 (dokumentasi & sidang) belum ditandai selesai.
+
+## Fase 1 — Data Preparation (1-2 hari) — selesai
 
 **Goal:** siapkan training set dari DFN-DS dalam format siap latih.
 
-- [ ] 1.1 Parse 99 file `.xls` DFN-DS (6001 baris × 17 kolom: time + L1-L8 + R1-R8)
-- [ ] 1.2 Agregasi 8 sensor/kaki → 3 region (forefoot, midfoot, heel) sesuai layout insole
-- [ ] 1.3 Ekstrak fitur per sampel: `peakPressure` + `sustainedDuration` per region
-- [ ] 1.4 Label: DFN → `danger`, DM → `safe`/`warning` (split by duration threshold)
-- [ ] 1.5 Split train/validation (80/20), simpan sebagai `training-data.json`
+- [x] 1.1 Parse 99 file `.xls` DFN-DS (6001 baris × 17 kolom: time + L1-L8 + R1-R8)
+- [x] 1.2 Agregasi 8 sensor/kaki → 3 region (forefoot, midfoot, heel) sesuai layout insole
+- [x] 1.3 Ekstrak fitur per sampel: `peakPressure` + `sustainedDuration` per region
+- [x] 1.4 Label: DFN → `danger`, DM → `safe`/`warning` (split by duration threshold)
+- [x] 1.5 Split train/validation (80/20), simpan sebagai `training-data.json`
 
-**Output:** `web-dashboard/src/utils/training-data.json` + script `scripts/prepare-dataset.js`
+**Output:** `models/training-data.json` + script `scripts/prepare-dataset.py`
 
-## Fase 2 — Model Training (1-2 hari)
+## Fase 2 — Model Training (1-2 hari) — selesai
 
 **Goal:** latih RF pada data DFN-DS, bukan synthetic.
 
-- [ ] 2.1 Implementasi training RF (bisa di Node.js atau Python — pilih yang
-      lebih cepat untuk di-iterate; model kecil jadi keduanya feasible)
-- [ ] 2.2 Hyperparameter sweep ringan: n_trees {20, 50}, max_depth {8, 12},
+- [x] 2.1 Implementasi training RF di Node.js (`scripts/train-model.js`)
+- [x] 2.2 Hyperparameter sweep ringan: n_trees {20, 50}, max_depth {8, 12},
       min_samples {2, 5}
-- [ ] 2.3 Evaluasi: accuracy, precision, recall, F1 per kelas (safe/warning/danger)
-- [ ] 2.4 Cek clinical contract: 40 kPa harus `warning`, 80 kPa > 30 s harus `danger`
-- [ ] 2.5 Pilih model terbaik, export ke format portable (JSON array of trees)
+- [x] 2.3 Evaluasi: accuracy, precision, recall, F1 per kelas (safe/warning/danger)
+- [x] 2.4 Cek clinical contract: 40 kPa harus `warning`, 80 kPa > 30 s harus `danger`
+- [x] 2.5 Pilih model terbaik, export ke format portable (JSON array of trees)
 
-**Output:** model file + metrik evaluasi (tulis ke `docs/rf-model-report.md`)
+**Output:** `models/rf-model.json` + laporan di [`rf-model-report.md`](rf-model-report.md)
 
 ## Fase 3 — Validasi (1 hari)
 
@@ -51,11 +58,11 @@
 
 **Output:** laporan validasi singkat
 
-## Fase 4 — Integration Web (1 hari) ✅ SELESAI
+## Fase 4 — Integration Web (1 hari) — selesai
 
 **Goal:** model RF asli jalan di web dashboard.
 
-- [x] 4.1 Update `randomForestRisk.js` untuk load model ter-trained (bukan synthetic)
+- [x] 4.1 Update `randomForestRisk.ts` untuk load model ter-trained (bukan synthetic)
 - [x] 4.2 Pastikan interface sama: `inferRisk({peakPressure, sustainedDuration})`
 - [x] 4.3 Update tests: clinical contract + agreement dengan data DFN-DS (157 tests lolos)
 - [x] 4.4 `npm test` + `npm run build` hijau
@@ -82,14 +89,14 @@
 
 ## Ringkasan Timeline
 
-| Fase | Durasi | Target Selesai |
+| Fase | Durasi | Status |
 |---|---|---|
-| 1. Data Preparation | 1-2 hari | 15-16 Okt |
-| 2. Model Training | 1-2 hari | 16-17 Okt |
-| 3. Validasi | 1 hari | 18 Okt |
-| 4. Integration Web | 1 hari | 19 Okt |
-| 5. Integration Firmware | 2-3 hari | 20-22 Okt |
-| 6. Dokumentasi & Sidang | 1-2 hari | 23-24 Okt |
+| 1. Data Preparation | 1-2 hari | Selesai |
+| 2. Model Training | 1-2 hari | Selesai |
+| 3. Validasi | 1 hari | Belum selesai |
+| 4. Integration Web | 1 hari | Selesai |
+| 5. Integration Firmware | 2-3 hari | 5.1–5.3 selesai, tersisa uji hardware |
+| 6. Dokumentasi & Sidang | 1-2 hari | Belum selesai |
 
 **Total: ~7-11 hari kerja** (2-3 jam/hari)
 

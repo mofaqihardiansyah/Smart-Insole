@@ -10,9 +10,11 @@ mengirim hasil ke **Firebase Realtime Database** lewat Wi-Fi.
 | --- | --- |
 | `platformio.ini` | Konfigurasi build & dependensi PlatformIO |
 | `include/config.h.example` | Templat kredensial Wi-Fi & Firebase |
+| `include/RandomForest.h` | Deklarasi model Random Forest (pohon, threshold) |
+| `include/rf-model-data.h` | Model ter-ekspor sebagai array C++ (dari `scripts/export-model-cpp.js`) |
 | `src/main.cpp` | Program utama: ADC → filter → random forest → Firebase |
-| `src/RandomForest.h` | Deklarasi model Random Forest (pohon, threshold) |
-| `src/RandomForest.cpp` | Inference Random Forest (majority vote) |
+| `src/RandomForest.cpp` | Inference Random Forest (majority vote + rule klinis) |
+| `test/` | Unit test native PlatformIO |
 
 ## Setup
 
