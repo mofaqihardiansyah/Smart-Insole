@@ -73,6 +73,12 @@ export const DICTIONARY = {
     'admin.config.save': 'Simpan',
     'admin.config.saving': 'Menyimpan…',
     'admin.config.saved': 'Tersimpan',
+    'admin.config.hint':
+      'Nilai ini menjadi ambang bawaan untuk semua dashboard; preferensi yang disimpan di halaman Pengaturan tetap menimpa.',
+    'admin.config.invalidOrder':
+      'Batas bahaya harus lebih tinggi daripada batas aman, dan keduanya harus lebih besar dari nol.',
+    'admin.config.forbidden':
+      'Peran admin tercatat di basis data pengguna, tetapi mirror admin di Realtime Database belum ada. Tulis users/<uid>/role = "admin" di Realtime Database, lalu coba lagi.',
     'nav.main': 'Navigasi utama',
     'nav.openMenu': 'Buka menu navigasi',
     'nav.closeMenu': 'Tutup menu navigasi',
@@ -257,7 +263,7 @@ export const DICTIONARY = {
     /* ---------------------------- Settings ----------------------------- */
     'settings.title': 'Ambang batas dan preferensi',
     'settings.subtitle':
-      'Nilai ini dipakai langsung oleh perhitungan risiko fuzzy.',
+      'Batas kPa dipakai langsung oleh mesin risiko; nilai durasi mengatur tampilan batas durasi di dasbor.',
     'settings.thresholds': 'Ambang batas risiko',
     'settings.thresholdsBody':
       'Ubah nilai kPa untuk menyesuaikan kapan status naik dari aman ke waspada dan dari waspada ke bahaya.',
@@ -713,6 +719,12 @@ export const DICTIONARY = {
     'admin.config.save': 'Save',
     'admin.config.saving': 'Saving…',
     'admin.config.saved': 'Saved',
+    'admin.config.hint':
+      'These values seed the default thresholds for every dashboard; preferences saved on the Settings page still override them.',
+    'admin.config.invalidOrder':
+      'The danger threshold must be higher than the safe threshold, and both must be greater than zero.',
+    'admin.config.forbidden':
+      'Your admin role is on file, but the admin mirror in the Realtime Database is missing. Write users/<uid>/role = "admin" in the Realtime Database, then try again.',
     'nav.main': 'Main navigation',
     'nav.openMenu': 'Open navigation menu',
     'nav.closeMenu': 'Close navigation menu',
@@ -896,7 +908,7 @@ export const DICTIONARY = {
     /* ---------------------------- Settings ----------------------------- */
     'settings.title': 'Thresholds and preferences',
     'settings.subtitle':
-      'These values feed directly into the fuzzy risk calculation.',
+      'The kPa limits feed the risk engine directly; the duration values drive the duration-limit display on the dashboard.',
     'settings.thresholds': 'Risk thresholds',
     'settings.thresholdsBody':
       'Adjust the kPa values that decide when status moves from safe to warning, and from warning to danger.',

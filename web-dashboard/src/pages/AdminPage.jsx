@@ -29,7 +29,8 @@ import { listUsers, updateUserDoc, deleteUserDoc } from "../services/firebaseCon
  * Three jobs, one page:
  *   1. Users: list, activate/deactivate, delete accounts.
  *   2. Devices: live status of every insole reporting to RTDB.
- *   3. Config: global risk thresholds that apply to all users.
+ *   3. Config: fleet-wide default thresholds. Every dashboard picks them up
+ *      unless that browser saved its own values in Settings, which still win.
  *
  * Access is guarded by the `role` field on the Firestore user doc. The guard
  * is a redirect, not a hidden page: a non-admin who types the URL lands back
@@ -60,24 +61,13 @@ const AdminPage = () => {
   const [configSaving, setConfigSaving] = useState(false);
   const [configSaved, setConfigSaved] = useState(false);
   const [configError, setConfigError] = useState(null);
+  const [configErrorForbidden, setConfigErrorForbidden] = useState(false);
 
-  /* ---- guard: non-admins go back to the dashboard ---- */
-  if (role !== "admin") {
-    return (
-      <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
-        <PageHeader title={t("admin.title", language)} />
-        <StatePanel
-          variant="error"
-          title={t("admin.accessDenied", language)}
-          description={t("admin.accessDeniedBody", language)}
-          nextAction={t("admin.accessDeniedNext", language)}
-          nextActionLabel={t("common.nextStep", language)}
-        />
-      </section>
-    );
-  }
-
-  /* ---- users ---- */
+  /* ---- users ----
+   * Every hook must run on every render: `role` arrives asynchronously, so the
+   * non-admin guard lives further down, AFTER all hooks. A conditional early
+   * return above them crashed React on a hard refresh at /admin (the first
+   * render had role "" with zero hooks, the second had three). */
   useEffect(() => {
     let cancelled = false;
     listUsers()
@@ -149,18 +139,43 @@ const AdminPage = () => {
     }
   };
 
+  // Client-side mirror of the RTDB rules: dangerThreshold > safeThreshold > 0.
+  // Catching it here turns a guaranteed server rejection into a form state the
+  // admin can fix before the request ever leaves the browser.
+  const safeValue = Number(config.safeThreshold);
+  const dangerValue = Number(config.dangerThreshold);
+  const configInvalid = !(
+    Number.isFinite(safeValue) &&
+    Number.isFinite(dangerValue) &&
+    safeValue > 0 &&
+    dangerValue > safeValue
+  );
+
   const handleSaveConfig = async () => {
+    if (configInvalid) return;
     setConfigSaving(true);
     setConfigSaved(false);
     setConfigError(null);
+    setConfigErrorForbidden(false);
     try {
       await setGlobalConfig({
-        safeThreshold: Number(config.safeThreshold),
-        dangerThreshold: Number(config.dangerThreshold),
+        safeThreshold: safeValue,
+        dangerThreshold: dangerValue,
       });
       setConfigSaved(true);
     } catch (err) {
-      setConfigError(err?.message || t("admin.actionError", language));
+      // PERMISSION_DENIED on this node almost always means the RTDB admin
+      // mirror (users/<uid>/role) is missing — say so instead of blaming the
+      // connection.
+      const forbidden =
+        err?.code === "PERMISSION_DENIED" ||
+        /PERMISSION_DENIED/i.test(err?.message || "");
+      setConfigErrorForbidden(forbidden);
+      setConfigError(
+        forbidden
+          ? t("admin.config.forbidden", language)
+          : err?.message || t("admin.actionError", language)
+      );
     } finally {
       setConfigSaving(false);
     }
@@ -173,6 +188,22 @@ const AdminPage = () => {
 
   const deviceOnline =
     device?.timestamp && Date.now() - device.timestamp < 5 * 60 * 1000;
+
+  /* ---- guard: non-admins go back to the dashboard ---- */
+  if (role !== "admin") {
+    return (
+      <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
+        <PageHeader title={t("admin.title", language)} />
+        <StatePanel
+          variant="error"
+          title={t("admin.accessDenied", language)}
+          description={t("admin.accessDeniedBody", language)}
+          nextAction={t("admin.accessDeniedNext", language)}
+          nextActionLabel={t("common.nextStep", language)}
+        />
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto w-full max-w-5xl space-y-5 lg:space-y-6">
@@ -336,15 +367,27 @@ const AdminPage = () => {
       <GlassCard flush>
         <PanelHeader
           title={t("admin.config.title", language)}
+          subtitle={t("admin.config.hint", language)}
           icon={<Settings className="h-4 w-4" />}
         />
         <div className="px-6 pb-6">
+          {configInvalid && (
+            <StatusBanner
+              tone="danger"
+              className="mb-4"
+              title={t("admin.config.invalidOrder", language)}
+            />
+          )}
           {configError && (
             <StatusBanner
               tone="danger"
               className="mb-4"
               title={t("admin.actionError", language)}
-              nextAction={t("common.nextStepCheckConnection", language)}
+              nextAction={
+                configErrorForbidden
+                  ? undefined
+                  : t("common.nextStepCheckConnection", language)
+              }
             >
               {configError}
             </StatusBanner>
@@ -379,7 +422,7 @@ const AdminPage = () => {
             <GlassButton
               variant="filled"
               onClick={handleSaveConfig}
-              disabled={configSaving}
+              disabled={configSaving || configInvalid}
             >
               {configSaving
                 ? t("admin.config.saving", language)
