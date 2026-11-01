@@ -20,7 +20,7 @@ import { BentoGrid } from "./BentoGrid";
 const readSource = (rel) =>
   fs.readFileSync(new URL(rel, import.meta.url), "utf8");
 
-const GRID_SOURCE = readSource("./BentoGrid.jsx");
+const GRID_SOURCE = readSource("./BentoGrid.tsx");
 
 const ICON_TONES = Object.fromEntries(
   [
@@ -30,7 +30,7 @@ const ICON_TONES = Object.fromEntries(
   ].map(([, key, value]) => [key, value])
 );
 
-const DASHBOARD_SOURCE = readSource("../../pages/DashboardPage.jsx");
+const DASHBOARD_SOURCE = readSource("../../pages/DashboardPage.tsx");
 
 /** The `tiles` array, sliced from its declaration to its closing bracket. */
 const tilesSlice = (() => {

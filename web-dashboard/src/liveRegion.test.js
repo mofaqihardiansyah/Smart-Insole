@@ -64,7 +64,7 @@ const countPolite = (source) => (source.match(/aria-live="polite"/g) || []).leng
  */
 const POLITE_REGIONS = [
   {
-    file: "App.jsx",
+    file: "App.tsx",
     purpose: "the splash, so the first paint is announced once while the app boots",
   },
   {
@@ -72,19 +72,19 @@ const POLITE_REGIONS = [
     purpose: "the loading register, so a reader is told data is coming",
   },
   {
-    file: "pages/DashboardPage.jsx",
+    file: "pages/DashboardPage.tsx",
     purpose: "the risk-level announcement: the only thing on this page that speaks",
   },
   {
-    file: "pages/DevicePage.jsx",
+    file: "pages/DevicePage.tsx",
     purpose: "the connection line, so a link drop is noticed",
   },
   {
-    file: "components/auth/PasswordStrength.jsx",
+    file: "components/auth/PasswordStrength.tsx",
     purpose: "the strength band, so a screen reader hears the label cross a threshold",
   },
   {
-    file: "components/landing/RiskExplorer.jsx",
+    file: "components/landing/RiskExplorer.tsx",
     purpose: "the simulated risk level, so a slider change is announced once per level",
   },
 ];
@@ -114,7 +114,7 @@ describe("the realtime data contract", () => {
   });
 
   it("announces risk changes from the dashboard and nothing else on that page", () => {
-    const dashboard = read("pages/DashboardPage.jsx");
+    const dashboard = read("pages/DashboardPage.tsx");
 
     expect(countPolite(dashboard)).toBe(1);
 
@@ -126,10 +126,10 @@ describe("the realtime data contract", () => {
   it("keeps every live number outside a live region", () => {
     // The tiles carry the live figures, and the grid that renders them is the
     // component a well-meant fix would add a live region to.
-    const grid = read("components/dashboard/BentoGrid.jsx");
+    const grid = read("components/dashboard/BentoGrid.tsx");
     expect(grid).not.toMatch(/aria-live/);
 
-    const dashboard = read("pages/DashboardPage.jsx");
+    const dashboard = read("pages/DashboardPage.tsx");
     const tiles = dashboard.slice(
       dashboard.indexOf("const tiles = ["),
       dashboard.indexOf("];", dashboard.indexOf("const tiles = [")) + 2

@@ -340,7 +340,7 @@ describe("SHELL-04: the search is a real control", () => {
   it("offers only destinations the router actually declares", () => {
     // The claim is "every result navigates somewhere that exists", so the two
     // halves are read from the same file that builds both.
-    const app = read("App.jsx");
+    const app = read("App.tsx");
     const declared = new Set(
       [...app.matchAll(/<Route path="([^"]+)"/g)].map((match) => match[1])
     );
@@ -355,10 +355,10 @@ describe("SHELL-04: the search is a real control", () => {
   });
 
   it("sends a record result to the history page, which exists", () => {
-    expect(read(path.join("components", "layout", "AppSearch.jsx"))).toMatch(
+    expect(read(path.join("components", "layout", "AppSearch.tsx"))).toMatch(
       /navigate\("\/history"\)/
     );
-    expect(read("App.jsx")).toMatch(/<Route path="\/history"/);
+    expect(read("App.tsx")).toMatch(/<Route path="\/history"/);
   });
 });
 
@@ -545,7 +545,7 @@ describe("SHELL-06: labels, and no motion the dial forbids", () => {
     // is none of those: it is motion that runs on its own, which is exactly what
     // competes with numbers that update every second.
     expect(FILES.length, "the walk collected no sources").toBeGreaterThan(40);
-    expect(FILES.some((file) => file.endsWith("AppLayout.jsx"))).toBe(true);
+    expect(FILES.some((file) => file.endsWith("AppLayout.tsx"))).toBe(true);
 
     const offenders = [];
     for (const file of FILES) {
@@ -559,7 +559,7 @@ describe("SHELL-06: labels, and no motion the dial forbids", () => {
   });
 
   it("keeps the splash's announcement, which is what now carries its meaning", () => {
-    const app = read("App.jsx");
+    const app = read("App.tsx");
     const splash = app.slice(app.indexOf("const Splash"));
 
     expect(splash).toMatch(/role="status"/);

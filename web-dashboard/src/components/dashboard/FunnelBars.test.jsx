@@ -18,7 +18,7 @@ import { FunnelBars } from "./FunnelBars";
  */
 
 const SOURCE = fs.readFileSync(
-  path.join(path.dirname(fileURLToPath(import.meta.url)), "FunnelBars.jsx"),
+  path.join(path.dirname(fileURLToPath(import.meta.url)), "FunnelBars.tsx"),
   "utf8"
 );
 

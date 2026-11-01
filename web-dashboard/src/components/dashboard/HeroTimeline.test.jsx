@@ -21,7 +21,7 @@ import { HeroTimeline } from "./HeroTimeline";
  */
 
 const SOURCE = fs.readFileSync(
-  path.join(path.dirname(fileURLToPath(import.meta.url)), "HeroTimeline.jsx"),
+  path.join(path.dirname(fileURLToPath(import.meta.url)), "HeroTimeline.tsx"),
   "utf8"
 );
 

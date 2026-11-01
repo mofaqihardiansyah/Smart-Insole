@@ -288,7 +288,7 @@ describe("pages with a zero-data branch", () => {
  * moved file fails here instead of passing the sweep by finding nothing.
  */
 describe("the admin page's feedback sites", () => {
-  const ADMIN = path.join(here, "..", "..", "pages", "AdminPage.jsx");
+  const ADMIN = path.join(here, "..", "..", "pages", "AdminPage.tsx");
 
   const panelBlocks = (source) =>
     [...source.matchAll(/<StatePanel\b[\s\S]*?\/>/g)].map((match) => match[0]);

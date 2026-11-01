@@ -28,7 +28,7 @@ const collectSources = (dir) => {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       out.push(...collectSources(full));
-    } else if (entry.name.endsWith(".jsx") || entry.name.endsWith(".js")) {
+    } else if (/\.(jsx?|tsx?)$/.test(entry.name)) {
       out.push(full);
     }
   }

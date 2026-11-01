@@ -28,7 +28,7 @@ import { NON_IDENTITY_TRACE } from "../../utils/series";
  */
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = fs.readFileSync(path.join(here, "TrendChart.jsx"), "utf8");
+const SOURCE = fs.readFileSync(path.join(here, "TrendChart.tsx"), "utf8");
 
 const LABELS = {
   chartTitle: "Tren puncak tekanan",

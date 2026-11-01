@@ -22,7 +22,7 @@ import { Sparkline } from "./Sparkline";
 
 const readSource = () =>
   fs.readFileSync(
-    path.join(path.dirname(fileURLToPath(import.meta.url)), "Sparkline.jsx"),
+    path.join(path.dirname(fileURLToPath(import.meta.url)), "Sparkline.tsx"),
     "utf8"
   );
 

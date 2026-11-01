@@ -83,7 +83,7 @@ describe("shipped copy", () => {
     // The positive half of the fix. Deleting the const and putting a literal
     // back has to fail here, not merely stop matching a dash scan.
     const admin = fs.readFileSync(
-      path.join(SRC, "pages", "AdminPage.jsx"),
+      path.join(SRC, "pages", "AdminPage.tsx"),
       "utf8"
     );
     expect(admin).toMatch(

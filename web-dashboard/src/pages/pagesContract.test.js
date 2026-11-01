@@ -24,9 +24,9 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 
 const pageFiles = fs
   .readdirSync(here)
-  .filter((name) => name.endsWith(".jsx") && !name.endsWith(".test.jsx"));
+  .filter((name) => /\.(jsx|tsx)$/.test(name) && !/\.test\.(jsx|tsx)$/.test(name));
 
-const appPages = pageFiles.filter((name) => name !== "LandingPage.jsx");
+const appPages = pageFiles.filter((name) => name !== "LandingPage.tsx");
 const source = (name) => fs.readFileSync(path.join(here, name), "utf8");
 
 describe("page contract: responsive vocabulary (PAGE-11)", () => {
@@ -53,7 +53,7 @@ describe("page contract: register separation (PAGE-12)", () => {
     // app surface class inside the landing file would be a drift away from
     // the warm dialect rather than a reuse.
     expect(
-      source("LandingPage.jsx").match(/(?:bg|border|text)-(?:bg|surface|fg|danger|muted|control)\b/g)
+      source("LandingPage.tsx").match(/(?:bg|border|text)-(?:bg|surface|fg|danger|muted|control)\b/g)
     ).toBeNull();
   });
 });
