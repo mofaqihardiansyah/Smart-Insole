@@ -11,26 +11,26 @@ import '@testing-library/jest-dom';
  * Storage-compatible in-memory object on every test file instead of probing
  * (probing would emit an ExperimentalWarning per file).
  */
-const store = new Map();
+const store = new Map<string, string>();
 Object.defineProperty(globalThis, 'localStorage', {
   value: {
-    getItem(key) {
+    getItem(key: string): string | null {
       const k = String(key);
-      return store.has(k) ? store.get(k) : null;
+      return store.has(k) ? (store.get(k) ?? null) : null;
     },
-    setItem(key, value) {
+    setItem(key: string, value: string): void {
       store.set(String(key), String(value));
     },
-    removeItem(key) {
+    removeItem(key: string): void {
       store.delete(String(key));
     },
-    clear() {
+    clear(): void {
       store.clear();
     },
-    key(index) {
+    key(index: number): string | null {
       return Array.from(store.keys())[index] ?? null;
     },
-    get length() {
+    get length(): number {
       return store.size;
     },
   },
