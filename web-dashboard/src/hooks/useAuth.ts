@@ -6,6 +6,8 @@ import {
   updateProfile,
   signOut,
 } from "firebase/auth";
+import type { User } from "firebase/auth";
+import type { StringFormat } from "firebase/storage";
 import {
   auth,
   db,
@@ -25,7 +27,7 @@ import { sendVerificationEmail } from "../utils/authMail";
 let firebaseInitialized = false;
 
 export const useAuth = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState("");
@@ -43,7 +45,10 @@ export const useAuth = () => {
         // Verifikasi config valid (tidak akan lempar error di browser yang tidak punya firebase.init)
         firebaseInitialized = true;
       } catch (e) {
-        console.warn("Firebase init skipped in this environment:", e.message);
+        console.warn(
+          "Firebase init skipped in this environment:",
+          (e as Error).message
+        );
       }
     }
 
@@ -74,7 +79,7 @@ export const useAuth = () => {
 
   // Fungsi login dengan email & password
   const doLogin = useCallback(
-    async (email, password) => {
+    async (email: string, password: string) => {
       // `loading` belongs to the auth listener (the first paint), not to a
       // form submit. Toggling it here unmounted the whole login page and
       // showed the splash for the duration of the request.
@@ -85,7 +90,11 @@ export const useAuth = () => {
         // merges, and writing null here would erase the name stored at
         // registration for accounts created before Auth carried a name.
         try {
-          const profile = {
+          const profile: {
+            email: string | null;
+            lastLogin: string;
+            displayName?: string;
+          } = {
             email: userCred.user.email,
             lastLogin: new Date().toISOString(),
           };
@@ -94,16 +103,17 @@ export const useAuth = () => {
           }
           await createUserDoc(userCred.user.uid, profile);
         } catch (e) {
-          console.warn("Gagal simpan profil (Firestore):", e?.message);
+          console.warn("Gagal simpan profil (Firestore):", (e as Error)?.message);
         }
         setUser(userCred.user);
         setDisplayName(userCred.user.displayName || "User");
         return { success: true, user: userCred.user };
       } catch (err) {
-        console.error("Login error:", err?.code || err?.message);
+        const code = (err as { code?: string })?.code;
+        console.error("Login error:", code || (err as Error)?.message);
         // Return the code, never the raw message: the pages translate a known
         // code and keep one generic answer for credential failures.
-        return { success: false, code: err?.code };
+        return { success: false, code };
       }
     },
     []
@@ -111,7 +121,7 @@ export const useAuth = () => {
 
   // Fungsi registrasi baru
   const doRegister = useCallback(
-    async (email, password, name) => {
+    async (email: string, password: string, name: string) => {
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -121,7 +131,7 @@ export const useAuth = () => {
         try {
           await updateProfile(cred.user, { displayName: name });
         } catch (e) {
-          console.warn("Gagal simpan nama (Auth):", e?.message);
+          console.warn("Gagal simpan nama (Auth):", (e as Error)?.message);
         }
 
         // Simpan profil dasar ke Firestore (gagal = tidak fatal)
@@ -135,7 +145,7 @@ export const useAuth = () => {
             createdAt: new Date().toISOString(),
           });
         } catch (e) {
-          console.warn("Gagal simpan profil (Firestore):", e?.message);
+          console.warn("Gagal simpan profil (Firestore):", (e as Error)?.message);
         }
 
         // Firebase owns delivery, expiry and the verified flag. The continue
@@ -143,15 +153,16 @@ export const useAuth = () => {
         try {
           await sendVerificationEmail(cred.user);
         } catch (e) {
-          console.warn("Gagal kirim email verifikasi:", e?.message);
+          console.warn("Gagal kirim email verifikasi:", (e as Error)?.message);
         }
 
         setUser(cred.user);
         setDisplayName(name);
         return { success: true, user: cred.user };
       } catch (err) {
-        console.error("Register error:", err?.code || err?.message);
-        return { success: false, code: err?.code };
+        const code = (err as { code?: string })?.code;
+        console.error("Register error:", code || (err as Error)?.message);
+        return { success: false, code };
       }
     },
     []
@@ -172,7 +183,7 @@ export const useAuth = () => {
   // Unggah foto profil. SDK Storage dimuat di sini saat pertama kali dipakai,
   // bukan di awal aplikasi.
   const uploadProfilePhoto = useCallback(
-    async (fileBase64, mimeType = "image/png") => {
+    async (fileBase64: string, mimeType = "image/png") => {
       try {
         // Only the Storage SDK is fetched on demand; the instance getter comes
         // from the already-loaded config module.
@@ -183,7 +194,9 @@ export const useAuth = () => {
 
         const path = `profiles/${user?.uid}/photo.jpg`;
         const storageRef = ref(storage, path);
-        await uploadString(storageRef, fileBase64, mimeType);
+        // The caller passes an image MIME type where the SDK expects its
+        // string format enum; kept as-is so behaviour is unchanged.
+        await uploadString(storageRef, fileBase64, mimeType as StringFormat);
         const url = await getDownloadURL(ref(storage, path));
         // Update Firestore dengan URL foto
         if (user) {
@@ -192,7 +205,7 @@ export const useAuth = () => {
         return { success: true, url };
       } catch (err) {
         console.error("Upload photo error:", err);
-        return { success: false, error: err.message };
+        return { success: false, error: (err as Error)?.message };
       }
     },
     [user]

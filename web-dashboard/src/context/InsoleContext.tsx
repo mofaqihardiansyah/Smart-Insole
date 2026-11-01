@@ -11,6 +11,13 @@ import { RISK_THRESHOLDS, inferRisk, levelFromScore } from '../utils/randomFores
 import { alignScoreToLevel } from '../utils/fuzzyRisk';
 import { playAlertBeep, stopAlertBeep } from '../utils/audioAlert';
 import * as defaultTransport from '../services/firebaseRealtime';
+import type {
+  GlobalRiskConfig,
+  InsoleTransport,
+  MappedReading,
+  RiskLevel,
+  RiskThresholds,
+} from '../types/insole';
 
 /**
  * InsoleContext: the single source of live insole state for the whole app.
@@ -33,7 +40,70 @@ import * as defaultTransport from '../services/firebaseRealtime';
  * verdict.
  */
 
-export const InsoleContext = createContext(undefined);
+/** The three sensor regions, before the derived duration is attached. */
+export interface RegionReadings {
+  forefoot: number;
+  midfoot: number;
+  heel: number;
+}
+
+/** One sample travelling down the ingestion pipeline. */
+export interface LiveSample {
+  readings: RegionReadings;
+  deviceRiskLevel: RiskLevel | null;
+  deviceRiskScore: number | null;
+  batteryPercent: number | null;
+  timestamp: number | null;
+}
+
+/** One buffered sample: the reading plus what was derived from it. */
+export interface HistoryRecord {
+  readings: RegionReadings & { sustainedDuration: number };
+  peakPressure: number;
+  risk: RiskLevel;
+  score: number;
+  timestamp: number;
+}
+
+/** A logged risk transition (never `safe`). */
+export interface IncidentLog {
+  type: RiskLevel;
+  readings: HistoryRecord['readings'];
+  score: number;
+  timestamp: number;
+}
+
+/** Where the device feed currently stands. */
+export type ConnectionState = 'idle' | 'connecting' | 'live' | 'error';
+
+/** Everything `useInsole()` hands its callers. */
+export interface InsoleContextValue {
+  readings: RegionReadings & { sustainedDuration: number };
+  peakPressure: number;
+  risk: RiskLevel;
+  riskScore: number;
+  severity: number;
+  reconnect: () => void;
+  connectionState: ConnectionState;
+  sourceReason: string | null;
+  isLive: boolean;
+  batteryPercent: number | null;
+  thresholds: RiskThresholds;
+  setThresholds: (next: Partial<RiskThresholds>) => void;
+  resetThresholds: () => void;
+  history: HistoryRecord[];
+  incidentLogs: IncidentLog[];
+  unreadIncidentCount: number;
+  acknowledgeIncidents: () => void;
+  alertOpen: boolean;
+  isMuted: boolean;
+  toggleMute: () => void;
+  language: string;
+  setLanguage: React.Dispatch<React.SetStateAction<string>>;
+  setReadings: (nextReadings: Partial<RegionReadings>) => void;
+}
+
+export const InsoleContext = createContext<InsoleContextValue | undefined>(undefined);
 
 /** Ring buffer length for the live chart. */
 export const HISTORY_LIMIT = 30;
@@ -53,10 +123,10 @@ export const FIREBASE_GRACE_MS = 4000;
  */
 export const MAX_PACKET_GAP_MS = 3000;
 
-const ZERO_READINGS = { forefoot: 0, midfoot: 0, heel: 0 };
+const ZERO_READINGS: RegionReadings = { forefoot: 0, midfoot: 0, heel: 0 };
 
 /** One sample travelling down the ingestion pipeline. */
-const INITIAL_SAMPLE = Object.freeze({
+const INITIAL_SAMPLE: LiveSample = Object.freeze({
   readings: ZERO_READINGS,
   deviceRiskLevel: null,
   deviceRiskScore: null,
@@ -64,7 +134,7 @@ const INITIAL_SAMPLE = Object.freeze({
   timestamp: null,
 });
 
-export const peakOf = (readings) =>
+export const peakOf = (readings: RegionReadings): number =>
   Math.max(readings.forefoot, readings.midfoot, readings.heel);
 
 /**
@@ -82,11 +152,11 @@ export const peakOf = (readings) =>
  * @returns {{ warningDuration: number, dangerDuration: number }}
  */
 export const measureSustainedDurations = (
-  previousHistory,
-  currentMax,
-  thresholds = RISK_THRESHOLDS,
-  currentTimestamp = null
-) => {
+  previousHistory: Array<Pick<HistoryRecord, 'readings' | 'timestamp'>>,
+  currentMax: number,
+  thresholds: RiskThresholds = RISK_THRESHOLDS,
+  currentTimestamp: number | null = null
+): { warningDuration: number; dangerDuration: number } => {
   const { warningKpa, dangerKpa } = thresholds;
   let warningDuration = 0;
   let dangerDuration = 0;
@@ -94,7 +164,10 @@ export const measureSustainedDurations = (
   // The firmware pushes once per second, so two packets further apart than
   // this did not form a run — a WiFi drop, a reboot, or a page reload sat in
   // between.
-  const breaksRun = (newerTimestamp, olderTimestamp) =>
+  const breaksRun = (
+    newerTimestamp: number | null,
+    olderTimestamp: number | null
+  ) =>
     newerTimestamp != null &&
     olderTimestamp != null &&
     newerTimestamp - olderTimestamp > MAX_PACKET_GAP_MS;
@@ -135,11 +208,13 @@ export const measureSustainedDurations = (
 };
 
 /** Validate a partial threshold object, falling back to the defaults. */
-const sanitiseThresholds = (candidate) => {
+const sanitiseThresholds = (
+  candidate: Partial<RiskThresholds> | null | undefined
+): RiskThresholds => {
   const next = { ...RISK_THRESHOLDS };
   if (!candidate || typeof candidate !== 'object') return next;
 
-  for (const key of Object.keys(RISK_THRESHOLDS)) {
+  for (const key of Object.keys(RISK_THRESHOLDS) as Array<keyof RiskThresholds>) {
     const value = Number(candidate[key]);
     if (Number.isFinite(value) && value > 0) next[key] = value;
   }
@@ -196,18 +271,22 @@ export const InsoleProvider = ({
   children,
   autoConnect = false,
   transport = defaultTransport,
+}: {
+  children: React.ReactNode;
+  autoConnect?: boolean;
+  transport?: InsoleTransport;
 }) => {
-  const [sample, setSample] = useState(INITIAL_SAMPLE);
+  const [sample, setSample] = useState<LiveSample>(INITIAL_SAMPLE);
   const [sustainedDuration, setSustainedDuration] = useState(0);
-  const [risk, setRisk] = useState('safe');
+  const [risk, setRisk] = useState<RiskLevel>('safe');
   const [riskScore, setRiskScore] = useState(0);
   const [severity, setSeverity] = useState(0);
-  const [connectionState, setConnectionState] = useState(
+  const [connectionState, setConnectionState] = useState<ConnectionState>(
     autoConnect ? 'connecting' : 'idle'
   );
-  const [sourceReason, setSourceReason] = useState(null);
-  const [batteryPercent, setBatteryPercent] = useState(null);
-  const [thresholds, setThresholdsState] = useState(readStoredThresholds);
+  const [sourceReason, setSourceReason] = useState<string | null>(null);
+  const [batteryPercent, setBatteryPercent] = useState<number | null>(null);
+  const [thresholds, setThresholdsState] = useState<RiskThresholds>(readStoredThresholds);
   // True once this browser saves its own thresholds in Settings (or already
   // had a stored copy at load). The admin global config seeds the defaults
   // for everyone else and never rewrites a personal choice.
@@ -219,9 +298,9 @@ export const InsoleProvider = ({
       return false;
     }
   });
-  const [language, setLanguage] = useState(readStoredLanguage);
-  const [history, setHistory] = useState([]);
-  const [incidentLogs, setIncidentLogs] = useState([]);
+  const [language, setLanguage] = useState<string>(readStoredLanguage);
+  const [history, setHistory] = useState<HistoryRecord[]>([]);
+  const [incidentLogs, setIncidentLogs] = useState<IncidentLog[]>([]);
   const [acknowledgedAt, setAcknowledgedAt] = useState(0);
   /**
    * Bumped by `reconnect`. The subscription effect is keyed on it, so asking
@@ -230,14 +309,17 @@ export const InsoleProvider = ({
    */
   const [connectNonce, setConnectNonce] = useState(0);
 
-  const historyRef = useRef([]);
-  const previousRiskRef = useRef('safe');
+  const historyRef = useRef<HistoryRecord[]>([]);
+  const previousRiskRef = useRef<RiskLevel>('safe');
   // Identity of the last processed input. It tracks the threshold set as well
   // as the sample, because changing a threshold has to re-derive the verdict
   // from the reading already on screen rather than waiting for the next one.
   // Seeded with the initial values so the mount render is not treated as a
   // reading, and StrictMode's double-invoked effect cannot append a duplicate.
-  const lastProcessedRef = useRef({ sample: INITIAL_SAMPLE, thresholds });
+  const lastProcessedRef = useRef<{ sample: LiveSample; thresholds: RiskThresholds }>({
+    sample: INITIAL_SAMPLE,
+    thresholds,
+  });
 
   /* ------------------------------ persistence ----------------------------- */
 
@@ -273,7 +355,7 @@ export const InsoleProvider = ({
     setConnectionState('connecting');
     let unsubscribe = () => {};
 
-    const onData = (reading) => {
+    const onData = (reading: MappedReading) => {
       setConnectionState('live');
       setSourceReason(null);
       setBatteryPercent(reading.batteryPercent ?? null);
@@ -290,7 +372,7 @@ export const InsoleProvider = ({
       });
     };
 
-    const onError = (error) => {
+    const onError = (error: Error) => {
       // A device we trust has gone quiet: say so, and wait for the next real
       // packet or the retry button. The old behaviour silently fell back to a
       // fabricated reading stream here; that trade (WR-02) was reversed when
@@ -303,7 +385,7 @@ export const InsoleProvider = ({
     try {
       unsubscribe = transport.subscribeToReadings(onData, onError);
     } catch (error) {
-      onError(error);
+      onError(error instanceof Error ? error : new Error(String(error)));
     }
 
     const graceTimer = setTimeout(() => {
@@ -329,7 +411,8 @@ export const InsoleProvider = ({
     }
     let unsubscribe = () => {};
     try {
-      unsubscribe = transport.subscribeToGlobalConfig((config) => {
+      unsubscribe = transport.subscribeToGlobalConfig(
+        (config: GlobalRiskConfig) => {
         if (hasLocalOverrideRef.current) return;
         setThresholdsState(
           sanitiseThresholds({
@@ -480,7 +563,7 @@ export const InsoleProvider = ({
    * reading already on screen.
    */
   const setThresholds = useCallback(
-    (next) => {
+    (next: Partial<RiskThresholds>) => {
       const value = sanitiseThresholds({ ...thresholds, ...next });
       setThresholdsState(value);
       try {
@@ -511,7 +594,7 @@ export const InsoleProvider = ({
    * Raw ingestion path: used by tests, and available for a future on-device
    * manual reading entry.
    */
-  const setReadings = useCallback((nextReadings) => {
+  const setReadings = useCallback((nextReadings: Partial<RegionReadings>) => {
     setSample({
       readings: {
         forefoot: Number(nextReadings?.forefoot) || 0,
@@ -560,7 +643,7 @@ export const InsoleProvider = ({
 
   const isLive = connectionState === 'live';
 
-  const contextValue = {
+  const contextValue: InsoleContextValue = {
     // Live data
     readings,
     peakPressure,
@@ -598,7 +681,7 @@ export const InsoleProvider = ({
   );
 };
 
-export const useInsole = () => {
+export const useInsole = (): InsoleContextValue => {
   const context = useContext(InsoleContext);
   if (context === undefined) {
     throw new Error('useInsole must be used within an InsoleProvider');

@@ -77,3 +77,26 @@ export interface GlobalRiskConfig {
   safeThreshold: number;
   dangerThreshold: number;
 }
+
+/**
+ * The Realtime Database surface InsoleContext consumes. The provider receives
+ * this instead of importing the service, so tests inject a stub and the
+ * wiring can be re-pointed without touching the context. Only the readings
+ * feed is required; the config subscription is optional so a minimal stub
+ * still satisfies the contract.
+ */
+export interface InsoleTransport {
+  subscribeToReadings: (
+    onData: (reading: MappedReading) => void,
+    onError?: (error: Error) => void
+  ) => () => void;
+  subscribeToGlobalConfig?: (
+    onData: (config: GlobalRiskConfig) => void,
+    onError?: (error: Error) => void
+  ) => () => void;
+  subscribeToHistory?: (
+    onData: (rows: HistoryEntry[]) => void,
+    onError?: (error: Error) => void,
+    limit?: number
+  ) => () => void;
+}

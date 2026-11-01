@@ -139,7 +139,7 @@ describe("the realtime data contract", () => {
   });
 
   it("preserves the provider's failure contract (WR-02, policy reversed)", () => {
-    const context = read("context/InsoleContext.jsx");
+    const context = read("context/InsoleContext.tsx");
 
     // Both failure paths report `error`: the transport error handler and the
     // grace timeout (whose guard only keeps a live connection alive).
