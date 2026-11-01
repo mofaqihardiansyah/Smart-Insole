@@ -57,5 +57,9 @@
 #define NTP_SERVER_2 "time.nist.gov"
 
 // ---------- Interval Pengambilan Data ----------
+// Push DISESUAIKAN dengan sampling: 1 sampel = 1 detik nyata, jadi durasi
+// tumpuan yang dihitung dashboard (1 sampel = 1 dtk) dan label "30 detik"
+// tetap akurat. Push lebih lambat dari sampling akan membuat semua durasi
+// tercatat separuh nilai aslinya.
 #define SAMPLE_INTERVAL_MS   1000   // 1 detik
-#define FIREBASE_PUSH_MS     2000   // 2 detik (latest + history)
+#define FIREBASE_PUSH_MS     1000   // 1 detik (latest + history, sama dengan sampling)
