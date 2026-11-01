@@ -249,7 +249,7 @@ menulis langsung ke Firebase.
 
 ## Dokumentasi
 
-Dokumentasi lanjutan ada di folder [`docs/`](docs/README.md):
+Dokumentasi proyek:
 
 | Dokumen | Isi |
 | --- | --- |
@@ -258,6 +258,11 @@ Dokumentasi lanjutan ada di folder [`docs/`](docs/README.md):
 | [`docs/rf-model-report.md`](docs/rf-model-report.md) | Hasil pelatihan model, metrik evaluasi, dan clinical contract |
 | [`docs/DESIGN-BRIEF.md`](docs/DESIGN-BRIEF.md) | Brief desain dashboard (dokumen historis) |
 | [`DESIGN.md`](DESIGN.md) | Otoritas arah desain visual dashboard saat ini |
+| [`AGENTS.md`](AGENTS.md) | Aturan kerja dan batasan untuk AI agent |
+| [`READY.md`](READY.md) | Environment, tech stack, dan state repo terverifikasi |
+| [`TASK.md`](TASK.md) | Ledger task: selesai, berjalan, berikutnya |
+| [`CHANGELOG.md`](CHANGELOG.md) | Riwayat perubahan (Keep a Changelog) |
+| [`DECISIONS.md`](DECISIONS.md) | Catatan keputusan teknis (ADR ringan) |
 | [`DISCUSSION-GUIDE.md`](DISCUSSION-GUIDE.md) | Panduan diskusi tim dan checkpoint mingguan |
 
 ## Catatan Keamanan
