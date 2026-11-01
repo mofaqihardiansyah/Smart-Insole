@@ -1,4 +1,5 @@
 import React from "react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 
 /**
  * GlassInput — text and number field.
@@ -24,6 +25,20 @@ import React from "react";
  * docked in the same slot, such as the password reveal button: it resets the
  * right padding and keeps its own 44px target.
  */
+interface GlassInputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "children"> {
+  /** Visible label above the field. */
+  label?: ReactNode;
+  /** Error message; replaces the hint and sets `aria-invalid`. */
+  error?: ReactNode;
+  hint?: ReactNode;
+  /** Read-only unit (kPa, s) docked right. */
+  suffix?: ReactNode;
+  /** Interactive control docked right (password reveal). */
+  trailing?: ReactNode;
+  className?: string;
+}
+
 const GlassInput = ({
   type = "text",
   label,
@@ -34,7 +49,7 @@ const GlassInput = ({
   suffix,
   trailing,
   ...props
-}) => {
+}: GlassInputProps) => {
   const inputId = id || React.useId();
   const errorId = `${inputId}-error`;
   const hintId = `${inputId}-hint`;

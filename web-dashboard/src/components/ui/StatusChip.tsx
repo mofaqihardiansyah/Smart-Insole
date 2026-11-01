@@ -1,6 +1,8 @@
 import React from "react";
+import type { LucideIcon } from "lucide-react";
 import { CheckCircle2, AlertTriangle, AlertOctagon } from "lucide-react";
 import { devWarn } from "../../utils/devWarn";
+import type { RiskLevel } from "../../types/insole";
 
 /**
  * StatusChip — the risk readout.
@@ -39,12 +41,21 @@ const SIZES = {
   lg: { box: "gap-2 px-3.5 py-1.5 text-chip", icon: "h-5 w-5" },
 };
 
-/**
- * @param {object} props
- * @param {'safe'|'warning'|'danger'} props.level
- * @param {string} props.label localised, human readable level name
- */
-const StatusChip = ({ level = "safe", label, size = "md", className = "" }) => {
+interface StatusChipProps {
+  /** The clinical level; an undeclared value renders `safe` and warns. */
+  level?: RiskLevel;
+  /** Localised, human readable level name. */
+  label: React.ReactNode;
+  size?: keyof typeof SIZES;
+  className?: string;
+}
+
+const StatusChip = ({
+  level = "safe",
+  label,
+  size = "md",
+  className = "",
+}: StatusChipProps) => {
   // Same posture as `Chip`: an undeclared key keeps its benign fallback, and
   // development says which key was received. An unknown level resolving to
   // `safe` is a false clinical claim — it paints an unread state as a good one

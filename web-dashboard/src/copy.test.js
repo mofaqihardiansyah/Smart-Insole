@@ -38,7 +38,7 @@ const collect = (dir) => {
     if (entry.isDirectory()) {
       if (entry.name === SCRATCH) continue;
       out.push(...collect(full));
-    } else if (entry.name.endsWith(".jsx")) {
+    } else if (/\.(jsx?|tsx?)$/.test(entry.name)) {
       out.push(full);
     }
   }

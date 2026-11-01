@@ -1,4 +1,5 @@
 import React from "react";
+import type { ErrorInfo, ReactNode } from "react";
 import StatePanel, { StateRetry } from "./StatePanel";
 import { t } from "../../utils/i18n";
 
@@ -22,18 +23,29 @@ import { t } from "../../utils/i18n";
  * dictionary's own default is Indonesian (D-05), so the fallback renders
  * without reading context that a thrown provider may have taken down with it.
  */
-class ErrorBoundary extends React.Component {
-  constructor(props) {
+interface ErrorBoundaryProps {
+  children?: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
     this.handleReset = this.handleReset.bind(this);
   }
 
-  static getDerivedStateFromError() {
+  static getDerivedStateFromError(): ErrorBoundaryState {
     return { hasError: true };
   }
 
-  componentDidCatch(error, info) {
+  componentDidCatch(error: Error, info: ErrorInfo) {
     // Report rather than swallow. A boundary that hides the defect behind a
     // friendly panel has moved the problem, not fixed it.
     console.error(

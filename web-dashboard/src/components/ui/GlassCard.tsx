@@ -1,4 +1,5 @@
 import React from "react";
+import type { ElementType, HTMLAttributes, ReactNode } from "react";
 
 /**
  * GlassCard — the application's surface primitive.
@@ -14,6 +15,15 @@ import React from "react";
  * `flush` removes the default padding for panels that own a full bleed table or
  * chart and need the content to reach the edge.
  */
+interface GlassCardProps extends Omit<HTMLAttributes<HTMLElement>, "children"> {
+  children?: ReactNode;
+  /** Polymorphic element; defaults to a `div`. */
+  as?: ElementType;
+  /** Drop the default padding for a full-bleed table or chart. */
+  flush?: boolean;
+  elevated?: boolean;
+}
+
 const GlassCard = ({
   children,
   className = "",
@@ -21,7 +31,7 @@ const GlassCard = ({
   flush = false,
   elevated = false,
   ...props
-}) => (
+}: GlassCardProps) => (
   <Tag
     className={[
       "rounded-card border border-border bg-surface",
@@ -52,6 +62,22 @@ GlassCard.displayName = "GlassCard";
  * panel an unambiguous name that carries into copy, tests and conversation
  * ("panel 03 has no data"), the way numbered stations do on an instrument.
  */
+interface PanelHeaderProps {
+  /** The heading text (or `title` when `label` is absent). */
+  label?: ReactNode;
+  title?: ReactNode;
+  subtitle?: ReactNode;
+  icon?: ReactNode;
+  /** Station number ("01", "02", ...), announced as part of neither. */
+  index?: ReactNode;
+  action?: ReactNode;
+  divided?: boolean;
+  padded?: boolean;
+  className?: string;
+  /** Heading level; defaults to `h2`. */
+  as?: ElementType;
+}
+
 const PanelHeader = ({
   label,
   title,
@@ -63,7 +89,7 @@ const PanelHeader = ({
   padded = true,
   className = "",
   as: Tag = "h2",
-}) => (
+}: PanelHeaderProps) => (
   <div
     className={[
       "flex flex-wrap items-start justify-between gap-3",
@@ -113,7 +139,13 @@ PanelHeader.displayName = "PanelHeader";
  * GlassIcon — a fixed, non shrinking glyph slot, so labels line up down a
  * column regardless of which icon each row uses.
  */
-const GlassIcon = ({ children, className = "" }) => (
+const GlassIcon = ({
+  children,
+  className = "",
+}: {
+  children?: ReactNode;
+  className?: string;
+}) => (
   <span
     className={`inline-flex shrink-0 items-center justify-center ${className}`.trim()}
     aria-hidden="true"

@@ -240,7 +240,7 @@ describe("pages with a zero-data branch", () => {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         out.push(...collectSources(full));
-      } else if (entry.name.endsWith(".jsx") && !entry.name.includes(".test.")) {
+      } else if (/\.(jsx?|tsx?)$/.test(entry.name) && !entry.name.includes(".test.")) {
         out.push(full);
       }
     }

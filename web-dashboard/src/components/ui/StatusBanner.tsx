@@ -1,5 +1,7 @@
 import React from "react";
+import type { ReactNode } from "react";
 import { AlertBanner } from "./AlertBanner";
+import type { AlertBannerProps } from "./AlertBanner";
 
 /**
  * StatusBanner is now a delegate to `AlertBanner`.
@@ -14,6 +16,18 @@ import { AlertBanner } from "./AlertBanner";
  * state the step after the cause with the same prop name the primitive and the
  * pages agree on.
  */
+/** Same prop surface as the primitive it delegates to. */
+interface StatusBannerProps {
+  tone?: AlertBannerProps["tone"];
+  title?: ReactNode;
+  children?: ReactNode;
+  action?: ReactNode;
+  nextAction?: ReactNode;
+  onDismiss?: () => void;
+  dismissLabel?: string;
+  className?: string;
+}
+
 const StatusBanner = ({
   tone = "info",
   title,
@@ -23,7 +37,7 @@ const StatusBanner = ({
   onDismiss,
   dismissLabel,
   className = "",
-}) => {
+}: StatusBannerProps) => {
   return (
     <AlertBanner
       tone={tone}

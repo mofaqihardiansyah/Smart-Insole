@@ -1,4 +1,5 @@
 import React from "react";
+import type { ReactNode } from "react";
 import { AlertTriangle, Inbox, RefreshCw } from "lucide-react";
 import { roleFor } from "./feedbackState";
 import { devWarn } from "../../utils/devWarn";
@@ -33,6 +34,21 @@ import { devWarn } from "../../utils/devWarn";
  * development while still rendering its cause — the production behaviour is the
  * benign declared default rather than a blank view.
  */
+/** The three registers a data view can be in. */
+export type StateVariant = "loading" | "empty" | "error";
+
+interface StatePanelProps {
+  variant?: StateVariant;
+  title?: ReactNode;
+  description?: ReactNode;
+  action?: ReactNode;
+  nextAction?: ReactNode;
+  nextActionLabel?: string;
+  /** Skeleton bar count in the loading register. */
+  rows?: number;
+  className?: string;
+}
+
 const StatePanel = ({
   variant = "empty",
   title,
@@ -42,7 +58,7 @@ const StatePanel = ({
   nextActionLabel,
   rows = 3,
   className = "",
-}) => {
+}: StatePanelProps) => {
   if (variant === "loading") {
     return (
       <div
@@ -119,7 +135,12 @@ const StatePanel = ({
 };
 
 /** The shared retry affordance, so error states do not each invent one. */
-export const StateRetry = ({ onRetry, label }) => (
+interface StateRetryProps {
+  onRetry: () => void;
+  label: ReactNode;
+}
+
+export const StateRetry = ({ onRetry, label }: StateRetryProps) => (
   <button
     type="button"
     onClick={onRetry}

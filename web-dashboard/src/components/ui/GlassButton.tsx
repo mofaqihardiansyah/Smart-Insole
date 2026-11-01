@@ -1,4 +1,5 @@
 import React from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { devWarn } from "../../utils/devWarn";
 
 /**
@@ -57,21 +58,36 @@ const SIZES = {
   lg: "min-h-[48px] px-5 text-body-base",
 };
 
+/** A declared variant key; an unknown value renders `filled` and warns. */
+export type ButtonVariant = keyof typeof VARIANTS;
+export type ButtonSize = keyof typeof SIZES;
+
+interface GlassButtonProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+  children?: ReactNode;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  /** Uppercase label treatment (landing CTA register). */
+  label?: boolean;
+  className?: string;
+}
+
 // forwardRef so dialogs can move focus into themselves on open and restore it
 // on close.
-const GlassButton = React.forwardRef(function GlassButton(
-  {
-    children,
-    variant = "filled",
-    size = "md",
-    type = "button",
-    className = "",
-    disabled = false,
-    label = false,
-    ...props
-  },
-  ref
-) {
+const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
+  function GlassButton(
+    {
+      children,
+      variant = "filled",
+      size = "md",
+      type = "button",
+      className = "",
+      disabled = false,
+      label = false,
+      ...props
+    },
+    ref
+  ) {
   const variantClasses = VARIANTS[variant];
 
   // The lookup silently substitutes `filled` for a key it does not know, which

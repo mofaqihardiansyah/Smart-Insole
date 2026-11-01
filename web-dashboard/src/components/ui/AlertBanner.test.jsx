@@ -29,7 +29,7 @@ import { t } from "../../utils/i18n";
  */
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const source = fs.readFileSync(path.join(here, "AlertBanner.jsx"), "utf8");
+const source = fs.readFileSync(path.join(here, "AlertBanner.tsx"), "utf8");
 
 /**
  * Strip block comments first, then line comments, following `copy.test.js`. The

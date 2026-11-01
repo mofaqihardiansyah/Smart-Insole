@@ -68,7 +68,7 @@ const collectSources = (dir) => {
       if (entry.name === SCRATCH) continue;
       out.push(...collectSources(full));
     } else if (
-      /\.(jsx|js|css)$/.test(entry.name) &&
+      /\.(jsx?|tsx?|css)$/.test(entry.name) &&
       !entry.name.includes(".test.")
     ) {
       out.push(full);

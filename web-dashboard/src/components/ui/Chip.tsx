@@ -1,4 +1,5 @@
 import React from "react";
+import type { ElementType, HTMLAttributes, ReactNode } from "react";
 import { devWarn } from "../../utils/devWarn";
 
 /**
@@ -29,6 +30,17 @@ const TONES = {
   danger: "bg-danger/15 text-danger-ink",
 };
 
+/** The semantic tone set; an undeclared value renders `neutral`. */
+export type ChipTone = keyof typeof TONES;
+
+interface ChipProps extends Omit<HTMLAttributes<HTMLElement>, "children"> {
+  children?: ReactNode;
+  tone?: ChipTone;
+  uppercase?: boolean;
+  /** Polymorphic element; defaults to a `span`. */
+  as?: ElementType;
+}
+
 const Chip = ({
   children,
   tone = "neutral",
@@ -36,7 +48,7 @@ const Chip = ({
   className = "",
   as: Tag = "span",
   ...props
-}) => {
+}: ChipProps) => {
   // Production keeps the benign substitution; development names the received
   // value and the declared set so a mis-spelled claim surfaces where it was
   // written rather than as a chip that reads calm on a danger reading.

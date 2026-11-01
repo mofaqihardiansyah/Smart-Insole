@@ -12,7 +12,22 @@ import React from "react";
  * `title` may be a node, which is how the dashboard renders its greeting
  * together with the account name.
  */
-const PageHeader = ({ title, subtitle, actions, meta, className = "" }) => (
+/** Props: `title` may be a node (the dashboard renders greeting + name). */
+interface PageHeaderProps {
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
+  actions?: React.ReactNode;
+  meta?: React.ReactNode;
+  className?: string;
+}
+
+const PageHeader = ({
+  title,
+  subtitle,
+  actions,
+  meta,
+  className = "",
+}: PageHeaderProps) => (
   <header
     className={`flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between ${className}`.trim()}
   >

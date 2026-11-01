@@ -1,4 +1,5 @@
 import React from "react";
+import type { ReactNode } from "react";
 import { Info, CheckCircle2, AlertTriangle, AlertOctagon, X } from "lucide-react";
 import { roleFor } from "./feedbackState";
 import { t } from "../../utils/i18n";
@@ -57,6 +58,18 @@ const TONES = {
   },
 };
 
+/** Props for the inline feedback row; the tone set is `TONES`' keys. */
+export interface AlertBannerProps {
+  tone?: keyof typeof TONES;
+  title?: ReactNode;
+  children?: ReactNode;
+  action?: ReactNode;
+  nextAction?: ReactNode;
+  onDismiss?: () => void;
+  dismissLabel?: string;
+  className?: string;
+}
+
 const AlertBanner = ({
   tone = "info",
   title,
@@ -66,7 +79,7 @@ const AlertBanner = ({
   onDismiss,
   dismissLabel,
   className = "",
-}) => {
+}: AlertBannerProps) => {
   const config = TONES[tone] || TONES.info;
   const { Icon } = config;
 

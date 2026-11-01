@@ -46,7 +46,7 @@ const collect = (dir) => {
     if (entry.isDirectory()) {
       if (entry.name === "node_modules") continue;
       out.push(...collect(full));
-    } else if (entry.name.endsWith(".jsx") && !entry.name.includes(".test.")) {
+    } else if (/\.(jsx?|tsx?)$/.test(entry.name) && !entry.name.includes(".test.")) {
       out.push(full);
     }
   }
@@ -68,7 +68,7 @@ const POLITE_REGIONS = [
     purpose: "the splash, so the first paint is announced once while the app boots",
   },
   {
-    file: "components/ui/StatePanel.jsx",
+    file: "components/ui/StatePanel.tsx",
     purpose: "the loading register, so a reader is told data is coming",
   },
   {

@@ -55,7 +55,7 @@ const collect = (dir) => {
     if (entry.isDirectory()) {
       if (entry.name === SCRATCH) continue;
       out.push(...collect(full));
-    } else if (entry.name.endsWith(".jsx") && !entry.name.includes(".test.")) {
+    } else if (/\.(jsx?|tsx?)$/.test(entry.name) && !entry.name.includes(".test.")) {
       out.push(full);
     }
   }
@@ -105,11 +105,11 @@ const handledVariants = (source, label) => {
   return keys;
 };
 
-const GLASS_BUTTON = readSource("components/ui/GlassButton.jsx");
-const STATE_PANEL = readSource("components/ui/StatePanel.jsx");
-const STATUS_CHIP = readSource("components/ui/StatusChip.jsx");
-const CHIP = readSource("components/ui/Chip.jsx");
-const ALERT_BANNER = readSource("components/ui/AlertBanner.jsx");
+const GLASS_BUTTON = readSource("components/ui/GlassButton.tsx");
+const STATE_PANEL = readSource("components/ui/StatePanel.tsx");
+const STATUS_CHIP = readSource("components/ui/StatusChip.tsx");
+const CHIP = readSource("components/ui/Chip.tsx");
+const ALERT_BANNER = readSource("components/ui/AlertBanner.tsx");
 
 const BUTTON_KEYS = mapKeys(
   GLASS_BUTTON,

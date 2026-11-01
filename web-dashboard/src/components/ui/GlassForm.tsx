@@ -1,4 +1,5 @@
 import React from "react";
+import type { ReactNode, SelectHTMLAttributes } from "react";
 import { GlassCard, GlassIcon, PanelHeader } from "./GlassCard";
 import { GlassInput } from "./GlassInput";
 import { GlassButton } from "./GlassButton";
@@ -12,11 +13,25 @@ import { GlassButton } from "./GlassButton";
  * label above the field, then the field, then hint, then error text below.
  */
 
-const GlassFormGroup = ({ children, className = "" }) => (
+const GlassFormGroup = ({
+  children,
+  className = "",
+}: {
+  children?: ReactNode;
+  className?: string;
+}) => (
   <div className={`space-y-1.5 ${className}`.trim()}>{children}</div>
 );
 
-const GlassLabel = ({ children, htmlFor, className = "" }) => (
+const GlassLabel = ({
+  children,
+  htmlFor,
+  className = "",
+}: {
+  children?: ReactNode;
+  htmlFor?: string;
+  className?: string;
+}) => (
   <label
     htmlFor={htmlFor}
     className={`block text-body-sm font-medium text-fg ${className}`.trim()}
@@ -29,7 +44,12 @@ const GlassLabel = ({ children, htmlFor, className = "" }) => (
  * GlassSelect — native select, so the platform's own picker and keyboard
  * behaviour apply on mobile.
  */
-const GlassSelect = ({ children, className = "", id, ...props }) => {
+const GlassSelect = ({
+  children,
+  className = "",
+  id,
+  ...props
+}: SelectHTMLAttributes<HTMLSelectElement> & { children?: ReactNode }) => {
   const selectId = id || React.useId();
   return (
     <select
@@ -63,6 +83,16 @@ const GlassSelect = ({ children, className = "", id, ...props }) => {
  * State is carried by `aria-checked` and by the thumb position, not by colour
  * alone. Both track colours clear 3:1 against the panel behind them.
  */
+interface GlassSwitchProps {
+  checked?: boolean;
+  onCheckedChange?: (next: boolean) => void;
+  /** Accessible name for the switch control. */
+  label?: string;
+  id?: string;
+  className?: string;
+  disabled?: boolean;
+}
+
 const GlassSwitch = ({
   checked = false,
   onCheckedChange,
@@ -70,7 +100,7 @@ const GlassSwitch = ({
   id,
   className = "",
   disabled = false,
-}) => (
+}: GlassSwitchProps) => (
   <button
     type="button"
     id={id}

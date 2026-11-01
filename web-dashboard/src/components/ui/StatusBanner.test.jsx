@@ -38,8 +38,8 @@ import { roleFor } from "./feedbackState";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const read = (name) => fs.readFileSync(path.join(here, name), "utf8");
 
-const bannerSource = read("AlertBanner.jsx");
-const legacySource = read("StatusBanner.jsx");
+const bannerSource = read("AlertBanner.tsx");
+const legacySource = read("StatusBanner.tsx");
 
 /**
  * Strip block comments first, then line comments, following `copy.test.js`: a
