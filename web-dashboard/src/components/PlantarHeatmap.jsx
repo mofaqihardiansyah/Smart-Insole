@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { InsoleContext } from '../context/InsoleContext';
+import { RISK_THRESHOLDS } from '../utils/randomForestRisk';
 import { t } from '../utils/i18n';
 
 /**
@@ -15,9 +16,6 @@ const NODES = [
 
 const ZERO_READINGS = { forefoot: 0, midfoot: 0, heel: 0 };
 
-const WARNING_KPA = 30;
-const DANGER_KPA = 70;
-
 /**
  * Heat fill per pressure zone.
  *
@@ -31,9 +29,16 @@ const DANGER_KPA = 70;
  * dark they resolve to the bright forms, measured at 12.4, 11.1 and 11.1
  * against the panel.
  */
-const zoneColor = (kpa) => {
-  if (kpa < WARNING_KPA) return 'rgb(var(--safe))';
-  if (kpa <= DANGER_KPA) return 'rgb(var(--warning))';
+/**
+ * Zone colour per pressure value, on the SAME thresholds and the SAME
+ * boundaries the risk engine uses (at or above the safe limit is warning,
+ * at or above the danger limit is danger). The map used to keep its own
+ * 30/70 constants with strict `>`, so a 70 kPa foot could read "danger" on
+ * the chip and amber on the map.
+ */
+const zoneColor = (kpa, warningKpa, dangerKpa) => {
+  if (kpa < warningKpa) return 'rgb(var(--safe))';
+  if (kpa < dangerKpa) return 'rgb(var(--warning))';
   return 'rgb(var(--danger))';
 };
 
@@ -91,6 +96,10 @@ export default function PlantarHeatmap({
   const context = useContext(InsoleContext);
   const readings = readingsOverride ?? context?.readings ?? ZERO_READINGS;
   const language = context?.language ?? 'id';
+  // The same thresholds the risk engine runs on (Settings edits and the
+  // admin global default included), so the map can never disagree with the
+  // status chip beside it.
+  const thresholds = context?.thresholds ?? RISK_THRESHOLDS;
 
   const summary = NODES.map(
     (node) => `${t(node.labelKey, language)} ${formatKpa(readings[node.key])} kPa`
@@ -111,7 +120,7 @@ export default function PlantarHeatmap({
       <defs>
         {NODES.map((node) => {
           const kpa = Number(readings[node.key] ?? 0);
-          const color = zoneColor(kpa);
+          const color = zoneColor(kpa, thresholds.warningKpa, thresholds.dangerKpa);
           return (
             <radialGradient
               key={node.key}
@@ -160,8 +169,8 @@ export default function PlantarHeatmap({
         const kpa = Number(readings[node.key] ?? 0);
         const radius = nodeRadius(kpa);
         const value = formatKpa(kpa);
-        const isDanger = kpa > DANGER_KPA;
-        const color = zoneColor(kpa);
+        const isDanger = kpa >= thresholds.dangerKpa;
+        const color = zoneColor(kpa, thresholds.warningKpa, thresholds.dangerKpa);
         const label = t(node.labelKey, language);
 
         // The value pill sits above the node so it never covers the blob, and

@@ -4,6 +4,7 @@ import {
   SCORE_BANDS,
   inferRisk,
   classifyRisk,
+  levelFromScore,
 } from './randomForestRisk';
 
 /**
@@ -134,5 +135,46 @@ describe('random forest internals', () => {
     const a = inferRisk({ peakPressure: 60, sustainedDuration: 12 });
     const b = inferRisk({ peakPressure: 60, sustainedDuration: 12 });
     expect(a).toEqual(b);
+  });
+});
+
+describe('configurable peak thresholds', () => {
+  const custom = {
+    ...RISK_THRESHOLDS,
+    warningKpa: 30,
+    dangerKpa: 60,
+  };
+
+  it('moves the safe-to-warning crossover to the configured safe limit', () => {
+    expect(classifyRisk(29, 1, custom)).toBe('safe');
+    expect(classifyRisk(30, 1, custom)).toBe('warning');
+    // At the default limits the same reading is still safely below 35 kPa.
+    expect(classifyRisk(30, 1)).toBe('safe');
+  });
+
+  it('moves the danger override to the configured danger limit', () => {
+    expect(classifyRisk(60, 1, custom)).toBe('danger'); // default 70 would warn
+    expect(inferRisk({ peakPressure: 65, sustainedDuration: 1, thresholds: custom }).level).toBe(
+      'danger'
+    );
+  });
+
+  it('leaves the model duration windows alone: 0.1 s danger, 20 s safe floor', () => {
+    // Duration is NOT client-configurable; a 60 kPa spike for a fraction of a
+    // sample still does not earn danger, and a sub-limit peak sustained past
+    // the floor is still at least a warning.
+    expect(classifyRisk(60, 0, custom)).not.toBe('danger');
+    expect(classifyRisk(45, 21, custom)).toBe('warning');
+  });
+});
+
+describe('levelFromScore', () => {
+  it('maps a score to the band it sits in', () => {
+    expect(levelFromScore(0)).toBe('safe');
+    expect(levelFromScore(SCORE_BANDS.safeMax)).toBe('safe');
+    expect(levelFromScore(SCORE_BANDS.safeMax + 1)).toBe('warning');
+    expect(levelFromScore(SCORE_BANDS.warningMax)).toBe('warning');
+    expect(levelFromScore(SCORE_BANDS.warningMax + 1)).toBe('danger');
+    expect(levelFromScore(100)).toBe('danger');
   });
 });

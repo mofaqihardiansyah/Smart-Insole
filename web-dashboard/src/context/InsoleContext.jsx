@@ -7,7 +7,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { RISK_THRESHOLDS, inferRisk } from '../utils/randomForestRisk';
+import { RISK_THRESHOLDS, inferRisk, levelFromScore } from '../utils/randomForestRisk';
+import { alignScoreToLevel } from '../utils/fuzzyRisk';
 import { playAlertBeep, stopAlertBeep } from '../utils/audioAlert';
 import * as defaultTransport from '../services/firebaseRealtime';
 
@@ -44,6 +45,14 @@ export const HISTORY_LIMIT = 30;
  */
 export const FIREBASE_GRACE_MS = 4000;
 
+/**
+ * Two device packets further apart than this never formed a sustained run.
+ * The firmware pushes once per second, so a wider gap means a WiFi drop, a
+ * reboot or a page reload sat between them — offline minutes must not count
+ * as sustained pressure on a diabetic foot.
+ */
+export const MAX_PACKET_GAP_MS = 3000;
+
 const ZERO_READINGS = { forefoot: 0, midfoot: 0, heel: 0 };
 
 /** One sample travelling down the ingestion pipeline. */
@@ -59,38 +68,66 @@ export const peakOf = (readings) =>
   Math.max(readings.forefoot, readings.midfoot, readings.heel);
 
 /**
- * Sustained durations are counted in consecutive samples (1 sample = 1 second),
- * walking backwards from the newest sample. A sample below the threshold resets
- * the corresponding duration to zero. The current sample counts as the first
- * second of its own run.
+ * Sustained durations are counted in consecutive samples, walking backwards
+ * from the newest sample. One buffered sample is one real second because the
+ * firmware pushes at the same cadence it samples (FIREBASE_PUSH_MS =
+ * SAMPLE_INTERVAL_MS = 1000 ms). A sample below the threshold resets the
+ * corresponding duration to zero, and so does a packet gap longer than
+ * MAX_PACKET_GAP_MS: offline minutes are not sustained pressure.
  *
- * @param {Array<{ readings: object }>} previousHistory
+ * @param {Array<{ readings: object, timestamp?: number|null }>} previousHistory
  * @param {number} currentMax peak pressure of the incoming sample
  * @param {object} [thresholds]
+ * @param {number|null} [currentTimestamp] wall-clock ms of the incoming sample
  * @returns {{ warningDuration: number, dangerDuration: number }}
  */
 export const measureSustainedDurations = (
   previousHistory,
   currentMax,
-  thresholds = RISK_THRESHOLDS
+  thresholds = RISK_THRESHOLDS,
+  currentTimestamp = null
 ) => {
   const { warningKpa, dangerKpa } = thresholds;
   let warningDuration = 0;
   let dangerDuration = 0;
 
+  // The firmware pushes once per second, so two packets further apart than
+  // this did not form a run — a WiFi drop, a reboot, or a page reload sat in
+  // between.
+  const breaksRun = (newerTimestamp, olderTimestamp) =>
+    newerTimestamp != null &&
+    olderTimestamp != null &&
+    newerTimestamp - olderTimestamp > MAX_PACKET_GAP_MS;
+
   if (currentMax >= warningKpa) {
     warningDuration = 1;
-    for (let i = previousHistory.length - 1; i >= 0; i -= 1) {
-      if (peakOf(previousHistory[i].readings) < warningKpa) break;
-      warningDuration += 1;
+    const newest = previousHistory[previousHistory.length - 1];
+    if (!breaksRun(currentTimestamp, newest?.timestamp)) {
+      for (let i = previousHistory.length - 1; i >= 0; i -= 1) {
+        const newerTimestamp =
+          i === previousHistory.length - 1
+            ? currentTimestamp
+            : previousHistory[i + 1].timestamp;
+        if (breaksRun(newerTimestamp, previousHistory[i].timestamp)) break;
+        if (peakOf(previousHistory[i].readings) < warningKpa) break;
+        warningDuration += 1;
+      }
     }
   }
 
   if (currentMax > dangerKpa) {
     dangerDuration = 1;
-    for (let i = previousHistory.length - 1; i >= 0; i -= 1) {
-      if (peakOf(previousHistory[i].readings) <= dangerKpa) break;
-      dangerDuration += 1;
+    const newest = previousHistory[previousHistory.length - 1];
+    if (!breaksRun(currentTimestamp, newest?.timestamp)) {
+      for (let i = previousHistory.length - 1; i >= 0; i -= 1) {
+        const newerTimestamp =
+          i === previousHistory.length - 1
+            ? currentTimestamp
+            : previousHistory[i + 1].timestamp;
+        if (breaksRun(newerTimestamp, previousHistory[i].timestamp)) break;
+        if (peakOf(previousHistory[i].readings) <= dangerKpa) break;
+        dangerDuration += 1;
+      }
     }
   }
 
@@ -119,6 +156,15 @@ const readStoredThresholds = () => {
     return raw ? sanitiseThresholds(JSON.parse(raw)) : RISK_THRESHOLDS;
   } catch {
     return RISK_THRESHOLDS;
+  }
+};
+
+/** Has this browser ever saved its own thresholds in Settings? */
+const readHasLocalOverride = () => {
+  try {
+    return localStorage.getItem('riskThresholds') != null;
+  } catch {
+    return false;
   }
 };
 
@@ -162,6 +208,10 @@ export const InsoleProvider = ({
   const [sourceReason, setSourceReason] = useState(null);
   const [batteryPercent, setBatteryPercent] = useState(null);
   const [thresholds, setThresholdsState] = useState(readStoredThresholds);
+  // True once this browser saves its own thresholds in Settings (or already
+  // had a stored copy at load). The admin global config seeds the defaults
+  // for everyone else and never rewrites a personal choice.
+  const hasLocalOverrideRef = useRef(readHasLocalOverride());
   const [isMuted, setIsMuted] = useState(() => {
     try {
       return localStorage.getItem('isMuted') === 'true';
@@ -210,13 +260,10 @@ export const InsoleProvider = ({
     }
   }, [language]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('riskThresholds', JSON.stringify(thresholds));
-    } catch {
-      /* ignore */
-    }
-  }, [thresholds]);
+  // Thresholds are persisted by setThresholds/resetThresholds only — the
+  // explicit Settings actions. Persisting every change here would snapshot the
+  // admin's global config into localStorage on first load and permanently pin
+  // it as a "personal" override.
 
   /* -------------------------------- firebase ------------------------------- */
 
@@ -270,6 +317,34 @@ export const InsoleProvider = ({
     };
   }, [transport, autoConnect, connectNonce]);
 
+  // Admin-configured thresholds: `config/global` seeds the safe/danger kPa
+  // for every dashboard that has NOT saved its own values in Settings. A
+  // saved personal preference always wins — the admin panel sets the fleet
+  // default, not an override of a clinician's per-patient tuning. Failures
+  // are silent on purpose: the defaults already in place are correct, and the
+  // readings feed reports its own connectivity problems.
+  useEffect(() => {
+    if (!autoConnect || typeof transport.subscribeToGlobalConfig !== 'function') {
+      return undefined;
+    }
+    let unsubscribe = () => {};
+    try {
+      unsubscribe = transport.subscribeToGlobalConfig((config) => {
+        if (hasLocalOverrideRef.current) return;
+        setThresholdsState(
+          sanitiseThresholds({
+            ...RISK_THRESHOLDS,
+            warningKpa: config.safeThreshold,
+            dangerKpa: config.dangerThreshold,
+          })
+        );
+      });
+    } catch {
+      /* unconfigured or denied: the defaults already in place apply */
+    }
+    return () => unsubscribe?.();
+  }, [transport, autoConnect]);
+
   /* ------------------------------ ingestion ------------------------------- */
 
   // Single ingestion effect. It is keyed on the sample and the thresholds, and
@@ -288,7 +363,8 @@ export const InsoleProvider = ({
     const { warningDuration, dangerDuration } = measureSustainedDurations(
       historyRef.current,
       currentMax,
-      thresholds
+      thresholds,
+      sample.timestamp ?? null
     );
 
     // Which run length matters depends on how high the pressure actually is.
@@ -309,9 +385,21 @@ export const InsoleProvider = ({
       thresholds,
     });
 
-    // Device verdict wins when present.
-    const level = sample.deviceRiskLevel ?? inference.level;
-    const score = sample.deviceRiskScore ?? inference.score;
+    // Device verdict wins when present — as a PAIR. A packet may carry a level
+    // without a score (or the reverse); the missing half is derived from the
+    // present one, so the status chip and the score can never contradict each
+    // other on screen (a "Waspada" chip beside a 0 score was possible when the
+    // two fallbacks ran independently).
+    const level =
+      sample.deviceRiskLevel ??
+      (sample.deviceRiskScore != null
+        ? levelFromScore(sample.deviceRiskScore)
+        : inference.level);
+    const score =
+      sample.deviceRiskScore ??
+      (sample.deviceRiskLevel
+        ? alignScoreToLevel(inference.score, sample.deviceRiskLevel)
+        : inference.score);
 
     setSustainedDuration(warningDuration);
     setRisk(level);
@@ -385,14 +473,39 @@ export const InsoleProvider = ({
     setConnectNonce((prev) => prev + 1);
   }, []);
 
-  const setThresholds = useCallback((next) => {
-    setThresholdsState((prev) => sanitiseThresholds({ ...prev, ...next }));
-  }, []);
-
-  const resetThresholds = useCallback(
-    () => setThresholdsState(RISK_THRESHOLDS),
-    []
+  /**
+   * Explicit Settings save: merges the change, persists it as this browser's
+   * override (so the admin global default stops rewriting it), and applies it
+   * immediately — the ingestion effect re-derives the verdict from the
+   * reading already on screen.
+   */
+  const setThresholds = useCallback(
+    (next) => {
+      const value = sanitiseThresholds({ ...thresholds, ...next });
+      setThresholdsState(value);
+      try {
+        localStorage.setItem('riskThresholds', JSON.stringify(value));
+      } catch {
+        /* storage unavailable (private mode); the change still applies this session */
+      }
+      hasLocalOverrideRef.current = true;
+    },
+    [thresholds]
   );
+
+  /**
+   * Back to the shared defaults — which now includes the admin's global
+   * config: dropping the stored override lets the fleet default apply again.
+   */
+  const resetThresholds = useCallback(() => {
+    setThresholdsState(RISK_THRESHOLDS);
+    try {
+      localStorage.removeItem('riskThresholds');
+    } catch {
+      /* ignore */
+    }
+    hasLocalOverrideRef.current = false;
+  }, []);
 
   /**
    * Raw ingestion path: used by tests, and available for a future on-device

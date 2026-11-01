@@ -1,8 +1,21 @@
 /**
- * Fuzzy risk inference for plantar pressure monitoring.
+ * Fuzzy risk inference — REFERENCE ENGINE, NOT THE RUNTIME.
  *
- * This is the client-side mirror of the rule base the ESP32 firmware is
- * intended to run. It is a fuzzy inference system in two stages:
+ * No production screen runs this file, and the ESP32 firmware does not run it
+ * either. The live verdict path is `randomForestRisk.ts` (the RF hybrid), the
+ * same model the firmware runs, and its contract is the one clinicians see:
+ * danger at >= 70 kPa sustained >= 0.1 s, not this engine's ~30 s danger.
+ * fuzzyRisk.test.js asserts THIS engine's own maths (a ~30 s danger window is
+ * what its rule base defines) — it does not describe the live contract.
+ *
+ * This file is kept for two real jobs:
+ *   1. It owns the shared constants every screen uses (RISK_THRESHOLDS,
+ *      SCORE_BANDS), and buildSets() documents how the expert rule base maps
+ *      thresholds to linguistic sets.
+ *   2. Its 3x3 expert rule base is the labelling function that produced the
+ *      training data for the forest.
+ *
+ * The engine itself is a fuzzy inference system in two stages:
  *
  *   1. Fuzzification and rule evaluation (Mamdani): the two clinical inputs are
  *      mapped to linguistic sets (low/medium/high pressure, brief/moderate/
@@ -17,8 +30,7 @@
  * a nuance. The weighted average of singleton consequents is monotone by
  * construction, which fuzzyRisk.test.js asserts across the whole sweep.
  *
- * The clinical contract it must preserve, from the design brief and the
- * technical spec, and asserted in fuzzyRisk.test.js:
+ * The rule-base contract (this engine's own, asserted in fuzzyRisk.test.js):
  *
  *   - peak <  35 kPa, not sustained  -> safe
  *   - peak >= 35 kPa                 -> at least warning, immediately
@@ -28,9 +40,9 @@
  *
  * Reported score bands: safe 0-47, warning 48-74, danger 75-100.
  *
- * The threshold constants below are the single source of truth, shared with the
- * Settings page, so the numbers a clinician edits are the numbers the engine
- * uses.
+ * The threshold constants below are the single source of truth, shared with
+ * the Settings page and the RF engine, so the numbers a clinician edits are
+ * the numbers the inference uses.
  */
 
 import type { RiskLevel, RiskThresholds } from '../types/insole';

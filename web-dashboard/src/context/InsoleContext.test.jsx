@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import React from 'react';
-import { InsoleProvider, useInsole } from './InsoleContext';
+import { InsoleProvider, useInsole, measureSustainedDurations, MAX_PACKET_GAP_MS } from './InsoleContext';
 import { t } from '../utils/i18n';
 
 /**
@@ -315,5 +315,152 @@ describe('InsoleProvider', () => {
       subscriptionsBefore + 1
     );
     expect(firstUnsubscribe).toHaveBeenCalled();
+  });
+
+  it('keeps a device verdict as a pair: level without score gets a score in its band', () => {
+    let onData = null;
+    const transport = {
+      subscribeToReadings: (callback) => {
+        onData = callback;
+        return () => {};
+      },
+      subscribeToHistory: () => () => {},
+    };
+
+    render(
+      <InsoleProvider transport={transport} autoConnect>
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    // A firmware packet carrying a level but no score must not produce a
+    // "Waspada" chip beside a 0 score: the missing half is derived from it.
+    act(() => {
+      onData({
+        readings: { forefoot: 40, midfoot: 22, heel: 18 },
+        riskLevel: 'warning',
+        riskScore: undefined,
+        timestamp: Date.now(),
+      });
+    });
+
+    expect(text('risk')).toBe('warning');
+    const score = Number(text('riskScore'));
+    expect(score).toBeGreaterThanOrEqual(48);
+    expect(score).toBeLessThanOrEqual(74);
+  });
+
+  it('keeps a device verdict as a pair: score without level derives the level', () => {
+    let onData = null;
+    const transport = {
+      subscribeToReadings: (callback) => {
+        onData = callback;
+        return () => {};
+      },
+      subscribeToHistory: () => () => {},
+    };
+
+    render(
+      <InsoleProvider transport={transport} autoConnect>
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    act(() => {
+      onData({
+        readings: { forefoot: 40, midfoot: 22, heel: 18 },
+        riskScore: 90,
+        timestamp: Date.now(),
+      });
+    });
+
+    // 90 sits in the danger band, so the chip and the score agree.
+    expect(text('risk')).toBe('danger');
+    expect(text('riskScore')).toBe('90');
+  });
+
+  it('seeds thresholds from the admin global config when no local override exists', () => {
+    let configOnData = null;
+    const transport = {
+      subscribeToReadings: () => () => {},
+      subscribeToGlobalConfig: (callback) => {
+        configOnData = callback;
+        return () => {};
+      },
+    };
+
+    render(
+      <InsoleProvider transport={transport} autoConnect>
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    act(() => {
+      configOnData({ safeThreshold: 30, dangerThreshold: 65 });
+    });
+
+    expect(text('warningKpa')).toBe('30');
+  });
+
+  it('a saved Settings preference wins over the admin global config', () => {
+    localStorage.setItem(
+      'riskThresholds',
+      JSON.stringify({
+        warningKpa: 40,
+        dangerKpa: 80,
+        warningSeconds: 20,
+        dangerSeconds: 30,
+      })
+    );
+
+    let configOnData = null;
+    const transport = {
+      subscribeToReadings: () => () => {},
+      subscribeToGlobalConfig: (callback) => {
+        configOnData = callback;
+        return () => {};
+      },
+    };
+
+    render(
+      <InsoleProvider transport={transport} autoConnect>
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    act(() => {
+      configOnData({ safeThreshold: 30, dangerThreshold: 65 });
+    });
+
+    expect(text('warningKpa')).toBe('40');
+  });
+});
+
+describe('measureSustainedDurations across packet gaps', () => {
+  const HIGH = { forefoot: 40, midfoot: 20, heel: 15 };
+
+  it('counts one second per buffered sample when packets arrive a second apart', () => {
+    const history = [
+      { readings: HIGH, timestamp: 1_000 },
+      { readings: HIGH, timestamp: 2_000 },
+    ];
+    const { warningDuration } = measureSustainedDurations(history, 40, undefined, 3_000);
+    expect(warningDuration).toBe(3);
+  });
+
+  it('breaks the run when the device went quiet longer than the gap budget', () => {
+    const history = [
+      { readings: HIGH, timestamp: 1_000 },
+      { readings: HIGH, timestamp: 2_000 },
+    ];
+    // The next packet arrives minutes later — the offline stretch is not
+    // sustained pressure on a diabetic foot.
+    const { warningDuration } = measureSustainedDurations(
+      history,
+      40,
+      undefined,
+      2_000 + MAX_PACKET_GAP_MS + 1
+    );
+    expect(warningDuration).toBe(1);
   });
 });

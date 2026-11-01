@@ -72,17 +72,42 @@ describe('PlantarHeatmap', () => {
     const midfootStops = gradientStops(container, 'midfoot');
     const heelStops = gradientStops(container, 'heel');
 
-    // 15 kPa (<30) -> safe, transparent at the edge
+    // 15 kPa (< 35) -> safe, transparent at the edge
     expect(forefootStops).toHaveLength(3);
     expect(forefootStops.every((c) => c === 'rgb(var(--safe))')).toBe(true);
     expect(container.querySelector('#heatmap-grad-forefoot stop:last-child')
       .getAttribute('stop-opacity')).toBe('0');
 
-    // 45 kPa (30-70) -> warning
+    // 45 kPa (35-70) -> warning
     expect(midfootStops.every((c) => c === 'rgb(var(--warning))')).toBe(true);
 
-    // 85 kPa (>70) -> danger
+    // 85 kPa (>= 70) -> danger
     expect(heelStops.every((c) => c === 'rgb(var(--danger))')).toBe(true);
+  });
+
+  it('uses the engine boundaries: at exactly the limit is already that zone', () => {
+    // The map and the risk chip must agree at the boundary. The engine calls
+    // 35 kPa a warning and 70 kPa danger (>= on both), so the map paints the
+    // same — no more strict `>` amber at exactly 70.
+    const { container } = render(
+      <PlantarHeatmap readingsOverride={{ forefoot: 35, midfoot: 70, heel: 69.9 }} />
+    );
+
+    expect(
+      gradientStops(container, 'forefoot').every((c) => c === 'rgb(var(--warning))')
+    ).toBe(true);
+    expect(
+      gradientStops(container, 'midfoot').every((c) => c === 'rgb(var(--danger))')
+    ).toBe(true);
+    expect(
+      gradientStops(container, 'heel').every((c) => c === 'rgb(var(--warning))')
+    ).toBe(true);
+    expect(nodeCircle('node-midfoot').getAttribute('class')).toContain(
+      'plantar-node-pulse'
+    );
+    expect(nodeCircle('node-heel').getAttribute('class') || '').not.toContain(
+      'plantar-node-pulse'
+    );
   });
 
   it('renders each node with its kPa value and a pressure-scaled radius', () => {
@@ -109,7 +134,7 @@ describe('PlantarHeatmap', () => {
     );
   });
 
-  it('pulses only the node above the 70 kPa danger threshold', () => {
+  it('pulses the node at or above the 70 kPa danger threshold', () => {
     renderOverride();
 
     const pulseClass = (nodeId) =>

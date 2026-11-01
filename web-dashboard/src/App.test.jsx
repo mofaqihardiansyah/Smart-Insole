@@ -21,6 +21,7 @@ vi.mock('./hooks/useAuth', () => ({
 vi.mock('./services/firebaseRealtime', () => ({
   subscribeToReadings: () => () => {},
   subscribeToHistory: () => () => {},
+  subscribeToGlobalConfig: () => () => {},
   mapReadingPacket: () => null,
   mapHistory: () => [],
 }));

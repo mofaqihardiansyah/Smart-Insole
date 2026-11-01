@@ -15,10 +15,16 @@
  *   - peak >= 70 kPa, sustained >= 0.1s -> danger (rule-based)
  *   - any peak sustained past ~20 s  -> at least warning
  *
+ * The two peak knobs (safe/danger limit) are overridable through the optional
+ * `thresholds` argument of `inferRisk`; the duration windows come from the
+ * trained model and are not configurable. With no argument the shared
+ * RISK_THRESHOLDS defaults apply, which are the same numbers the firmware
+ * ships, so device and client agree out of the box.
+ *
  * Reported score bands: safe 0-47, warning 48-74, danger 75-100.
  */
 
-import type { RiskLevel } from '../types/insole';
+import type { RiskLevel, RiskThresholds } from '../types/insole';
 import { RISK_THRESHOLDS, SCORE_BANDS } from './fuzzyRisk';
 import modelData from './rf-model.json';
 
@@ -63,6 +69,18 @@ const MODEL = modelData as unknown as RfModel;
 const TREES = MODEL.trees;
 const DANGER_RULE = MODEL.dangerRule;
 const FEATURES = MODEL.features; // ['peak', 'sustained']
+
+/**
+ * Duration windows baked into the trained model, in samples at its 10 Hz.
+ * The danger window is the exported danger rule (1 sample = 0.1 s); the safe
+ * floor is the duration the training labels used (200 samples = 20 s).
+ * Neither is client-configurable — the firmware runs the same model, so a
+ * duration edit here would make client and device disagree.
+ */
+const DURATION_SAMPLES = Object.freeze({
+  danger: DANGER_RULE.sustainedThreshold,
+  safeFloor: 200,
+});
 
 /** One sample, in the feature space the trees were trained on. */
 interface Sample {
@@ -134,14 +152,35 @@ export interface RiskVerdict {
 }
 
 /**
+ * Level a *reported* score implies, from the shared score bands.
+ *
+ * Used when a packet carries a device score but no level, so the two halves
+ * of a verdict can never disagree on screen.
+ */
+export function levelFromScore(score: number): RiskLevel {
+  if (score <= SCORE_BANDS.safeMax) return 'safe';
+  if (score <= SCORE_BANDS.warningMax) return 'warning';
+  return 'danger';
+}
+
+/**
  * Hybrid inference: RF for safe/warning + rule for danger.
+ *
+ * `thresholds` overrides the two peak knobs (safe/danger limit) that Settings
+ * and the admin global config edit. The duration windows come from the trained
+ * model (danger sustained >= 0.1 s, safe floor at 20 s) and are deliberately
+ * NOT configurable: the forest was trained on them, and the firmware runs the
+ * same model, so honouring client-side duration edits here would make the
+ * client disagree with the device that measured the foot.
  */
 export function inferRisk({
   peakPressure,
   sustainedDuration = 0,
+  thresholds = RISK_THRESHOLDS,
 }: {
   peakPressure?: number;
   sustainedDuration?: number;
+  thresholds?: RiskThresholds;
 } = {}): RiskVerdict {
   const pressure = Number.isFinite(peakPressure) ? Math.max(0, peakPressure as number) : 0;
   const duration = Number.isFinite(sustainedDuration)
@@ -153,10 +192,10 @@ export function inferRisk({
 
   // Rule-based overrides (clinical contract):
 
-  // 1. Danger: peak >= threshold AND sustained >= threshold
+  // 1. Danger: peak >= danger limit AND sustained >= the model's 0.1 s window
   if (
-    pressure >= DANGER_RULE.peakThreshold &&
-    sustainedSamples >= DANGER_RULE.sustainedThreshold
+    pressure >= thresholds.dangerKpa &&
+    sustainedSamples >= DURATION_SAMPLES.danger
   ) {
     return {
       level: 'danger',
@@ -166,9 +205,9 @@ export function inferRisk({
     };
   }
 
-  // 2. Safe: peak < warning threshold AND sustained < 20s
+  // 2. Safe: peak < warning limit AND sustained < the model's 20 s floor
   // This overrides RF because in DFN-DS, sustained is only > 0 when peak >= 35
-  if (pressure < RISK_THRESHOLDS.warningKpa && sustainedSamples < 200) {
+  if (pressure < thresholds.warningKpa && sustainedSamples < DURATION_SAMPLES.safeFloor) {
     return {
       level: 'safe',
       score: 0,
@@ -179,7 +218,13 @@ export function inferRisk({
 
   // RF classifier for safe vs warning
   const totals = vote({ peak: pressure, sustained: sustainedSamples });
-  const level = levelFromVotes(totals);
+  // The forest only saw sustained > 0 at peak >= 35 kPa during training, so a
+  // lowered safe limit can push an out-of-distribution pair (e.g. 30 kPa
+  // sustained) into a "safe" leaf it never saw. The contract is "at or above
+  // the safe limit is at least warning" — enforce it over the vote.
+  const voted = levelFromVotes(totals);
+  const level =
+    voted === 'safe' && pressure >= thresholds.warningKpa ? 'warning' : voted;
   const score = scoreFromVotes(totals, level);
 
   return {
@@ -196,8 +241,18 @@ export function inferRisk({
  * @param peakPressure kPa
  * @param sustainedDuration seconds
  */
-export function classifyRisk(peakPressure: number, sustainedDuration = 0): RiskLevel {
-  return inferRisk({ peakPressure, sustainedDuration }).level;
+export function classifyRisk(
+  peakPressure: number,
+  sustainedDuration = 0,
+  thresholds: RiskThresholds = RISK_THRESHOLDS
+): RiskLevel {
+  return inferRisk({ peakPressure, sustainedDuration, thresholds }).level;
 }
 
-export default { RISK_THRESHOLDS, SCORE_BANDS, inferRisk, classifyRisk };
+export default {
+  RISK_THRESHOLDS,
+  SCORE_BANDS,
+  inferRisk,
+  classifyRisk,
+  levelFromScore,
+};
