@@ -1,14 +1,22 @@
-let audioCtx = null;
-let activeOscillator = null;
+/** The two alert tones the app can request. */
+export type AlertLevel = 'WARNING' | 'DANGER';
 
-export function _resetAudioContext() {
+let audioCtx: AudioContext | null = null;
+let activeOscillator: OscillatorNode | null = null;
+
+export function _resetAudioContext(): void {
   audioCtx = null;
   activeOscillator = null;
 }
 
-function getAudioContext() {
+function getAudioContext(): AudioContext | null {
   if (!audioCtx) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    // webkitAudioContext is Safari's legacy spelling; it is not in the standard
+    // DOM types, so the one cast lives here instead of at every call site.
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as Window & { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
     if (AudioContextClass) {
       audioCtx = new AudioContextClass();
     }
@@ -19,7 +27,7 @@ function getAudioContext() {
   return audioCtx;
 }
 
-export function playAlertBeep(level = 'WARNING', isMuted = false) {
+export function playAlertBeep(level: AlertLevel = 'WARNING', isMuted = false): void {
   if (isMuted) {
     return;
   }
@@ -47,12 +55,12 @@ export function playAlertBeep(level = 'WARNING', isMuted = false) {
   activeOscillator = oscillator;
 }
 
-export function stopAlertBeep() {
+export function stopAlertBeep(): void {
   if (activeOscillator) {
     try {
       activeOscillator.stop();
       activeOscillator.disconnect();
-    } catch (e) {
+    } catch {
       // Ignore if already stopped/disconnected
     }
     activeOscillator = null;

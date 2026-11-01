@@ -16,72 +16,85 @@ export const MAX_PASSWORD_LENGTH = 128;
 
 /** Passwords that appear at the top of every leaked list, plus local terms. */
 const COMMON = [
-  "password",
-  "passw0rd",
-  "123456",
-  "12345678",
-  "123456789",
-  "qwerty",
-  "abc123",
-  "letmein",
-  "iloveyou",
-  "admin",
-  "welcome",
-  "monkey",
-  "dragon",
-  "sandi",
-  "rahasia",
-  "kucing",
-  "sayang",
-  "bismillah",
-  "indonesia",
-  "jakarta",
-  "insole",
+  'password',
+  'passw0rd',
+  '123456',
+  '12345678',
+  '123456789',
+  'qwerty',
+  'abc123',
+  'letmein',
+  'iloveyou',
+  'admin',
+  'welcome',
+  'monkey',
+  'dragon',
+  'sandi',
+  'rahasia',
+  'kucing',
+  'sayang',
+  'bismillah',
+  'indonesia',
+  'jakarta',
+  'insole',
 ];
 
 /** Predictable runs that survive a length and variety check. */
 const SEQUENCES = [
-  "0123",
-  "1234",
-  "2345",
-  "3456",
-  "4567",
-  "5678",
-  "6789",
-  "abcd",
-  "bcde",
-  "cdef",
-  "qwer",
-  "asdf",
-  "zxcv",
+  '0123',
+  '1234',
+  '2345',
+  '3456',
+  '4567',
+  '5678',
+  '6789',
+  'abcd',
+  'bcde',
+  'cdef',
+  'qwer',
+  'asdf',
+  'zxcv',
 ];
 
 const LABEL_KEYS = [
-  "auth.password.weak",
-  "auth.password.weak",
-  "auth.password.fair",
-  "auth.password.good",
-  "auth.password.strong",
+  'auth.password.weak',
+  'auth.password.weak',
+  'auth.password.fair',
+  'auth.password.good',
+  'auth.password.strong',
 ];
 
-const hasRepeat = (value) => /(.)\1{3,}/.test(value);
-const hasSequence = (value) =>
+/** One actionable hint, resolved through the dictionary at render time. */
+export interface PasswordHint {
+  key: string;
+  vars?: Record<string, string | number>;
+}
+
+/** The meter's verdict: a score, the label it maps to, and up to two hints. */
+export interface PasswordVerdict {
+  score: number;
+  labelKey: string;
+  hints: PasswordHint[];
+}
+
+const hasRepeat = (value: string): boolean => /(.)\1{3,}/.test(value);
+const hasSequence = (value: string): boolean =>
   SEQUENCES.some((sequence) => value.toLowerCase().includes(sequence));
 
-const countClasses = (value) =>
+const countClasses = (value: string): number =>
   [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((pattern) =>
     pattern.test(value)
   ).length;
 
 /**
- * @param {string} password
- * @returns {{ score: number, labelKey: string, hints: Array<{ key: string, vars?: object }> }}
+ * @param password the raw input, unvalidated
+ * @returns score 0-4, the matching label key, and up to two hints
  */
-export function evaluatePassword(password = "") {
+export function evaluatePassword(password = ''): PasswordVerdict {
   const value = String(password);
 
   if (!value) {
-    return { score: 0, labelKey: "auth.password.empty", hints: [] };
+    return { score: 0, labelKey: 'auth.password.empty', hints: [] };
   }
 
   const classes = countClasses(value);
@@ -105,20 +118,20 @@ export function evaluatePassword(password = "") {
 
   score = Math.max(0, Math.min(4, score));
 
-  const hints = [];
+  const hints: PasswordHint[] = [];
   const remaining = MIN_PASSWORD_LENGTH - value.length;
 
   if (remaining > 0) {
     hints.push({
-      key: "auth.password.hint.length",
+      key: 'auth.password.hint.length',
       vars: { count: remaining },
     });
   }
-  if (common) hints.push({ key: "auth.password.hint.common" });
-  if (repeated || sequence) hints.push({ key: "auth.password.hint.repeat" });
-  if (classes < 2) hints.push({ key: "auth.password.hint.variety" });
+  if (common) hints.push({ key: 'auth.password.hint.common' });
+  if (repeated || sequence) hints.push({ key: 'auth.password.hint.repeat' });
+  if (classes < 2) hints.push({ key: 'auth.password.hint.variety' });
   if (!/\d/.test(value) && !/[^A-Za-z0-9]/.test(value)) {
-    hints.push({ key: "auth.password.hint.number" });
+    hints.push({ key: 'auth.password.hint.number' });
   }
 
   return { score, labelKey: LABEL_KEYS[score], hints: hints.slice(0, 2) };

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DICTIONARY, t, hasKey, dictionaryKeys } from './i18n.js';
+import { DICTIONARY, t, hasKey, dictionaryKeys } from './i18n';
 
 describe('i18n dictionary', () => {
   const keys = dictionaryKeys();

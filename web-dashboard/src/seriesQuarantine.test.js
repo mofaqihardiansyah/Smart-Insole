@@ -18,13 +18,14 @@ import { fileURLToPath } from "node:url";
  *   - `index.css`, which declares `--series-1/2/3` in its root block and again in
  *     its landing block. That is the measured palette, the one home of the
  *     values.
- *   - `utils/series.js`, the single module that names those properties so no
+ *   - `utils/series.ts`, the single module that names those properties so no
  *     chart has to spell one.
  *
  * THE WALK WIDENS WHAT THE TOKEN GATE DOES. `designTokens.test.js` walks `.jsx`
  * only, so a series reference from a plain module would pass it. This gate walks
- * `.jsx` and `.js` alike and asserts that it visited a non-`.jsx` file, because
- * skipping the `.js` files would skip exactly the sources D-04's rule is about.
+ * `.jsx`/`.js`/`.tsx`/`.ts` alike and asserts that it visited a non-`.jsx` file,
+ * because skipping the plain modules would skip exactly the sources D-04's rule
+ * is about.
  *
  * COMMENTS ARE STRIPPED BEFORE THE SEARCH, following `copy.test.js`. The rule is
  * about a value that reaches a surface; a doc comment that names a property
@@ -42,7 +43,7 @@ const SCRATCH = "__oil_ui_eval__";
 
 /** The two sites allowed to name a series custom property. */
 const ALLOWED = new Set(
-  [path.join(SRC, "index.css"), path.join(SRC, "utils", "series.js")].map(
+  [path.join(SRC, "index.css"), path.join(SRC, "utils", "series.ts")].map(
     (file) => path.normalize(file)
   )
 );
@@ -60,7 +61,7 @@ const stripComments = (source) =>
   source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 
 /**
- * Every `.jsx` and `.js` file underneath, recursively, test files and the
+ * Every `.jsx`/`.js`/`.tsx`/`.ts` file underneath, recursively, test files and the
  * scratch page excluded. Test files are excluded because a test for a rule has
  * to be able to name the thing it forbids, inline.
  */
@@ -72,7 +73,7 @@ const collect = (dir) => {
       if (entry.name === SCRATCH) continue;
       out.push(...collect(full));
     } else if (
-      (entry.name.endsWith(".jsx") || entry.name.endsWith(".js")) &&
+      /\.(jsx?|tsx?)$/.test(entry.name) &&
       !entry.name.includes(".test.")
     ) {
       out.push(full);
@@ -113,10 +114,10 @@ describe("the series set is quarantined", () => {
     // The floor that makes this gate stronger than the token gate: a walk that
     // silently stopped at `.jsx` would skip every plain module, which is where a
     // leaked constant would be easiest to hide.
-    const plainModules = FILES.filter((file) => file.endsWith(".js"));
+    const plainModules = FILES.filter((file) => /\.(js|ts)$/.test(file));
     expect(
       plainModules.length,
-      "the walk visited no .js file, so it is not walking the sources D-04 is about"
+      "the walk visited no plain module, so it is not walking the sources D-04 is about"
     ).toBeGreaterThan(0);
   });
 
@@ -125,13 +126,13 @@ describe("the series set is quarantined", () => {
   });
 
   it("keeps the one declaration site, so the gate cannot pass by the set vanishing", () => {
-    const module = read(path.join("utils", "series.js"));
+    const module = read(path.join("utils", "series.ts"));
 
     // All three names, each as a `varName` on an entry: the module is the single
     // source only while it actually names all three.
     for (const name of SERIES_NAMES) {
       expect(
-        module.match(new RegExp(`varName: "${name}"`, "g")) || [],
+        module.match(new RegExp(`varName: ['"]${name}['"]`, "g")) || [],
         `${name} is not declared in the series module`
       ).toHaveLength(1);
     }

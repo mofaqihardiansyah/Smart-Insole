@@ -9,23 +9,28 @@
  *    Indonesian or English export with the right encoding instead of mojibake.
  */
 
-export const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+export const csvCell = (value: unknown): string =>
+  `"${String(value ?? '').replace(/"/g, '""')}"`;
 
 /**
- * @param {string} filename download name, including the .csv extension
- * @param {Array<string>} header column labels
- * @param {Array<Array<string|number>>} rows cell values, already formatted
+ * @param filename download name, including the .csv extension
+ * @param header column labels
+ * @param rows cell values, already formatted
  */
-export const downloadCsv = (filename, header, rows) => {
-  const lines = [header.map(csvCell).join(",")];
-  rows.forEach((row) => lines.push(row.map(csvCell).join(",")));
+export const downloadCsv = (
+  filename: string,
+  header: string[],
+  rows: Array<Array<string | number>>
+): void => {
+  const lines = [header.map(csvCell).join(',')];
+  rows.forEach((row) => lines.push(row.map(csvCell).join(',')));
 
-  const csv = `\uFEFF${lines.join("\r\n")}\r\n`;
+  const csv = `\uFEFF${lines.join('\r\n')}\r\n`;
   const objectUrl = URL.createObjectURL(
-    new Blob([csv], { type: "text/csv;charset=utf-8" })
+    new Blob([csv], { type: 'text/csv;charset=utf-8' })
   );
 
-  const link = document.createElement("a");
+  const link = document.createElement('a');
   link.href = objectUrl;
   link.download = filename;
   document.body.appendChild(link);
@@ -35,6 +40,6 @@ export const downloadCsv = (filename, header, rows) => {
 };
 
 /** `YYYY-MM-DD`, so successive exports do not overwrite one another. */
-export const dateStamp = () => new Date().toISOString().slice(0, 10);
+export const dateStamp = (): string => new Date().toISOString().slice(0, 10);
 
 export default downloadCsv;

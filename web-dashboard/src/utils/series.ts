@@ -31,11 +31,18 @@
  * section to name this module, the charts that must read it, and the carve-out.
  */
 
-export const SERIES = [
-  { key: "forefoot", varName: "--series-1", dash: undefined },
-  { key: "midfoot", varName: "--series-2", dash: "7 4" },
-  { key: "heel", varName: "--series-3", dash: "2 4" },
+/** One chart series: an anatomical zone and its redundant-channel dash. */
+export interface SeriesEntry {
+  key: 'forefoot' | 'midfoot' | 'heel';
+  varName: string;
+  dash: string | undefined;
+}
+
+export const SERIES: readonly SeriesEntry[] = [
+  { key: 'forefoot', varName: '--series-1', dash: undefined },
+  { key: 'midfoot', varName: '--series-2', dash: '7 4' },
+  { key: 'heel', varName: '--series-3', dash: '2 4' },
 ];
 
 /** The one trace that is deliberately outside the series set (see the header). */
-export const NON_IDENTITY_TRACE = "--secondary";
+export const NON_IDENTITY_TRACE = '--secondary';

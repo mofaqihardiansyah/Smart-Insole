@@ -19,7 +19,7 @@ import { SERIES, NON_IDENTITY_TRACE } from "./series";
  */
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE = path.join(here, "series.js");
+const SOURCE = path.join(here, "series.ts");
 
 describe("series source", () => {
   it("declares exactly three entries", () => {

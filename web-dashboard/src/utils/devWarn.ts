@@ -20,10 +20,10 @@
  * reason a view fails to render: a warning is a diagnostic, and a diagnostic
  * that throws is a worse defect than the one it reports.
  *
- * @param {string} component the primitive's name, used as the line's prefix
- * @param {string} message what was received and what was expected instead
+ * @param component the primitive's name, used as the line's prefix
+ * @param message what was received and what was expected instead
  */
-export function devWarn(component, message) {
+export function devWarn(component: string, message: string): void {
   let enabled = false;
   try {
     enabled = Boolean(import.meta.env?.DEV);
@@ -34,7 +34,7 @@ export function devWarn(component, message) {
   if (!enabled) return;
 
   try {
-    if (typeof console?.warn === "function") {
+    if (typeof console?.warn === 'function') {
       console.warn(`[${component}] ${message}`);
     }
   } catch {

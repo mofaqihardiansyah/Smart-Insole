@@ -1,9 +1,21 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics, isSupported as analyticsIsSupported } from "firebase/analytics";
+import {
+  getAnalytics,
+  isSupported as analyticsIsSupported,
+  type Analytics,
+} from "firebase/analytics";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  type DocumentData,
+  type WithFieldValue,
+} from "firebase/firestore";
 import { getDatabase } from "firebase/database";
+import type { FirebaseStorage } from "firebase/storage";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -42,7 +54,7 @@ const app = initializeApp(firebaseConfig);
 // IndexedDB): di jsdom dan di peramban mode privat, memanggilnya akan
 // memunculkan peringatan atau gagal. Analytics bukan bagian dari fungsionalitas
 // inti, jadi kegagalannya tidak boleh mengganggu apa pun.
-let analytics = null;
+let analytics: Analytics | null = null;
 if (typeof window !== "undefined") {
   analyticsIsSupported()
     .then((supported) => {
@@ -62,11 +74,9 @@ export const realtimeDb = getDatabase(app);
  * Cloud Storage is created on first use rather than at import time, so the
  * Storage SDK stays out of the initial download. Only the optional profile
  * photo upload needs it, and most sessions never call it.
- *
- * @returns {Promise<import('firebase/storage').FirebaseStorage>}
  */
-let storageInstance = null;
-export async function getStorageInstance() {
+let storageInstance: FirebaseStorage | null = null;
+export async function getStorageInstance(): Promise<FirebaseStorage> {
   if (!storageInstance) {
     const { getStorage } = await import("firebase/storage");
     storageInstance = getStorage(app);
@@ -78,13 +88,18 @@ export async function getStorageInstance() {
 export { app };
 
 // Helper: bikin doc di Firestore
-export async function createUserDoc(uid, data) {
+export async function createUserDoc(
+  uid: string,
+  data: WithFieldValue<DocumentData>
+): Promise<void> {
   const userRef = doc(db, "users", uid);
   await setDoc(userRef, data, { merge: true });
 }
 
 // Helper: baca user doc
-export async function getUserDoc(uid) {
+export async function getUserDoc(
+  uid: string
+): Promise<DocumentData | null> {
   const userRef = doc(db, "users", uid);
   const snap = await getDoc(userRef);
   return snap.exists() ? snap.data() : null;
@@ -92,19 +107,24 @@ export async function getUserDoc(uid) {
 
 // Helper: list semua user (admin only — Firestore rules harus mengizinkan
 // read collection users hanya untuk role admin)
-export async function listUsers() {
+export async function listUsers(): Promise<
+  Array<{ uid: string } & DocumentData>
+> {
   const { collection, getDocs } = await import("firebase/firestore");
   const snap = await getDocs(collection(db, "users"));
   return snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
 }
 
 // Helper: update field user (aktif/nonaktif, role, dll)
-export async function updateUserDoc(uid, data) {
+export async function updateUserDoc(
+  uid: string,
+  data: WithFieldValue<DocumentData>
+): Promise<void> {
   return createUserDoc(uid, data);
 }
 
 // Helper: hapus user doc (admin)
-export async function deleteUserDoc(uid) {
+export async function deleteUserDoc(uid: string): Promise<void> {
   const { deleteDoc } = await import("firebase/firestore");
   await deleteDoc(doc(db, "users", uid));
 }

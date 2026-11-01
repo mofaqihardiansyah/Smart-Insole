@@ -1,3 +1,5 @@
+import type { ActionCodeSettings } from 'firebase/auth';
+
 /**
  * ActionCodeSettings for Firebase email actions.
  *
@@ -10,9 +12,9 @@
  * `handleCodeInApp` stays false: this is a web app, and the hosted Firebase
  * widget is what applies the action code before redirecting back here.
  */
-export const buildActionCodeSettings = (path) => {
-  const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+export const buildActionCodeSettings = (path: string): ActionCodeSettings => {
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
   return {
     url: `${origin}${base}${path}`,
     handleCodeInApp: false,

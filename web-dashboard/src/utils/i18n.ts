@@ -15,7 +15,13 @@
  * mind rather than translated word for word.
  */
 
-export const DICTIONARY = {
+/**
+ * The dictionary as two flat key->string maps, indexed by language code.
+ * Typed loosely on purpose: a per-key literal union across ~340 keys per
+ * language would slow every consumer's typecheck for autocomplete that the
+ * `t`-key parity test already guarantees.
+ */
+export const DICTIONARY: Record<string, Record<string, string>> = {
   id: {
     /* ------------------------------ Brand ------------------------------ */
     'app.title': 'SOLE',
@@ -1313,13 +1319,17 @@ export const DICTIONARY = {
  * @param {Record<string, string|number>} [vars] values for `{placeholder}` slots
  * @returns {string} the translation, or the key itself if it is missing
  */
-export function t(key, lang = 'id', vars) {
+export function t(
+  key: string,
+  lang = 'id',
+  vars?: Record<string, string | number>
+): string {
   if (!key || typeof key !== 'string') return '';
 
   const target = DICTIONARY[lang] ? lang : 'id';
   const dict = DICTIONARY[target];
 
-  let value = dict[key];
+  let value: string | undefined = dict[key];
   if (value === undefined && target !== 'id') value = DICTIONARY.id[key];
   if (value === undefined) value = key;
 
@@ -1333,11 +1343,11 @@ export function t(key, lang = 'id', vars) {
 }
 
 /** Does the dictionary know this key? Used by the key-parity test and tooling. */
-export const hasKey = (key) =>
+export const hasKey = (key: string): boolean =>
   DICTIONARY.id[key] !== undefined && DICTIONARY.en[key] !== undefined;
 
 /** Every key in the dictionary, in declaration order. */
-export const dictionaryKeys = () => Object.keys(DICTIONARY.id);
+export const dictionaryKeys = (): string[] => Object.keys(DICTIONARY.id);
 
 /**
  * The language registry. LANG-01 makes Indonesian the only shipped surface, but
@@ -1345,6 +1355,8 @@ export const dictionaryKeys = () => Object.keys(DICTIONARY.id);
  * weight by decision, and the `lang` context parameter keeps its 'id' value
  * everywhere without a second sweep of every page.
  */
-export const LANGUAGES = [{ code: 'id', label: 'Bahasa Indonesia' }];
+export const LANGUAGES: Array<{ code: string; label: string }> = [
+  { code: 'id', label: 'Bahasa Indonesia' },
+];
 
 export default { DICTIONARY, t, hasKey, dictionaryKeys, LANGUAGES };
