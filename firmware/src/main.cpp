@@ -148,7 +148,7 @@ static void maintainWiFi(unsigned long nowMs) {
 //   readings/latest  overwritten (set)
 //   readings/history appended   (push)
 // Field names match the wire contract in
-// web-dashboard/src/services/firebaseRealtime.js.
+// web-dashboard/src/types/insole.ts.
 static void pushReadings(time_t timestampSec) {
   FirebaseJson json;
   json.add("deviceId", DEVICE_ID);

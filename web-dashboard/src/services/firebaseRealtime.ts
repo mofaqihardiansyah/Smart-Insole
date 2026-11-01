@@ -160,23 +160,6 @@ export function subscribeToHistory(
 }
 
 /**
- * Subscribe to the device's battery level.
- *
- * Battery lives on the same `readings/latest` packet, so this is a convenience
- * alias that reads the same node and reports only the percentage. It exists so
- * the Device page does not have to know the packet layout.
- */
-export function subscribeToBattery(
-  onData: (percent: number | null) => void,
-  onError?: (error: Error) => void
-): () => void {
-  return subscribeToReadings(
-    (reading) => onData(reading.batteryPercent),
-    onError
-  );
-}
-
-/**
  * Subscribe to the global risk thresholds (admin-configured).
  */
 export function subscribeToGlobalConfig(
@@ -217,7 +200,6 @@ export default {
   SENSOR_KEYS,
   subscribeToReadings,
   subscribeToHistory,
-  subscribeToBattery,
   subscribeToGlobalConfig,
   setGlobalConfig,
   mapReadingPacket,
