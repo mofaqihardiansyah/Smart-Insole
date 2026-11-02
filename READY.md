@@ -9,6 +9,7 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
 | --- | --- |
 | Node.js | v26.7.0 |
 | npm | 12.0.2 |
+| Python | 3.14.9 (`openpyxl` 3.1.5 present; `pandas` absent) |
 | PlatformIO (`pio`) | **not installed** on this machine |
 | PlatformIO envs | `esp32dev` (hardware), `native` (Unity unit tests) |
 | Git branch | `main` |
@@ -39,7 +40,7 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
 | `firmware/include/` | `config.h.example`, `RandomForest.h`, `rf-model-data.h` |
 | `firmware/test/` | `test_randomforest.cpp` |
 | `models/` | `rf-model.json`, `training-data.json` |
-| `scripts/` | `prepare-dataset.py`, `train-model.js`, `export-model-cpp.js` |
+| `scripts/` | `prepare-dataset.py`, `train-model.js`, `export-model-cpp.js`, `validate-datasets.py` |
 | `datasets/` | `dfn-ds/` (273 MB), `optitrack/` (84 MB), `figshare-dfu/` (32 KB) |
 
 ## Current state (as of 1 Nov 2026)
@@ -64,6 +65,9 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
 - Vitest is the only executable proof for web. Browser checks are manual.
 - `docs/DESIGN-BRIEF.md` is historical. `DESIGN.md` is the design authority.
 - `docs/HARDWARE-SPEC.md` is still marked Draft.
+- Profile-photo upload needs a provisioned Storage bucket; it was deferred
+  pending the Blaze plan (reported, not verifiable from this machine). The
+  Storage rules are versioned, but nothing proves the bucket exists.
 
 ## Secrets policy
 

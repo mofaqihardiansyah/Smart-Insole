@@ -20,7 +20,8 @@
 - [x] **Fase 4 selesai**: model asli jalan di web dashboard (157 tests lolos)
 - [ ] Fase 5: tinggal 5.4 (uji di hardware nyata)
 
-Fase 3 (validasi) dan Fase 6 (dokumentasi & sidang) belum ditandai selesai.
+Fase 3 (validasi) selesai — lihat [`validation-report.md`](validation-report.md).
+Fase 6: 6.1-6.3 selesai, 6.4 skrip demo siap dan menunggu 5.4.
 
 ## Fase 1 — Data Preparation (1-2 hari) — selesai
 
@@ -47,16 +48,20 @@ Fase 3 (validasi) dan Fase 6 (dokumentasi & sidang) belum ditandai selesai.
 
 **Output:** `models/rf-model.json` + laporan di [`rf-model-report.md`](rf-model-report.md)
 
-## Fase 3 — Validasi (1 hari)
+## Fase 3 — Validasi (1 hari) — selesai
 
 **Goal:** pastikan model konsisten dengan data nyata & aturan klinis.
 
-- [ ] 3.1 Validasi silang dengan OptiTrack v2 (pola tekanan 3 region saat gait)
-- [ ] 3.2 Cek threshold klinis vs Figshare DFU (peak pressure per region)
-- [ ] 3.3 Uji edge case: input kosong, NaN, tekanan ekstrem (500 kPa)
-- [ ] 3.4 Bandingkan prediksi RF vs aturan expert (fuzzy) — harus > 90% agreement
+- [x] 3.1 Validasi silang dengan OptiTrack v2 (pola tekanan 3 region saat gait)
+      — 310 rekaman, 902 fase tumpu, tumit mendahului forefoot 99,9%
+- [x] 3.2 Cek threshold klinis vs Figshare DFU (peak pressure per region)
+      — 1.296 pengukuran, 19,3% >= 35 kPa, 1,4% >= 70 kPa, puncak 123,8 kPa
+- [x] 3.3 Uji edge case: input kosong, NaN, tekanan ekstrem (500 kPa)
+- [x] 3.4 Bandingkan prediksi RF vs aturan expert (fuzzy) — harus > 90% agreement
+      — 90,72% pada 81.000 sampel DFN-DS, 0 kasus RF `safe` vs aturan `danger`
 
-**Output:** laporan validasi singkat
+**Output:** [`validation-report.md`](validation-report.md) +
+`scripts/validate-datasets.py` + `web-dashboard/src/utils/riskAgreement.test.js`
 
 ## Fase 4 — Integration Web (1 hari) — selesai
 
@@ -80,12 +85,15 @@ Fase 3 (validasi) dan Fase 6 (dokumentasi & sidang) belum ditandai selesai.
 
 **Output:** firmware dengan RF inference, teruji di hardware
 
-## Fase 6 — Dokumentasi & Sidang (1-2 hari)
+## Fase 6 — Dokumentasi & Sidang (1-2 hari) — 6.1-6.3 selesai
 
-- [ ] 6.1 Update DESIGN.md: method = Random Forest, dataset = DFN-DS
-- [ ] 6.2 Tulis bab methodology di thesis: data, training, evaluasi, hasil
-- [ ] 6.3 Siapkan slide: perbandingan fuzzy vs RF (accuracy, interpretabilitas)
+- [x] 6.1 Update DESIGN.md: method = Random Forest, dataset = DFN-DS
+- [x] 6.2 Tulis bab methodology di thesis: data, training, evaluasi, hasil
+      — draf di [`thesis-methodology.md`](thesis-methodology.md)
+- [x] 6.3 Siapkan slide: perbandingan fuzzy vs RF (accuracy, interpretabilitas)
+      — kerangka 6 slide di [`thesis-defense.md`](thesis-defense.md)
 - [ ] 6.4 Demo end-to-end: ESP32 → Firebase → Dashboard dengan model asli
+      — skrip di [`thesis-defense.md`](thesis-defense.md); eksekusi menunggu 5.4
 
 ## Ringkasan Timeline
 
@@ -93,10 +101,10 @@ Fase 3 (validasi) dan Fase 6 (dokumentasi & sidang) belum ditandai selesai.
 |---|---|---|
 | 1. Data Preparation | 1-2 hari | Selesai |
 | 2. Model Training | 1-2 hari | Selesai |
-| 3. Validasi | 1 hari | Belum selesai |
+| 3. Validasi | 1 hari | Selesai |
 | 4. Integration Web | 1 hari | Selesai |
 | 5. Integration Firmware | 2-3 hari | 5.1–5.3 selesai, tersisa uji hardware |
-| 6. Dokumentasi & Sidang | 1-2 hari | Belum selesai |
+| 6. Dokumentasi & Sidang | 1-2 hari | 6.1–6.3 selesai, 6.4 menunggu uji hardware |
 
 **Total: ~7-11 hari kerja** (2-3 jam/hari)
 

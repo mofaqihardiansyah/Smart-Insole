@@ -63,34 +63,42 @@ the headline metric the user is watching.
 ## Risk inference: Random Forest
 
 The risk verdict is computed by a **Random Forest** classifier
-(`src/utils/randomForestRisk.ts`), replacing the earlier fuzzy logic
-inference. The forest is trained on a synthetic dataset labelled by the
-clinical expert rules (the 3x3 pressure x duration rule base), so the
-decision boundary is **data-driven** rather than hand-tuned membership
-functions, while the expert rules remain the source of the clinical
-contract:
+(`src/utils/randomForestRisk.ts`), trained on **DFN-DS** — 135 patients, 81.000
+plantar-pressure samples — rather than on synthetic data or hand-tuned
+membership functions. The decision boundary is therefore **data-driven**, while
+the clinical contract comes from the expert rules:
 
-- peak < 35 kPa, not sustained -> safe
+- peak < 35 kPa, not sustained (< 20 s) -> safe
 - peak >= 35 kPa -> at least warning, immediately
 - peak >= 70 kPa, sustained >= 0.1 s (one sample at 10 Hz) -> danger
   (rule-based override, identical to the firmware's buzzer rule)
-- any peak sustained past ~20 s -> at least warning
 
-Training: a deterministic grid over the clinical input space (0-150 kPa
-x 0-60 s, 1 kPa / 1 s steps) labelled by the expert rules, 20 trees with
-bootstrap aggregation, Gini impurity splits, depth 10. Inference is a
-majority vote; the reported score is the vote proportion mapped onto the
-existing bands (safe 0-47, warning 48-74, danger 75-100). The PRNG is a
-seeded LCG, so the model is identical on every load and in every test.
+The split of responsibilities is deliberate. DFN-DS contains only 31 `danger`
+samples (0,05%, 3 patients), far too few for a forest to generalise, and the
+danger threshold is well defined clinically; the forest therefore handles the
+`safe` / `warning` boundary, which covers 99,95% of the data.
 
-The clinical contract is asserted in `randomForestRisk.test.js` across
-the whole sweep: if a future change makes a 40 kPa reading "safe", the
-test fails before a patient is told they are fine.
+Training: weighted bootstrap over the DFN-DS samples (inverse class frequency,
+capped at 10x), 20 trees, max depth 8, Gini impurity splits, selected by a
+hyperparameter sweep. Held-out validation on the 28-patient split gives 100%
+accuracy and macro-F1 for `safe` vs `warning`; see
+[`docs/rf-model-report.md`](docs/rf-model-report.md). Agreement with the expert
+rule base is 90,72% of the 81.000 samples, with no case where the forest calls
+`safe` a foot the rules call `danger`; see
+[`docs/validation-report.md`](docs/validation-report.md).
+
+Inference is a majority vote; the reported score is the vote proportion mapped
+onto the existing bands (safe 0-47, warning 48-74, danger 75-100), and the
+danger override reports 75. The model ships as committed JSON
+(`src/utils/rf-model.json`) and as a C++ header for the firmware, so the web
+dashboard and the device compute the same verdict from the same weights.
 
 The expert rules themselves are kept in `src/utils/fuzzyRisk.ts` as the
-labelling function for the training data and the home of the shared
-constants (`RISK_THRESHOLDS`, `SCORE_BANDS`) — they are the clinical
-source of truth, not the runtime inference path.
+labelling function and the home of the shared constants (`RISK_THRESHOLDS`,
+`SCORE_BANDS`) — they are the clinical source of truth, not the runtime
+inference path. The contract is asserted in `randomForestRisk.test.js` across
+the whole sweep: if a future change makes a 40 kPa reading "safe", the test
+fails before a patient is told they are fine.
 
 ## Theme: light, and only light
 

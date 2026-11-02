@@ -168,7 +168,6 @@ smart-insole-ta/
 │
 ├── AGENTS.md                    # Routing untuk coding agent
 ├── DESIGN.md                    # Otoritas arah desain visual dashboard
-├── DISCUSSION-GUIDE.md          # Panduan diskusi & checkpoint mingguan
 ├── firebase.json                # Konfigurasi Firebase Hosting/Rules
 ├── firestore.rules
 ├── database.rules.json
@@ -263,7 +262,6 @@ Dokumentasi proyek:
 | [`TASK.md`](TASK.md) | Ledger task: selesai, berjalan, berikutnya |
 | [`CHANGELOG.md`](CHANGELOG.md) | Riwayat perubahan (Keep a Changelog) |
 | [`DECISIONS.md`](DECISIONS.md) | Catatan keputusan teknis (ADR ringan) |
-| [`DISCUSSION-GUIDE.md`](DISCUSSION-GUIDE.md) | Panduan diskusi tim dan checkpoint mingguan |
 
 ## Catatan Keamanan
 

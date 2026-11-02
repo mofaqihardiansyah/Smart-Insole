@@ -11,6 +11,9 @@ pelatihan.
 | [`HARDWARE-SPEC.md`](HARDWARE-SPEC.md) | Spesifikasi hardware, daftar bahan (BOM), skema wiring, dan panduan perakitan smart insole |
 | [`ROADMAP-RF.md`](ROADMAP-RF.md) | Roadmap pelatihan model Random Forest: mulai dari persiapan data hingga integrasi firmware |
 | [`rf-model-report.md`](rf-model-report.md) | Laporan hasil pelatihan model: metrik evaluasi, clinical contract, dan rasional desain hybrid |
+| [`validation-report.md`](validation-report.md) | Laporan validasi Fase 3: pola region OptiTrack, ambang DFU, edge case, dan agreement RF vs aturan ahli |
+| [`thesis-methodology.md`](thesis-methodology.md) | Draf Bab III (metodologi): data, praproses, model, evaluasi, hasil, ancaman validitas |
+| [`thesis-defense.md`](thesis-defense.md) | Materi sidang: kerangka slide fuzzy vs Random Forest dan skrip demo ujung-ke-ujung |
 | [`DESIGN-BRIEF.md`](DESIGN-BRIEF.md) | Brief desain web dashboard — dokumen **historis**, digantikan oleh [`../DESIGN.md`](../DESIGN.md) sebagai otoritas desain |
 
 ## Struktur Folder
