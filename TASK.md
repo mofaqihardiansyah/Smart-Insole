@@ -7,9 +7,25 @@ summary line per month.
 
 ## Done
 
+- **2026-11-02 — Fase 3 validation.** OptiTrack gait check (310 recordings, 902
+  stance phases, heel-before-forefoot 99,9%), Figshare DFU thresholds (1.296
+  measurements, 1,4% >= 70 kPa), edge cases, and 90,72% RF-vs-rule agreement on
+  81.000 samples. New `scripts/validate-datasets.py`,
+  `web-dashboard/src/utils/riskAgreement.test.js`, and
+  `docs/validation-report.md`. (working tree)
+
+- **2026-11-02 — Fase 6 documentation.** `DESIGN.md` now states the DFN-DS
+  training set and the 20x8 forest; added `docs/thesis-methodology.md` (Bab III
+  draft) and `docs/thesis-defense.md` (slides 6.3 + demo script 6.4). Roadmap
+  checkboxes updated. (working tree)
+
+- **2026-11-02 — Ledger and changelog sync.** Recorded the agent-docs commit
+  hash, added the `[Unreleased]` Fixed entries for the audit cleanup, and named
+  the Storage-bucket gap in `READY.md`. (working tree)
+
 - **2026-11-01 — Agent documentation.** Created `AGENTS.md`, `READY.md`,
   `TASK.md`, `CHANGELOG.md`, `DECISIONS.md`; linked them from `README.md`.
-  (working tree)
+  (`3d0e97f6`)
 - **2026-11-01 — Documentation restructure.** Aligned 8 markdown files with the
   real tree; fixed broken fences, stale paths, stale roadmap checkboxes.
   (`70afbb94`)
@@ -43,13 +59,14 @@ summary line per month.
 ## Next
 
 1. **Firmware 5.4** — flash to ESP32 and test with real sensors. Blocked
-   locally: `pio` is not installed.
-2. **Validation (Fase 3)** — OptiTrack cross-check, Figshare thresholds, edge
-   cases (empty/NaN/500 kPa), ≥90% agreement with expert rules.
-3. **Thesis (Fase 6)** — methodology chapter, fuzzy-vs-RF slide, end-to-end
-   demo script.
-4. **Docs polish** — `docs/HARDWARE-SPEC.md` is still Draft; promote it once
+   locally: `pio` is not installed. Unblocks the end-to-end demo (Fase 6.4).
+2. **Docs polish** — `docs/HARDWARE-SPEC.md` is still Draft; promote it once
    the hardware is validated.
+3. **Thesis review** — fill the `[sitasi]` placeholders in
+   `docs/thesis-methodology.md` and render the slide outline into real slides.
+4. **RF limitation** — the forest stays `warning` on 35-69 kPa held for over
+   20 s where the rule base says `danger`; revisit if sustained-load use is in
+   scope.
 
 > Update rule: Done entries carry a date and a commit hash or `(working tree)`.
 > Keep entries short — detail belongs in the commit message or `CHANGELOG.md`.
