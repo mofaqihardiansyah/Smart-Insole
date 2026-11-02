@@ -12,7 +12,7 @@ summary line per month.
   fixed, none by assertion change). `a11y.test.tsx` now sweeps `.jsx` and
   `.tsx` alike, so the outline gate keeps covering the screens; `main.tsx`
   imports `./App` without the stale extension. 430 tests pass, typecheck clean,
-  build ok, `dist/` unchanged. (working tree)
+  build ok, `dist/` unchanged. (`21235c5b`)
 - **2026-11-02 — Data and model provenance.** `datasets/README.md` and
   `models/README.md` document source, licence, schema, and regeneration;
   `rf-model.json` carries a generated `provenance` block; `rf-modelSync.test.js`
