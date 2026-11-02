@@ -311,6 +311,19 @@ function main() {
       macroF1: best.metrics.macroF1,
       perLevel: best.metrics.perLevel,
     },
+    // Deterministic provenance: no timestamp, so regenerating with unchanged
+    // data produces a byte-identical artifact and an empty git diff.
+    provenance: {
+      dataset: data.source,
+      datasetVersion: data.version,
+      trainPatients: data.train.length,
+      validationPatients: data.validation.length,
+      trainSamples: data.train.reduce((n, p) => n + p.samples.length, 0),
+      validationSamples: data.validation.reduce((n, p) => n + p.samples.length, 0),
+      preparedBy: 'scripts/prepare-dataset.py',
+      trainedBy: 'scripts/train-model.js',
+      seed: 42,
+    },
     trees: best.trees,
   };
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(model));

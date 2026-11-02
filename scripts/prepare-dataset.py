@@ -5,7 +5,8 @@ prepare-dataset.py — DFN-DS -> training-data.json
 Fase 1 dari roadmap: parse 135 file .xls pasien diabetes, agregasi
 8 sensor/kaki -> 3 region (forefoot/midfoot/heel), ekstrak fitur
 (peakPressure + sustainedDuration) per timestep, label per grup
-(DFN -> danger, DM -> safe/warning), split 80/20 per patient.
+(DFN/DM hanya sebagai konteks grup), split 80/20 per patient per grup
+(hasil saat ini: 107 train / 28 validasi).
 
 Kalibrasi kuantil (data-driven, bukan asumsi manual):
     - p75 dari semua peak values -> dipetakan ke 35 kPa (warning threshold)
@@ -40,7 +41,8 @@ OUTPUT = Path(__file__).resolve().parents[1] / "models" / "training-data.json"
 SAMPLE_EVERY = 10          # 100Hz -> 10Hz
 WARNING_KPA = 35.0         # sesuai RISK_THRESHOLDS
 DANGER_KPA = 70.0          # sesuai RISK_THRESHOLDS
-WARNING_SECONDS = 5        # durasi tumpuan > 5s -> warning (DM); class weighting di Fase 2
+WARNING_SECONDS = 5        # ambang alarm aplikasi (web); aturan label latih
+                           # memakai 200 sampel = 20 s pada 10 Hz (lihat label_samples)
 
 # ------------------------------------------------------------- metadata ------
 def load_metadata():
@@ -99,10 +101,13 @@ def parse_xls(path):
 def label_samples(samples, group):
     """
     Label per-sample: safe atau warning saja.
-    Danger di-handle rule-based terpisah (peak >= 70 kPa AND sustained >= 0.1s).
-    
-    Hybrid approach: RF classifier untuk safe/warning boundary,
-    clinical rule untuk danger (data DFN-DS hanya punya 31 danger samples).
+
+    Aturan: peak >= 35 kPa ATAU sustained >= 200 sampel (20 s pada 10 Hz) ->
+    warning, selain itu safe. Grup DFN/DM tidak dipakai di sini.
+
+    Danger tidak pernah muncul sebagai label: DFN-DS tidak punya sampel yang
+    memenuhi peak >= 70 kPa sekaligus sustained >= 1 s (0 dari 81.000). Karena
+    itu danger ditangani aturan klinis terpisah, bukan oleh RF.
     """
     labeled = []
     for s in samples:
