@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { StatePanel, StateRetry } from "./StatePanel";
+import type { StateVariant } from "./StatePanel";
 
 /**
  * The state primitive's contract, per variant.
@@ -68,7 +69,7 @@ describe("StatePanel variants", () => {
     // The utility's name and its prefix are assembled from parts rather than
     // written whole, so searching this directory for the animation prefix stays
     // a clean invariant: the only hit would otherwise be this assertion. Same
-    // reason `copy.test.js` and `TelemetryChart.test.jsx` build literals from
+    // reason `copy.test.js` and `TelemetryChart.test.tsx` build literals from
     // pieces.
     const ANIMATE = ["animate", ""].join("-");
     const PULSE = ["animate", "pulse"].join("-");
@@ -208,12 +209,20 @@ describe("StatePanel variants", () => {
     ).toBeInTheDocument();
     // The action slot renders inside the panel, under the cause.
     expect(
-      within(title.parentElement).getByRole("button", { name: "Refresh" })
+      within(title.parentElement as HTMLElement).getByRole("button", {
+        name: "Refresh",
+      })
     ).toBeInTheDocument();
   });
 
   it("treats an unknown variant as the benign empty shape", () => {
-    render(<StatePanel variant="unknown" title="Something to say" />);
+    // Deliberately outside the declared set: the fallback is the subject.
+    render(
+      <StatePanel
+        variant={"unknown" as StateVariant}
+        title="Something to say"
+      />
+    );
 
     expect(screen.queryByRole("status")).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
@@ -234,8 +243,8 @@ describe("StatePanel variants", () => {
 describe("pages with a zero-data branch", () => {
   const PAGES = path.join(here, "..", "..", "pages");
 
-  const collectSources = (dir) => {
-    const out = [];
+  const collectSources = (dir: string): string[] => {
+    const out: string[] = [];
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
@@ -256,7 +265,7 @@ describe("pages with a zero-data branch", () => {
   const ZERO_DATA_BRANCH = /(?:!hasData|\b\w[\w.[\]]*length\s*===\s*0|\bisEmpty)\s*\?/;
 
   it("owns a state primitive rather than shipping a bare line of text", () => {
-    const offenders = [];
+    const offenders: string[] = [];
 
     for (const file of collectSources(PAGES)) {
       const source = fs.readFileSync(file, "utf8");
@@ -290,7 +299,7 @@ describe("pages with a zero-data branch", () => {
 describe("the admin page's feedback sites", () => {
   const ADMIN = path.join(here, "..", "..", "pages", "AdminPage.tsx");
 
-  const panelBlocks = (source) =>
+  const panelBlocks = (source: string) =>
     [...source.matchAll(/<StatePanel\b[\s\S]*?\/>/g)].map((match) => match[0]);
 
   it("gives each of the five error and empty panels a cause and a next action", () => {

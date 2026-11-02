@@ -26,6 +26,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Every component test is now `.test.tsx` (28 files), so `tsc --noEmit` checks
+  them instead of skipping them under `allowJs`. `a11y.test.tsx` sweeps `.jsx`
+  and `.tsx` alike so the outline gate still covers every screen.
 - `scripts/train-model.js` now writes a deterministic `provenance` block
   (dataset version, split sizes, sample counts, script names, seed) so
   regenerating does not lose the audit trail. Model trees are byte-identical.

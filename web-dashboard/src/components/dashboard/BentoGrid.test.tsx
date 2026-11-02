@@ -17,14 +17,19 @@ import { BentoGrid } from "./BentoGrid";
  * tones it declares.
  */
 
-const readSource = (rel) =>
+/** The card shape the grid accepts, taken from the component itself. */
+type BentoCard = NonNullable<
+  React.ComponentProps<typeof BentoGrid>["cards"]
+>[number];
+
+const readSource = (rel: string) =>
   fs.readFileSync(new URL(rel, import.meta.url), "utf8");
 
 const GRID_SOURCE = readSource("./BentoGrid.tsx");
 
 const ICON_TONES = Object.fromEntries(
   [
-    ...GRID_SOURCE.match(/const ICON_TONES = \{([\s\S]*?)\};/)[1].matchAll(
+    ...GRID_SOURCE.match(/const ICON_TONES = \{([\s\S]*?)\};/)![1].matchAll(
       /(\w+):\s*"([^"]+)"/g
     ),
   ].map(([, key, value]) => [key, value])
@@ -50,15 +55,15 @@ const toneExpressions = [...tilesSlice.matchAll(/iconTone:\s*([^,]+),/g)].map(
  * collected. Comparing such an operand against the tone vocabulary would fail
  * against a correct source.
  */
-const dropComparisonOperands = (expr) =>
+const dropComparisonOperands = (expr: string) =>
   expr
     .replace(/[A-Za-z_$][\w$]*\s*[!=]==?\s*"[^"]*"/g, "")
     .replace(/"[^"]*"\s*[!=]==?\s*[A-Za-z_$][\w$]*/g, "");
 
-const resultLiterals = (expr) =>
+const resultLiterals = (expr: string) =>
   [...dropComparisonOperands(expr).matchAll(/"([^"]*)"/g)].map(([, v]) => v);
 
-const card = (id, iconTone) => ({
+const card = (id: string | number, iconTone?: BentoCard["iconTone"]): BentoCard => ({
   id,
   title: `Card ${id}`,
   value: "1",
@@ -67,20 +72,26 @@ const card = (id, iconTone) => ({
 });
 
 /** One slot of the open meter band. The band carries no card radius. */
-const cells = (container) => [...container.querySelectorAll("[data-cell]")];
+const cells = (container: HTMLElement): HTMLElement[] => [
+  ...container.querySelectorAll<HTMLElement>("[data-cell]"),
+];
 
 /** The icon tile inside a cell is the only `rounded-tile` descendant. */
-const tileOf = (cell) => cell.querySelector(".rounded-tile");
+const tileOf = (cell: HTMLElement): HTMLElement | null =>
+  cell.querySelector<HTMLElement>(".rounded-tile");
 
-const spanFor = (container, index) => {
+/** The element's text, for use as an assertion message. */
+const text = (node: Element): string => node.textContent ?? "";
+
+const spanFor = (container: HTMLElement, index: number): HTMLElement => {
   const span = tileOf(cells(container)[index]);
   expect(span, `tile ${index} has a rounded-tile span`).not.toBeNull();
-  return span;
+  return span!;
 };
 
 describe("BentoGrid tone is data, not position", () => {
   it("paints each tile with its own card's tone", () => {
-    const order = ["success", "danger", "neutral"];
+    const order = ["success", "danger", "neutral"] as const;
     const { container, unmount } = render(
       <BentoGrid cards={order.map((tone, i) => card(`c${i}`, tone))} />
     );
@@ -108,7 +119,9 @@ describe("BentoGrid tone is data, not position", () => {
     const permuted = [straight[2], straight[0], straight[1]];
 
     const first = render(<BentoGrid cards={straight} />);
-    const before = cells(first.container).map((cell) => tileOf(cell).className);
+    const before = cells(first.container).map(
+      (cell) => tileOf(cell)!.className
+    );
     first.unmount();
 
     const second = render(<BentoGrid cards={permuted} />);
@@ -120,14 +133,14 @@ describe("BentoGrid tone is data, not position", () => {
         c.title
       );
       // ...and its tone followed it, rather than staying at the old index.
-      expect(tileOf(after[i]).className, `slot ${i}`).toContain(
-        ICON_TONES[c.iconTone]
+      expect(tileOf(after[i])!.className, `slot ${i}`).toContain(
+        ICON_TONES[c.iconTone!]
       );
     });
 
     // The permutation genuinely moved tones across slots, so a positional tint
     // cannot produce this result.
-    expect(after.map((cell) => tileOf(cell).className)).not.toEqual(before);
+    expect(after.map((cell) => tileOf(cell)!.className)).not.toEqual(before);
   });
 
   it("falls back to the neutral tone for a card that names no tone", () => {
@@ -227,7 +240,9 @@ const HEIGHT_UTILITY = /\bmin-h-|\bmax-h-|\bh-\[|\bh-\d|\bh-full\b/;
 
 const CLIPPING_UTILITY = /\btruncate\b|\bline-clamp-|\boverflow-hidden\b/;
 
-const cardWith = (extra) => ({
+const cardWith = (
+  extra: Partial<NonNullable<React.ComponentProps<typeof BentoGrid>["cards"]>[number]> = {}
+): NonNullable<React.ComponentProps<typeof BentoGrid>["cards"]>[number] => ({
   id: "long",
   title: "Tekanan puncak",
   value: "1",
@@ -265,7 +280,7 @@ describe("a bento cell's floor is its content", () => {
       <BentoGrid cards={[cardWith({ icon: <span />, iconTone: "neutral" })]} />
     );
 
-    const tile = tileOf(cells(container)[0]);
+    const tile = tileOf(cells(container)[0]) as HTMLElement;
     expect(tile).not.toBeNull();
 
     // The square is deliberate: it is a decorative glyph frame, not a content
@@ -317,7 +332,7 @@ describe("a bento cell's floor is its content", () => {
 
 const TINT_CLASSES = Object.fromEntries(
   [
-    ...GRID_SOURCE.match(/const TINT_CLASSES = \{([\s\S]*?)\};/)[1].matchAll(
+    ...(GRID_SOURCE.match(/const TINT_CLASSES = \{([\s\S]*?)\};/)?.[1] ?? "").matchAll(
       /(\w+):\s*"([^"]+)"/g
     ),
   ].map(([, key, value]) => [key, value])
@@ -325,7 +340,7 @@ const TINT_CLASSES = Object.fromEntries(
 
 describe("the Cadra card vocabulary", () => {
   it("paints a tinted card with its own tint and none of the others", () => {
-    const order = ["cream", "mint", "blue"];
+    const order: Array<NonNullable<NonNullable<React.ComponentProps<typeof BentoGrid>["cards"]>[number]["tint"]>> = ["cream", "mint", "blue"];
     const { container } = render(
       <BentoGrid cards={order.map((tint, i) => cardWith({ id: `t${i}`, tint }))} />
     );
@@ -349,9 +364,9 @@ describe("the Cadra card vocabulary", () => {
     expect(cell.className).toContain("bg-inverted");
     // The ramp: value reads white, captions read the inverted muted token.
     expect(cell.textContent).toContain("Tekanan puncak");
-    expect(cell.querySelector(".tabular-data").className).toContain(
-      "text-inverted-fg"
-    );
+    expect(
+      cell.querySelector(".tabular-data")?.getAttribute("class")
+    ).toContain("text-inverted-fg");
     expect([...cell.querySelectorAll("p")].some((p) =>
       p.className.includes("text-inverted-muted")
     )).toBe(true);
@@ -396,7 +411,7 @@ describe("the Cadra card vocabulary", () => {
     );
     const cell = cells(container)[0];
 
-    const fill = cell.querySelector('[data-meter-fill]');
+    const fill = cell.querySelector('[data-meter-fill]') as HTMLElement;
     expect(fill).not.toBeNull();
     expect(fill.style.width).toBe("35%");
     // The bar is the fourth read of a number already on the card: decorative.

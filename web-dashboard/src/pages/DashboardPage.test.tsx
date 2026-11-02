@@ -7,7 +7,9 @@ import { fileURLToPath } from "node:url";
 import React from "react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { InsoleProvider, useInsole } from "../context/InsoleContext";
+import type { InsoleContextValue } from "../context/InsoleContext";
 import { UserProvider } from "../context/UserContext";
+import type { UserValue } from "../context/UserContext";
 import { t, hasKey } from "../utils/i18n";
 import DashboardPage from "./DashboardPage";
 
@@ -16,14 +18,14 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.resolve(here, "..");
 
 /**
- * Every shipped `.jsx` / `.js` under `dir`, recursively.
+ * Every shipped `.tsx` / `.js` under `dir`, recursively.
  *
  * Trimmed to those two extensions so committed build output is never read: a
  * dead control has to be written into a module that exports UI, and `dist/`
  * holds bundles rather than sources.
  */
-const collectSources = (dir) => {
-  const out = [];
+const collectSources = (dir: string): string[] => {
+  const out: string[] = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -45,10 +47,16 @@ const collectSources = (dir) => {
  */
 
 /** Pushes readings into the provider so the page has a populated ring buffer. */
-const ctxRef = { current: null };
+const ctxRef: { current: InsoleContextValue | null } = { current: null };
 const Driver = () => {
   ctxRef.current = useInsole();
   return null;
+};
+
+/** The provider the driver captured; throws rather than reading through null. */
+const liveContext = (): InsoleContextValue => {
+  if (!ctxRef.current) throw new Error("Driver has not mounted yet");
+  return ctxRef.current;
 };
 
 /**
@@ -71,7 +79,14 @@ const stubTransport = {
 const renderDashboard = ({ autoConnect = true } = {}) => {
   const utils = render(
     <InsoleProvider autoConnect={autoConnect} transport={stubTransport}>
-      <UserProvider value={{ user: { email: "kader@example.com" }, displayName: "Kader" }}>
+      <UserProvider
+        value={{
+          user: { email: "kader@example.com" } as unknown as UserValue["user"],
+          displayName: "Kader",
+          role: "",
+          signOut: () => {},
+        }}
+      >
         <MemoryRouter initialEntries={["/"]}>
           <Routes>
             <Route
@@ -93,10 +108,13 @@ const renderDashboard = ({ autoConnect = true } = {}) => {
 };
 
 /** Each reading must land in its own commit, or React batches them into one. */
-const push = (count, readings = { forefoot: 20, midfoot: 12, heel: 9 }) => {
+const push = (
+  count: number,
+  readings: { forefoot: number; midfoot: number; heel: number } = { forefoot: 20, midfoot: 12, heel: 9 }
+) => {
   for (let i = 0; i < count; i += 1) {
     act(() => {
-      ctxRef.current.setReadings({
+      liveContext().setReadings({
         forefoot: readings.forefoot + i,
         midfoot: readings.midfoot,
         heel: readings.heel,
@@ -106,10 +124,10 @@ const push = (count, readings = { forefoot: 20, midfoot: 12, heel: 9 }) => {
 };
 
 describe("DashboardPage controls", () => {
-  let createObjectURL;
-  let revokeObjectURL;
-  const realCreate = URL.createObjectURL;
-  const realRevoke = URL.revokeObjectURL;
+  let createObjectURL: ReturnType<typeof vi.fn>;
+  let revokeObjectURL: ReturnType<typeof vi.fn>;
+  const realCreate: typeof URL.createObjectURL | undefined = URL.createObjectURL;
+  const realRevoke: typeof URL.revokeObjectURL | undefined = URL.revokeObjectURL;
 
   beforeEach(() => {
     localStorage.clear();
@@ -207,7 +225,7 @@ describe("DashboardPage controls", () => {
     await user.click(screen.getByRole("button", { name: /ekspor csv/i }));
 
     expect(createObjectURL).toHaveBeenCalledTimes(1);
-    const blob = createObjectURL.mock.calls[0][0];
+    const blob = createObjectURL.mock.calls[0][0] as Blob;
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toContain("text/csv");
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:mock");
@@ -242,7 +260,7 @@ describe("DashboardPage controls", () => {
   describe("DashboardPage standing actions (FIX-05)", () => {
     it("exposes exactly two standing actions in the header", () => {
       const { container } = renderDashboard();
-      const header = container.querySelector('[data-panel="hero"]');
+      const header = container.querySelector('[data-panel="hero"]') as HTMLElement;
 
       expect(header).not.toBeNull();
       // Two, and only two: the count is what a reintroduced dead control breaks.
@@ -262,16 +280,17 @@ describe("DashboardPage controls", () => {
 
     it("still exposes exactly two after the reading state changes", () => {
       const { container } = renderDashboard();
-      expect(within(container.querySelector('[data-panel="hero"]')).getAllByRole("button")).toHaveLength(2);
+      const heroPanel = () => container.querySelector('[data-panel="hero"]') as HTMLElement;
+      expect(within(heroPanel()).getAllByRole("button")).toHaveLength(2);
 
       // Push readings so both actions become meaningful (Export CSV leaves its
       // disabled state, the feed fills up). The count is a property of the
       // markup, so a state transition that added a control would fail here.
       push(6);
 
-      expect(within(container.querySelector('[data-panel="hero"]')).getAllByRole("button")).toHaveLength(2);
+      expect(within(heroPanel()).getAllByRole("button")).toHaveLength(2);
       expect(
-        within(container.querySelector('[data-panel="hero"]')).getByRole("button", {
+        within(heroPanel()).getByRole("button", {
           name: /ekspor csv/i,
         })
       ).toBeEnabled();
@@ -348,7 +367,7 @@ describe("DashboardPage controls", () => {
       expect(hasKey("source.noDeviceTitle")).toBe(true);
       expect(hasKey("source.noDeviceBody")).toBe(true);
 
-      const banner = screen.getByText(title).closest('[role="status"]');
+      const banner = screen.getByText(title).closest('[role="status"]') as HTMLElement;
       expect(banner).not.toBeNull();
       expect(within(banner).getByText(title)).toHaveTextContent(title);
       expect(within(banner).getByText(body)).toHaveTextContent(body);

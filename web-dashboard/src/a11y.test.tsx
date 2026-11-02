@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import React from 'react';
 import { GlassButton } from './components/ui/GlassButton';
+import type { ButtonSize } from './components/ui/GlassButton';
 import { GlassInput } from './components/ui/GlassInput';
 import { StateRetry } from './components/ui/StatePanel';
 import { BentoCell } from './components/dashboard/BentoGrid';
@@ -23,7 +24,7 @@ import { BentoCell } from './components/dashboard/BentoGrid';
 
 /**
  * Firebase Auth and the Realtime Database are both mocked, mirroring
- * `App.test.jsx`. Tests must not open a socket, and the auth listener would
+ * `App.test.tsx`. Tests must not open a socket, and the auth listener would
  * otherwise never resolve.
  */
 const mockAuth = {
@@ -49,14 +50,14 @@ const App = (await import('./App')).default;
 /** This file lives in `src`, so the sources under test are right here. */
 const SRC = path.dirname(fileURLToPath(import.meta.url));
 
-/** Every `.jsx` under a directory, following `designTokens.test.js`. */
-const collectSources = (dir) => {
-  const out = [];
+/** Every JSX-bearing source under a directory, following `designTokens.test.js`. */
+const collectSources = (dir: string): string[] => {
+  const out: string[] = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       out.push(...collectSources(full));
-    } else if (entry.name.endsWith('.jsx')) {
+    } else if (/\.(jsx|tsx)$/.test(entry.name)) {
       out.push(full);
     }
   }
@@ -64,7 +65,7 @@ const collectSources = (dir) => {
 };
 
 /** A class list read as an array, so every assertion is a membership check. */
-const classesOf = (element) =>
+const classesOf = (element: Element): string[] =>
   (element.getAttribute('class') || '').split(/\s+/).filter(Boolean);
 
 /**
@@ -113,10 +114,10 @@ describe('landing presence on touch targets and focus rings', () => {
 
     const trigger = container.querySelector(
       'button[aria-controls="landing-menu"]'
-    );
+    ) as HTMLElement | null;
     expect(trigger).not.toBeNull();
 
-    const classes = classesOf(trigger);
+    const classes = classesOf(trigger as HTMLElement);
     expect(classes, 'trigger lost its 44px width').toContain('w-11');
     expect(classes, 'trigger lost its 44px height').toContain('h-11');
     expect(classes, 'trigger lost its focus ring').toContain(
@@ -145,7 +146,7 @@ describe('focus indicator source lock', () => {
      * Comment lines are skipped: the file headers in this codebase discuss the
      * pattern, and discussing it is not shipping it.
      */
-    const offenders = [];
+    const offenders: string[] = [];
 
     for (const file of collectSources(SRC)) {
       const lines = fs.readFileSync(file, 'utf8').split('\n');
@@ -183,7 +184,7 @@ describe('focus indicator source lock', () => {
      * so both are allowed; only a positive value fails. Comment lines are
      * skipped for the same reason as the sweep above.
      */
-    const offenders = [];
+    const offenders: string[] = [];
 
     for (const file of collectSources(SRC)) {
       const lines = fs.readFileSync(file, 'utf8').split('\n');
@@ -202,20 +203,20 @@ describe('focus indicator source lock', () => {
 
 describe('shared control floors', () => {
   it('holds the 44px floor on every GlassButton size and releases it only at lg', () => {
-    const compact = [
+    const compact: Array<{ size: ButtonSize; desktop: string }> = [
       { size: 'sm', desktop: 'lg:min-h-[36px]' },
       { size: 'md', desktop: 'lg:min-h-[40px]' },
     ];
 
     compact.forEach(({ size, desktop }) => {
       const { container } = render(<GlassButton size={size}>Go</GlassButton>);
-      const classes = classesOf(container.querySelector('button'));
+      const classes = classesOf(container.querySelector('button') as Element);
       expect(classes, `${size} lost its 44px floor`).toContain('min-h-[44px]');
       expect(classes, `${size} lost its desktop release`).toContain(desktop);
     });
 
     const { container } = render(<GlassButton size="lg">Go</GlassButton>);
-    const classes = classesOf(container.querySelector('button'));
+    const classes = classesOf(container.querySelector('button') as Element);
     // `lg` is already past the floor, so it needs no desktop release: shrinking
     // it would be the regression, not releasing it.
     expect(classes, 'lg lost its larger floor').toContain('min-h-[48px]');
@@ -226,7 +227,9 @@ describe('shared control floors', () => {
 
   it('holds the 44px floor and a ring on the shared input and retry control', () => {
     const { container: field } = render(<GlassInput label="Weight" />);
-    const inputClasses = classesOf(field.querySelector('input'));
+    const inputClasses = classesOf(
+      field.querySelector('input') as HTMLInputElement
+    );
     expect(inputClasses, 'input lost its 44px floor').toContain(
       'min-h-[44px]'
     );
@@ -237,7 +240,7 @@ describe('shared control floors', () => {
     const { container: retryWrap } = render(
       <StateRetry onRetry={() => {}} label="Try again" />
     );
-    const retry = retryWrap.querySelector('button');
+    const retry = retryWrap.querySelector('button') as HTMLButtonElement;
     expect(retry).toHaveAttribute('type', 'button');
     const retryClasses = classesOf(retry);
     expect(retryClasses, 'retry lost its 44px floor').toContain(
@@ -260,7 +263,7 @@ describe('shared control floors', () => {
         }}
       />
     );
-    const button = actionable.querySelector('button');
+    const button = actionable.querySelector('button') as HTMLButtonElement;
     expect(button, 'an actionable tile must be a button').not.toBeNull();
     expect(button).toHaveAttribute('aria-label', 'Open left peak detail');
 
@@ -274,7 +277,7 @@ describe('shared control floors', () => {
     const { container: inert } = render(
       <BentoCell card={{ id: 'b', title: 'Left peak', value: 42 }} />
     );
-    const tile = inert.firstElementChild;
+    const tile = inert.firstElementChild as HTMLElement;
     expect(tile.tagName, 'an inert tile must not be a button').toBe('DIV');
     expect(
       classesOf(tile),

@@ -9,12 +9,12 @@ import { fileURLToPath } from "node:url";
  * The dictionary already has a dash gate (`utils/i18n.test.js`), and that gate
  * is precisely why this file exists: the two fallbacks on the admin users table
  * never reached the dictionary, so a raw separator character went straight into
- * JSX where no dictionary gate could see it. This walks the shipped `.jsx`
+ * JSX where no dictionary gate could see it. This walks the shipped `.tsx`
  * under `src/`, strips comments, and fails on any separator that survives.
  *
  * Comment stripping is the whole difficulty, and it is mandatory rather than
  * optional: JSDoc headers in this codebase legitimately carry the character as
- * prose (`ui/GlassButton.jsx` does). A naive scan over the raw file would flag
+ * prose (`ui/GlassButton.tsx` does). A naive scan over the raw file would flag
  * every one of them and the guard would be disabled within a week.
  *
  * The scratch page under `src/__oil_ui_eval__/` is excluded. Its own header
@@ -30,7 +30,7 @@ const SRC = here;
 /** The scratch-page directory, excluded from the walk below. */
 const SCRATCH = "__oil_ui_eval__";
 
-/** Every `dir/*.jsx` underneath, recursively, scratch page excluded. */
+/** Every JSX-bearing source underneath, recursively, scratch page excluded. */
 const collect = (dir) => {
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -65,14 +65,14 @@ const DASH = /[\u2014\u2013]/;
 describe("shipped copy", () => {
   const files = collect(SRC);
 
-  it("walks the shipped .jsx sources rather than an empty list", () => {
-    // 54 `.jsx` files under `src/` once the scratch page is excluded. A broken
+  it("walks the shipped .tsx sources rather than an empty list", () => {
+    // Every screen and test under `src/` once the scratch page is excluded. A broken
     // walk that collected nothing would otherwise pass every case below, so the
     // count is asserted before any per-file verdict.
     expect(files.length).toBeGreaterThan(40);
   });
 
-  it("ships no dash separator in any comment-stripped .jsx source", () => {
+  it("ships no dash separator in any comment-stripped source", () => {
     const offenders = files.filter((file) =>
       DASH.test(stripComments(fs.readFileSync(file, "utf8")))
     );

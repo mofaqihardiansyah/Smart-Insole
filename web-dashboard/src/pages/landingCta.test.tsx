@@ -21,7 +21,7 @@ import { t } from "../utils/i18n";
  * a variant cannot silently diverge from the vocabulary it declares.
  *
  * Firebase Auth and the Realtime Database are both mocked, mirroring
- * `pages.test.jsx`: tests must not open a socket, and the auth listener would
+ * `pages.test.tsx`: tests must not open a socket, and the auth listener would
  * otherwise never resolve.
  */
 
@@ -52,10 +52,10 @@ const LandingPage = (await import("./LandingPage")).default;
 /** The two declared landing ranks, read from the primitive that declares them. */
 const RANKS = [BUTTON_VARIANTS.warm, BUTTON_VARIANTS.warmOutline];
 
-const classesOf = (element) =>
+const classesOf = (element: Element) =>
   (element.getAttribute("class") || "").split(/\s+/).filter(Boolean);
 
-const classString = (element) => element.getAttribute("class") || "";
+const classString = (element: Element) => element.getAttribute("class") || "";
 
 /**
  * The landing CTA set is defined by `rounded-control`, the control radius the
@@ -64,7 +64,7 @@ const classString = (element) => element.getAttribute("class") || "";
  * that fell back to `filled` is still counted, and then fails the per-button
  * verdict.
  */
-const isCta = (button) => classesOf(button).includes("rounded-control");
+const isCta = (button: Element) => classesOf(button).includes("rounded-control");
 
 /**
  * A fixed height utility: `h-11`, `md:h-11`, `h-[48px]`. `min-h-*` is a floor
@@ -147,7 +147,7 @@ describe("the landing CTA register", () => {
   it("gives the hero two different actions rather than one button twice", () => {
     renderLanding();
 
-    const hero = screen.getByRole("heading", { level: 1 }).closest("section");
+    const hero = screen.getByRole("heading", { level: 1 }).closest("section") as HTMLElement;
     expect(hero, "the hero section holds the page heading").not.toBeNull();
 
     const heroCtas = within(hero).getAllByRole("button").filter(isCta);
@@ -155,10 +155,10 @@ describe("the landing CTA register", () => {
 
     const filled = heroCtas.find((cta) =>
       classesOf(cta).includes("bg-warm-accent-deep")
-    );
+    ) as HTMLElement;
     const outlined = heroCtas.find((cta) =>
       classesOf(cta).includes("bg-warm-card")
-    );
+    ) as HTMLElement;
 
     // Before D-01 both of these resolved to the `filled` declaration, so only
     // one of the two lookups above could succeed.
@@ -192,7 +192,7 @@ describe("the landing CTA register", () => {
     const { ctas } = renderAllCtas();
 
     const capped = ctas.filter((cta) =>
-      classesOf(cta).some((token) => FIXED_HEIGHT.test(token))
+      classesOf(cta).some((token: string) => FIXED_HEIGHT.test(token))
     );
 
     expect(

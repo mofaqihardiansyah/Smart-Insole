@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
  */
 import LegacyBanner, { StatusBanner } from "./StatusBanner";
 import { AlertBanner, BANNER_TONES } from "./AlertBanner";
+import type { AlertBannerProps } from "./AlertBanner";
 import { roleFor } from "./feedbackState";
 
 /**
@@ -36,7 +37,7 @@ import { roleFor } from "./feedbackState";
  */
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const read = (name) => fs.readFileSync(path.join(here, name), "utf8");
+const read = (name: string) => fs.readFileSync(path.join(here, name), "utf8");
 
 const bannerSource = read("AlertBanner.tsx");
 const legacySource = read("StatusBanner.tsx");
@@ -47,18 +48,20 @@ const legacySource = read("StatusBanner.tsx");
  * is not shipping one. The order matters, because a block comment can contain
  * `//`.
  */
-const stripComments = (text) =>
+const stripComments = (text: string) =>
   text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 
 const legacyCode = stripComments(legacySource);
 
-const TONE_KEYS = Object.keys(BANNER_TONES);
+type Tone = keyof typeof BANNER_TONES;
+
+const TONE_KEYS = Object.keys(BANNER_TONES) as Tone[];
 
 /** The shared focus pair, both tokens on one line so this file stays inside the
- *  `a11y.test.jsx` outline sweep it is itself scanned by. */
+ *  `a11y.test.tsx` outline sweep it is itself scanned by. */
 const RING_PAIR = ["focus-visible:outline-none", "focus-visible:ring-2"];
 
-const classesOf = (element) =>
+const classesOf = (element: Element) =>
   (element.getAttribute("class") || "").split(/\s+/).filter(Boolean);
 
 describe("the delegating name", () => {
@@ -98,13 +101,13 @@ describe("the delegating name", () => {
       onDismiss: () => {},
       dismissLabel: "Tutup",
       children: "Perangkat berhenti mengirim data.",
-    };
+    } satisfies AlertBannerProps;
 
     const direct = render(<AlertBanner {...props} />);
     const viaDelegate = render(<LegacyBanner {...props} />);
 
-    const directBanner = direct.container.firstElementChild;
-    const delegateBanner = viaDelegate.container.firstElementChild;
+    const directBanner = direct.container.firstElementChild as HTMLElement;
+    const delegateBanner = viaDelegate.container.firstElementChild as HTMLElement;
 
     expect(delegateBanner.getAttribute("role")).toBe(
       directBanner.getAttribute("role")

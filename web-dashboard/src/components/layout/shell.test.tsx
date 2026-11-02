@@ -3,6 +3,7 @@ import { render, screen, within, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import React from "react";
+import type { ComponentProps } from "react";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,7 +11,7 @@ import { fileURLToPath } from "node:url";
 /**
  * The shell's contract - SHELL-01 to SHELL-07.
  *
- * `App.test.jsx` exercises the shell through the real `App`, which is the right
+ * `App.test.tsx` exercises the shell through the real `App`, which is the right
  * place for "does signing in reveal the navigation". This file is the other
  * half: the shell's own promises, asserted where they are made, so a rebuild of
  * `AppLayout` cannot quietly drop the header, the dialog behaviour, the account
@@ -49,10 +50,10 @@ const { AppLayout } = await import("./AppLayout");
 const SRC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SCRATCH = "__oil_ui_eval__";
 
-const read = (rel) => fs.readFileSync(path.join(SRC, rel), "utf8");
+const read = (rel: string) => fs.readFileSync(path.join(SRC, rel), "utf8");
 
 /** Strip block comments, then line comments; a URL scheme is not a comment. */
-const stripComments = (source) =>
+const stripComments = (source: string) =>
   source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 
 /**
@@ -60,8 +61,8 @@ const stripComments = (source) =>
  * test for a rule has to be able to name the thing it forbids; the scratch page
  * is excluded for the same reason the other gates exclude it.
  */
-const collectSources = (dir) => {
-  const out = [];
+const collectSources = (dir: string): string[] => {
+  const out: string[] = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -80,8 +81,10 @@ const collectSources = (dir) => {
 const FILES = collectSources(SRC);
 
 /** The elements in `root` carrying an exact class token. */
-const layout = (root, token) =>
-  Array.from(root.querySelectorAll("*")).filter((el) => el.classList.contains(token));
+const layout = (root: HTMLElement, token: string): HTMLElement[] =>
+  Array.from(root.querySelectorAll<HTMLElement>("*")).filter((el) =>
+    el.classList.contains(token)
+  );
 
 /* ============================== the fixtures ============================= */
 
@@ -103,11 +106,11 @@ const Probe = () => {
   return <span data-testid="route">{pathname}</span>;
 };
 
-const renderShell = (props = {}) =>
+const renderShell = (props: Partial<ComponentProps<typeof AppLayout>> = {}) =>
   render(
     <MemoryRouter initialEntries={["/"]}>
       <InsoleProvider>
-        <AppLayout links={LINKS} {...props}>
+        <AppLayout links={LINKS} onSignOut={() => {}} {...props}>
           <Probe />
         </AppLayout>
       </InsoleProvider>
@@ -115,6 +118,13 @@ const renderShell = (props = {}) =>
   );
 
 const pill = () => screen.getByRole("navigation");
+
+/** The bell's accessible name at a given width, read from its link. */
+const notificationName = (root: HTMLElement) =>
+  (root.querySelector('a[href="/notifications"]') as HTMLElement).textContent?.trim() ??
+  "";
+
+type UserEvent = ReturnType<typeof userEvent.setup>;
 
 /* ================================ tests ================================== */
 
@@ -148,7 +158,7 @@ describe("SHELL-01: the Cadra frame", () => {
   it("puts the pillar nav before the content column, so Tab reads it first", () => {
     const { container } = renderShell();
     const nav = pill();
-    const main = container.querySelector("#main-content");
+    const main = container.querySelector("#main-content") as HTMLElement;
 
     expect(nav).not.toBeNull();
     expect(main).not.toBeNull();
@@ -181,7 +191,7 @@ describe("SHELL-02: one nav pill for the destinations", () => {
 
     const active = within(pill())
       .getAllByRole("link")
-      .find((anchor) => anchor.getAttribute("aria-current") === "page");
+      .find((anchor) => anchor.getAttribute("aria-current") === "page") as HTMLElement;
 
     expect(active).toBeDefined();
     expect(active.getAttribute("href")).toBe("/");
@@ -206,15 +216,11 @@ describe("SHELL-02: one nav pill for the destinations", () => {
 
   it("reports unread state in words, not only as a dot", () => {
     const quiet = renderShell({ hasUnread: false });
-    const quietName = quiet.container
-      .querySelector('a[href="/notifications"]')
-      .textContent.trim();
+    const quietName = notificationName(quiet.container);
     quiet.unmount();
 
     const loud = renderShell({ hasUnread: true });
-    const loudName = loud.container
-      .querySelector('a[href="/notifications"]')
-      .textContent.trim();
+    const loudName = notificationName(loud.container);
     loud.unmount();
 
     expect(quietName).not.toBe("");
@@ -223,7 +229,7 @@ describe("SHELL-02: one nav pill for the destinations", () => {
 
   it("gives the admin destination its own icon instead of the dashboard fallback", () => {
     const { container } = renderShell({ links: [...LINKS, ADMIN_LINK] });
-    const iconClass = (href) =>
+    const iconClass = (href: string) =>
       container.querySelector(`a[href="${href}"] svg`)?.getAttribute("class") || "";
 
     // `renderIcon` falls back to the dashboard glyph for an icon name it does
@@ -237,7 +243,7 @@ describe("SHELL-02: one nav pill for the destinations", () => {
 describe("SHELL-03: the header carries state, not a second place", () => {
   it("holds the combobox, the bell and the account trigger together", () => {
     const { container } = renderShell();
-    const header = screen.getByRole("navigation").closest("header");
+    const header = screen.getByRole("navigation").closest("header") as HTMLElement;
 
     expect(header).not.toBeNull();
     expect(within(container).getAllByRole("combobox").length).toBeGreaterThan(0);
@@ -270,7 +276,7 @@ describe("SHELL-04: the search is a real control", () => {
     { id: "bravo", to: "/bravo", label: "Bravo", icon: "Home" },
   ];
 
-  const openSearch = async (user, query) => {
+  const openSearch = async (user: UserEvent, query: string) => {
     const input = screen.getByRole("combobox");
     await user.click(input);
     await user.type(input, query);
@@ -329,7 +335,7 @@ describe("SHELL-04: the search is a real control", () => {
     expect(screen.queryByRole("listbox")).toBeNull();
     const controls = input.getAttribute("aria-controls");
     expect(controls).toBeTruthy();
-    expect(document.getElementById(controls)).not.toBeNull();
+    expect(document.getElementById(controls as string)).not.toBeNull();
   });
 
   it("drops aria-controls while no popup is shown at all", () => {
@@ -363,20 +369,24 @@ describe("SHELL-04: the search is a real control", () => {
 });
 
 describe("SHELL-05: the drawer is a real dialog", () => {
-  const openDrawer = async (user) => {
-    const trigger = document.querySelector('[aria-controls="nav-drawer"]');
+  const openDrawer = async (user: UserEvent) => {
+    const trigger = document.querySelector(
+      '[aria-controls="nav-drawer"]'
+    ) as HTMLElement;
     expect(trigger).not.toBeNull();
     await user.click(trigger);
     return { trigger, drawer: screen.getByRole("dialog") };
   };
 
   /** What the dialog promises Tab can reach, read from the DOM. */
-  const tabbables = (drawer) =>
+  const tabbables = (drawer: HTMLElement): HTMLElement[] =>
     Array.from(
-      drawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled])')
+      drawer.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled])'
+      )
     );
 
-  const pressTab = (options = {}) => {
+  const pressTab = (options: KeyboardEventInit = {}) => {
     const event = new KeyboardEvent("keydown", {
       key: "Tab",
       bubbles: true,
@@ -459,7 +469,9 @@ describe("SHELL-05: the drawer is a real dialog", () => {
     renderShell();
     const { drawer } = await openDrawer(user);
 
-    await user.click(drawer.parentElement.firstElementChild);
+    await user.click(
+      (drawer.parentElement as HTMLElement).firstElementChild as HTMLElement
+    );
     expect(screen.queryByRole("dialog")).toBeNull();
 
     const reopened = await openDrawer(user);
@@ -471,7 +483,8 @@ describe("SHELL-05: the drawer is a real dialog", () => {
 });
 
 describe("SHELL-07: the account menu is a real disclosure", () => {
-  const trigger = () => document.querySelector('[aria-controls="account-menu"]');
+  const trigger = (): HTMLElement =>
+    document.querySelector('[aria-controls="account-menu"]') as HTMLElement;
   const menu = () => screen.getByRole("group", { name: /menu akun|akun/i });
 
   it("opens on the trigger, balances aria-expanded, and holds the two account acts", async () => {
@@ -493,9 +506,10 @@ describe("SHELL-07: the account menu is a real disclosure", () => {
 
     // The signed-in name reaches the trigger, so the menu is discoverable
     // without opening it.
-    expect(container.querySelector('[aria-controls="account-menu"]').textContent).toMatch(
-      /noor/i
-    );
+    expect(
+      (container.querySelector('[aria-controls="account-menu"]') as HTMLElement)
+        .textContent ?? ""
+    ).toMatch(/noor/i);
 
     await user.keyboard("{Escape}");
     expect(document.getElementById("account-menu")).toBeNull();
@@ -535,7 +549,9 @@ describe("SHELL-06: labels, and no motion the dial forbids", () => {
 
     expect(pill()).toHaveAccessibleName();
 
-    await user.click(document.querySelector('[aria-controls="nav-drawer"]'));
+    await user.click(
+      document.querySelector('[aria-controls="nav-drawer"]') as HTMLElement
+    );
     expect(screen.getByRole("dialog")).toHaveAccessibleName();
   });
 

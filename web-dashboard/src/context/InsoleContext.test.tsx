@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import React from 'react';
 import { InsoleProvider, useInsole, measureSustainedDurations, MAX_PACKET_GAP_MS } from './InsoleContext';
+import type { HistoryRecord, InsoleContextValue, RegionReadings } from './InsoleContext';
+import type { GlobalRiskConfig, InsoleTransport, MappedReading } from '../types/insole';
 import { t } from '../utils/i18n';
 
 /**
@@ -9,7 +11,12 @@ import { t } from '../utils/i18n';
  * is mirrored into `ctxRef` so tests can call setters without ever invoking
  * `useContext` outside of a React component.
  */
-const ctxRef = { current: null };
+const ctxRef = { current: null as InsoleContextValue | null };
+
+const ctx = (): InsoleContextValue => {
+  if (!ctxRef.current) throw new Error('the InsoleProvider is not mounted');
+  return ctxRef.current;
+};
 
 const TestComponent = () => {
   const ctx = useInsole();
@@ -46,25 +53,25 @@ const TestComponent = () => {
  * A stub Realtime Database transport. Tests must never open a socket, so the
  * provider is always given this instead of the real service.
  */
-const stubTransport = {
+const stubTransport: InsoleTransport = {
   subscribeToReadings: () => () => {},
   subscribeToHistory: () => () => {},
 };
 
-const renderProvider = (props = {}) =>
+const renderProvider = (props: { autoConnect?: boolean } = {}) =>
   render(
     <InsoleProvider transport={stubTransport} {...props}>
       <TestComponent />
     </InsoleProvider>
   );
 
-const text = (testId) => screen.getByTestId(testId).textContent;
+const text = (testId: string): string => screen.getByTestId(testId).textContent ?? '';
 const currentReadings = () => JSON.parse(text('readings'));
-const setReadings = (next) =>
+const setReadings = (next: Partial<RegionReadings>) =>
   act(() => {
-    ctxRef.current.setReadings(next);
+    ctx().setReadings(next);
   });
-const advance = (ms) =>
+const advance = (ms: number) =>
   act(() => {
     vi.advanceTimersByTime(ms);
   });
@@ -143,14 +150,14 @@ describe('InsoleProvider', () => {
     const seeded = new Map([['language', 'en']]);
     Object.defineProperty(globalThis, 'localStorage', {
       value: {
-        getItem: (key) =>
+        getItem: (key: string) =>
           seeded.has(String(key)) ? seeded.get(String(key)) : null,
         setItem: () => {
           throw new Error('storage is read-only');
         },
-        removeItem: (key) => seeded.delete(String(key)),
+        removeItem: (key: string) => seeded.delete(String(key)),
         clear: () => seeded.clear(),
-        key: (index) => Array.from(seeded.keys())[index] ?? null,
+        key: (index: number) => Array.from(seeded.keys())[index] ?? null,
         get length() {
           return seeded.size;
         },
@@ -190,18 +197,18 @@ describe('InsoleProvider', () => {
     expect(localStorage.getItem('isMuted')).toBe('false');
 
     act(() => {
-      ctxRef.current.setLanguage('en');
+      ctx().setLanguage('en');
     });
     expect(localStorage.getItem('language')).toBe('en');
     expect(text('language')).toBe('en');
 
     act(() => {
-      ctxRef.current.toggleMute();
+      ctx().toggleMute();
     });
     expect(localStorage.getItem('isMuted')).toBe('true');
 
     act(() => {
-      ctxRef.current.toggleMute();
+      ctx().toggleMute();
     });
     expect(localStorage.getItem('isMuted')).toBe('false');
   });
@@ -286,7 +293,7 @@ describe('InsoleProvider', () => {
     // The retry controls used to call setSource('FIREBASE'). React bails out on
     // an unchanged value, so the subscription effect never re-ran and the retry
     // button did nothing. `reconnect` bumps a nonce the effect is keyed on.
-    const unsubscribes = [];
+    const unsubscribes: Array<ReturnType<typeof vi.fn>> = [];
     const transport = {
       subscribeToReadings: vi.fn(() => {
         const unsubscribe = vi.fn();
@@ -308,7 +315,7 @@ describe('InsoleProvider', () => {
     const firstUnsubscribe = unsubscribes[0];
 
     await act(async () => {
-      ctxRef.current.reconnect();
+      ctx().reconnect();
     });
 
     expect(transport.subscribeToReadings.mock.calls.length).toBe(
@@ -318,9 +325,9 @@ describe('InsoleProvider', () => {
   });
 
   it('keeps a device verdict as a pair: level without score gets a score in its band', () => {
-    let onData = null;
+    let onData: ((reading: MappedReading) => void) | null = null;
     const transport = {
-      subscribeToReadings: (callback) => {
+      subscribeToReadings: (callback: (reading: MappedReading) => void) => {
         onData = callback;
         return () => {};
       },
@@ -336,12 +343,12 @@ describe('InsoleProvider', () => {
     // A firmware packet carrying a level but no score must not produce a
     // "Waspada" chip beside a 0 score: the missing half is derived from it.
     act(() => {
-      onData({
+      onData?.({
         readings: { forefoot: 40, midfoot: 22, heel: 18 },
         riskLevel: 'warning',
         riskScore: undefined,
         timestamp: Date.now(),
-      });
+      } as unknown as MappedReading);
     });
 
     expect(text('risk')).toBe('warning');
@@ -351,9 +358,9 @@ describe('InsoleProvider', () => {
   });
 
   it('keeps a device verdict as a pair: score without level derives the level', () => {
-    let onData = null;
+    let onData: ((reading: MappedReading) => void) | null = null;
     const transport = {
-      subscribeToReadings: (callback) => {
+      subscribeToReadings: (callback: (reading: MappedReading) => void) => {
         onData = callback;
         return () => {};
       },
@@ -367,11 +374,11 @@ describe('InsoleProvider', () => {
     );
 
     act(() => {
-      onData({
+      onData?.({
         readings: { forefoot: 40, midfoot: 22, heel: 18 },
         riskScore: 90,
         timestamp: Date.now(),
-      });
+      } as unknown as MappedReading);
     });
 
     // 90 sits in the danger band, so the chip and the score agree.
@@ -380,10 +387,10 @@ describe('InsoleProvider', () => {
   });
 
   it('seeds thresholds from the admin global config when no local override exists', () => {
-    let configOnData = null;
+    let configOnData: ((config: GlobalRiskConfig) => void) | null = null;
     const transport = {
       subscribeToReadings: () => () => {},
-      subscribeToGlobalConfig: (callback) => {
+      subscribeToGlobalConfig: (callback: (config: GlobalRiskConfig) => void) => {
         configOnData = callback;
         return () => {};
       },
@@ -396,7 +403,7 @@ describe('InsoleProvider', () => {
     );
 
     act(() => {
-      configOnData({ safeThreshold: 30, dangerThreshold: 65 });
+      configOnData?.({ safeThreshold: 30, dangerThreshold: 65 });
     });
 
     expect(text('warningKpa')).toBe('30');
@@ -413,10 +420,10 @@ describe('InsoleProvider', () => {
       })
     );
 
-    let configOnData = null;
+    let configOnData: ((config: GlobalRiskConfig) => void) | null = null;
     const transport = {
       subscribeToReadings: () => () => {},
-      subscribeToGlobalConfig: (callback) => {
+      subscribeToGlobalConfig: (callback: (config: GlobalRiskConfig) => void) => {
         configOnData = callback;
         return () => {};
       },
@@ -429,7 +436,7 @@ describe('InsoleProvider', () => {
     );
 
     act(() => {
-      configOnData({ safeThreshold: 30, dangerThreshold: 65 });
+      configOnData?.({ safeThreshold: 30, dangerThreshold: 65 });
     });
 
     expect(text('warningKpa')).toBe('40');
@@ -437,7 +444,12 @@ describe('InsoleProvider', () => {
 });
 
 describe('measureSustainedDurations across packet gaps', () => {
-  const HIGH = { forefoot: 40, midfoot: 20, heel: 15 };
+  const HIGH: HistoryRecord['readings'] = {
+    forefoot: 40,
+    midfoot: 20,
+    heel: 15,
+    sustainedDuration: 0,
+  };
 
   it('counts one second per buffered sample when packets arrive a second apart', () => {
     const history = [

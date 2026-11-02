@@ -35,8 +35,8 @@ describe("Sparkline", () => {
 
     // The points carry every sample, in order: the first point is the first
     // sample, the last point the last one.
-    const pairs = polylines[0]
-      .getAttribute("points")
+    const pairs = (polylines[0].getAttribute("points") ?? "")
+      .trim()
       .trim()
       .split(/\s+/)
       .map((pair) => pair.split(",").map(Number));
@@ -46,19 +46,19 @@ describe("Sparkline", () => {
 
   it("renders the sage token stroke by default and honours an explicit stroke", () => {
     const { container } = render(<Sparkline data={[1, 2, 3]} />);
-    expect(container.querySelector("polyline").getAttribute("stroke")).toBe(
-      "var(--secondary)"
-    );
+    expect(
+      container.querySelector("polyline")?.getAttribute("stroke")
+    ).toBe("var(--secondary)");
 
     const custom = render(<Sparkline data={[1, 2, 3]} stroke="var(--tertiary)" />);
     expect(
-      custom.container.querySelector("polyline").getAttribute("stroke")
+      custom.container.querySelector("polyline")?.getAttribute("stroke")
     ).toBe("var(--tertiary)");
     custom.unmount();
   });
 
   it("renders nothing for empty, single-point, or non-array data", () => {
-    for (const data of [[], [42], "not an array"]) {
+    for (const data of [[], [42], "not an array" as unknown as number[]]) {
       const { container } = render(<Sparkline data={data} />);
       expect(container.querySelector("svg")).toBeNull();
       expect(container.textContent).toBe("");
@@ -69,7 +69,11 @@ describe("Sparkline", () => {
     // A ring buffer record can be missing a sample. The honest line skips the
     // gap: [5, null-ish, 9] is two readings, not a slope between them.
     const { container } = render(<Sparkline data={[5, Number.NaN, 9]} />);
-    expect(container.querySelectorAll("polyline")[0].getAttribute("points").trim().split(/\s+/)).toHaveLength(2);
+    expect(
+      (container.querySelectorAll("polyline")[0].getAttribute("points") ?? "")
+        .trim()
+        .split(/\s+/)
+    ).toHaveLength(2);
   });
 
   it("is decorative: hidden from the accessibility tree and inert", () => {
@@ -80,11 +84,11 @@ describe("Sparkline", () => {
 
     expect(svg).toHaveAttribute("aria-hidden", "true");
     expect(svg).toHaveAttribute("focusable", "false");
-    expect(svg.tagName.toLowerCase()).toBe("svg");
+    expect(svg?.tagName.toLowerCase()).toBe("svg");
 
     // The sizing class lands on the element itself, so the caller places it
     // inside the stat card without a wrapper.
-    expect(svg.getAttribute("class")).toContain("w-20");
+    expect(svg?.getAttribute("class")).toContain("w-20");
   });
 
   it("keeps series colours out of its source by construction", () => {

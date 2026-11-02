@@ -3,7 +3,10 @@ import { render, screen, within, act } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { InsoleProvider, useInsole } from "../context/InsoleContext";
+import type { InsoleContextValue, RegionReadings } from "../context/InsoleContext";
 import { UserProvider } from "../context/UserContext";
+import type { UserValue } from "../context/UserContext";
+import type { RiskLevel } from "../types/insole";
 import DashboardPage from "./DashboardPage";
 import { t } from "../utils/i18n";
 
@@ -21,10 +24,28 @@ import { t } from "../utils/i18n";
 const LANGUAGE = "id";
 
 /** Mirrors the provider value so the test can drive the ring buffer. */
-const ctxRef = { current: null };
+const ctxRef: { current: InsoleContextValue | null } = { current: null };
 const Driver = () => {
   ctxRef.current = useInsole();
   return null;
+};
+
+/** The mounted provider value; every `push` runs after render, so it must exist. */
+const currentInsole = (): InsoleContextValue => {
+  const ctx = ctxRef.current;
+  if (!ctx) throw new Error("useInsole() has not mounted yet");
+  return ctx;
+};
+
+/**
+ * The dashboard reads `displayName` only, so no Firebase `User` object is
+ * needed: the greeting is driven by the display name the shell already resolved.
+ */
+const userValue: UserValue = {
+  user: null,
+  displayName: "Kader",
+  role: "",
+  signOut: () => {},
 };
 
 /**
@@ -38,12 +59,10 @@ const stubTransport = {
 };
 
 /** A local render helper, so both reachable connection states can be driven. */
-const renderDashboard = ({ autoConnect = false } = {}) =>
+const renderDashboard = ({ autoConnect = false }: { autoConnect?: boolean } = {}) =>
   render(
     <InsoleProvider autoConnect={autoConnect} transport={stubTransport}>
-      <UserProvider
-        value={{ user: { email: "kader@example.com" }, displayName: "Kader" }}
-      >
+      <UserProvider value={userValue}>
         <MemoryRouter initialEntries={["/"]}>
           <Routes>
             <Route
@@ -70,9 +89,9 @@ const renderDashboard = ({ autoConnect = false } = {}) =>
  * is deliberately not a card. The locator asserts it resolved, so a broken
  * locator fails loudly instead of passing vacuously.
  */
-const regionFor = (title) => {
+const regionFor = (title: string): HTMLElement => {
   const heading = screen.getByRole("heading", { name: title });
-  const region = heading.closest("[data-panel]");
+  const region = heading.closest("[data-panel]") as HTMLElement;
   expect(region, `panel titled ${title}`).not.toBeNull();
   return region;
 };
@@ -87,7 +106,7 @@ const feedRegion = () => regionFor(t("dashboard.activityTitle", LANGUAGE));
  * colour is a vital sign, so the `safe` verdict must render the sage tile and
  * never the neutral one.
  */
-const RISK_TONE = {
+const RISK_TONE: Record<RiskLevel, string> = {
   safe: "bg-safe/15 text-safe-ink",
   warning: "bg-warning/15 text-warning-ink",
   danger: "bg-danger/15 text-danger-ink",
@@ -101,17 +120,19 @@ const NEUTRAL_TONE = "bg-surface-2 text-fg-2";
  * nothing else (`BentoGrid.jsx:55`). The locator asserts it resolved, so a
  * broken locator fails loudly instead of passing vacuously.
  */
-const scoreIcon = () => {
+const scoreIcon = (): HTMLElement => {
   const title = screen.getByText(t("risk.score", LANGUAGE));
-  const tile = title.parentElement.querySelector(".rounded-tile");
+  const tile = (title.parentElement as HTMLElement).querySelector(
+    ".rounded-tile"
+  ) as HTMLElement;
   expect(tile, "the score tile's icon span").not.toBeNull();
   return tile;
 };
 
 /** Each reading must land in its own commit, or React batches them into one. */
-const push = (readings) => {
+const push = (readings: RegionReadings) => {
   act(() => {
-    ctxRef.current.setReadings(readings);
+    currentInsole().setReadings(readings);
   });
 };
 
@@ -139,7 +160,7 @@ describe("DashboardPage data states", () => {
     // The bare one-line paragraph this replaces was a direct child of the feed
     // card. An empty region sits inside a panel that also holds the cause.
     expect(noMatch.parentElement).not.toBe(feed);
-    const panel = noMatch.parentElement;
+    const panel = noMatch.parentElement as HTMLElement;
     expect(panel.querySelector("svg")).not.toBeNull();
     expect(panel.className).toMatch(/\bborder\b/);
     expect(
@@ -175,7 +196,7 @@ describe("the score tile's semantic tone", () => {
     ctxRef.current = null;
   });
 
-  const assertTone = (verdict) => {
+  const assertTone = (verdict: RiskLevel) => {
     const tile = scoreIcon();
     expect(tile.className, verdict).toContain(RISK_TONE[verdict]);
     expect(tile.className, `a grey tile for a ${verdict} reading`).not.toContain(
@@ -214,9 +235,9 @@ describe("the score tile's semantic tone", () => {
  * the real trend sparkline.
  */
 describe("the meter band's Cadra vocabulary", () => {
-  const tileOfClass = (key) => {
+  const tileOfClass = (key: string): HTMLElement => {
     const title = screen.getByText(t(key, LANGUAGE));
-    const tile = title.closest("[data-cell]");
+    const tile = title.closest("[data-cell]") as HTMLElement;
     expect(tile, `tile titled ${key}`).not.toBeNull();
     return tile;
   };
@@ -234,9 +255,9 @@ describe("the meter band's Cadra vocabulary", () => {
     const supply = tileOfClass("device.battery");
 
     expect(peak.className).toContain("bg-inverted");
-    expect(peak.querySelector(".tabular-data").className).toContain(
-      "text-inverted-fg"
-    );
+    expect(
+      peak.querySelector(".tabular-data")?.getAttribute("class")
+    ).toContain("text-inverted-fg");
 
     expect(duration.className).toContain("bg-tint-cream");
     expect(duration.querySelector("[data-meter-fill]")).not.toBeNull();
@@ -301,7 +322,7 @@ describe("the meter band's Cadra vocabulary", () => {
     const fills = feed.querySelectorAll("[data-feed-fill]");
     expect(fills.length).toBeGreaterThanOrEqual(1);
     for (const fill of fills) {
-      expect(Number.parseFloat(fill.style.width)).toBe(0);
+      expect(Number.parseFloat((fill as HTMLElement).style.width)).toBe(0);
     }
   });
 });

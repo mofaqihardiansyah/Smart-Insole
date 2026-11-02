@@ -3,6 +3,7 @@ import { render, within } from "@testing-library/react";
 import React from "react";
 import TelemetryChart from "./TelemetryChart";
 import { SERIES } from "../../utils/series";
+import type { HistoryRecord } from "../../context/InsoleContext";
 
 /**
  * The lock on the one-model rule (D-04, threat T-03-05).
@@ -33,7 +34,12 @@ const LABELS = {
   heel: "Tumit",
 };
 
-const RECORD = (index) => ({
+/**
+ * Only the fields the plot reads are supplied: the series walk `readings`, and
+ * nothing in these cases depends on the derived `risk` or `score`. The cast is
+ * the one place that says so.
+ */
+const RECORD = (index: number) => ({
   timestamp: `t${index}`,
   readings: {
     forefoot: 10 + index,
@@ -42,23 +48,25 @@ const RECORD = (index) => ({
   },
 });
 
-const bufferOf = (count) => Array.from({ length: count }, (_, i) => RECORD(i));
+const bufferOf = (count: number): HistoryRecord[] =>
+  Array.from({ length: count }, (_, i) => RECORD(i)) as unknown as HistoryRecord[];
 
-const renderChart = (history) =>
+const renderChart = (history: HistoryRecord[]) =>
   render(<TelemetryChart history={history} labels={LABELS} />);
 
-const plotLines = (container) => Array.from(container.querySelectorAll("polyline"));
+const plotLines = (container: HTMLElement): SVGElement[] =>
+  Array.from(container.querySelectorAll("polyline"));
 
 /**
  * The dash attribute's name, assembled from parts rather than written whole.
- * `designTokens.test.js` sweeps every `.jsx` in `src` for utility-shaped tokens
+ * `designTokens.test.js` sweeps every JSX source in `src` for utility-shaped tokens
  * and would read a literal `stroke-…` here as a Tailwind class with no rule.
  * The attribute is a real SVG attribute, not a utility, so it is built at the
  * point of use — the same reason `copy.test.js` assembles its banned strings.
  */
 const DASH_ATTR = ["stroke", "dasharray"].join("-");
 
-const dashesOf = (lines) => lines.map((line) => line.getAttribute(DASH_ATTR));
+const dashesOf = (lines: Element[]) => lines.map((line) => line.getAttribute(DASH_ATTR));
 
 describe("TelemetryChart", () => {
   it("renders all three declared series, so the counts below cannot pass vacuously", () => {
@@ -90,11 +98,13 @@ describe("TelemetryChart", () => {
     expect(lines).toHaveLength(SERIES.length);
 
     for (const entry of SERIES) {
-      const line = lines.find((el) => el.getAttribute("stroke")?.includes(entry.varName));
+      const line = lines.find((el) =>
+        el.getAttribute("stroke")?.includes(entry.varName)
+      ) as SVGElement;
       expect(line, `${entry.key} has no polyline`).toBeDefined();
       // One record, one point: nothing interpolated, repeated or invented to
       // fill the window.
-      const points = line.getAttribute("points").trim().split(/\s+/);
+      const points = (line.getAttribute("points") ?? "").trim().split(/\s+/);
       expect(points, entry.key).toHaveLength(1);
     }
 
@@ -116,8 +126,8 @@ describe("TelemetryChart", () => {
   it("resolves the plot, the legend and the accessible table from one array", () => {
     const { container } = renderChart(bufferOf(3));
 
-    const legend = container.querySelector("figcaption");
-    const table = container.querySelector("table");
+    const legend = container.querySelector("figcaption") as HTMLElement;
+    const table = container.querySelector("table") as HTMLElement;
     expect(legend).not.toBeNull();
     expect(table).not.toBeNull();
 
@@ -153,7 +163,9 @@ describe("TelemetryChart", () => {
 
     expect(dashesOf(plotLines(container))).toEqual(declared);
     expect(
-      dashesOf(Array.from(container.querySelector("figcaption").querySelectorAll("line")))
+      dashesOf(
+        Array.from(container.querySelectorAll("figcaption line"))
+      )
     ).toEqual(declared);
   });
 
@@ -161,7 +173,7 @@ describe("TelemetryChart", () => {
     const history = bufferOf(3);
     const { container } = renderChart(history);
 
-    const svg = container.querySelector("svg");
+    const svg = container.querySelector("svg") as SVGElement;
     expect(svg).toHaveAttribute("role", "img");
 
     const accessibleName = svg.getAttribute("aria-label");

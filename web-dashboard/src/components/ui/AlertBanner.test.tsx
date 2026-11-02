@@ -37,18 +37,20 @@ const source = fs.readFileSync(path.join(here, "AlertBanner.tsx"), "utf8");
  * primitive declares no variant on it, and discussing a rule is not shipping a
  * class that uses it. The order matters: a block comment can contain `//`.
  */
-const stripComments = (text) =>
+const stripComments = (text: string) =>
   text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 
 const shippedCode = stripComments(source);
 
-const TONE_KEYS = Object.keys(BANNER_TONES);
+type Tone = keyof typeof BANNER_TONES;
+
+const TONE_KEYS = Object.keys(BANNER_TONES) as Tone[];
 
 /** The shared focus pair, both tokens on one line so this file stays inside the
- *  `a11y.test.jsx` outline sweep it is itself scanned by. */
+ *  `a11y.test.tsx` outline sweep it is itself scanned by. */
 const RING_PAIR = ["focus-visible:outline-none", "focus-visible:ring-2"];
 
-const classesOf = (element) =>
+const classesOf = (element: Element) =>
   (element.getAttribute("class") || "").split(/\s+/).filter(Boolean);
 
 describe("AlertBanner's tone vocabulary", () => {
@@ -98,7 +100,9 @@ describe("AlertBanner's live-region role", () => {
   it("leaves empty and an unrecognised state out of every live region", () => {
     expect(roleFor("empty")).toBeUndefined();
     expect(roleFor("something-else")).toBeUndefined();
-    expect(roleFor(undefined)).toBeUndefined();
+    // Deliberately outside the declared domain: `roleFor` takes a string, and
+    // the undefined case is the benign default the matrix documents.
+    expect(roleFor(undefined as unknown as string)).toBeUndefined();
   });
 });
 

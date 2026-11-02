@@ -1,13 +1,15 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render } from "@testing-library/react";
 import React from "react";
+import type { ComponentProps } from "react";
 import { GlassButton, BUTTON_VARIANTS } from "./GlassButton";
+import type { ButtonSize, ButtonVariant } from "./GlassButton";
 
 /**
  * The primitive's own lock for D-01 and C-01.
  *
- * `a11y.test.jsx` already asserts the 44px floor and the focus pair on this
- * component, and `landingCta.test.jsx` asserts what the landing renders. What
+ * `a11y.test.tsx` already asserts the 44px floor and the focus pair on this
+ * component, and `landingCta.test.tsx` asserts what the landing renders. What
  * neither covers is the primitive's own contract: that every variant renders
  * exactly the declaration it declares (the property the eight-Cta collapse
  * violated), that the landing pair stays on warm tokens and off the
@@ -16,11 +18,15 @@ import { GlassButton, BUTTON_VARIANTS } from "./GlassButton";
  * to the declared fallback.
  *
  * Every expected class string is read from the exported `BUTTON_VARIANTS`,
- * following `StatusChip.test.jsx:22`, so a variant cannot silently diverge from
+ * following `StatusChip.test.tsx:22`, so a variant cannot silently diverge from
  * the vocabulary it declares.
  */
 
-const SIZES = [
+const SIZES: Array<{
+  size: ButtonSize;
+  floor: string;
+  release: string | null;
+}> = [
   { size: "sm", floor: "min-h-[44px]", release: "lg:min-h-[36px]" },
   { size: "md", floor: "min-h-[44px]", release: "lg:min-h-[40px]" },
   // `lg` is already past the floor, so it needs no release: shrinking it would
@@ -28,15 +34,19 @@ const SIZES = [
   { size: "lg", floor: "min-h-[48px]", release: null },
 ];
 
-const VARIANTS = Object.keys(BUTTON_VARIANTS);
+const VARIANTS = Object.keys(BUTTON_VARIANTS) as ButtonVariant[];
+
+const VARIANT_ENTRIES = Object.entries(BUTTON_VARIANTS) as Array<
+  [ButtonVariant, string]
+>;
 
 /** The shared focus pair, both tokens named so neither can be dropped alone. */
 const RING_PAIR = ["focus-visible:outline-none", "focus-visible:ring-2"];
 
-const classesOf = (element) =>
+const classesOf = (element: Element) =>
   (element.getAttribute("class") || "").split(/\s+/).filter(Boolean);
 
-const classString = (element) => element.getAttribute("class") || "";
+const classString = (element: Element) => element.getAttribute("class") || "";
 
 /**
  * A transform utility that moves the control on press. Matched by the utility's
@@ -45,11 +55,16 @@ const classString = (element) => element.getAttribute("class") || "";
  * prefixes are stepped over first; `transition-*` cannot match because
  * `translate-` is not its prefix.
  */
-const isPressTranslate = (token) => /^(?:[a-z0-9-]+:)*-?translate-/.test(token);
+const isPressTranslate = (token: string) => /^(?:[a-z0-9-]+:)*-?translate-/.test(token);
 
-const renderButton = (props = {}) => {
+const renderButton = (
+  props: ComponentProps<typeof GlassButton> = {}
+) => {
   const utils = render(<GlassButton {...props}>Go</GlassButton>);
-  return { ...utils, button: utils.container.querySelector("button") };
+  return {
+    ...utils,
+    button: utils.container.querySelector("button") as HTMLButtonElement,
+  };
 };
 
 describe("GlassButton's own contract", () => {
@@ -96,7 +111,7 @@ describe("GlassButton's own contract", () => {
   });
 
   it("renders exactly its own declaration for every variant", () => {
-    for (const [variant, declaration] of Object.entries(BUTTON_VARIANTS)) {
+    for (const [variant, declaration] of VARIANT_ENTRIES) {
       const { button, unmount } = renderButton({ variant });
 
       expect(
@@ -104,7 +119,7 @@ describe("GlassButton's own contract", () => {
         `${variant} did not render its own declaration`
       ).toContain(declaration);
 
-      for (const [other, otherDeclaration] of Object.entries(BUTTON_VARIANTS)) {
+      for (const [other, otherDeclaration] of VARIANT_ENTRIES) {
         if (other === variant) continue;
         expect(
           classString(button),
@@ -152,7 +167,10 @@ describe("an unknown variant", () => {
     vi.stubEnv("DEV", true);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { button } = renderButton({ variant: "not-a-variant" });
+    const { button } = renderButton({
+      // Deliberately outside the declared set: the fallback is the subject.
+      variant: "not-a-variant" as ButtonVariant,
+    });
 
     expect(
       classString(button),
@@ -170,7 +188,10 @@ describe("an unknown variant", () => {
     vi.stubEnv("DEV", false);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { button } = renderButton({ variant: "not-a-variant" });
+    const { button } = renderButton({
+      // Deliberately outside the declared set: the fallback is the subject.
+      variant: "not-a-variant" as ButtonVariant,
+    });
 
     expect(
       classString(button),

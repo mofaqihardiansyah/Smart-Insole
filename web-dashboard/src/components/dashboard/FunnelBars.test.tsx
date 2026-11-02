@@ -22,15 +22,15 @@ const SOURCE = fs.readFileSync(
   "utf8"
 );
 
-const zones = (values) =>
+const zones = (values: number[]) =>
   [
     { key: "forefoot", label: "Depan kaki" },
     { key: "midfoot", label: "Tengah kaki" },
     { key: "heel", label: "Tumit" },
   ].map((zone, i) => ({ ...zone, value: values[i] ?? 0 }));
 
-const rows = (container) => [...container.querySelectorAll("[data-funnel-row]")];
-const fillOf = (row) => row.querySelector("[data-funnel-fill]");
+const rows = (container: HTMLElement) => [...container.querySelectorAll("[data-funnel-row]")] as HTMLElement[];
+const fillOf = (row: HTMLElement) => row.querySelector("[data-funnel-fill]") as HTMLElement;
 
 describe("FunnelBars", () => {
   it("renders one bar per sensor point with its label and real kPa value", () => {
@@ -85,7 +85,7 @@ describe("FunnelBars", () => {
 
       expect(rows(container)).toHaveLength(0);
       expect(
-        container.querySelector("[data-funnel-empty]").textContent
+        container.querySelector("[data-funnel-empty]")?.textContent
       ).not.toBe("");
     }
   });

@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import TrendChart from "./TrendChart";
 import { NON_IDENTITY_TRACE } from "../../utils/series";
+import type { HistoryRecord } from "../../context/InsoleContext";
 
 /**
  * The lock on the trend trace's carve-out (D-05, threats T-03-11 and T-03-12).
@@ -38,29 +39,35 @@ const LABELS = {
   samples: "sampel",
 };
 
-const bufferOf = (count) =>
+/**
+ * Only `timestamp` and `peakPressure` matter to a trend line, so the fixture
+ * supplies those two and casts once here rather than filling in the derived
+ * fields no case reads.
+ */
+const bufferOf = (count: number): HistoryRecord[] =>
   Array.from({ length: count }, (_, index) => ({
     timestamp: `2024-01-01T00:00:${String(index).padStart(2, "0")}.000Z`,
     peakPressure: 30 + index,
-  }));
+  })) as unknown as HistoryRecord[];
 
-const renderChart = (history) =>
+const renderChart = (history: HistoryRecord[]) =>
   render(<TrendChart history={history} labels={LABELS} dangerKpa={70} />);
 
-const tracesOf = (container) => Array.from(container.querySelectorAll("polyline"));
+const tracesOf = (container: HTMLElement): SVGElement[] =>
+  Array.from(container.querySelectorAll("polyline"));
 
-const pointsOf = (trace) =>
-  trace.getAttribute("points").trim().split(/\s+/).filter(Boolean);
+const pointsOf = (trace: Element) =>
+  (trace.getAttribute("points") ?? "").trim().split(/\s+/).filter(Boolean);
 
-const TABLE_ROWS = (container) =>
+const TABLE_ROWS = (container: HTMLElement): HTMLElement[] =>
   Array.from(container.querySelectorAll("table tbody tr"));
 
 /**
  * The dash attribute's name, assembled from parts rather than written whole.
- * `designTokens.test.js` sweeps every `.jsx` in `src` for utility-shaped tokens
+ * `designTokens.test.js` sweeps every JSX source in `src` for utility-shaped tokens
  * and would read a literal `stroke-…` here as a Tailwind class with no rule. The
  * attribute is a real SVG attribute, not a utility, so it is built at the point
- * of use — the same reason `TelemetryChart.test.jsx` and `copy.test.js` build
+ * of use — the same reason `TelemetryChart.test.tsx` and `copy.test.js` build
  * their literals from pieces.
  */
 const DASH_ATTR = ["stroke", "dasharray"].join("-");
@@ -106,7 +113,9 @@ describe("TrendChart", () => {
     const polygons = container.querySelectorAll("polygon");
     expect(polygons).toHaveLength(1);
 
-    const vertices = polygons[0].getAttribute("points").trim().split(/\s+/);
+    const vertices = (polygons[0].getAttribute("points") ?? "")
+      .trim()
+      .split(/\s+/);
     // Two baseline corners plus one vertex per record, and no other invented
     // corner.
     expect(vertices).toHaveLength(4 + 2);
@@ -157,7 +166,7 @@ describe("TrendChart", () => {
     const history = bufferOf(3);
     const { container } = renderChart(history);
 
-    const svg = container.querySelector("svg");
+    const svg = container.querySelector("svg") as SVGElement;
     expect(svg).toHaveAttribute("role", "img");
 
     const className = svg.getAttribute("class");

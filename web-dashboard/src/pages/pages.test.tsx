@@ -38,6 +38,7 @@ vi.mock('../services/firebaseRealtime', () => ({
 }));
 
 const { InsoleProvider, useInsole } = await import('../context/InsoleContext');
+import type { InsoleContextValue } from '../context/InsoleContext';
 const { dictionaryKeys } = await import('../utils/i18n');
 
 const LandingPage = (await import('./LandingPage')).default;
@@ -51,7 +52,7 @@ const SettingsPage = (await import('./SettingsPage')).default;
 const ProfilePage = (await import('./ProfilePage')).default;
 const NotificationsPage = (await import('./NotificationsPage')).default;
 
-const renderPage = (Page, route = '/') =>
+const renderPage = (Page: React.ComponentType, route = '/') =>
   render(
     <MemoryRouter initialEntries={[route]}>
       <InsoleProvider>
@@ -60,7 +61,7 @@ const renderPage = (Page, route = '/') =>
     </MemoryRouter>
   );
 
-const PAGES = [
+const PAGES: Array<[string, React.ComponentType, string]> = [
   ['LandingPage', LandingPage, '/'],
   ['LoginPage', LoginPage, '/login'],
   ['RegisterPage', RegisterPage, '/register'],
@@ -114,7 +115,7 @@ describe('responsive structure', () => {
   beforeEach(() => localStorage.clear());
 
   const renderHistoryWithRows = () => {
-    const ctxRef = { current: null };
+    const ctxRef: { current: InsoleContextValue | null } = { current: null };
     const Harness = () => {
       ctxRef.current = useInsole();
       return <HistoryPage />;
@@ -131,6 +132,7 @@ describe('responsive structure', () => {
     // Push one reading above the safe limit so the log has a row. Without a row
     // the page correctly shows its empty state, and there is no table to check.
     act(() => {
+      if (!ctxRef.current) throw new Error('Harness has not mounted yet');
       ctxRef.current.setReadings({ forefoot: 80, midfoot: 70, heel: 60 });
     });
 
@@ -172,5 +174,5 @@ describe('responsive structure', () => {
  * by code inspection (mobile-first classes, `hidden`/`md:` pairs, bounded
  * overflow containers, no fixed pixel widths on layout elements) rather than by
  * looking at rendered pixels. Behaviour is covered by the interaction tests in
- * App.test.jsx and the component test files.
+ * App.test.tsx and the component test files.
  */

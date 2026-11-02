@@ -20,7 +20,7 @@ import { devWarn } from "../../utils/devWarn";
  * The landing register's two CTA ranks (`warm`, `warmOutline`) belong to this
  * same map rather than to a landing-only button. `DESIGN.md` keeps the `Glass*`
  * names, and a second component would duplicate the focus ring and the 44px
- * floor that `a11y.test.jsx` asserts on this one. The keys are declared here and
+ * floor that `a11y.test.tsx` asserts on this one. The keys are declared here and
  * are never passed from an app page.
  *
  * Every size keeps a 44px minimum on touch and drops to its desktop height only

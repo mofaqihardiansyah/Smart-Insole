@@ -46,10 +46,10 @@ const renderLanding = () =>
     </MemoryRouter>
   );
 
-const navOf = (container) => container.querySelector("nav[aria-label]");
+const navOf = (container: HTMLElement) => container.querySelector("nav[aria-label]") as HTMLElement;
 
 /** Move the page and let the scroll listener re-read the position. */
-const scrollTo = (y) => {
+const scrollTo = (y: number) => {
   Object.defineProperty(window, "scrollY", {
     value: y,
     configurable: true,
@@ -67,7 +67,7 @@ describe("the landing nav's two modes", () => {
   it("starts flush on the page edge, with no inset, radius or shadow", () => {
     const { container } = renderLanding();
     const nav = navOf(container);
-    const wrapper = nav.parentElement;
+    const wrapper = nav.parentElement as HTMLElement;
 
     expect(wrapper.className).toContain("top-0");
     expect(wrapper.className).toContain("pt-0");
@@ -80,7 +80,7 @@ describe("the landing nav's two modes", () => {
   it("floats once the page moves, and returns to the edge at the top", () => {
     const { container } = renderLanding();
     const nav = navOf(container);
-    const wrapper = nav.parentElement;
+    const wrapper = nav.parentElement as HTMLElement;
 
     scrollTo(600);
 
@@ -99,7 +99,7 @@ describe("the landing nav's two modes", () => {
   it("interpolates between the modes, and stops for reduced motion", () => {
     const { container } = renderLanding();
     const nav = navOf(container);
-    const wrapper = nav.parentElement;
+    const wrapper = nav.parentElement as HTMLElement;
 
     expect(wrapper.className).toContain("transition-[padding,top]");
     expect(nav.className).toContain(

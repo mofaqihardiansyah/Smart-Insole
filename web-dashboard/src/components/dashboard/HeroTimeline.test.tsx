@@ -5,6 +5,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { HeroTimeline } from "./HeroTimeline";
+import type { HistoryRecord } from "../../context/InsoleContext";
+import type { RiskLevel } from "../../types/insole";
 
 /**
  * The hero timeline (cadra-4): one thin line over the hero card, carrying one
@@ -25,7 +27,7 @@ const SOURCE = fs.readFileSync(
   "utf8"
 );
 
-const RISK_DOT = {
+const RISK_DOT: Record<string, string> = {
   safe: "bg-safe",
   warning: "bg-warning",
   danger: "bg-danger",
@@ -33,15 +35,17 @@ const RISK_DOT = {
 
 const T0 = 1_700_000_000_000;
 
-const record = (offset, risk) => ({
+const record = (offset: number, risk: RiskLevel): HistoryRecord => ({
   timestamp: T0 + offset * 1000,
   risk,
+  score: 0,
   peakPressure: 40,
-  readings: {},
+  readings: { forefoot: 0, midfoot: 0, heel: 0, sustainedDuration: 0 },
 });
 
 /** One dot, keyed by its own record's risk, in buffer order. */
-const dots = (container) => [...container.querySelectorAll("[data-timeline-dot]")];
+const dots = (container: HTMLElement) =>
+  [...container.querySelectorAll("[data-timeline-dot]")] as HTMLElement[];
 
 describe("HeroTimeline", () => {
   it("draws one dot per buffered reading, painted by that reading's risk", () => {
@@ -63,7 +67,7 @@ describe("HeroTimeline", () => {
     const records = [record(0, "safe"), record(60, "warning"), record(180, "danger")];
     const { container } = render(<HeroTimeline records={records} language="id" />);
 
-    const leftPct = (dot) => Number(dot.style.left.replace("%", ""));
+    const leftPct = (dot: HTMLElement) => Number(dot.style.left.replace("%", ""));
     const [a, b, c] = dots(container);
     expect(leftPct(a)).toBeLessThan(leftPct(b));
     expect(leftPct(b)).toBeLessThan(leftPct(c));
@@ -74,7 +78,7 @@ describe("HeroTimeline", () => {
     const { container } = render(
       <HeroTimeline records={[record(0, "safe"), record(1, "danger")]} language="id" />
     );
-    const marker = container.querySelector('[data-timeline="now"]');
+    const marker = container.querySelector('[data-timeline="now"]') as HTMLElement;
     expect(marker).not.toBeNull();
     expect(marker.textContent).not.toBe("");
   });

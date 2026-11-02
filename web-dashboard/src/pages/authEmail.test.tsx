@@ -9,8 +9,23 @@ import { MemoryRouter } from "react-router-dom";
  * what it shows while waiting, and where it sends the reader after a reset.
  */
 
-const authState = vi.hoisted(() => ({ user: null, loading: false }));
-const authMock = vi.hoisted(() => ({ currentUser: null }));
+/** The part of a Firebase session user these pages read. */
+interface SessionUser {
+  email: string;
+  emailVerified: boolean;
+}
+
+/** The part of a Firebase `User` these pages read. */
+interface MockUser extends SessionUser {
+  uid: string;
+  reload: ReturnType<typeof vi.fn>;
+}
+
+const authState = vi.hoisted(() => ({
+  user: null as SessionUser | null,
+  loading: false,
+}));
+const authMock = vi.hoisted(() => ({ currentUser: null as MockUser | null }));
 const firebaseAuthMock = vi.hoisted(() => ({
   applyActionCode: vi.fn(),
   sendEmailVerification: vi.fn(),
@@ -29,18 +44,18 @@ vi.mock("firebase/auth", () => firebaseAuthMock);
 const VerifyEmailPage = (await import("./VerifyEmailPage")).default;
 const ForgotPasswordPage = (await import("./ForgotPasswordPage")).default;
 
-const renderAt = (Page, route) =>
+const renderAt = (Page: React.ComponentType, route: string) =>
   render(
     <MemoryRouter initialEntries={[route]}>
       <Page />
     </MemoryRouter>
   );
 
-const makeUser = (overrides = {}) => ({
+const makeUser = (overrides: Partial<MockUser> = {}): MockUser => ({
   uid: "u1",
   email: "patient@example.com",
   emailVerified: false,
-  reload: vi.fn().mockResolvedValue(),
+  reload: vi.fn().mockResolvedValue(undefined),
   ...overrides,
 });
 
@@ -52,24 +67,31 @@ beforeEach(() => {
   authState.loading = false;
   authMock.currentUser = null;
 
-  firebaseAuthMock.applyActionCode.mockReset().mockResolvedValue();
-  firebaseAuthMock.sendEmailVerification.mockReset().mockResolvedValue();
-  firebaseAuthMock.sendPasswordResetEmail.mockReset().mockResolvedValue();
+  firebaseAuthMock.applyActionCode.mockReset().mockResolvedValue(undefined);
+  firebaseAuthMock.sendEmailVerification
+    .mockReset()
+    .mockResolvedValue(undefined);
+  firebaseAuthMock.sendPasswordResetEmail
+    .mockReset()
+    .mockResolvedValue(undefined);
   firebaseAuthMock.verifyPasswordResetCode
     .mockReset()
     .mockResolvedValue(EMAIL);
-  firebaseAuthMock.confirmPasswordReset.mockReset().mockResolvedValue();
+  firebaseAuthMock.confirmPasswordReset
+    .mockReset()
+    .mockResolvedValue(undefined);
 });
 
 describe("VerifyEmailPage", () => {
   it("shows the address Firebase mailed and offers a resend", async () => {
     authState.user = { email: EMAIL, emailVerified: false };
-    authMock.currentUser = makeUser();
+    const user = makeUser();
+    authMock.currentUser = user;
 
     renderAt(VerifyEmailPage, "/verify-email");
 
     expect(await screen.findByText(SENT)).toBeInTheDocument();
-    expect(authMock.currentUser.reload).toHaveBeenCalled();
+    expect(user.reload).toHaveBeenCalled();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Kirim ulang email" })

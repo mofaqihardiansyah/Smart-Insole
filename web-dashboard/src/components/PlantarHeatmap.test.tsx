@@ -3,6 +3,7 @@ import { render, screen, within, act } from '@testing-library/react';
 import React from 'react';
 import PlantarHeatmap from './PlantarHeatmap';
 import { InsoleProvider, useInsole } from '../context/InsoleContext';
+import type { InsoleContextValue } from '../context/InsoleContext';
 
 /**
  * readingsOverride lets the heatmap be driven deterministically without a
@@ -11,20 +12,31 @@ import { InsoleProvider, useInsole } from '../context/InsoleContext';
  */
 const OVERRIDE = { forefoot: 15, midfoot: 45, heel: 85 };
 
-const renderOverride = (props = {}) =>
+type HeatmapProps = React.ComponentProps<typeof PlantarHeatmap>;
+
+const renderOverride = (props: Partial<HeatmapProps> = {}) =>
   render(<PlantarHeatmap readingsOverride={OVERRIDE} {...props} />);
 
-const nodeCircle = (nodeId) =>
-  screen.getByTestId(nodeId).querySelector('circle');
+const nodeCircle = (nodeId: string) =>
+  screen.getByTestId(nodeId).querySelector('circle') as SVGElement;
 
 /** All stop-color values of a node's radialGradient, in document order. */
-const gradientStops = (container, nodeKey) =>
+const gradientStops = (
+  container: HTMLElement,
+  nodeKey: string
+): Array<string | null> =>
   Array.from(
     container.querySelectorAll(`#heatmap-grad-${nodeKey} stop`)
   ).map((stop) => stop.getAttribute('stop-color'));
 
 /** Mirrors the provider value so tests can drive live context updates. */
-let ctxRef = null;
+let ctxRef: InsoleContextValue | null = null;
+
+/** The mounted harness's context; fails loudly if the provider never ran. */
+const liveContext = (): InsoleContextValue => {
+  if (!ctxRef) throw new Error('ContextHarness is not mounted');
+  return ctxRef;
+};
 const ContextHarness = () => {
   ctxRef = useInsole();
   return <PlantarHeatmap />;
@@ -43,7 +55,7 @@ describe('PlantarHeatmap', () => {
       </InsoleProvider>
     );
 
-    const svg = container.querySelector('svg');
+    const svg = container.querySelector('svg') as SVGSVGElement;
     expect(svg).toBeInTheDocument();
     expect(svg.getAttribute('viewBox')).toBe('0 0 200 400');
     expect(svg.getAttribute('width')).toBe('100%');
@@ -75,8 +87,11 @@ describe('PlantarHeatmap', () => {
     // 15 kPa (< 35) -> safe, transparent at the edge
     expect(forefootStops).toHaveLength(3);
     expect(forefootStops.every((c) => c === 'rgb(var(--safe))')).toBe(true);
-    expect(container.querySelector('#heatmap-grad-forefoot stop:last-child')
-      .getAttribute('stop-opacity')).toBe('0');
+    expect(
+      (container.querySelector(
+        '#heatmap-grad-forefoot stop:last-child'
+      ) as Element).getAttribute('stop-opacity')
+    ).toBe('0');
 
     // 45 kPa (35-70) -> warning
     expect(midfootStops.every((c) => c === 'rgb(var(--warning))')).toBe(true);
@@ -137,7 +152,7 @@ describe('PlantarHeatmap', () => {
   it('pulses the node at or above the 70 kPa danger threshold', () => {
     renderOverride();
 
-    const pulseClass = (nodeId) =>
+    const pulseClass = (nodeId: string) =>
       nodeCircle(nodeId).getAttribute('class') || '';
 
     expect(pulseClass('node-heel')).toContain('plantar-node-pulse');
@@ -192,7 +207,7 @@ describe('PlantarHeatmap', () => {
     ).toBeInTheDocument();
 
     act(() => {
-      ctxRef.setReadings({ forefoot: 12, midfoot: 44, heel: 77 });
+      liveContext().setReadings({ forefoot: 12, midfoot: 44, heel: 77 });
     });
     expect(
       within(screen.getByTestId('node-heel')).getByText('77')
@@ -202,7 +217,7 @@ describe('PlantarHeatmap', () => {
     );
 
     act(() => {
-      ctxRef.setLanguage('en');
+      liveContext().setLanguage('en');
     });
     expect(
       within(screen.getByTestId('node-heel')).getByText('Heel (Calcaneus)')

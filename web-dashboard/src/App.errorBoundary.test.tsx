@@ -2,12 +2,18 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import type { User } from 'firebase/auth';
 
 /**
  * Firebase Auth and the Realtime Database are both mocked. Tests must not open
  * a socket, and the auth listener would otherwise never resolve.
  */
-const mockAuth = {
+const mockAuth: {
+  user: User | null;
+  loading: boolean;
+  displayName: string;
+  logout: ReturnType<typeof vi.fn>;
+} = {
   user: null,
   loading: false,
   displayName: '',
@@ -46,7 +52,12 @@ vi.mock('./pages/DashboardPage', () => ({
 const App = (await import('./App')).default;
 
 const signedIn = {
-  user: { uid: 'u1', email: 'kader@example.com', displayName: 'Kader', emailVerified: true },
+  user: {
+    uid: 'u1',
+    email: 'kader@example.com',
+    displayName: 'Kader',
+    emailVerified: true,
+  } as unknown as User,
   loading: false,
   displayName: 'Kader',
 };
@@ -55,7 +66,7 @@ const SKIP_LINK = /lewati ke konten utama/i;
 const GREETING_H1 = /selamat/i;
 
 describe('App crash isolation', () => {
-  let errorSpy;
+  let errorSpy: { mockRestore: () => void };
 
   beforeEach(() => {
     localStorage.clear();

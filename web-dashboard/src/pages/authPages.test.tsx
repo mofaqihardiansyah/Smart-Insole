@@ -34,7 +34,7 @@ const { InsoleProvider } = await import("../context/InsoleContext");
 const LoginPage = (await import("./LoginPage")).default;
 const RegisterPage = (await import("./RegisterPage")).default;
 
-const renderPage = (Page, route) =>
+const renderPage = (Page: React.ComponentType, route: string) =>
   render(
     <MemoryRouter initialEntries={[route]}>
       <InsoleProvider>
@@ -44,7 +44,7 @@ const renderPage = (Page, route) =>
   );
 
 /** Renders the page as a route so a successful submit can be followed. */
-const renderNavigating = (Page, route) =>
+const renderNavigating = (Page: React.ComponentType, route: string) =>
   render(
     <MemoryRouter initialEntries={[route]}>
       <InsoleProvider>

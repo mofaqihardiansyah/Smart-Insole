@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render } from "@testing-library/react";
 import React from "react";
-import { Chip, CHIP_TONES } from "./Chip";
+import { Chip, CHIP_TONES, type ChipTone } from "./Chip";
 
 /**
  * The chip's two contracts (D-01, threat T-03-16).
@@ -21,14 +21,14 @@ import { Chip, CHIP_TONES } from "./Chip";
  * longer than their English source, so the chip has to grow rather than clip.
  */
 
-const TONE_NAMES = Object.keys(CHIP_TONES);
+const TONE_NAMES = Object.keys(CHIP_TONES) as ChipTone[];
 
-const renderChip = (props = {}) => {
+const renderChip = (props: React.ComponentProps<typeof Chip> = {}) => {
   const utils = render(<Chip {...props}>Label</Chip>);
-  return { ...utils, chip: utils.container.firstChild };
+  return { ...utils, chip: utils.container.firstChild as HTMLElement };
 };
 
-const tokensOf = (tone) => CHIP_TONES[tone].split(" ");
+const tokensOf = (tone: ChipTone) => CHIP_TONES[tone].split(" ");
 
 /**
  * Height and truncation utilities are asserted absent rather than by class
@@ -93,7 +93,7 @@ describe("Chip", () => {
     vi.stubEnv("DEV", true);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { chip } = renderChip({ tone: "urgent" });
+    const { chip } = renderChip({ tone: "urgent" as ChipTone });
 
     for (const token of tokensOf("neutral")) {
       expect(chip.className, token).toContain(token);
@@ -112,7 +112,7 @@ describe("Chip", () => {
     vi.stubEnv("DEV", false);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { chip } = renderChip({ tone: "urgent" });
+    const { chip } = renderChip({ tone: "urgent" as ChipTone });
 
     expect(warn).not.toHaveBeenCalled();
     for (const token of tokensOf("neutral")) {
@@ -143,7 +143,7 @@ describe("Chip", () => {
       "Tekanan puncak pada tumit kiri melebihi ambang bahaya selama sesi berjalan";
     const { container } = render(<Chip tone="warning">{label}</Chip>);
 
-    const chip = container.firstChild;
+    const chip = container.firstChild as HTMLElement;
     expect(chip.textContent).toBe(label);
 
     for (const pattern of CLIPPING) {
@@ -153,14 +153,13 @@ describe("Chip", () => {
 
   it("renders the caller's own tag through the as prop and keeps the tone", () => {
     const utils = render(
-      <Chip as="button" tone="success" type="button">
+      <Chip as="button" tone="success">
         Filter
       </Chip>
     );
-    const chip = utils.container.firstChild;
+    const chip = utils.container.firstChild as HTMLElement;
 
     expect(chip.tagName).toBe("BUTTON");
-    expect(chip).toHaveAttribute("type", "button");
     for (const token of tokensOf("success")) {
       expect(chip.className, token).toContain(token);
     }

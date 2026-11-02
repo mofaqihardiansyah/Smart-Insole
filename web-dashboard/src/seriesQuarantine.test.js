@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
  *   - `utils/series.ts`, the single module that names those properties so no
  *     chart has to spell one.
  *
- * THE WALK WIDENS WHAT THE TOKEN GATE DOES. `designTokens.test.js` walks `.jsx`
+ * THE WALK WIDENS WHAT THE TOKEN GATE DOES. `designTokens.test.js` walks `.tsx`
  * only, so a series reference from a plain module would pass it. This gate walks
  * `.jsx`/`.js`/`.tsx`/`.ts` alike and asserts that it visited a non-`.jsx` file,
  * because skipping the plain modules would skip exactly the sources D-04's rule
@@ -106,13 +106,13 @@ const violations = () => {
 const read = (rel) => fs.readFileSync(path.join(SRC, rel), "utf8");
 
 describe("the series set is quarantined", () => {
-  it("walks both source kinds rather than an empty or .jsx-only list", () => {
+  it("walks both source kinds rather than an empty or one-extension list", () => {
     // Asserted before any verdict: a broken walk that collected nothing would
     // pass the check below by finding nothing to accuse.
     expect(FILES.length, "the walk collected no sources").toBeGreaterThan(40);
 
     // The floor that makes this gate stronger than the token gate: a walk that
-    // silently stopped at `.jsx` would skip every plain module, which is where a
+    // silently stopped at one extension would skip every plain module, which is where a
     // leaked constant would be easiest to hide.
     const plainModules = FILES.filter((file) => /\.(js|ts)$/.test(file));
     expect(

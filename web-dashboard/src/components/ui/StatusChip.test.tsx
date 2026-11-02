@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, within } from "@testing-library/react";
 import React from "react";
 import { StatusChip, STATUS_LEVELS } from "./StatusChip";
+import type { RiskLevel } from "../../types/insole";
 
 /**
  * FIX-04: risk is never signalled by colour alone.
@@ -17,14 +18,14 @@ import { StatusChip, STATUS_LEVELS } from "./StatusChip";
  * kept exactly as it was: the warning is an addition, not a replacement.
  */
 
-const LEVELS = ["safe", "warning", "danger"];
+const LEVELS: RiskLevel[] = ["safe", "warning", "danger"];
 
-const renderChip = (props = {}) => {
+const renderChip = (props: Partial<React.ComponentProps<typeof StatusChip>> = {}) => {
   const utils = render(<StatusChip label="Level" {...props} />);
-  return { ...utils, chip: utils.container.firstChild };
+  return { ...utils, chip: utils.container.firstChild as HTMLElement };
 };
 
-const toneTokens = (level) => STATUS_LEVELS[level].tone.split(" ");
+const toneTokens = (level: RiskLevel) => STATUS_LEVELS[level].tone.split(" ");
 
 describe("StatusChip", () => {
   afterEach(() => {
@@ -89,7 +90,7 @@ describe("StatusChip", () => {
   });
 
   it("falls back to safe for a level it does not know", () => {
-    const { chip } = renderChip({ level: "unknown" });
+    const { chip } = renderChip({ level: "unknown" as RiskLevel });
 
     for (const token of toneTokens("safe")) {
       expect(chip.className, token).toContain(token);
@@ -108,7 +109,7 @@ describe("StatusChip", () => {
     vi.stubEnv("DEV", true);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { chip } = renderChip({ level: "critical" });
+    const { chip } = renderChip({ level: "critical" as RiskLevel });
 
     expect(warn).toHaveBeenCalledTimes(1);
     const line = String(warn.mock.calls[0][0]);
@@ -127,7 +128,7 @@ describe("StatusChip", () => {
     vi.stubEnv("DEV", false);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { chip } = renderChip({ level: "critical" });
+    const { chip } = renderChip({ level: "critical" as RiskLevel });
 
     expect(warn).not.toHaveBeenCalled();
     for (const token of toneTokens("safe")) {
@@ -139,7 +140,7 @@ describe("StatusChip", () => {
     vi.stubEnv("DEV", true);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { chip } = renderChip({ level: "warning", size: "huge" });
+    const { chip } = renderChip({ level: "warning", size: "huge" as React.ComponentProps<typeof StatusChip>["size"] });
 
     expect(warn).toHaveBeenCalledTimes(1);
     const line = String(warn.mock.calls[0][0]);

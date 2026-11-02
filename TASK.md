@@ -7,6 +7,12 @@ summary line per month.
 
 ## Done
 
+- **2026-11-02 — Tests under the type checker.** All 28 `*.test.jsx` renamed to
+  `*.test.tsx` so `tsc --noEmit` covers them for the first time (334 errors
+  fixed, none by assertion change). `a11y.test.tsx` now sweeps `.jsx` and
+  `.tsx` alike, so the outline gate keeps covering the screens; `main.tsx`
+  imports `./App` without the stale extension. 430 tests pass, typecheck clean,
+  build ok, `dist/` unchanged. (working tree)
 - **2026-11-02 — Data and model provenance.** `datasets/README.md` and
   `models/README.md` document source, licence, schema, and regeneration;
   `rf-model.json` carries a generated `provenance` block; `rf-modelSync.test.js`

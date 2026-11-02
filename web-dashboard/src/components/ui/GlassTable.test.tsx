@@ -37,8 +37,8 @@ const renderTable = () => {
 
   return {
     ...utils,
-    head: utils.container.querySelector("th"),
-    data: utils.container.querySelector("td"),
+    head: utils.container.querySelector("th") as HTMLElement,
+    data: utils.container.querySelector("td") as HTMLElement,
     wrappers: utils.container.querySelectorAll("div"),
   };
 };
@@ -86,7 +86,7 @@ describe("GlassTable", () => {
           </tr>
         </thead>
       </GlassTable>
-    ).container.querySelector("table");
+    ).container.querySelector("table") as HTMLElement;
 
     // The table itself never scrolls; the page must not scroll sideways.
     expect(table.className).not.toContain("overflow-x-auto");

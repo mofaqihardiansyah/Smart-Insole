@@ -47,7 +47,7 @@ const SCRATCH = "__oil_ui_eval__";
 
 const readSource = (rel) => fs.readFileSync(path.join(SRC, rel), "utf8");
 
-/** Every shipped `.jsx` under `dir`: tests and the scratch page excluded. */
+/** Every shipped source under `dir`: tests and the scratch page excluded. */
 const collect = (dir) => {
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -200,7 +200,7 @@ const assertFloors = () => {
 };
 
 describe("a call-site key must be declared", () => {
-  it("walks the shipped .jsx sources and collects a non-vacuous literal set", () => {
+  it("walks the shipped sources and collects a non-vacuous literal set", () => {
     assertFloors();
   });
 

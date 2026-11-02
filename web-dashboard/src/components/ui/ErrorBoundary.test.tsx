@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type { MockInstance } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
@@ -16,7 +17,7 @@ const Thrower = () => {
 };
 
 describe('ErrorBoundary', () => {
-  let errorSpy;
+  let errorSpy: MockInstance<typeof console.error>;
 
   beforeEach(() => {
     shouldThrow = true;
@@ -86,7 +87,7 @@ describe('ErrorBoundary', () => {
  * boundary is neither disarmed by its own recovery nor wider than its subtree.
  */
 describe('ErrorBoundary crash surface', () => {
-  let errorSpy;
+  let errorSpy: MockInstance<typeof console.error>;
 
   beforeEach(() => {
     shouldThrow = true;
@@ -173,7 +174,7 @@ describe('ErrorBoundary crash surface', () => {
     );
 
     expect(report).toBeDefined();
-    const [, error, stack] = report;
+    const [, error, stack] = report!;
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe('fixture: the child failed to render');
     expect(typeof stack).toBe('string');
