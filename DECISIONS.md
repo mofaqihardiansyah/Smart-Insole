@@ -84,3 +84,24 @@ facts, and produced oversized plans. Instructions were scattered between
 
 **Consequences.** The agent reads these before exploring. `TASK.md` is updated
 after every completed task; `READY.md` only when a fact changes.
+
+## ADR-006: One page width inside the shell
+
+- **Date:** 2026-11-03
+- **Status:** Accepted
+
+**Context.** `AppLayout` already caps the router outlet at 1400px, the same
+width as the header. Five pages (Device, Settings, Profile, Notifications,
+Admin) added their own `max-w-3xl` / `max-w-5xl` plus `mx-auto` on the page
+`<section>`, so their cards rendered 768px wide under a 1400px nav pill, with
+empty canvas on both sides. Two pages (Monitoring, History) had no cap, so the
+app shipped two content widths at once.
+
+**Decision.** The shell owns the content width. Page sections carry spacing
+only (`space-y-5 lg:space-y-6`); they never re-cap or re-centre themselves.
+Density inside the column is handled by the page: responsive grids for forms
+and stat strips, `max-w-prose` for running prose.
+
+**Consequences.** A narrower page needs a new decision, not a local `max-w-*`.
+Wide cards expose stretched internals, so a page that gains width must lay its
+content out in columns rather than let a single field or line span the card.

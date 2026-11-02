@@ -225,7 +225,7 @@ const AdminPage = () => {
   /* ---- guard: non-admins go back to the dashboard ---- */
   if (role !== "admin") {
     return (
-      <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
+      <section className="space-y-5 lg:space-y-6">
         <PageHeader title={t("admin.title", language)} />
         <StatePanel
           variant="error"
@@ -239,7 +239,7 @@ const AdminPage = () => {
   }
 
   return (
-    <section className="mx-auto w-full max-w-5xl space-y-5 lg:space-y-6">
+    <section className="space-y-5 lg:space-y-6">
       <PageHeader
         title={t("admin.title", language)}
         subtitle={t("admin.subtitle", language)}

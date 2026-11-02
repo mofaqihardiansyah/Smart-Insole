@@ -7,6 +7,20 @@ summary line per month.
 
 ## Done
 
+- **2026-11-03 — Markdown upkeep rule.** `AGENTS.md` gained a mandatory
+  *Markdown upkeep check*: after every task the agent asks which root `.md`
+  files need updating, naming candidates. Living files (`TASK.md`,
+  `CHANGELOG.md`, `READY.md`, `DECISIONS.md`) are checked every time; frozen
+  files (`AGENTS.md`, `DESIGN.md`, `README.md`, `docs/**`, `tasks/**`) are only
+  offered when the task touches what they own. Definition of done gained item
+  6. Docs gate passes; no code touched. (working tree)
+- **2026-11-03 — One content width.** Device, Settings, Profile, Notifications
+  and Admin dropped their own `max-w-3xl`/`max-w-5xl` + `mx-auto` caps, so their
+  cards match the 1400px column the nav pill sits in; the freed width went into
+  content (threshold form 4 columns from `xl`, Profile fields side by side from
+  `sm`, device fact rows label/value from `sm`, prose on `max-w-prose`).
+  `DESIGN.md` gained the rule, `DECISIONS.md` ADR-006. 430 tests pass,
+  typecheck clean, build ok, `dist/` untouched. (working tree)
 - **2026-11-02 — Tests under the type checker.** All 28 `*.test.jsx` renamed to
   `*.test.tsx` so `tsc --noEmit` covers them for the first time (334 errors
   fixed, none by assertion change). `a11y.test.tsx` now sweeps `.jsx` and

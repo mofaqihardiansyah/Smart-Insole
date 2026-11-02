@@ -26,6 +26,10 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Agent workflow now ends with a Markdown upkeep question: which root `.md`
+  files (`TASK.md`, `CHANGELOG.md`, `READY.md`, `DECISIONS.md`) need updating.
+  Frozen documents (`AGENTS.md`, `DESIGN.md`, `README.md`, `docs/**`,
+  `tasks/**`) are only offered when the task touches their subject.
 - Every component test is now `.test.tsx` (28 files), so `tsc --noEmit` checks
   them instead of skipping them under `allowJs`. `a11y.test.tsx` sweeps `.jsx`
   and `.tsx` alike so the outline gate still covers every screen.
@@ -46,6 +50,14 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Every signed-in page now fills the shell's 1400px content column. Device,
+  Settings, Profile, Notifications and Admin each capped and centred their own
+  `<section>` (`max-w-3xl` / `max-w-5xl`), so their cards sat narrower than the
+  nav pill with empty canvas on both sides. The caps are gone and the internals
+  spread out instead: the threshold form is four columns from `xl`, the Profile
+  name and email sit side by side from `sm`, the device fact rows put the label
+  and the value on one line from `sm`, and prose keeps `max-w-prose`. See
+  `DESIGN.md` ("One content width for every page") and `DECISIONS.md` ADR-006.
 - Removed the unused `subscribeToBattery` helper from the realtime service.
 - Corrected the wire-contract comment in `firmware/src/main.cpp`, which still
   pointed at a `.js` service file that no longer exists.

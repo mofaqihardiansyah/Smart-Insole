@@ -59,8 +59,13 @@ Responsive Design_)**.
 - **Cross-Platform Responsive Web** — antarmuka web yang ringan dan dapat
   diakses melalui browser perangkat apa pun (Android, iOS, Windows, Mac)
   tanpa instalasi aplikasi tambahan.
-- **Navigasi Adaptif & Bento Grid** — sidebar penuh di desktop, nav-pill
-  ringkas di mobile; layout kartu asimetris (_bento box_) untuk dashboard.
+- **Navigasi Adaptif & Bento Grid** — nav-pill di header untuk desktop dan
+  drawer untuk mobile; layout kartu asimetris (_bento box_) pada dashboard.
+- **Satu Lebar Konten** — setiap halaman terautentikasi mengisi kolom konten
+  1400px yang sama dengan header, tanpa batas lebar per halaman; lebarnya
+  diserap oleh grid internal (form multi-kolom, baris data, `max-w-prose` untuk
+  paragraf). Rujuk [`DESIGN.md`](DESIGN.md) dan ADR-006 di
+  [`DECISIONS.md`](DECISIONS.md).
 - **Multibahasa (kamus i18n)** — kamus ID/EN tersedia di `src/utils/i18n.ts`;
   permukaan yang dikirim saat ini hanya bahasa Indonesia (LANG-01).
 

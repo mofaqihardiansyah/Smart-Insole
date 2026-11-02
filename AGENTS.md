@@ -82,6 +82,31 @@ Docs: code fences balanced, internal links resolve, tables render.
 
 A change is not done until its gate passes and `TASK.md` is updated.
 
+## Markdown upkeep check (mandatory)
+
+Every task or instruction ends with a question to the user, not a silent
+decision. Before hand-over, ask whether the root `.md` files need an update,
+and name the candidates with the lines you would write.
+
+Living files — check on every task, ask every time:
+
+| File | Ask when |
+| --- | --- |
+| `TASK.md` | every completed task: Done entry, In progress, Next |
+| `CHANGELOG.md` | the change is user-visible: added, changed, fixed, removed |
+| `READY.md` | environment, stack, paths, or verified state changed |
+| `DECISIONS.md` | a choice that would cost real rework to reverse was made |
+
+Frozen or one-shot files — do not offer them by default:
+
+- `AGENTS.md` — user-owned; propose, never edit on your own initiative;
+- `DESIGN.md` — the design authority; only when the task changes design rules;
+- `README.md`, `docs/**`, `tasks/**` PRDs — update only when the task touches
+  the subject that document owns.
+
+Ask once per task, with the named candidates. Do not write the living files
+unasked, and do not skip the question because the answer looks obvious.
+
 ## Code conventions
 
 - TypeScript strict; shared contracts live in `src/types/`.
@@ -98,3 +123,4 @@ A change is not done until its gate passes and `TASK.md` is updated.
 3. `TASK.md` updated (Done entry with date and commit hash or `(working tree)`).
 4. `READY.md` updated only if environment, stack, or paths changed.
 5. Hand-over states what changed, the proof, and any unresolved risk.
+6. The Markdown upkeep question has been asked and answered.

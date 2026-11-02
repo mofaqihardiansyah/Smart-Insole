@@ -38,9 +38,9 @@ interface FactRowProps {
 }
 
 const FactRow = ({ label, children }: FactRowProps) => (
-  <div className="py-3 first:pt-0 last:pb-0">
+  <div className="grid gap-y-1 py-3 first:pt-0 last:pb-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-baseline sm:gap-x-6">
     <dt className="text-body-sm text-muted">{label}</dt>
-    <dd className="mt-1 text-body-sm font-medium text-fg">{children}</dd>
+    <dd className="text-body-sm font-medium text-fg">{children}</dd>
   </div>
 );
 
@@ -73,7 +73,7 @@ const DevicePage = () => {
   const sourceLabel = t("source.firebase", language);
 
   return (
-    <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
+    <section className="space-y-5 lg:space-y-6">
       <PageHeader
         title={t("device.title", language)}
         subtitle={t("device.subtitle", language)}

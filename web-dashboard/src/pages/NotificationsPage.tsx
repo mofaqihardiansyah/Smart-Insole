@@ -90,7 +90,7 @@ const PreferenceRow = ({
         <Icon className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
         {title}
       </p>
-      <p className="mt-0.5 text-body-sm text-muted">{body}</p>
+      <p className="mt-0.5 max-w-prose text-body-sm text-muted">{body}</p>
       <p className="mt-1 text-body-sm text-muted">
         {checked ? t("settings.on", language) : t("settings.off", language)}
       </p>
@@ -170,7 +170,7 @@ const NotificationsPage = () => {
   const SourceIcon = Radio;
 
   return (
-    <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
+    <section className="space-y-5 lg:space-y-6">
       <PageHeader
         title={t("notifications.title", language)}
         subtitle={t("notifications.subtitle", language)}
@@ -183,7 +183,7 @@ const NotificationsPage = () => {
         />
 
         <div className="px-6 pb-6">
-          <p className="text-body-sm text-muted">
+          <p className="max-w-prose text-body-sm text-muted">
             {t("notifications.permissionBody", language)}
           </p>
 
@@ -280,7 +280,7 @@ const NotificationsPage = () => {
                     : t("notifications.disconnected", language)
                 }
               />
-              <p className="mt-3 flex items-center gap-2 text-body-sm text-muted">
+              <p className="mt-3 flex max-w-prose items-center gap-2 text-body-sm text-muted">
                 <Info className="h-4 w-4 shrink-0" aria-hidden="true" />
                 {t(connectionDetailKey, language)}
               </p>

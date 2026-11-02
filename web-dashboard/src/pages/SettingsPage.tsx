@@ -132,7 +132,7 @@ const PreferenceRow = ({
         <Icon className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
         {title}
       </p>
-      <p className="mt-0.5 text-caption text-muted">{body}</p>
+      <p className="mt-0.5 max-w-prose text-caption text-muted">{body}</p>
       <p className="mt-1 text-caption text-muted">
         {checked ? t("settings.on") : t("settings.off")}
       </p>
@@ -226,7 +226,7 @@ const SettingsPage = () => {
   const unitSeconds = t("metrics.unit.seconds", language);
 
   return (
-    <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
+    <section className="space-y-5 lg:space-y-6">
       <PageHeader
         title={t("settings.title", language)}
         subtitle={t("settings.subtitle", language)}
@@ -239,7 +239,7 @@ const SettingsPage = () => {
         />
 
         <div className="px-6 pb-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {FIELDS.map((field) => (
               <GlassInput
                 key={field.key}

@@ -291,6 +291,14 @@ Breakpoints are placed where the content stops working, not at device widths.
 | `640px - 1023px` | Same bar; two-column tile grid. Search stays in the drawer. |
 | `>= 1024px` | One sticky header over the warm canvas: white brand card on the left, the dark nav pill beside it, search, bell and the account menu on its right. The content column caps at 1400px with 32px gutters. |
 
+**One content width for every page.** The shell owns the column. `AppLayout`
+caps the router outlet at 1400px with 32px gutters from `lg` up, and every page
+fills that column: no page re-caps itself with `max-w-*` and none re-centres
+with `mx-auto`. A narrower column inside a full-width header leaves the cards
+visibly shorter than the nav pill above them, with dead space on both sides.
+Density inside the column is the page's own job: multi-column grids for forms
+and stat strips, `max-w-prose` for running prose.
+
 **The shell is a header, not a rail.** The earlier 288px left rail is gone.
 Destinations live in one place: the dark nav pill. A brand card anchors its
 left, and three state controls (search, bell, account) close its right. The

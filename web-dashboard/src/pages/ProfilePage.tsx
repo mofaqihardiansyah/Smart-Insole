@@ -75,7 +75,7 @@ const ProfilePage = () => {
   ];
 
   return (
-    <section className="mx-auto w-full max-w-3xl space-y-5 lg:space-y-6">
+    <section className="space-y-5 lg:space-y-6">
       <PageHeader
         title={t("profile.title", language)}
         subtitle={t("profile.subtitle", language)}
@@ -121,24 +121,26 @@ const ProfilePage = () => {
           </GlassCard>
 
           <GlassCard className="space-y-5">
-            <GlassInput
-              id="profile-name"
-              label={t("profile.name", language)}
-              value={fullName}
-              onChange={(event) => {
-                setFullName(event.target.value);
-                setSaved(false);
-              }}
-              autoComplete="name"
-            />
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <GlassInput
+                id="profile-name"
+                label={t("profile.name", language)}
+                value={fullName}
+                onChange={(event) => {
+                  setFullName(event.target.value);
+                  setSaved(false);
+                }}
+                autoComplete="name"
+              />
 
-            <GlassInput
-              id="profile-email"
-              label={t("profile.email", language)}
-              value={user.email || ""}
-              readOnly
-              hint={t("profile.emailLocked", language)}
-            />
+              <GlassInput
+                id="profile-email"
+                label={t("profile.email", language)}
+                value={user.email || ""}
+                readOnly
+                hint={t("profile.emailLocked", language)}
+              />
+            </div>
 
             {saved && (
               <StatusBanner
