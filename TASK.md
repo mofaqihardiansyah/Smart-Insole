@@ -7,6 +7,11 @@ summary line per month.
 
 ## Done
 
+- **2026-11-02 — Data and model provenance.** `datasets/README.md` and
+  `models/README.md` document source, licence, schema, and regeneration;
+  `rf-model.json` carries a generated `provenance` block; `rf-modelSync.test.js`
+  fails if the web copy drifts; `prepare-dataset.py` label/split comments
+  corrected (no `danger` samples exist). 430 tests pass. (`1d51b262`)
 - **2026-11-02 — Fase 3 validation.** OptiTrack gait check (310 recordings, 902
   stance phases, heel-before-forefoot 99,9%), Figshare DFU thresholds (1.296
   measurements, 1,4% >= 70 kPa), edge cases, and 90,72% RF-vs-rule agreement on

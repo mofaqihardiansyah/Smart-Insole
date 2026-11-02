@@ -17,9 +17,21 @@ All notable changes to this project are documented here. The format follows
   (fuzzy-vs-RF slides and the end-to-end demo script).
 - `src/utils/riskAgreement.test.js`: the 90% agreement gate, an assertion that
   every grid disagreement sits in a documented band, and the edge-case set.
+- `datasets/README.md`: source, licence, contents, and limits of the three raw
+  datasets, plus the reproduction commands.
+- `models/README.md`: artifact map, field-level schema, provenance chain, and
+  fresh-regeneration steps.
+- `src/utils/rf-modelSync.test.js`: fails if the web copy of `rf-model.json`
+  stops matching `models/rf-model.json`.
 
 ### Changed
 
+- `scripts/train-model.js` now writes a deterministic `provenance` block
+  (dataset version, split sizes, sample counts, script names, seed) so
+  regenerating does not lose the audit trail. Model trees are byte-identical.
+- `scripts/prepare-dataset.py` comments now state the real label rule
+  (peak >= 35 kPa or sustained >= 200 samples) and that DFN-DS contains zero
+  `danger` samples; behaviour is unchanged.
 - Documentation restructured to match the real repository: root `README.md`,
   `docs/README.md`, `firmware/README.md`, `web-dashboard/README.md`,
   `docs/ROADMAP-RF.md`, `docs/HARDWARE-SPEC.md`, and
