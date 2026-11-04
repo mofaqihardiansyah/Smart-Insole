@@ -7,14 +7,15 @@
  * The wire format is the one documented in the technical spec:
  *
  *   readings/latest    { deviceId, timestamp, forefoot_kpa, midfoot_kpa,
- *                        heel_kpa, sustained_duration_sec, fuzzy_risk_score,
+ *                        heel_kpa, sustained_duration_sec, risk_score,
  *                        risk_status, battery_percent }
  *   readings/history   { <pushId>: { timestamp, forefoot_kpa, ... } }
  *
- * The firmware computes its own fuzzy risk. When it provides `risk_status` and
- * `fuzzy_risk_score`, those are authoritative and the client uses them; the
- * client only runs its own inference when the device has not sent a verdict.
- * That keeps the client and the firmware from disagreeing about the same foot.
+ * The firmware computes its own Random Forest risk. When it provides
+ * `risk_status` and `risk_score`, those are authoritative and the client uses
+ * them; the client only runs its own inference when the device has not sent a
+ * verdict. That keeps the client and the firmware from disagreeing about the
+ * same foot.
  */
 
 import { ref, onValue, query, limitToLast, set } from 'firebase/database';
@@ -79,7 +80,7 @@ export function mapReadingPacket(packet: unknown): MappedReading | null {
     sustainedDuration: toFiniteNumber(wire.sustained_duration_sec) ?? 0,
   };
 
-  const riskScore = toFiniteNumber(wire.fuzzy_risk_score);
+  const riskScore = toFiniteNumber(wire.risk_score);
 
   return {
     readings,

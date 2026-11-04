@@ -10,13 +10,11 @@ All notable changes to this project are documented here. The format follows
 - Agent documentation: `AGENTS.md`, `READY.md`, `TASK.md`, `CHANGELOG.md`,
   `DECISIONS.md`.
 - `docs/validation-report.md` (Fase 3): OptiTrack gait cross-check, Figshare DFU
-  thresholds, edge cases, and RF-vs-rule agreement.
+  thresholds, and edge cases.
 - `scripts/validate-datasets.py` to reproduce the 3.1 and 3.2 numbers directly
   from the committed archives.
 - `docs/thesis-methodology.md` (Bab III draft) and `docs/thesis-defense.md`
-  (fuzzy-vs-RF slides and the end-to-end demo script).
-- `src/utils/riskAgreement.test.js`: the 90% agreement gate, an assertion that
-  every grid disagreement sits in a documented band, and the edge-case set.
+  (RF method slides and the end-to-end demo script).
 - `datasets/README.md`: source, licence, contents, and limits of the three raw
   datasets, plus the reproduction commands.
 - `models/README.md`: artifact map, field-level schema, provenance chain, and
@@ -61,6 +59,13 @@ All notable changes to this project are documented here. The format follows
 - Removed the unused `subscribeToBattery` helper from the realtime service.
 - Corrected the wire-contract comment in `firmware/src/main.cpp`, which still
   pointed at a `.js` service file that no longer exists.
+
+### Removed
+
+- Fuzzy logic inference (`src/utils/fuzzyRisk.ts` and its test) and the
+  RF-vs-fuzzy agreement test. Random Forest is now the only risk algorithm.
+- Renamed the wire field `fuzzy_risk_score` to `risk_score` in the firmware,
+  the TypeScript contract, and the realtime mapper.
 
 ## [0.1.0] - 2026-11-01
 

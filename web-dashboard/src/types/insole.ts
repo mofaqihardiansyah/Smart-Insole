@@ -28,7 +28,7 @@ export interface WireReadingPacket {
   midfoot_kpa?: unknown;
   heel_kpa?: unknown;
   sustained_duration_sec?: unknown;
-  fuzzy_risk_score?: unknown;
+  risk_score?: unknown;
   risk_status?: unknown;
   battery_percent?: unknown;
   [key: string]: unknown;

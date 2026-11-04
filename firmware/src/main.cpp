@@ -157,7 +157,7 @@ static void pushReadings(time_t timestampSec) {
   json.add("midfoot_kpa", lastMidfoot);
   json.add("heel_kpa", lastHeel);
   json.add("sustained_duration_sec", sustainedDuration);
-  json.add("fuzzy_risk_score", lastResult.score);
+  json.add("risk_score", lastResult.score);
   json.add("risk_status", RandomForest::levelToString(lastResult.level));
 
   bool latestOk = Firebase.RTDB.setJSON(&fbdo, "/readings/latest", &json);

@@ -60,9 +60,8 @@ validasi terlalu optimistis.
 Model yang dipakai adalah **hybrid Random Forest dan aturan klinis**.
 
 Random Forest `[sitasi]` menangani batas `safe` dan `warning`. Alasan pemilihan
-Random Forest, dibandingkan inferensi fuzzy yang dipakai pada versi awal:
-batas keputusan dipelajari dari data sehingga tidak bergantung pada bentuk
-fungsi keanggotaan yang ditentukan manual, model tidak memerlukan asumsi
+Random Forest: batas keputusan dipelajari dari data sehingga tidak bergantung
+pada fungsi keanggotaan yang ditentukan manual, model tidak memerlukan asumsi
 distribusi, dan hasilnya dapat diekspor ke C++ agar berjalan di ESP32 tanpa
 pustaka tambahan.
 
@@ -100,9 +99,9 @@ Empat evaluasi dijalankan:
    accuracy, precision, recall, dan F1 per kelas.
 2. **Clinical contract**: kasus acuan 40 kPa harus `warning`, 80 kPa selama
    31 detik harus `danger`, dan 20 kPa tanpa durasi harus `safe`.
-3. **Agreement dengan aturan ahli**: prediksi Random Forest dibandingkan dengan
-   inferensi fuzzy pada seluruh 81.000 sampel dan pada grid seragam
-   0-120 kPa x 0-60 detik.
+3. **Konsistensi level dan skor**: sapuan grid seragam 0-120 kPa x 0-60 detik
+   memastikan setiap level selalu berada di pita skornya dan tidak ada lompatan
+   di luar kontrak klinis.
 4. **Validasi silang dan edge case**: pola tiga region pada data OptiTrack,
    ambang tekanan pada data DFU, serta perilaku pada input kosong, `NaN`,
    nilai negatif, dan 500 kPa.
@@ -114,9 +113,6 @@ Empat evaluasi dijalankan:
 | Accuracy `safe` vs `warning` (28 pasien) | 100,0% |
 | Macro-F1 | 100,0% |
 | Clinical contract | 4/4 lolos |
-| Agreement vs aturan ahli (81.000 sampel) | 90,72% |
-| Agreement vs aturan ahli (grid 14.641 titik) | 74,06% |
-| RF `safe` saat aturan `danger` | 0 kasus |
 | Edge case degenerat (kosong, `NaN`, 500 kPa) | Tidak ada galat, skor tetap 0-100 |
 | OptiTrack: tumit mendahului forefoot | 99,9% dari 902 fase tumpu |
 | Figshare DFU: pengukuran >= 70 kPa | 1,4% (puncak 123,8 kPa) |
@@ -137,10 +133,10 @@ tumpu yang juga menjadi fitur masukan.
   memakai 8 sensor per kaki yang diagregasi. Agregasi ini divalidasi pada
   OptiTrack (3.1), tetapi resolusi *midfoot* pada perangkat hanya diwakili
   tiga titik ukur.
-- **Jendela durasi.** Agreement 90,72% diukur pada distribusi DFN-DS yang tidak
-  memuat tumpu panjang. Pada beban 35-69 kPa yang bertahan lebih dari 20 detik,
-  model lebih permisif daripada aturan ahli; celah ini hanya muncul pada
-  pemakaian berkepanjangan dan wajib disebutkan saat pemakaian alat.
+- **Jendela durasi.** Pada beban 35-69 kPa yang bertahan lebih dari 20 detik,
+  model tetap `warning`, lebih permisif daripada aturan klinis yang menaikkan ke
+  `danger`; celah ini hanya muncul pada pemakaian berkepanjangan dan wajib
+  disebutkan saat pemakaian alat.
 - **Ambang Figshare.** Dataset DFU tidak memuat durasi, sehingga validasi 3.2
   hanya berlaku untuk ambang tekanan.
 

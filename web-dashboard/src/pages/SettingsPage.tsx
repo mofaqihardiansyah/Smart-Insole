@@ -24,10 +24,10 @@ import type { LucideIcon } from "lucide-react";
 /**
  * SettingsPage, the thresholds and the alarm preferences.
  *
- * The four threshold fields are the values the fuzzy engine actually runs on:
- * setThresholds() writes them straight into InsoleContext, so a save changes
- * the risk level on the dashboard without a reload. The preview table below
- * runs the same inferRisk() against the active thresholds, which lets a
+ * The four threshold fields are the values the Random Forest inference actually
+ * runs on: setThresholds() writes them straight into InsoleContext, so a save
+ * changes the risk level on the dashboard without a reload. The preview table
+ * below runs the same inferRisk() against the active thresholds, which lets a
  * clinician see the effect of an edit before trusting it.
  *
  * Every panel opens with a PanelHeader, the same structural layer the dashboard

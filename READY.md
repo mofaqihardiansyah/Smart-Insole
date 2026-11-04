@@ -10,7 +10,7 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
 | Node.js | v26.7.0 |
 | npm | 12.0.2 |
 | Python | 3.14.9 (`openpyxl` 3.1.5 present; `pandas` absent) |
-| PlatformIO (`pio`) | **not installed** on this machine |
+| PlatformIO (`pio`) | Core 6.2.0 in `~/.venvs/platformio/bin/pio` (not on `PATH`) |
 | PlatformIO envs | `esp32dev` (hardware), `native` (Unity unit tests) |
 | Git branch | `main` |
 
@@ -22,8 +22,8 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
   Client Library `^4.4.14`.
 - **Cloud**: Firebase Realtime Database (project `sole-3b2e8`), Auth,
   Firestore, Storage.
-- **Model**: Random Forest hybrid with clinical rules; artifacts as JSON and as
-  a C++ header.
+- **Model**: Random Forest (20 trees) for `safe` / `warning` plus a clinical
+  rule for `danger`; artifacts as JSON and as a C++ header.
 
 ## Where things live
 
@@ -54,14 +54,16 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
   `firestore.rules`, `storage.rules`, wired through `firebase.json`.
 - `web-dashboard/public/` contains `icon.svg` and `manifest.webmanifest`.
 - UI ships Indonesian only (`LANG-01`); the i18n dictionary keeps ID + EN.
-- Model is hybrid: `danger` is rule-based (peak ≥ 70 kPa and sustained ≥ 0.1 s),
-  Random Forest separates `safe` / `warning`.
+- Model is Random Forest + clinical rule: the forest separates `safe` /
+  `warning`; `danger` is rule-based (peak ≥ 70 kPa and sustained ≥ 0.1 s).
 - `DISCUSSION-GUIDE.md` is git-ignored (personal working note, not in history).
 
 ## Known gaps
 
-- PlatformIO is absent: firmware build and test cannot run here. Say so; do not
-  install it silently.
+- PlatformIO lives in a venv at `~/.venvs/platformio`; call it by full path.
+  Build, native tests, and USB flash were verified 3 Nov 2026 on an
+  ESP32-D0WD-V3. `/dev/ttyUSB0` is `root:uucp 660`, so `chmod 666` (sudo) is
+  needed before upload; a re-plug restores 660.
 - Vitest is the only executable proof for web. Browser checks are manual.
 - `docs/DESIGN-BRIEF.md` is historical. `DESIGN.md` is the design authority.
 - `docs/HARDWARE-SPEC.md` is still marked Draft.

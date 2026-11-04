@@ -15,7 +15,7 @@ describe('mapReadingPacket', () => {
     midfoot_kpa: 18.2,
     heel_kpa: 84.1,
     sustained_duration_sec: 35,
-    fuzzy_risk_score: 82.4,
+    risk_score: 82.4,
     risk_status: 'DANGER',
     battery_percent: 94,
   };

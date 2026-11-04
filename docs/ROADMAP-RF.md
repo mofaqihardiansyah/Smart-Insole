@@ -57,11 +57,12 @@ Fase 6: 6.1-6.3 selesai, 6.4 skrip demo siap dan menunggu 5.4.
 - [x] 3.2 Cek threshold klinis vs Figshare DFU (peak pressure per region)
       — 1.296 pengukuran, 19,3% >= 35 kPa, 1,4% >= 70 kPa, puncak 123,8 kPa
 - [x] 3.3 Uji edge case: input kosong, NaN, tekanan ekstrem (500 kPa)
-- [x] 3.4 Bandingkan prediksi RF vs aturan expert (fuzzy) — harus > 90% agreement
-      — 90,72% pada 81.000 sampel DFN-DS, 0 kasus RF `safe` vs aturan `danger`
+- [x] 3.4 Uji kontrak klinis pada test suite: edge case dan ambang
+      — `randomForestRisk.test.js`
 
 **Output:** [`validation-report.md`](validation-report.md) +
-`scripts/validate-datasets.py` + `web-dashboard/src/utils/riskAgreement.test.js`
+`scripts/validate-datasets.py` +
+`web-dashboard/src/utils/randomForestRisk.test.js`
 
 ## Fase 4 — Integration Web (1 hari) — selesai
 
@@ -69,7 +70,7 @@ Fase 6: 6.1-6.3 selesai, 6.4 skrip demo siap dan menunggu 5.4.
 
 - [x] 4.1 Update `randomForestRisk.ts` untuk load model ter-trained (bukan synthetic)
 - [x] 4.2 Pastikan interface sama: `inferRisk({peakPressure, sustainedDuration})`
-- [x] 4.3 Update tests: clinical contract + agreement dengan data DFN-DS (157 tests lolos)
+- [x] 4.3 Update tests: clinical contract + edge case (157 tests lolos)
 - [x] 4.4 `npm test` + `npm run build` hijau
 
 **Output:** web dashboard pakai model asli
@@ -90,7 +91,7 @@ Fase 6: 6.1-6.3 selesai, 6.4 skrip demo siap dan menunggu 5.4.
 - [x] 6.1 Update DESIGN.md: method = Random Forest, dataset = DFN-DS
 - [x] 6.2 Tulis bab methodology di thesis: data, training, evaluasi, hasil
       — draf di [`thesis-methodology.md`](thesis-methodology.md)
-- [x] 6.3 Siapkan slide: perbandingan fuzzy vs RF (accuracy, interpretabilitas)
+- [x] 6.3 Siapkan slide: metode RF (accuracy, interpretabilitas)
       — kerangka 6 slide di [`thesis-defense.md`](thesis-defense.md)
 - [ ] 6.4 Demo end-to-end: ESP32 → Firebase → Dashboard dengan model asli
       — skrip di [`thesis-defense.md`](thesis-defense.md); eksekusi menunggu 5.4

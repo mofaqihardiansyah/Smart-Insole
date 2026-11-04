@@ -1,10 +1,10 @@
 # Draf Materi Sidang (Fase 6.3 dan 6.4)
 
-> Dua bagian: kerangka slide perbandingan fuzzy vs Random Forest, dan skrip
-> demo ujung-ke-ujung. Angka bersumber dari `docs/rf-model-report.md` dan
+> Dua bagian: kerangka slide metode Random Forest, dan skrip demo
+> ujung-ke-ujung. Angka bersumber dari `docs/rf-model-report.md` dan
 > `docs/validation-report.md`.
 
-## 6.3 Slide: fuzzy vs Random Forest
+## 6.3 Slide: metode Random Forest
 
 Enam slide, masing-masing satu pesan. Angka di slide harus sama dengan laporan;
 jangan menambah klaim akurasi baru di luar itu.
@@ -15,23 +15,22 @@ jangan menambah klaim akurasi baru di luar itu.
 > diabetik. Alat ini mengukur tekanan itu dan memberi peringatan sebelum luka
 > terbentuk.
 
-### Slide 2 — Apa yang berubah
+### Slide 2 — Cara kerja model
 
-| | Fuzzy (versi awal) | Random Forest (versi akhir) |
-| --- | --- | --- |
-| Batas `safe`/`warning` | 9 aturan ahli, fungsi keanggotaan manual | dipelajari dari 81.000 sampel DFN-DS |
-| Kelas `danger` | aturan ahli | aturan ahli (tidak berubah) |
-| Perangkat | dashboard web | dashboard web dan ESP32 |
-| Dasar keputusan | dapat dibaca aturan per aturan | suara 20 pohon |
+| Komponen | Nilai |
+| --- | --- |
+| Batas `safe`/`warning` | dipelajari dari 81.000 sampel DFN-DS |
+| Kelas `danger` | aturan klinis (peak >= 70 kPa dan sustained >= 0,1 s) |
+| Perangkat | dashboard web dan ESP32 |
+| Dasar keputusan | suara 20 pohon |
 
-Poin bicara: yang berubah hanya batas safe/warning. Aturan bahaya sengaja tetap
-manual karena datanya hanya 31 sampel dari 3 pasien.
+Poin bicara: batas safe/warning dipelajari dari data. Aturan bahaya sengaja
+tetap manual karena datanya hanya 31 sampel dari 3 pasien.
 
 ### Slide 3 — Kinerja
 
 Angka yang ditampilkan: accuracy 100,0% dan macro-F1 100,0% pada 28 pasien yang
-tidak dipakai melatih, clinical contract 4/4, agreement dengan aturan ahli
-90,72% pada 81.000 sampel.
+tidak dipakai melatih, clinical contract 4/4.
 
 Poin bicara: akurasi 100% hanya berlaku untuk dua kelas, pada populasi diabetes,
 dengan batas yang ditentukan durasi tumpu. Sebutkan ini lebih dulu sebelum
@@ -46,14 +45,11 @@ pernah melempar galat).
 
 ### Slide 5 — Interpretabilitas: jawaban jujur
 
-Fuzzy lebih mudah diaudit: setiap aturan punya derajat pengaktifan, sehingga
-klinisi bisa melihat aturan mana yang memicu keputusan. Random Forest hanya
-memberi suara 20 pohon; model 3,4 KB ini tidak dapat dijelaskan per pasien.
-
-Kompensasinya: (a) kontrak klinis diuji eksplisit, (b) agreement 90,72% dengan
-aturan ahli menunjukkan model tidak menyimpang, (c) tidak ada satu pun kasus
-`safe` yang menurut aturan adalah `danger`, (d) model cukup kecil untuk berjalan
-di ESP32 (7,9 KB header C++), sesuatu yang tidak dilakukan versi fuzzy.
+Random Forest hanya memberi suara 20 pohon; model 3,4 KB ini tidak dapat
+dijelaskan per pasien. Kompensasinya: (a) kontrak klinis diuji eksplisit,
+(b) ambang bahaya tetap aturan klinis yang dapat dibaca, (c) tekanan >= 70 kPa
+tidak pernah dilaporkan `safe`, dan (d) model cukup kecil untuk berjalan di
+ESP32 (7,9 KB header C++).
 
 ### Slide 6 — Keterbatasan dan langkah berikutnya
 
@@ -84,7 +80,8 @@ dan 2 dijalankan pada perangkat yang sudah diflash sebelumnya.
    0,1 detik dengan tekanan tinggi. Buzzer berbunyi dan LED berubah. Kalimat:
    "keputusan ini dibuat di perangkat, tanpa jaringan."
 2. **Data masuk Firebase.** Tunjuk `readings/latest` di Console: `forefoot_kpa`,
-   `midfoot_kpa`, `heel_kpa`, `sustained_duration_sec`, `risk_status`. Kalimat:
+   `midfoot_kpa`, `heel_kpa`, `sustained_duration_sec`, `risk_score`,
+   `risk_status`. Kalimat:
    "kontrak data yang sama dibaca dashboard."
 3. **Dashboard realtime.** Di halaman pemantauan, tunjukkan tiga region terisi,
    metrik puncak, dan badge risiko berubah mengikuti langkah 1. Contohkan

@@ -7,6 +7,23 @@ summary line per month.
 
 ## Done
 
+- **2026-11-04 — Random Forest only, fuzzy removed.** Deleted
+  `fuzzyRisk.ts` and its test; `RISK_THRESHOLDS`, `SCORE_BANDS`, and
+  `alignScoreToLevel` moved into `randomForestRisk.ts`. Wire field
+  `fuzzy_risk_score` renamed to `risk_score` in firmware, types, and realtime
+  mapper. Removed the RF-vs-fuzzy agreement metric from docs; RF accuracy and
+  clinical contract remain. 383 web tests pass, typecheck clean, build ok,
+  `pio test -e native` 13/13, `dist/` untouched. (working tree)
+- **2026-11-03 — Telemetry live from the ESP32.** After the hotspot moved from
+  5 GHz to 2,4 GHz (ESP32-WROOM-32 has no 5 GHz radio), the board joined
+  `hiqaffyed`, printed `Firebase configured`, and `firebase database:get`
+  showed `readings/latest` advancing every 2 s with 80 history rows. One
+  transient push failure at boot recovered on its own. (working tree)
+- **2026-11-03 — Firmware build and flash verified locally.** PlatformIO 6.2.0
+  installed in `~/.venvs/platformio`; `pio test -e native` 13/13, `pio run
+  -e esp32dev` ok, image flashed to ESP32-D0WD-V3 (`80:f3:da:5c:c9:28`); serial
+  shows boot, model load, and live FSR readings. Telemetry still blocked:
+  `config.h` carries the template placeholders. (working tree)
 - **2026-11-03 — Markdown upkeep rule.** `AGENTS.md` gained a mandatory
   *Markdown upkeep check*: after every task the agent asks which root `.md`
   files need updating, naming candidates. Living files (`TASK.md`,
@@ -79,12 +96,14 @@ summary line per month.
 
 ## In progress
 
-- Nothing claimed. Pick from Next.
+- **Web live check** — RTDB already carries fresh data (`readings/latest` plus
+  80 history rows); the dashboard needs a refresh to confirm it leaves `error`
+  and settles on `live`.
 
 ## Next
 
-1. **Firmware 5.4** — flash to ESP32 and test with real sensors. Blocked
-   locally: `pio` is not installed. Unblocks the end-to-end demo (Fase 6.4).
+1. **Firmware 5.4** — flash with real credentials and test with real sensors.
+   Unblocks the end-to-end demo (Fase 6.4).
 2. **Docs polish** — `docs/HARDWARE-SPEC.md` is still Draft; promote it once
    the hardware is validated.
 3. **Thesis review** — fill the `[sitasi]` placeholders in

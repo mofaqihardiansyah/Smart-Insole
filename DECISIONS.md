@@ -105,3 +105,23 @@ and stat strips, `max-w-prose` for running prose.
 **Consequences.** A narrower page needs a new decision, not a local `max-w-*`.
 Wide cards expose stretched internals, so a page that gains width must lay its
 content out in columns rather than let a single field or line span the card.
+
+## ADR-007: Random Forest is the only risk algorithm
+
+- **Date:** 2026-11-04
+- **Status:** Accepted
+
+**Context.** The first version shipped a fuzzy inference engine beside the
+Random Forest: hand-tuned membership functions and a 3x3 rule base. The runtime
+verdict already came from the forest, so the fuzzy engine survived only as a
+reference and a labelling comparator, which made the thesis method ambiguous.
+
+**Decision.** Remove fuzzy logic entirely. Random Forest is the only risk
+algorithm: 20 trees classify `safe` vs `warning`, and a clinical rule classifies
+`danger` (ADR-001). `RISK_THRESHOLDS`, `SCORE_BANDS`, and `alignScoreToLevel`
+live in `randomForestRisk.ts`. The wire field is `risk_score`, not
+`fuzzy_risk_score`.
+
+**Consequences.** No fuzzy code, test, or agreement metric remains. Reintroducing
+a second classifier needs a new decision. `docs/thesis-methodology.md` and
+`docs/thesis-defense.md` describe the method as Random Forest only.

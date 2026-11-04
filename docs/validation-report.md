@@ -2,9 +2,9 @@
 
 > Terakhir diperbarui: 2 November 2026.
 
-Validasi model risiko (Random Forest + aturan klinis) terhadap data nyata dan
-terhadap aturan ahli. Semua angka di bawah dapat direproduksi dengan perintah
-pada bagian **Reproduksi**.
+Validasi model risiko (Random Forest + aturan klinis) terhadap data nyata.
+Semua angka di bawah dapat direproduksi dengan perintah pada bagian
+**Reproduksi**.
 
 Ringkasan:
 
@@ -13,7 +13,6 @@ Ringkasan:
 | 3.1 Pola 3 region saat gait (OptiTrack v2) | 902 fase tumpu, tumit memuncak sebelum forefoot pada 99,9% | Lolos |
 | 3.2 Ambang klinis vs peak pressure DFU (Figshare) | 1.296 pengukuran, 19,3% >= 35 kPa, 1,4% >= 70 kPa | Lolos |
 | 3.3 Edge case (kosong, NaN, 500 kPa) | Semua input degenerat -> `safe`, tidak pernah melempar galat | Lolos |
-| 3.4 Agreement RF vs aturan ahli | 90,72% pada 81.000 sampel DFN-DS; 0 kasus RF `safe` saat aturan `danger` | Lolos |
 
 ## 3.1 Validasi silang OptiTrack v2
 
@@ -76,54 +75,19 @@ tekanan, bukan durasi — dataset tidak menyediakan durasi tumpu.
 
 ## 3.3 Edge case
 
-Diuji di `web-dashboard/src/utils/riskAgreement.test.js`, untuk kedua mesin
-(RF dan fuzzy):
+Diuji di `web-dashboard/src/utils/randomForestRisk.test.js`:
 
 | Input | Hasil |
 | --- | --- |
 | Tanpa argumen / `peakPressure` kosong | `safe` |
 | `NaN` atau `Infinity` pada tekanan atau durasi | `safe` |
 | Tekanan negatif, durasi negatif | `safe` |
-| 500 kPa sesaat | `warning` (kedua mesin) |
-| 500 kPa selama 1 s | RF `danger`, fuzzy `warning` (selisih kontrak durasi, lihat 3.4) |
+| 500 kPa sesaat | `warning` |
+| 500 kPa selama 1 s | `danger` |
 | Ambang admin diubah (warning 25, danger 50) | Level dan skor tetap konsisten |
 
 Tidak ada input yang melempar galat atau menghasilkan skor di luar 0-100.
 Paket sensor yang hilang dibaca sebagai nol, bukan sebagai peringatan palsu.
-
-## 3.4 Agreement RF vs aturan ahli
-
-**Data.** Seluruh 81.000 sampel DFN-DS (135 pasien x 600) — distribusi yang
-sama dengan data latih, karena tujuannya memeriksa apakah model data-driven
-mengikuti aturan klinis pada kasus yang benar-benar ada, bukan pada ruang input
-yang tidak pernah terjadi.
-
-| Pembanding | Agreement |
-| --- | --- |
-| 81.000 sampel DFN-DS | **90,72%** (73.485 sampel) |
-| Grid seragam 0-120 kPa x 0-60 s (14.641 titik) | 74,06% (10.843 titik) |
-
-**Kasus berbahaya.** Tidak ada satu pun sampel di mana RF menyebut `safe`
-sementara aturan ahli menyebut `danger`. Arah kesalahan yang tersisa aman:
-7.484 sampel RF `safe` vs fuzzy `warning` (tekanan rendah yang ditahan lama),
-dan 31 sampel RF `danger` vs fuzzy `warning` (sampel DFN pada durasi pendek).
-
-**Selisih yang memang dirancang.** Pada grid seragam, seluruh 3.798
-ketidaksepakatan jatuh tepat di tiga pita, dan tidak ada satu pun di luar itu
-(diuji sebagai assertion):
-
-1. **Tekanan < 35 kPa.** Himpunan "medium" fuzzy bertumpang tindih ke bawah
-   ambang, jadi kaki bertekanan rendah yang ditahan bisa langsung `warning`,
-   sementara RF mempertahankan lantai `safe` 20 detik.
-2. **Tekanan >= 70 kPa.** RF memanggil `danger` sejak 0,1 detik tumpu; fuzzy
-   baru `danger` setelah beban berlangsung lama (±30 detik). Ini konsekuensi
-   kontrak klinis hybrid: bahaya dipicu oleh aturan, bukan oleh hutan.
-3. **35-69 kPa ditahan >= 20 detik.** Fuzzy menaikkan ke `danger`, RF tetap
-   `warning`. Ini **temuan nyata**: RF tidak memanggil bahaya untuk beban
-   sedang yang berlangsung lama. Tidak berdampak pada DFN-DS karena durasi
-   tumpu di dataset tidak pernah melewati 3 detik, tetapi harus dicatat sebagai
-   keterbatasan: pada pemakaian sangat lama (misalnya pasien bedridden), RF
-   akan lebih permisif daripada aturan ahli.
 
 ## Keterbatasan
 
@@ -131,8 +95,10 @@ ketidaksepakatan jatuh tepat di tiga pita, dan tidak ada satu pun di luar itu
   mesin; kesalahan pemetaan satu sensor akan menggeser porsi beban, tidak
   mengubah kesimpulan urutan.
 - Figshare DFU tidak memuat durasi, jadi 3.2 memvalidasi tekanan saja.
-- Agreement 90,72% diukur pada distribusi DFN-DS, yang tidak memuat tumpu
-  panjang; pita divergensi ketiga hanya teruji di grid.
+- Pada beban 35-69 kPa yang bertahan lebih dari 20 detik, model tetap `warning`,
+  lebih permisif daripada aturan klinis yang menaikkan ke `danger`. Celah ini
+  hanya muncul pada pemakaian berkepanjangan dan wajib disebutkan saat
+  pemakaian alat.
 
 ## Reproduksi
 
@@ -140,5 +106,5 @@ ketidaksepakatan jatuh tepat di tiga pita, dan tidak ada satu pun di luar itu
 python3 scripts/validate-datasets.py        # 3.1 dan 3.2
 
 cd web-dashboard
-npx vitest run src/utils/riskAgreement.test.js   # 3.3 dan 3.4
+npx vitest run src/utils/randomForestRisk.test.js   # 3.3
 ```

@@ -25,10 +25,21 @@
  */
 
 import type { RiskLevel, RiskThresholds } from '../types/insole';
-import { RISK_THRESHOLDS, SCORE_BANDS } from './fuzzyRisk';
 import modelData from './rf-model.json';
 
-export { RISK_THRESHOLDS, SCORE_BANDS };
+/** Clinical thresholds, in kPa and seconds. Single source of truth. */
+export const RISK_THRESHOLDS: Readonly<RiskThresholds> = Object.freeze({
+  warningKpa: 35,
+  dangerKpa: 70,
+  warningSeconds: 20,
+  dangerSeconds: 30,
+});
+
+/** Reported score bands. `score` is always constrained to its level's band. */
+export const SCORE_BANDS = Object.freeze({
+  safeMax: 47,
+  warningMax: 74,
+});
 
 /* ------------------------------------------------------------------ *
  * Model configuration (loaded from rf-model.json).
@@ -164,6 +175,23 @@ export function levelFromScore(score: number): RiskLevel {
 }
 
 /**
+ * Constrain a continuous severity to the score band its level occupies, so the
+ * number and the level can never contradict each other.
+ */
+export function alignScoreToLevel(score: number, level: RiskLevel): number {
+  if (level === 'danger') {
+    return Math.min(100, Math.max(SCORE_BANDS.warningMax + 1, score));
+  }
+  if (level === 'warning') {
+    return Math.min(
+      SCORE_BANDS.warningMax,
+      Math.max(SCORE_BANDS.safeMax + 1, score)
+    );
+  }
+  return Math.min(SCORE_BANDS.safeMax, Math.max(0, score));
+}
+
+/**
  * Hybrid inference: RF for safe/warning + rule for danger.
  *
  * `thresholds` overrides the two peak knobs (safe/danger limit) that Settings
@@ -255,4 +283,5 @@ export default {
   inferRisk,
   classifyRisk,
   levelFromScore,
+  alignScoreToLevel,
 };

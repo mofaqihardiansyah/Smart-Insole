@@ -7,8 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { RISK_THRESHOLDS, inferRisk, levelFromScore } from '../utils/randomForestRisk';
-import { alignScoreToLevel } from '../utils/fuzzyRisk';
+import { RISK_THRESHOLDS, alignScoreToLevel, inferRisk, levelFromScore } from '../utils/randomForestRisk';
 import { playAlertBeep, stopAlertBeep } from '../utils/audioAlert';
 import * as defaultTransport from '../services/firebaseRealtime';
 import type {
@@ -35,9 +34,8 @@ import type {
  * verdict.
  *
  * Risk verdict precedence: when the device publishes its own `risk_status` /
- * `fuzzy_risk_score`, those win, because the firmware measured the foot. The
- * client only runs its own fuzzy inference when the device has not sent a
- * verdict.
+ * `risk_score`, those win, because the firmware measured the foot. The
+ * client only runs its own RF inference when the device has not sent a verdict.
  */
 
 /** The three sensor regions, before the derived duration is attached. */
