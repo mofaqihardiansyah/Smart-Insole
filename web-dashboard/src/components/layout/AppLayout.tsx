@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { NavLink, Link, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { Bell, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
 import { AccountCard, renderIcon } from "./AppSidebar";
 import type { NavItem } from "./AppSidebar";
+import { AlertBell } from "./AlertBell";
 import { AppTopbar, BrandCard } from "./AppTopbar";
 import { AppNavPill } from "./AppNavPill";
 import { AppSearch } from "./AppSearch";
@@ -55,7 +56,6 @@ interface AppLayoutProps {
 const AppLayout = ({
   links = [],
   hasUnread = false,
-  unreadLabel,
   userName,
   userEmail,
   onSignOut,
@@ -155,25 +155,7 @@ const AppLayout = ({
           <div className="flex items-center gap-1">
             {/* The alert queue lives on the bell, not in the rail, so a phone
                 needs the same reach as a desktop. */}
-            <Link
-              to="/notifications"
-              className="relative inline-flex h-11 w-11 items-center justify-center rounded-control text-fg-2 transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <Bell className="h-5 w-5" aria-hidden="true" />
-              {hasUnread && (
-                <span
-                  aria-hidden="true"
-                  className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-safe ring-2 ring-surface"
-                />
-              )}
-              <span className="sr-only">
-                {hasUnread
-                  ? t("topbar.unread", language, {
-                      count: Number(unreadLabel) || 0,
-                    })
-                  : t("topbar.notifications", language)}
-              </span>
-            </Link>
+            <AlertBell hasUnread={hasUnread} />
 
             <button
               ref={triggerRef}

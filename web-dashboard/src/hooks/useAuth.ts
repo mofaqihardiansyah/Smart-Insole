@@ -31,6 +31,8 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState("");
+  /** Firestore `active`; true until the profile says otherwise. */
+  const [active, setActive] = useState<boolean | null>(null);
 
   useEffect(() => {
     // Cek apakah sudah diinisialisasi di luar (seperti dari SSR/Node)
@@ -63,6 +65,8 @@ export const useAuth = () => {
             if (profile) {
               setDisplayName(profile.displayName || currentUser.displayName);
               setRole(profile.role || "user");
+              // Missing field means an older account: treated as active.
+              setActive(profile.active !== false);
             }
           })
           .catch((e) => console.warn("Gagal ambil profil:", e?.message));
@@ -70,6 +74,7 @@ export const useAuth = () => {
         setUser(null);
         setDisplayName("");
         setRole("");
+        setActive(null);
       }
       setLoading(false);
     });
@@ -175,6 +180,7 @@ export const useAuth = () => {
       setUser(null);
       setDisplayName("");
       setRole("");
+      setActive(null);
     } catch (err) {
       console.error("Logout error:", err);
     }
@@ -216,6 +222,7 @@ export const useAuth = () => {
     loading,
     displayName,
     role,
+    active,
     login: doLogin,
     register: doRegister,
     logout: doLogout,

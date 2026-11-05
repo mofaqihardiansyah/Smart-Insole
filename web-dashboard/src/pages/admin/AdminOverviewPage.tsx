@@ -1,0 +1,178 @@
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Activity, ClipboardList, Users } from "lucide-react";
+import { useInsole } from "../../context/InsoleContext";
+import { t } from "../../utils/i18n";
+import {
+  GlassCard,
+  GlassTable,
+  GlassTableCell,
+  GlassTableRow,
+  PageHeader,
+  PanelHeader,
+  StatePanel,
+} from "../../components/ui/GlassComponents";
+import { listUsers } from "../../services/firebaseConfig";
+import {
+  subscribeToAudit,
+  subscribeToDeviceIds,
+  type AuditEntry,
+} from "../../services/firebaseRealtime";
+
+/** One count in the console's summary strip. */
+const Stat = ({ label, value }: { label: string; value: number }) => (
+  <div className="rounded-card border border-border bg-surface px-6 py-5 shadow-panel">
+    <p className="text-label uppercase text-fg-2">{label}</p>
+    <p className="mt-2 tabular-data font-heading text-stat text-fg">{value}</p>
+  </div>
+);
+
+/**
+ * AdminOverviewPage — the console's landing view.
+ *
+ * Counts come from the same sources the other tabs use, so the numbers on this
+ * page can never disagree with the list a click away: Firestore for accounts,
+ * `/devices` for the fleet, `/audit` for activity.
+ */
+const AdminOverviewPage = () => {
+  const { language } = useInsole();
+  const [users, setUsers] = useState<Array<{ uid: string; active?: boolean }>>([]);
+  const [deviceIds, setDeviceIds] = useState<string[]>([]);
+  const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    listUsers()
+      .then((rows) => {
+        if (!cancelled) setUsers(rows);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err?.message || "Failed to load users");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(
+    () =>
+      subscribeToDeviceIds(
+        setDeviceIds,
+        () => setError((prev) => prev ?? t("admin.devices.error", language))
+      ),
+    [language]
+  );
+
+  useEffect(() => subscribeToAudit(setAudit, 20), []);
+
+  const activeUsers = users.filter((u) => u.active !== false).length;
+
+  return (
+    <section className="space-y-5 lg:space-y-6">
+      <PageHeader
+        title={t("admin.nav.overview", language)}
+        subtitle={t("admin.subtitle", language)}
+      />
+
+      {error && (
+        <StatePanel
+          variant="error"
+          title={t("admin.actionError", language)}
+          description={error}
+          nextAction={t("common.nextStepCheckConnection", language)}
+          nextActionLabel={t("common.nextStep", language)}
+        />
+      )}
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Stat label={t("admin.overview.users", language)} value={users.length} />
+        <Stat label={t("admin.overview.active", language)} value={activeUsers} />
+        <Stat
+          label={t("admin.overview.devices", language)}
+          value={deviceIds.length}
+        />
+      </div>
+
+      <GlassCard flush>
+        <PanelHeader
+          title={t("admin.overview.audit", language)}
+          icon={<ClipboardList className="h-4 w-4" />}
+        />
+        <div className="px-6 pb-6">
+          {audit.length === 0 ? (
+            <p className="text-body-sm text-muted">
+              {t("admin.overview.emptyAudit", language)}
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <GlassTable>
+                <thead>
+                  <GlassTableRow>
+                    <GlassTableCell as="th" scope="col">
+                      {t("admin.audit.time", language)}
+                    </GlassTableCell>
+                    <GlassTableCell as="th" scope="col">
+                      {t("admin.audit.actor", language)}
+                    </GlassTableCell>
+                    <GlassTableCell as="th" scope="col">
+                      {t("admin.audit.action", language)}
+                    </GlassTableCell>
+                    <GlassTableCell as="th" scope="col">
+                      {t("admin.audit.target", language)}
+                    </GlassTableCell>
+                  </GlassTableRow>
+                </thead>
+                <tbody>
+                  {audit.map((entry) => (
+                    <GlassTableRow key={`${entry.at}-${entry.action}-${entry.target}`}>
+                      <GlassTableCell>
+                        <span className="whitespace-nowrap tabular-data">
+                          {new Date(entry.at).toLocaleString(
+                            language === "id" ? "id-ID" : "en-GB"
+                          )}
+                        </span>
+                      </GlassTableCell>
+                      <GlassTableCell>
+                        <span className="text-muted">
+                          {entry.actorEmail || entry.actorUid}
+                        </span>
+                      </GlassTableCell>
+                      <GlassTableCell>{entry.action}</GlassTableCell>
+                      <GlassTableCell>
+                        <span className="text-muted">
+                          {entry.target || t("common.notAvailable", language)}
+                        </span>
+                      </GlassTableCell>
+                    </GlassTableRow>
+                  ))}
+                </tbody>
+              </GlassTable>
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-wrap gap-3 text-body-sm font-medium">
+            <Link className="text-primary hover:underline" to="/admin/users">
+              {t("admin.nav.users", language)}
+            </Link>
+            <Link className="text-primary hover:underline" to="/admin/devices">
+              {t("admin.nav.devices", language)}
+            </Link>
+            <Link className="text-primary hover:underline" to="/admin/incidents">
+              {t("admin.nav.incidents", language)}
+            </Link>
+          </div>
+        </div>
+      </GlassCard>
+
+      <div className="flex items-center gap-2 text-body-sm text-muted">
+        <Users className="h-4 w-4" aria-hidden="true" />
+        <span>{t("admin.overview.users", language)}</span>
+        <Activity className="ml-3 h-4 w-4" aria-hidden="true" />
+        <span>{t("admin.overview.devices", language)}</span>
+      </div>
+    </section>
+  );
+};
+
+export default AdminOverviewPage;

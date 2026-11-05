@@ -17,7 +17,7 @@ heatmap_, grafik tren, dan _Early Warning System_.
 | `src/pages/DevicePage.tsx` | Status perangkat: baterai, firmware, koneksi |
 | `src/pages/SettingsPage.tsx` | Konfigurasi ambang batas & notifikasi |
 | `src/pages/ProfilePage.tsx` | Identitas akun & statistik |
-| `src/pages/AdminPage.tsx` | Panel admin: kelola pengguna & konfigurasi |
+| `src/pages/admin/` | Konsol admin: ringkasan, pengguna, perangkat, insiden, konfigurasi |
 | `src/pages/LandingPage.tsx` | Halaman publik (landing) |
 | `src/pages/LoginPage.tsx` / `RegisterPage.tsx` | Halaman masuk / daftar akun |
 | `src/pages/VerifyEmailPage.tsx` / `ForgotPasswordPage.tsx` | Verifikasi email & reset kata sandi |

@@ -119,9 +119,9 @@ const renderShell = (props: Partial<ComponentProps<typeof AppLayout>> = {}) =>
 
 const pill = () => screen.getByRole("navigation");
 
-/** The bell's accessible name at a given width, read from its link. */
+/** The bell's accessible name at a given width, read from its button. */
 const notificationName = (root: HTMLElement) =>
-  (root.querySelector('a[href="/notifications"]') as HTMLElement).textContent?.trim() ??
+  (root.querySelector('[data-testid="alert-bell"]') as HTMLElement).textContent?.trim() ??
   "";
 
 type UserEvent = ReturnType<typeof userEvent.setup>;
@@ -204,14 +204,41 @@ describe("SHELL-02: one nav pill for the destinations", () => {
     // both would be two controls for one destination.
     expect(pill().querySelector('a[href="/notifications"]')).toBeNull();
 
-    // The bell reaches it, marks it, and says so rather than reading as "bell".
+    // The bell opens a summary dialog now, so it is a button, not a route.
     // One bell per breakpoint row (mobile bar, desktop header), one visible.
-    const bells = Array.from(container.querySelectorAll('a[href="/notifications"]'));
+    const bells = Array.from(
+      container.querySelectorAll('[data-testid="alert-bell"]')
+    ) as HTMLButtonElement[];
     expect(bells.length).toBeGreaterThan(0);
+    expect(bells.every((bell) => bell.tagName === "BUTTON")).toBe(true);
+    expect(
+      bells.every((bell) => bell.getAttribute("aria-haspopup") === "dialog")
+    ).toBe(true);
     expect(bells.some((bell) => bell.textContent.trim() !== "")).toBe(true);
     expect(
       bells.some((bell) => bell.querySelector('[aria-hidden="true"].rounded-full'))
     ).toBe(true);
+  });
+
+  it("opens a summary card from the bell and closes it on Escape", async () => {
+    const user = userEvent.setup();
+    const { container } = renderShell({ hasUnread: true });
+
+    const bell = container.querySelector(
+      '[data-testid="alert-bell"]'
+    ) as HTMLButtonElement;
+    await user.click(bell);
+
+    const card = screen.getByRole("dialog", { name: "Notifikasi" });
+    expect(card).toBeTruthy();
+    expect(bell.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      within(card).getByRole("link", { name: /Buka pengaturan/ }).getAttribute("href")
+    ).toBe("/settings");
+
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "Notifikasi" })).toBeNull();
+    expect(document.activeElement).toBe(bell);
   });
 
   it("reports unread state in words, not only as a dot", () => {
@@ -247,7 +274,7 @@ describe("SHELL-03: the header carries state, not a second place", () => {
 
     expect(header).not.toBeNull();
     expect(within(container).getAllByRole("combobox").length).toBeGreaterThan(0);
-    expect(header.querySelector('a[href="/notifications"]')).not.toBeNull();
+    expect(header.querySelector('[data-testid="alert-bell"]')).not.toBeNull();
 
     // The account control is a trigger for the menu, not a stale link.
     expect(document.querySelector('[aria-controls="account-menu"]')).not.toBeNull();
@@ -354,9 +381,9 @@ describe("SHELL-04: the search is a real control", () => {
       (match) => match[1]
     );
 
-    // The six clinical destinations plus the admin one, which is conditional but
-    // declared by the same builder.
-    expect(navTargets).toHaveLength(7);
+    // Six clinical destinations. The console is a separate surface now, so it
+    // is never a nav target of the patient shell.
+    expect(navTargets).toHaveLength(6);
     expect(navTargets.filter((to) => !declared.has(to))).toEqual([]);
   });
 

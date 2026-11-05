@@ -3,7 +3,7 @@ import { render, screen, act } from '@testing-library/react';
 import React from 'react';
 import { InsoleProvider, useInsole, measureSustainedDurations, MAX_PACKET_GAP_MS } from './InsoleContext';
 import type { HistoryRecord, InsoleContextValue, RegionReadings } from './InsoleContext';
-import type { GlobalRiskConfig, InsoleTransport, MappedReading } from '../types/insole';
+import type { GlobalRiskConfig, HistoryEntry, InsoleTransport, MappedReading } from '../types/insole';
 import { t } from '../utils/i18n';
 
 /**
@@ -45,6 +45,10 @@ const TestComponent = () => {
       <span data-testid="incidentTypes">
         {JSON.stringify(ctx.incidentLogs.map((log) => log.type))}
       </span>
+      <span data-testid="storedIncidentTypes">
+        {JSON.stringify(ctx.storedIncidents.map((log) => log.type))}
+      </span>
+      <span data-testid="alertOpen">{String(ctx.alertOpen)}</span>
     </div>
   );
 };
@@ -267,6 +271,94 @@ describe('InsoleProvider', () => {
     expect(text('incidentTypes')).toBe('["danger","warning"]');
   });
 
+  it('reads the paired device path when the account has one', () => {
+    const calls: string[] = [];
+    const transport = {
+      subscribeToReadings: () => {
+        calls.push('legacy');
+        return () => {};
+      },
+      subscribeToDeviceReadings: (deviceId: string) => {
+        calls.push(deviceId);
+        return () => {};
+      },
+    };
+
+    render(
+      <InsoleProvider transport={transport} autoConnect deviceId="insole-07">
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    expect(calls).toEqual(['insole-07']);
+  });
+
+  it('keeps the legacy path when no device is paired', () => {
+    const calls: string[] = [];
+    const transport = {
+      subscribeToReadings: () => {
+        calls.push('legacy');
+        return () => {};
+      },
+      subscribeToDeviceReadings: (deviceId: string) => {
+        calls.push(deviceId);
+        return () => {};
+      },
+    };
+
+    render(
+      <InsoleProvider transport={transport} autoConnect>
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    expect(calls).toEqual(['legacy']);
+  });
+
+  it('keeps the acknowledged marker across a reload', () => {
+    // A carer who marked the queue read must not see it unread again after a
+    // refresh. The marker is written on acknowledge and read on mount.
+    const readAt = Date.now() + 60_000;
+    localStorage.setItem('incidentsAcknowledgedAt', String(readAt));
+
+    render(
+      <InsoleProvider>
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    act(() => {
+      ctx().setReadings({ forefoot: 220, midfoot: 10, heel: 5 });
+    });
+
+    expect(ctx().incidentLogs).toHaveLength(1);
+    expect(ctx().unreadIncidentCount).toBe(0);
+    expect(ctx().alertOpen).toBe(false);
+  });
+
+  it('writes the marker when the queue is acknowledged', () => {
+    render(
+      <InsoleProvider>
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    act(() => {
+      ctx().setReadings({ forefoot: 220, midfoot: 10, heel: 5 });
+    });
+    expect(ctx().unreadIncidentCount).toBe(1);
+
+    act(() => {
+      ctx().acknowledgeIncidents();
+    });
+
+    expect(ctx().unreadIncidentCount).toBe(0);
+    const last = ctx().incidentLogs[ctx().incidentLogs.length - 1];
+    expect(localStorage.getItem('incidentsAcknowledgedAt')).toBe(
+      String(last.timestamp)
+    );
+  });
+
   it('caps the history ring buffer at 30 entries, evicting the oldest sample', () => {
     renderProvider();
 
@@ -409,7 +501,7 @@ describe('InsoleProvider', () => {
 
   it('a saved Settings preference wins over the admin global config', () => {
     localStorage.setItem(
-      'riskThresholds',
+      'riskThresholds.v2',
       JSON.stringify({
         warningKpa: 40,
         dangerKpa: 80,
@@ -438,6 +530,102 @@ describe('InsoleProvider', () => {
     });
 
     expect(text('warningKpa')).toBe('40');
+  });
+
+  /**
+   * A stored row, as `readings/history` hands it over after mapping.
+   */
+  const storedRow = (
+    timestamp: number,
+    level: 'safe' | 'warning' | 'danger'
+  ): HistoryEntry => ({
+    id: `row-${timestamp}`,
+    readings: { forefoot: 80, midfoot: 20, heel: 15, sustainedDuration: 2 },
+    peakPressure: 80,
+    riskLevel: level,
+    riskScore: 60,
+    batteryPercent: null,
+    deviceId: 'insole-01',
+    timestamp,
+  });
+
+  it('rebuilds the stored register without touching the live alert log', () => {
+    let historyOnData: ((rows: HistoryEntry[]) => void) | null = null;
+    const transport = {
+      subscribeToReadings: () => () => {},
+      subscribeToHistory: (callback: (rows: HistoryEntry[]) => void) => {
+        historyOnData = callback;
+        return () => {};
+      },
+    };
+
+    render(
+      <InsoleProvider transport={transport} autoConnect>
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    act(() => {
+      historyOnData?.([storedRow(5000, 'warning')]);
+    });
+
+    // The stored register is populated...
+    expect(text('storedIncidentTypes')).toBe('["warning"]');
+    // ...but the live log stays empty, so an old incident cannot open the
+    // alert modal on load.
+    expect(text('incidentTypes')).toBe('[]');
+    expect(text('alertOpen')).toBe('false');
+  });
+
+  it('survives a history subscription that throws', () => {
+    const transport = {
+      subscribeToReadings: () => () => {},
+      subscribeToHistory: () => {
+        throw new Error('PERMISSION_DENIED');
+      },
+    };
+
+    expect(() =>
+      render(
+        <InsoleProvider transport={transport} autoConnect>
+          <TestComponent />
+        </InsoleProvider>
+      )
+    ).not.toThrow();
+    expect(text('storedIncidentTypes')).toBe('[]');
+  });
+
+  it('releases and reopens the history subscription on unmount and on reconnect', async () => {
+    const unsubscribes: Array<ReturnType<typeof vi.fn>> = [];
+    const transport = {
+      subscribeToReadings: () => () => {},
+      subscribeToHistory: vi.fn(() => {
+        const unsubscribe = vi.fn();
+        unsubscribes.push(unsubscribe);
+        return unsubscribe;
+      }),
+    };
+
+    const view = render(
+      <InsoleProvider transport={transport} autoConnect>
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    expect(transport.subscribeToHistory).toHaveBeenCalledTimes(1);
+    const firstUnsubscribe = unsubscribes[0];
+
+    await act(async () => {
+      ctx().reconnect();
+    });
+
+    // The page's reload control must refresh the register too, not just the
+    // live reading: a retry that leaves a stale history on screen is a lie.
+    expect(transport.subscribeToHistory).toHaveBeenCalledTimes(2);
+    expect(firstUnsubscribe).toHaveBeenCalled();
+
+    view.unmount();
+    expect(unsubscribes[1]).toHaveBeenCalled();
   });
 });
 

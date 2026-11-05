@@ -148,9 +148,9 @@ static void maintainWiFi(unsigned long nowMs) {
   Serial.println("[INFO] WiFi reconnecting...");
 }
 
-// Push one packet to Firebase:
-//   readings/latest  overwritten (set)
-//   readings/history appended   (push)
+// Push one packet to Firebase, under this device's own path:
+//   devices/<DEVICE_ID>/readings/latest  overwritten (set)
+//   devices/<DEVICE_ID>/readings/history appended   (push)
 // Field names match the wire contract in
 // web-dashboard/src/types/insole.ts.
 static void pushReadings(time_t timestampSec) {
@@ -164,8 +164,11 @@ static void pushReadings(time_t timestampSec) {
   json.add("risk_score", lastResult.score);
   json.add("risk_status", RandomForest::levelToString(lastResult.level));
 
-  bool latestOk = Firebase.RTDB.setJSON(&fbdo, "/readings/latest", &json);
-  bool historyOk = Firebase.RTDB.pushJSON(&fbdo, "/readings/history", &json);
+  // Per-device path: the rules only let an account paired with this device
+  // read it, so two users can no longer watch the same foot.
+  String base = String("/devices/") + DEVICE_ID + "/readings";
+  bool latestOk = Firebase.RTDB.setJSON(&fbdo, (base + "/latest").c_str(), &json);
+  bool historyOk = Firebase.RTDB.pushJSON(&fbdo, (base + "/history").c_str(), &json);
 
   if (latestOk && historyOk) {
     if (pushFailStreak > 0) {

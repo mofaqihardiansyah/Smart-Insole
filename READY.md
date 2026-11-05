@@ -29,11 +29,11 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
 
 | Path | Contents |
 | --- | --- |
-| `web-dashboard/src/pages/` | 12 route pages (`DashboardPage.tsx`, `AdminPage.tsx`, ...) |
+| `web-dashboard/src/pages/` | 11 route pages + `admin/` (5 konsol) |
 | `web-dashboard/src/components/` | `layout/`, `dashboard/`, `monitoring/`, `ui/`, `auth/`, `landing/`, `PlantarHeatmap.tsx` |
 | `web-dashboard/src/context/` | `InsoleContext.tsx` (readings + risk + source), `UserContext.tsx` |
 | `web-dashboard/src/services/` | `firebaseConfig.ts`, `firebaseRealtime.ts` |
-| `web-dashboard/src/utils/` | `randomForestRisk.ts`, `rf-model.json`, `i18n.ts`, `audioAlert.ts`, `exportCsv.ts` |
+| `web-dashboard/src/utils/` | `randomForestRisk.ts`, `incidents.ts`, `rf-model.json`, `i18n.ts`, `audioAlert.ts`, `exportCsv.ts` |
 | `web-dashboard/src/hooks/` | `useAuth.ts` |
 | `web-dashboard/src/types/` | Shared TypeScript contracts |
 | `firmware/src/` | `main.cpp`, `RandomForest.cpp` |
@@ -45,9 +45,12 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
 
 ## Current state (as of 1 Nov 2026)
 
+- The admin console lives at `/admin/*` (`pages/admin/`) with its own
+  `AdminLayout` and `RequireAdmin`; `/admin` is no longer part of the patient
+  navigation or the patient shell.
 - TypeScript migration of the web app is complete for source files. There are
-  44 test files: 28 `.test.jsx` and 16 `.test.js`; none are migrated to TS yet
-  (kept on purpose, see `375267a6`).
+  46 test files: 29 `.test.tsx`, 1 `.test.ts`, and 16 `.test.js` (the plain-JS
+  ones are kept on purpose, see `375267a6`).
 - `web-dashboard/dist/` is tracked in git (10 files). Do not rebuild or patch
   it unless the user asks.
 - Firebase project `sole-3b2e8`; rules live in `database.rules.json`,

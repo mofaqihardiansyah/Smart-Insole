@@ -7,6 +7,19 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- History page draws 20 rows per page with a "load more" control, a "showing X
+  of Y" line, and a note when the device snapshot itself is cut short. Summary
+  counts and CSV export still cover the whole register.
+- History page reads `readings/history` through `subscribeToHistory`, so the
+  incident register survives a page reload instead of living only in memory.
+  New `src/utils/incidents.ts` rebuilds the register (transition-based, device
+  verdict first) and merges it with the live log; the stored copy is kept apart
+  from `incidentLogs` so replaying it cannot re-open the alert modal.
+- The header bell now opens an alert card (latest incidents, connection state,
+  mark-as-read, link to Settings) instead of navigating to a page.
+- History page: risk-level filter (All / Danger / Warning), a sortable Time
+  column, and a sticky header with a frozen time column while the register
+  scrolls. `GlassTable` gained an optional `maxHeight` for that.
 - Agent documentation: `AGENTS.md`, `READY.md`, `TASK.md`, `CHANGELOG.md`,
   `DECISIONS.md`.
 - `docs/validation-report.md` (Fase 3): OptiTrack gait cross-check, Figshare DFU
@@ -24,6 +37,28 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- The admin console is now a separate surface at `/admin/*` with its own shell,
+  guard, and five tabs; the patient navigation no longer links to it.
+- Deactivated accounts are actually blocked: the app shows a deactivated screen,
+  and the database rules refuse reads when `users/<uid>/active` is false.
+- Admins can pair a device to an account, see the whole fleet, change a role,
+  export the user list as CSV, prune old history with a JSON archive, and triage
+  danger incidents. Every successful action is written to `/audit`.
+- A normal account no longer sees a threshold editor at all: the limits render
+  as two plain values, with no fields, buttons, or "admin only" notice, so the
+  editing capability is not advertised.
+- Telemetry is per device: firmware writes `devices/<id>/readings/...`, the web
+  reads the device paired in `users/<uid>/devices`, and accounts without a
+  pairing keep the legacy `/readings` feed until the new firmware is flashed.
+- The local threshold override moved to `riskThresholds.v2`; an old saved
+  70 kPa limit is discarded instead of silently surviving the 200 kPa change.
+- History summary reads "total in the device window" when the stored snapshot
+  is capped, instead of implying an all-time count.
+- Browser notification permission card removed until delivery ships: nothing in
+  the app sends a browser notification, so the control promised a behaviour
+  that did not exist.
+- Mark-as-read persists in localStorage, so a reload no longer resurrects
+  acknowledged alerts.
 - Danger threshold raised from 70 kPa to 200 kPa, the most consensual in-shoe
   figure (Castro-Martins et al., Heliyon 2024, e26161). The number comes from
   one place: `scripts/train-model.js` → `models/rf-model.json`, then the C++

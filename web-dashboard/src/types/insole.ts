@@ -86,6 +86,21 @@ export interface GlobalRiskConfig {
  * still satisfies the contract.
  */
 export interface InsoleTransport {
+  /**
+   * Device-scoped ingestion. When a user has a paired device, the provider
+   * prefers these over the legacy single-tenant paths.
+   */
+  subscribeToDeviceReadings?: (
+    deviceId: string,
+    onData: (reading: MappedReading) => void,
+    onError?: (error: Error) => void
+  ) => () => void;
+  subscribeToDeviceHistory?: (
+    deviceId: string,
+    onData: (rows: HistoryEntry[]) => void,
+    onError?: (error: Error) => void,
+    limit?: number
+  ) => () => void;
   subscribeToReadings: (
     onData: (reading: MappedReading) => void,
     onError?: (error: Error) => void

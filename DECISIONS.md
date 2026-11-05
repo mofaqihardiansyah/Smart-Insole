@@ -146,3 +146,60 @@ live in `randomForestRisk.ts`. The wire field is `risk_score`, not
 **Consequences.** No fuzzy code, test, or agreement metric remains. Reintroducing
 a second classifier needs a new decision. `docs/thesis-methodology.md` and
 `docs/thesis-defense.md` describe the method as Random Forest only.
+
+## ADR-008: The History register is rebuilt from stored rows, kept apart from live alerts
+
+- **Date:** 2026-11-05
+- **Status:** Accepted
+
+**Context.** The History page only knew `InsoleContext.incidentLogs`, appended
+in memory as the risk level changed. A reload erased the register even though
+the firmware pushes every sample to `readings/history`. `subscribeToHistory`
+existed in the transport but had no caller.
+
+**Decision.** Derive the register from `readings/history` in
+`src/utils/incidents.ts` and expose it as `storedIncidents`, separate from the
+live `incidentLogs`. An incident is a transition into `warning`/`danger`, not
+every sample; the device verdict wins over client inference. `HistoryPage`
+merges stored and live rows, deduping per timestamp.
+
+**Consequences.** The register survives a refresh. Because `incidentLogs` stays
+the only input to `alertOpen` and `unreadIncidentCount`, a backfill cannot
+resurface an old alert. The stored read is capped at 200 rows and the RTDB node
+still grows unbounded — retention is a separate decision.
+
+
+## ADR-009: The admin console is a separate shell
+
+- **Date:** 2026-11-05
+- **Status:** Accepted
+
+**Context.** Admin used to be one extra link in the patient nav, rendering
+inside the patient shell. The console then inherited a bell, a search box, a
+patient nav pill, and the early-warning dialog, none of which belong to a tool
+whose job is accounts and the fleet.
+
+**Decision.** `/admin/*` gets `AdminLayout` and `RequireAdmin`. The patient
+navigation no longer mentions admin, and `buildNavLinks` no longer takes a role.
+
+**Consequences.** The console can grow its own tabs without touching the
+patient shell. A shared header widget must now be added twice if both surfaces
+genuinely need it, which is the point: the two surfaces serve different jobs.
+
+## ADR-010: Deactivation is enforced, and admin actions are audited
+
+- **Date:** 2026-11-05
+- **Status:** Accepted
+
+**Context.** The "deactivate" button wrote a Firestore field that nothing read.
+An account marked inactive could sign in, open the dashboard, and read every
+device. Meanwhile deletion and role changes left no record at all.
+
+**Decision.** `active` is mirrored to `users/<uid>/active` in RTDB, and the
+rules refuse reads when it is `false`. The app shows a deactivated screen before
+mounting any route. Every successful admin action appends one entry to
+`/audit`; failed audit writes surface as a warning, never as a failed action.
+
+**Consequences.** Deactivation now works even against a signed-in session on
+another device. Rules deployment is required for the new denial to take effect.
+Audit adds one write per admin action, not per reading.

@@ -26,14 +26,23 @@ const pageFiles = fs
   .readdirSync(here)
   .filter((name) => /\.(jsx|tsx)$/.test(name) && !/\.test\.(jsx|tsx)$/.test(name));
 
-const appPages = pageFiles.filter((name) => name !== "LandingPage.tsx");
+/**
+ * Pages that render nothing: they redirect to the page that now owns their
+ * content, so they carry no layout and cannot satisfy a layout contract.
+ */
+const REDIRECT_PAGES = new Set(["NotificationsPage.tsx"]);
+
+const layoutPages = pageFiles.filter((name) => !REDIRECT_PAGES.has(name));
+const appPages = pageFiles.filter(
+  (name) => name !== "LandingPage.tsx" && !REDIRECT_PAGES.has(name)
+);
 const source = (name) => fs.readFileSync(path.join(here, name), "utf8");
 
 describe("page contract: responsive vocabulary (PAGE-11)", () => {
   it("every page carries at least one breakpoint-scoped class", () => {
     // A page whose string has no sm:/md:/lg: re-decided nothing about small
     // screens. Dashboard has six classes, pages live at all three widths.
-    for (const name of pageFiles) {
+    for (const name of layoutPages) {
       expect(source(name).match(/(?:sm|md|lg):[a-z\-]/g)?.length).toBeGreaterThan(0);
     }
   });

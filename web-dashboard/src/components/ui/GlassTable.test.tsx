@@ -91,4 +91,27 @@ describe("GlassTable", () => {
     // The table itself never scrolls; the page must not scroll sideways.
     expect(table.className).not.toContain("overflow-x-auto");
   });
+
+  it("turns the same wrapper into a vertical scrollport when maxHeight is set", () => {
+    const { container } = render(
+      <GlassTable maxHeight="max-h-[70vh]">
+        <thead>
+          <tr>
+            <GlassTableCell as="th">Puncak</GlassTableCell>
+          </tr>
+        </thead>
+      </GlassTable>
+    );
+
+    const wrappers = Array.from(container.querySelectorAll("div"));
+    const scrollers = wrappers.filter((node) =>
+      node.className.includes("overflow-x-auto")
+    );
+
+    // Still one container: maxHeight upgrades the existing wrapper, it does not
+    // add a second scroll area around it.
+    expect(scrollers).toHaveLength(1);
+    expect(scrollers[0].className).toContain("overflow-y-auto");
+    expect(scrollers[0].className).toContain("max-h-[70vh]");
+  });
 });

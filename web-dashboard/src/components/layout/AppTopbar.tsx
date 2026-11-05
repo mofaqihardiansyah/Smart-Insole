@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
+import { AlertBell } from "./AlertBell";
 import { AppSearch } from "./AppSearch";
 import { initialsOf } from "./AppSidebar";
 import type { NavItem } from "./AppSidebar";
@@ -37,30 +37,6 @@ export const BrandCard = () => {
         </span>
       </span>
     </div>
-  );
-};
-
-/** The alert bell, carried once per breakpoint row. */
-const BellLink = ({ hasUnread }: { hasUnread?: boolean }) => {
-  const { language, unreadIncidentCount } = useInsole();
-  return (
-    <Link
-      to="/notifications"
-      className="relative grid h-11 w-11 shrink-0 place-items-center rounded-pill text-fg-2 transition-colors duration-150 hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-    >
-      <Bell className="h-5 w-5" aria-hidden="true" />
-      {hasUnread && (
-        <span
-          aria-hidden="true"
-          className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-safe ring-2 ring-surface"
-        />
-      )}
-      <span className="sr-only">
-        {hasUnread
-          ? t("topbar.unread", language, { count: unreadIncidentCount })
-          : t("topbar.notifications", language)}
-      </span>
-    </Link>
   );
 };
 
@@ -198,7 +174,7 @@ const AppTopbar = ({
       <div className="w-56 min-w-0 shrink xl:w-72">
         <AppSearch links={links} />
       </div>
-      <BellLink hasUnread={hasUnread} />
+      <AlertBell hasUnread={hasUnread} />
       <AccountMenu userName={userName} userEmail={userEmail} onSignOut={onSignOut} />
     </div>
   );

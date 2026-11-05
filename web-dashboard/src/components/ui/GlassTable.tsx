@@ -33,6 +33,13 @@ interface GlassTableProps
   caption?: ReactNode;
   /** Drop the outer frame for a table already inside a card. */
   bare?: boolean;
+  /**
+   * Tailwind max-height utility (e.g. `"max-h-[70vh]"`). Supplying it turns the
+   * existing wrapper into a vertical scrollport too, which is what makes
+   * `sticky top-0` headers actually stick. Omitted, the wrapper stays
+   * horizontal-only and nothing about the layout changes.
+   */
+  maxHeight?: string;
   className?: string;
 }
 
@@ -41,14 +48,19 @@ const GlassTable = ({
   className = "",
   caption,
   bare = false,
+  maxHeight,
   ...props
 }: GlassTableProps) => (
   <div
-    className={
+    className={[
+      "w-full overflow-x-auto",
+      maxHeight ? `${maxHeight} overflow-y-auto` : "",
       bare
-        ? "w-full overflow-x-auto"
-        : "w-full overflow-x-auto rounded-card border border-border bg-surface shadow-panel"
-    }
+        ? ""
+        : "rounded-card border border-border bg-surface shadow-panel",
+    ]
+      .filter(Boolean)
+      .join(" ")}
   >
     <table
       className={`w-full min-w-[40rem] border-collapse text-left ${className}`}

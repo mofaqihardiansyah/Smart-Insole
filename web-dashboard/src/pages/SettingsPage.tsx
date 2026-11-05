@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { RotateCcw, Save, Vibrate, Volume2, VolumeX } from "lucide-react";
+import {
+  Info,
+  Radio,
+  RotateCcw,
+  Save,
+  Vibrate,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import {
   GlassButton,
   GlassCard,
@@ -16,6 +24,7 @@ import {
   StateRetry,
 } from "../components/ui/GlassComponents";
 import { useInsole } from "../context/InsoleContext";
+import { useUser } from "../context/UserContext";
 import { inferRisk } from "../utils/randomForestRisk";
 import { t } from "../utils/i18n";
 import type { RiskThresholds } from "../types/insole";
@@ -143,7 +152,14 @@ const SettingsPage = () => {
     isMuted,
     toggleMute,
     language,
+    isLive,
+    connectionState,
+    reconnect,
   } = useInsole();
+  const { role } = useUser();
+  // Thresholds are a clinical decision. Only an admin edits them; everyone
+  // else reads the values the admin set and sees why the form is locked.
+  const canEditThresholds = role === "admin";
 
   const [draft, setDraft] = useState(() => toDraft(thresholds));
   const [saveState, setSaveState] = useState<"saved" | "reset" | null>(null);
@@ -211,6 +227,13 @@ const SettingsPage = () => {
 
   const soundEnabled = !isMuted;
 
+  const connectionDetailKey =
+    connectionState === "connecting"
+      ? "source.connecting"
+      : connectionState === "error"
+        ? "source.error"
+        : "source.firebase";
+
   const unitKpa = t("metrics.unit.kpa", language);
   const unitSeconds = t("metrics.unit.seconds", language);
 
@@ -224,76 +247,104 @@ const SettingsPage = () => {
       <GlassCard flush>
         <PanelHeader
           title={t("settings.thresholds", language)}
-          subtitle={t("settings.thresholdsBody", language)}
+          subtitle={t(
+            canEditThresholds
+              ? "settings.thresholdsBody"
+              : "settings.thresholdsReadOnlyBody",
+            language
+          )}
         />
 
         <div className="px-6 pb-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {FIELDS.map((field) => (
-              <GlassInput
-                key={field.key}
-                id={`threshold-${field.key}`}
-                type="number"
-                inputMode="numeric"
-                min={field.min}
-                max={field.max}
-                step={field.step}
-                label={t(field.labelKey, language)}
-                value={draft[field.key]}
-                onChange={(event) => {
-                  setSaveState(null);
-                  setDraft((prev) => ({
-                    ...prev,
-                    [field.key]: event.target.value,
-                  }));
-                }}
-              />
-            ))}
-          </div>
+          {canEditThresholds ? (
+            <>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {FIELDS.map((field) => (
+                  <GlassInput
+                    key={field.key}
+                    id={`threshold-${field.key}`}
+                    type="number"
+                    inputMode="numeric"
+                    min={field.min}
+                    max={field.max}
+                    step={field.step}
+                    label={t(field.labelKey, language)}
+                    value={draft[field.key]}
+                    onChange={(event) => {
+                      setSaveState(null);
+                      setDraft((prev) => ({
+                        ...prev,
+                        [field.key]: event.target.value,
+                      }));
+                    }}
+                  />
+                ))}
+              </div>
 
-          {invalid && (
-            <StatusBanner
-              tone="danger"
-              className="mt-4"
-              title={t("settings.invalidOrder", language)}
-            />
+              {invalid && (
+                <StatusBanner
+                  tone="danger"
+                  className="mt-4"
+                  title={t("settings.invalidOrder", language)}
+                />
+              )}
+
+              {saveState === "saved" && (
+                <StatusBanner
+                  tone="success"
+                  className="mt-4"
+                  title={t("settings.saved", language)}
+                  onDismiss={() => setSaveState(null)}
+                  dismissLabel={t("common.dismiss", language)}
+                />
+              )}
+
+              {saveState === "reset" && (
+                <StatusBanner
+                  tone="success"
+                  className="mt-4"
+                  title={t("settings.resetDone", language)}
+                  onDismiss={() => setSaveState(null)}
+                  dismissLabel={t("common.dismiss", language)}
+                />
+              )}
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <GlassButton
+                  type="button"
+                  variant="filled"
+                  onClick={handleSave}
+                  disabled={invalid}
+                >
+                  <Save className="h-4 w-4" aria-hidden="true" />
+                  {t("settings.save", language)}
+                </GlassButton>
+                <GlassButton type="button" variant="quiet" onClick={handleReset}>
+                  <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                  {t("settings.reset", language)}
+                </GlassButton>
+              </div>
+            </>
+          ) : (
+            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <dt className="text-label uppercase text-fg-2">
+                  {t("settings.warningKpa", language)}
+                </dt>
+                <dd className="mt-1 tabular-data text-stat text-fg">
+                  {thresholds.warningKpa}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-label uppercase text-fg-2">
+                  {t("settings.dangerKpa", language)}
+                </dt>
+                <dd className="mt-1 tabular-data text-stat text-fg">
+                  {thresholds.dangerKpa}
+                </dd>
+              </div>
+            </dl>
           )}
-
-          {saveState === "saved" && (
-            <StatusBanner
-              tone="success"
-              className="mt-4"
-              title={t("settings.saved", language)}
-              onDismiss={() => setSaveState(null)}
-              dismissLabel={t("common.dismiss", language)}
-            />
-          )}
-
-          {saveState === "reset" && (
-            <StatusBanner
-              tone="success"
-              className="mt-4"
-              title={t("settings.resetDone", language)}
-              onDismiss={() => setSaveState(null)}
-              dismissLabel={t("common.dismiss", language)}
-            />
-          )}
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            <GlassButton
-              type="button"
-              variant="filled"
-              onClick={handleSave}
-              disabled={invalid}
-            >
-              <Save className="h-4 w-4" aria-hidden="true" />
-              {t("settings.save", language)}
-            </GlassButton>
-            <GlassButton type="button" variant="quiet" onClick={handleReset}>
-              <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              {t("settings.reset", language)}
-            </GlassButton>
-          </div>
         </div>
       </GlassCard>
 
@@ -400,6 +451,50 @@ const SettingsPage = () => {
             </ul>
           </>
         )}
+      </GlassCard>
+
+      <GlassCard flush>
+        <PanelHeader
+          title={t("notifications.connection", language)}
+          icon={<Radio className="h-4 w-4" />}
+        />
+
+        <div className="px-6 pb-6">
+          {connectionState === "connecting" ? (
+            <StatePanel
+              variant="loading"
+              title={t("source.connecting", language)}
+            />
+          ) : connectionState === "error" ? (
+            <StatePanel
+              variant="error"
+              title={t("source.errorTitle", language)}
+              description={t("source.errorBody", language)}
+              action={
+                <StateRetry
+                  onRetry={() => reconnect()}
+                  label={t("common.retry", language)}
+                />
+              }
+            />
+          ) : (
+            <>
+              <StatusChip
+                size="lg"
+                level={isLive ? "safe" : "warning"}
+                label={
+                  isLive
+                    ? t("notifications.connected", language)
+                    : t("notifications.disconnected", language)
+                }
+              />
+              <p className="mt-3 flex max-w-prose items-center gap-2 text-body-sm text-muted">
+                <Info className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {t(connectionDetailKey, language)}
+              </p>
+            </>
+          )}
+        </div>
       </GlassCard>
 
       <GlassCard flush>

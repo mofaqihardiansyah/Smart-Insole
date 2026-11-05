@@ -12,11 +12,13 @@ import { playAlertBeep, stopAlertBeep } from '../utils/audioAlert';
 import * as defaultTransport from '../services/firebaseRealtime';
 import type {
   GlobalRiskConfig,
+  HistoryEntry,
   InsoleTransport,
   MappedReading,
   RiskLevel,
   RiskThresholds,
 } from '../types/insole';
+import { incidentsFromHistory, type StoredIncident } from '../utils/incidents';
 
 /**
  * InsoleContext: the single source of live insole state for the whole app.
@@ -91,6 +93,14 @@ export interface InsoleContextValue {
   resetThresholds: () => void;
   history: HistoryRecord[];
   incidentLogs: IncidentLog[];
+  /**
+   * The incident register rebuilt from `readings/history`, newest last.
+   *
+   * Kept apart from `incidentLogs` on purpose: that live register drives the
+   * alert modal and the unread count, so replaying stored incidents into it
+   * would resurface an old alert on every refresh.
+   */
+  storedIncidents: StoredIncident[];
   unreadIncidentCount: number;
   acknowledgeIncidents: () => void;
   alertOpen: boolean;
@@ -105,6 +115,34 @@ export const InsoleContext = createContext<InsoleContextValue | undefined>(undef
 
 /** Ring buffer length for the live chart. */
 export const HISTORY_LIMIT = 30;
+
+/**
+ * Versioned key for the browser's threshold override. Bumping it drops a saved
+ * object written against older defaults: a browser that saved 70 kPa must not
+ * keep enforcing that after the danger limit moved to 200 kPa.
+ */
+const THRESHOLDS_KEY = 'riskThresholds.v2';
+
+/** localStorage key for the "mark as read" marker. */
+const ACKNOWLEDGED_KEY = "incidentsAcknowledgedAt";
+
+const readAcknowledgedAt = (): number => {
+  try {
+    const value = Number(localStorage.getItem(ACKNOWLEDGED_KEY));
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  } catch {
+    return 0;
+  }
+};
+
+/**
+ * How many stored rows to pull from `readings/history` for the register.
+ *
+ * The firmware pushes once a second, so 200 rows is a little over three
+ * minutes of monitoring — enough to survive a refresh without pulling the
+ * whole, unbounded database node.
+ */
+export const STORED_HISTORY_LIMIT = 200;
 
 /**
  * How long to wait for the first device packet before declaring the connection
@@ -225,7 +263,7 @@ const sanitiseThresholds = (
 
 const readStoredThresholds = () => {
   try {
-    const raw = localStorage.getItem('riskThresholds');
+    const raw = localStorage.getItem(THRESHOLDS_KEY);
     return raw ? sanitiseThresholds(JSON.parse(raw)) : RISK_THRESHOLDS;
   } catch {
     return RISK_THRESHOLDS;
@@ -235,7 +273,7 @@ const readStoredThresholds = () => {
 /** Has this browser ever saved its own thresholds in Settings? */
 const readHasLocalOverride = () => {
   try {
-    return localStorage.getItem('riskThresholds') != null;
+    return localStorage.getItem(THRESHOLDS_KEY) != null;
   } catch {
     return false;
   }
@@ -269,10 +307,13 @@ export const InsoleProvider = ({
   children,
   autoConnect = false,
   transport = defaultTransport,
+  deviceId = null,
 }: {
   children: React.ReactNode;
   autoConnect?: boolean;
   transport?: InsoleTransport;
+  /** Paired device to read. Null keeps the legacy single-tenant paths. */
+  deviceId?: string | null;
 }) => {
   const [sample, setSample] = useState<LiveSample>(INITIAL_SAMPLE);
   const [sustainedDuration, setSustainedDuration] = useState(0);
@@ -299,7 +340,10 @@ export const InsoleProvider = ({
   const [language, setLanguage] = useState<string>(readStoredLanguage);
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [incidentLogs, setIncidentLogs] = useState<IncidentLog[]>([]);
-  const [acknowledgedAt, setAcknowledgedAt] = useState(0);
+  // Raw rows from `readings/history`. The incidents are derived, not stored:
+  // the same rows re-derive under a new threshold like the live path does.
+  const [storedHistory, setStoredHistory] = useState<HistoryEntry[]>([]);
+  const [acknowledgedAt, setAcknowledgedAt] = useState(readAcknowledgedAt);
   /**
    * Bumped by `reconnect`. The subscription effect is keyed on it, so asking
    * for a new subscription actually tears the old listener down and opens a
@@ -381,7 +425,10 @@ export const InsoleProvider = ({
     };
 
     try {
-      unsubscribe = transport.subscribeToReadings(onData, onError);
+      unsubscribe =
+        deviceId && transport.subscribeToDeviceReadings
+          ? transport.subscribeToDeviceReadings(deviceId, onData, onError)
+          : transport.subscribeToReadings(onData, onError);
     } catch (error) {
       onError(error instanceof Error ? error : new Error(String(error)));
     }
@@ -395,7 +442,7 @@ export const InsoleProvider = ({
       clearTimeout(graceTimer);
       unsubscribe?.();
     };
-  }, [transport, autoConnect, connectNonce]);
+  }, [transport, autoConnect, connectNonce, deviceId]);
 
   // Admin-configured thresholds: `config/global` seeds the safe/danger kPa
   // for every dashboard that has NOT saved its own values in Settings. A
@@ -425,6 +472,33 @@ export const InsoleProvider = ({
     }
     return () => unsubscribe?.();
   }, [transport, autoConnect]);
+
+  /**
+   * Stored history: the register that survives a reload.
+   *
+   * Read-only, and deliberately quiet on failure — the readings feed is what
+   * owns the connection state, and an unreadable history must not turn a live
+   * dashboard into an error screen. Keyed on `connectNonce` so the page's
+   * "reload" control refreshes the register too.
+   */
+  useEffect(() => {
+    const deviceHistory = deviceId
+      ? transport.subscribeToDeviceHistory
+      : undefined;
+    if (!autoConnect || (!deviceHistory && typeof transport.subscribeToHistory !== 'function')) {
+      return undefined;
+    }
+    let unsubscribe = () => {};
+    try {
+      const onRows = (rows: HistoryEntry[]) => setStoredHistory(rows);
+      unsubscribe = deviceId && deviceHistory
+        ? deviceHistory(deviceId, onRows, undefined, STORED_HISTORY_LIMIT)
+        : transport.subscribeToHistory!(onRows, undefined, STORED_HISTORY_LIMIT);
+    } catch {
+      /* denied or unconfigured: the register stays as whatever is in memory */
+    }
+    return () => unsubscribe?.();
+  }, [transport, autoConnect, connectNonce, deviceId]);
 
   /* ------------------------------ ingestion ------------------------------- */
 
@@ -565,7 +639,7 @@ export const InsoleProvider = ({
       const value = sanitiseThresholds({ ...thresholds, ...next });
       setThresholdsState(value);
       try {
-        localStorage.setItem('riskThresholds', JSON.stringify(value));
+        localStorage.setItem(THRESHOLDS_KEY, JSON.stringify(value));
       } catch {
         /* storage unavailable (private mode); the change still applies this session */
       }
@@ -581,7 +655,7 @@ export const InsoleProvider = ({
   const resetThresholds = useCallback(() => {
     setThresholdsState(RISK_THRESHOLDS);
     try {
-      localStorage.removeItem('riskThresholds');
+      localStorage.removeItem(THRESHOLDS_KEY);
     } catch {
       /* ignore */
     }
@@ -607,11 +681,17 @@ export const InsoleProvider = ({
   }, []);
 
   const acknowledgeIncidents = useCallback(() => {
-    setAcknowledgedAt(
-      incidentLogs.length
-        ? incidentLogs[incidentLogs.length - 1].timestamp
-        : Date.now()
-    );
+    const next = incidentLogs.length
+      ? incidentLogs[incidentLogs.length - 1].timestamp
+      : Date.now();
+    setAcknowledgedAt(next);
+    // Persisted so a reload does not resurrect alerts the carer already read.
+    // Per browser, like the threshold override: the device has no write path.
+    try {
+      localStorage.setItem(ACKNOWLEDGED_KEY, String(next));
+    } catch {
+      /* private mode: the marker still holds for this session */
+    }
   }, [incidentLogs]);
 
   /* ------------------------------- derived -------------------------------- */
@@ -622,6 +702,13 @@ export const InsoleProvider = ({
   );
 
   const peakPressure = useMemo(() => peakOf(sample.readings), [sample.readings]);
+
+  // The register rebuilt from stored rows. Re-derives when a threshold
+  // changes, exactly like the live ingestion effect does.
+  const storedIncidents = useMemo(
+    () => incidentsFromHistory(storedHistory, thresholds),
+    [storedHistory, thresholds]
+  );
 
   const latestIncident = incidentLogs.length
     ? incidentLogs[incidentLogs.length - 1]
@@ -660,6 +747,7 @@ export const InsoleProvider = ({
     // Alerts and history
     history,
     incidentLogs,
+    storedIncidents,
     unreadIncidentCount,
     acknowledgeIncidents,
     alertOpen,

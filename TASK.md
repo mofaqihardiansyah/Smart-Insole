@@ -7,6 +7,59 @@ summary line per month.
 
 ## Done
 
+- **2026-11-05 — Konsol admin dipisah dari aplikasi pengguna.** `/admin/*`
+  memakai `AdminLayout` + `RequireAdmin`: lima tab (Ringkasan, Pengguna,
+  Perangkat, Insiden, Konfigurasi), tanpa nav pill, bell, pencarian, atau alert
+  modal. `AdminPage.tsx` dihapus. Fitur baru: penegakan `active` (Firestore +
+  mirror RTDB + blokir rute + rules), manajemen role dengan anti self-demotion
+  dan proteksi admin terakhir, pairing perangkat, armada `/devices`, audit log
+  `/audit`, retensi riwayat dengan arsip JSON, dan triase insiden `/triage`.
+  `npx vitest run` 48 file / 421 tes, `tsc`, build; `dist/` dikembalikan.
+  (working tree)
+- **2026-11-05 — Telemetri per-perangkat + editor ambang disembunyikan.**
+  Firmware menulis ke `devices/<DEVICE_ID>/readings/{latest,history}`; web
+  membaca perangkat yang dipasangkan admin di `users/<uid>/devices`, dengan
+  fallback ke `/readings` selama firmware lama masih jalan. Rules baru: reading
+  perangkat hanya untuk pemilik, user boleh membaca node `users/<uid>` sendiri.
+  Akun non-admin tidak lagi melihat editor ambang sama sekali, hanya dua nilai
+  sebagai fakta. Override lokal pindah ke `riskThresholds.v2` agar nilai 70 kPa
+  lama tidak bertahan. `npx vitest run` 47 file / 418 tes, `tsc`, build;
+  `dist/` dikembalikan. (working tree)
+- **2026-11-05 — Akses akun pengguna dijujurkan.** Ambang klinis hanya bisa
+  diubah admin; pengguna melihat nilai aktif, field terkunci, dan alasannya.
+  Kartu izin notifikasi browser dihapus karena tidak ada pengirim notifikasi
+  (`new Notification` nol di `src/`). Tandai-dibaca disimpan di localStorage
+  sehingga tidak muncul lagi setelah reload. Ringkasan riwayat menyebut
+  "jendela perangkat" saat snapshot terpotong. `npx vitest run` 47 file / 416
+  tes, `tsc --noEmit`, build; `dist/` dikembalikan. (working tree)
+- **2026-11-05 — Lonceng jadi dialog, Notifikasi masuk Pengaturan.** Bell di
+  header desktop dan bar mobile membuka `AlertBell` (dialog ringkas: insiden
+  terbaru, status koneksi, tandai dibaca, tautan ke Pengaturan) dengan Escape,
+  klik luar, dan fokus kembali ke tombol. Kartu izin browser dan status koneksi
+  pindah ke `SettingsPage`; `/notifications` jadi redirect ke `/settings`.
+  `npx vitest run` 46 file / 412 tes, `tsc --noEmit`, build; `dist/`
+  dikembalikan. (working tree)
+- **2026-11-05 — Halaman Riwayat: filter, urut, header lengket.** H-02 filter
+  level (Semua/Bahaya/Waspada, `aria-pressed`), H-03 urut kolom Waktu
+  (`aria-sort`, default terlama), H-04 `GlassTable maxHeight` dengan header dan
+  kolom Waktu beku. Summary tetap menghitung seluruh register; filter kosong
+  memakai `StatePanel`. `npx vitest run` 46 file / 414 tes, `tsc --noEmit`,
+  build; `dist/` dikembalikan. (working tree)
+- **2026-11-05 — Riwayat: batas render + "muat lebih banyak".** Halaman Riwayat
+  kini menggambar 20 baris per halaman (PAGE_SIZE), tombol "Muat lebih banyak"
+  menambah 20, dan baris keterangan "Menampilkan X dari Y insiden" selalu
+  tampil. Ringkasan dan ekspor CSV tetap melihat seluruh register. Kalau
+  snapshot perangkat menyentuh `STORED_HISTORY_LIMIT` (200), halaman
+  mengakuinya lewat catatan pembatas. 407 tes web (dari 401), typecheck
+  bersih, build lolos, `dist/` dikembalikan. (working tree)
+- **2026-11-05 — Riwayat insiden bertahan setelah refresh.** Halaman Riwayat
+  kini membaca `readings/history` lewat `subscribeToHistory` (sebelumnya tak
+  dipanggil siapa pun) dan menyusunnya ulang jadi register insiden di
+  `src/utils/incidents.ts`. Register tersimpan dipisah dari `incidentLogs`
+  live supaya modal alert tidak muncul lagi saat refresh. Maks 200 baris
+  terakhir; insiden = transisi level, bukan tiap sampel; verdict device menang.
+  401 tes web (dari 384), typecheck bersih, build lolos, `dist/` dikembalikan
+  ke versi commit. (working tree)
 - **2026-11-05 — Ambang danger 200 kPa + audit fixes.** Danger naik dari 70
   menjadi 200 kPa (Castro-Martins dkk., Heliyon 2024) dengan satu sumber angka:
   `train-model.js` → `models/rf-model.json` → header C++ dan salinan web. Turut
@@ -110,13 +163,24 @@ summary line per month.
 
 ## Next
 
-1. **Firmware 5.4** — flash with real credentials and test with real sensors.
+1. **Deploy rules** — `firebase deploy --only database`, lalu uji satu akun
+   non-admin dan satu admin. Rules kini menolak `active === false` dan memberi
+   admin baca `/devices`, `/audit`, `/triage`.
+2. **Pairing + flash** — pasangkan device ke akun
+   (`firebase database:set /users/<uid>/devices/insole-01 true`), deploy
+   `database.rules.json`, lalu flash firmware baru. Sampai flash, dashboard
+   memakai path lama.
+2. **Firmware 5.4** — flash with real credentials and test with real sensors.
    Unblocks the end-to-end demo (Fase 6.4).
-2. **Docs polish** — `docs/HARDWARE-SPEC.md` is still Draft; promote it once
+2. **Halaman Riwayat lanjutan** — filter level, sorting kolom, header lengket;
+   rincian kerja di `TUGAS-TERSISA.md` (H-02 … H-04).
+2. **Riwayat RTDB tumbuh tanpa batas** — firmware push 1 Hz, node
+   `readings/history` tak pernah dibersihkan; putuskan retensi/arsip.
+3. **Docs polish** — `docs/HARDWARE-SPEC.md` is still Draft; promote it once
    the hardware is validated.
-3. **Thesis review** — fill the `[sitasi]` placeholders in
+4. **Thesis review** — fill the `[sitasi]` placeholders in
    `docs/thesis-methodology.md` and render the slide outline into real slides.
-4. **Label RF vs ambang** — model mereproduksi `peak >= 35`; putuskan apakah
+5. **Label RF vs ambang** — model mereproduksi `peak >= 35`; putuskan apakah
    skripsi menyebutnya aturan ambang atau melatih ulang dengan label DFN/DM.
 
 > Update rule: Done entries carry a date and a commit hash or `(working tree)`.

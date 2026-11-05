@@ -7,6 +7,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
+import { usePairedDevice } from "./hooks/usePairedDevice";
 import { InsoleProvider, useInsole } from "./context/InsoleContext";
 import { UserProvider, useUser } from "./context/UserContext";
 import { t } from "./utils/i18n";
@@ -25,7 +26,14 @@ import DevicePage from "./pages/DevicePage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
-import AdminPage from "./pages/AdminPage";
+import AdminOverviewPage from "./pages/admin/AdminOverviewPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminDevicesPage from "./pages/admin/AdminDevicesPage";
+import AdminIncidentsPage from "./pages/admin/AdminIncidentsPage";
+import AdminConfigPage from "./pages/admin/AdminConfigPage";
+import { AdminLayout } from "./components/layout/AdminLayout";
+import { RequireAdmin } from "./components/layout/RequireAdmin";
+import DeactivatedScreen from "./pages/DeactivatedScreen";
 
 /** One destination in the shell navigation. */
 interface NavLinkItem {
@@ -43,12 +51,12 @@ interface NavLinkItem {
  * trend, review what happened, check the hardware, adjust the limits, then the
  * account.
  *
- * Notifications is deliberately absent. It lives on the bell in the top bar
- * instead, because an alert queue is a state of the app rather than a place in
- * it, and listing it in both places would be two controls for one destination.
+ * Notifications is deliberately absent from the pill. An alert queue is a state
+ * of the app rather than a place in it, so the bell in the top bar opens a
+ * summary card and the full notification settings live on Settings.
  */
-const buildNavLinks = (language: string, role: string): NavLinkItem[] => {
-  const links = [
+const buildNavLinks = (language: string): NavLinkItem[] => {
+  return [
     { id: "dashboard", to: "/", label: t("nav.dashboard", language), icon: "Home" },
     { id: "monitoring", to: "/monitoring", label: t("nav.monitoring", language), icon: "Chart" },
     { id: "history", to: "/history", label: t("nav.history", language), icon: "History" },
@@ -56,10 +64,6 @@ const buildNavLinks = (language: string, role: string): NavLinkItem[] => {
     { id: "settings", to: "/settings", label: t("nav.settings", language), icon: "Settings" },
     { id: "profile", to: "/profile", label: t("nav.profile", language), icon: "User" },
   ];
-  if (role === "admin") {
-    links.push({ id: "admin", to: "/admin", label: t("nav.admin", language), icon: "Shield" });
-  }
-  return links;
 };
 
 function App() {
@@ -87,10 +91,11 @@ function App() {
  * visitor never opens a Realtime Database connection.
  */
 function AppShell() {
-  const { user, loading, displayName, role, logout } = useAuth();
+  const { user, loading, displayName, role, active, logout } = useAuth();
+  const deviceId = usePairedDevice(user?.uid);
 
   return (
-    <InsoleProvider autoConnect={Boolean(user)}>
+    <InsoleProvider autoConnect={Boolean(user)} deviceId={deviceId}>
       <UserProvider
         value={{ user, displayName, role, signOut: logout }}
       >
@@ -99,7 +104,15 @@ function AppShell() {
             <SkipLabel />
           </a>
 
-          {loading ? <Splash /> : user ? <ProtectedApp /> : <PublicApp />}
+          {loading ? (
+            <Splash />
+          ) : user && active === false ? (
+            <DeactivatedScreen onSignOut={logout} />
+          ) : user ? (
+            <ProtectedApp />
+          ) : (
+            <PublicApp />
+          )}
         </div>
       </UserProvider>
     </InsoleProvider>
@@ -160,14 +173,36 @@ function ProtectedApp() {
     isMuted,
     toggleMute,
   } = useInsole();
-  const { user, displayName, role, signOut } = useUser();
+  const { user, displayName, signOut } = useUser();
   const location = useLocation();
 
-  const links = buildNavLinks(language, role);
+  const links = buildNavLinks(language);
 
   // The verification page is a full-page auth task, not a dashboard view.
   if (location.pathname.replace(/\/+$/, "") === "/verify-email") {
     return <VerifyEmailPage />;
+  }
+
+  /**
+   * The console is a different application surface: its own shell, its own
+   * navigation, no alert bell and no early-warning dialog. Sharing the patient
+   * shell would keep two different jobs in one header.
+   */
+  if (location.pathname === "/admin" || location.pathname.startsWith("/admin/")) {
+    return (
+      <RequireAdmin>
+        <AdminLayout>
+          <Routes>
+            <Route path="/admin" element={<AdminOverviewPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/devices" element={<AdminDevicesPage />} />
+            <Route path="/admin/incidents" element={<AdminIncidentsPage />} />
+            <Route path="/admin/config" element={<AdminConfigPage />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Routes>
+        </AdminLayout>
+      </RequireAdmin>
+    );
   }
 
   return (
@@ -188,7 +223,6 @@ function ProtectedApp() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/admin" element={<AdminPage />} />
           {/* Login and register stay reachable while signed in for account
               switching, but they are not linked from the navigation. */}
           <Route path="/login" element={<LoginPage />} />
@@ -198,8 +232,8 @@ function ProtectedApp() {
         </Routes>
       </AppLayout>
 
-      {/* One early-warning dialog for the whole app, so an alert raised on the
-          dashboard is still present after navigating. */}
+      {/* One early-warning dialog for the whole patient app, so an alert raised
+          on the dashboard is still present after navigating. */}
       <AlertModal
         open={alertOpen}
         level={risk}

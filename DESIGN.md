@@ -637,3 +637,22 @@ so a large part of that page was rendering with no colour, radius or elevation
 at all. They are restored, and the app's own card lift is renamed `shadow-panel`
 so one name can no longer mean two different shadows. `design-tokens.test.js`
 now fails the build if any Tailwind class used in `src/` has no generated rule.
+
+
+---
+
+## Admin console
+
+The console is a second surface, not a page inside the patient shell.
+
+- Routes live under `/admin/*` behind `RequireAdmin`, which renders a loading
+  panel while the role is still resolving. It never flashes a refusal.
+- `AdminLayout` owns the chrome: brand, a "Konsol admin" badge, a horizontally
+  scrollable tab row, "Buka aplikasi", and sign out. There is no patient nav
+  pill, no alert bell, no user search, and no early-warning dialog.
+- Five tabs only: Ringkasan, Pengguna, Perangkat, Insiden, Konfigurasi.
+- The console shows the fleet, not one foot: devices come from `/devices`, and
+  a device is read only by the account it is paired with.
+- Destructive actions confirm first, write an audit entry after success, and
+  disable themselves against the acting account (no self-demote, no
+  self-deactivate, no self-delete, no demoting the last active admin).

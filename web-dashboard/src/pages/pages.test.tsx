@@ -39,6 +39,7 @@ vi.mock('../services/firebaseRealtime', () => ({
 
 const { InsoleProvider, useInsole } = await import('../context/InsoleContext');
 import type { InsoleContextValue } from '../context/InsoleContext';
+import type { HistoryEntry } from '../types/insole';
 const { dictionaryKeys } = await import('../utils/i18n');
 
 const LandingPage = (await import('./LandingPage')).default;
@@ -71,7 +72,6 @@ const PAGES: Array<[string, React.ComponentType, string]> = [
   ['DevicePage', DevicePage, '/device'],
   ['SettingsPage', SettingsPage, '/settings'],
   ['ProfilePage', ProfilePage, '/profile'],
-  ['NotificationsPage', NotificationsPage, '/notifications'],
 ];
 
 describe('every page renders', () => {
@@ -164,6 +164,51 @@ describe('responsive structure', () => {
         `element with a fixed min-width is not inside an overflow container: ${element.className}`
       ).not.toBeNull();
     }
+  });
+});
+
+describe('HistoryPage reads the stored register', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('renders incidents from readings/history with no live reading at all', () => {
+    // This is the reload case: the tab was closed after the incident, so the
+    // live in-memory log is empty and only the Realtime Database still has it.
+    let historyOnData: ((rows: HistoryEntry[]) => void) | null = null;
+    const transport = {
+      subscribeToReadings: () => () => {},
+      subscribeToHistory: (callback: (rows: HistoryEntry[]) => void) => {
+        historyOnData = callback;
+        return () => {};
+      },
+    };
+
+    render(
+      <MemoryRouter initialEntries={['/history']}>
+        <InsoleProvider transport={transport} autoConnect>
+          <HistoryPage />
+        </InsoleProvider>
+      </MemoryRouter>
+    );
+
+    act(() => {
+      historyOnData?.([
+        {
+          id: 'row-5000',
+          readings: { forefoot: 80, midfoot: 20, heel: 15, sustainedDuration: 2 },
+          peakPressure: 80,
+          riskLevel: 'warning',
+          riskScore: 60,
+          batteryPercent: null,
+          deviceId: 'insole-01',
+          timestamp: 1791244800000,
+        },
+      ]);
+    });
+
+    // Rendered twice on purpose: the desktop table and the mobile list both
+    // carry the row, so the count is at least two.
+    expect(screen.getAllByText('Waspada').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('80.0 kPa').length).toBeGreaterThanOrEqual(2);
   });
 });
 

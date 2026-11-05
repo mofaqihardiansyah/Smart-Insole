@@ -4,7 +4,7 @@
     ".write": false,
 
     "readings": {
-      ".read": "auth != null",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('active').val() !== false",
       ".write": false
     },
 
@@ -17,7 +17,31 @@
     },
 
     "users": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      }
+    },
+
+    "devices": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "$deviceId": {
+        "readings": {
+          ".read": "auth != null && root.child('users').child(auth.uid).child('active').val() !== false && (root.child('users').child(auth.uid).child('devices').child($deviceId).val() === true || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+          ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        }
+      }
+    },
+
+    "audit": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+
+    "triage": {
+      "$deviceId": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
         ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
       }
     }
