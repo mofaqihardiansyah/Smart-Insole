@@ -12,7 +12,7 @@
  *
  *   - peak <  35 kPa, not sustained  -> safe
  *   - peak >= 35 kPa                 -> at least warning, immediately
- *   - peak >= 70 kPa, sustained >= 0.1s -> danger (rule-based)
+ *   - peak >= 200 kPa (one sample)      -> danger (rule-based)
  *   - any peak sustained past ~20 s  -> at least warning
  *
  * The two peak knobs (safe/danger limit) are overridable through the optional
@@ -30,9 +30,23 @@ import modelData from './rf-model.json';
 /** Clinical thresholds, in kPa and seconds. Single source of truth. */
 export const RISK_THRESHOLDS: Readonly<RiskThresholds> = Object.freeze({
   warningKpa: 35,
-  dangerKpa: 70,
+  // 200 kPa: in-shoe threshold with the broadest consensus (Castro-Martins
+  // et al., Heliyon 2024, e26161).
+  dangerKpa: 200,
+  // Display-only legacy fields. Inference uses DURATION_WINDOWS below; these
+  // stay so a stored settings object still parses.
   warningSeconds: 20,
   dangerSeconds: 30,
+});
+
+/** Duration windows the model actually enforces. Not user-editable. */
+export const DURATION_WINDOWS = Object.freeze({
+  /** Run above the warning limit that the RF's `sustained` feature measures. */
+  sustainedWarningSeconds: 20,
+  /** Danger needs one sample: the peak limit is the trigger, not a duration. */
+  dangerSamples: 1,
+  /** Samples at 10 Hz the training labels used as the safe floor. */
+  safeFloorSamples: 200,
 });
 
 /** Reported score bands. `score` is always constrained to its level's band. */
@@ -83,14 +97,14 @@ const FEATURES = MODEL.features; // ['peak', 'sustained']
 
 /**
  * Duration windows baked into the trained model, in samples at its 10 Hz.
- * The danger window is the exported danger rule (1 sample = 0.1 s); the safe
+ * Danger needs one sample (the 200 kPa peak is the trigger); the safe
  * floor is the duration the training labels used (200 samples = 20 s).
  * Neither is client-configurable — the firmware runs the same model, so a
  * duration edit here would make client and device disagree.
  */
 const DURATION_SAMPLES = Object.freeze({
-  danger: DANGER_RULE.sustainedThreshold,
-  safeFloor: 200,
+  danger: DURATION_WINDOWS.dangerSamples,
+  safeFloor: DURATION_WINDOWS.safeFloorSamples,
 });
 
 /** One sample, in the feature space the trees were trained on. */
@@ -196,7 +210,7 @@ export function alignScoreToLevel(score: number, level: RiskLevel): number {
  *
  * `thresholds` overrides the two peak knobs (safe/danger limit) that Settings
  * and the admin global config edit. The duration windows come from the trained
- * model (danger sustained >= 0.1 s, safe floor at 20 s) and are deliberately
+ * model (danger needs one sample, safe floor at 20 s) and are deliberately
  * NOT configurable: the forest was trained on them, and the firmware runs the
  * same model, so honouring client-side duration edits here would make the
  * client disagree with the device that measured the foot.
@@ -220,7 +234,7 @@ export function inferRisk({
 
   // Rule-based overrides (clinical contract):
 
-  // 1. Danger: peak >= danger limit AND sustained >= the model's 0.1 s window
+  // 1. Danger: peak >= danger limit on this sample (no duration requirement)
   if (
     pressure >= thresholds.dangerKpa &&
     sustainedSamples >= DURATION_SAMPLES.danger

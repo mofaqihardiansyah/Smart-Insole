@@ -40,8 +40,8 @@ OUTPUT = Path(__file__).resolve().parents[1] / "models" / "training-data.json"
 
 SAMPLE_EVERY = 10          # 100Hz -> 10Hz
 WARNING_KPA = 35.0         # sesuai RISK_THRESHOLDS
-DANGER_KPA = 70.0          # sesuai RISK_THRESHOLDS
-WARNING_SECONDS = 5        # ambang alarm aplikasi (web); aturan label latih
+DANGER_KPA = 200.0         # konsensus in-shoe (Castro-Martins dkk. 2024)
+WARNING_SECONDS = 20       # sama dengan RISK_THRESHOLDS web; aturan label latih
                            # memakai 200 sampel = 20 s pada 10 Hz (lihat label_samples)
 
 # ------------------------------------------------------------- metadata ------
@@ -105,9 +105,9 @@ def label_samples(samples, group):
     Aturan: peak >= 35 kPa ATAU sustained >= 200 sampel (20 s pada 10 Hz) ->
     warning, selain itu safe. Grup DFN/DM tidak dipakai di sini.
 
-    Danger tidak pernah muncul sebagai label: DFN-DS tidak punya sampel yang
-    memenuhi peak >= 70 kPa sekaligus sustained >= 1 s (0 dari 81.000). Karena
-    itu danger ditangani aturan klinis terpisah, bukan oleh RF.
+    Danger tidak pernah muncul sebagai label: puncak tertinggi di DFN-DS
+    adalah 87,06 kPa, jadi 0 dari 81.000 sampel mencapai ambang 200 kPa.
+    Danger ditangani aturan klinis terpisah, bukan oleh RF.
     """
     labeled = []
     for s in samples:

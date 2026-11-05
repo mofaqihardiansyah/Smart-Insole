@@ -7,10 +7,10 @@ import type { InsoleContextValue } from '../context/InsoleContext';
 
 /**
  * readingsOverride lets the heatmap be driven deterministically without a
- * provider: 15 kPa (safe green), 45 kPa (warning amber), 85 kPa (danger red and
+ * provider: 15 kPa (safe green), 45 kPa (warning amber), 210 kPa (danger red and
  * pulsing) cover all three pressure zones defined by the risk tokens.
  */
-const OVERRIDE = { forefoot: 15, midfoot: 45, heel: 85 };
+const OVERRIDE = { forefoot: 15, midfoot: 45, heel: 210 };
 
 type HeatmapProps = React.ComponentProps<typeof PlantarHeatmap>;
 
@@ -93,19 +93,19 @@ describe('PlantarHeatmap', () => {
       ) as Element).getAttribute('stop-opacity')
     ).toBe('0');
 
-    // 45 kPa (35-70) -> warning
+    // 45 kPa (35-200) -> warning
     expect(midfootStops.every((c) => c === 'rgb(var(--warning))')).toBe(true);
 
-    // 85 kPa (>= 70) -> danger
+    // 210 kPa (>= 200) -> danger
     expect(heelStops.every((c) => c === 'rgb(var(--danger))')).toBe(true);
   });
 
   it('uses the engine boundaries: at exactly the limit is already that zone', () => {
     // The map and the risk chip must agree at the boundary. The engine calls
-    // 35 kPa a warning and 70 kPa danger (>= on both), so the map paints the
-    // same — no more strict `>` amber at exactly 70.
+    // 35 kPa a warning and 200 kPa danger (>= on both), so the map paints the
+    // same — no more strict `>` amber just below the limit.
     const { container } = render(
-      <PlantarHeatmap readingsOverride={{ forefoot: 35, midfoot: 70, heel: 69.9 }} />
+      <PlantarHeatmap readingsOverride={{ forefoot: 35, midfoot: 200, heel: 199.9 }} />
     );
 
     expect(
@@ -135,7 +135,7 @@ describe('PlantarHeatmap', () => {
       within(screen.getByTestId('node-midfoot')).getByText('45')
     ).toBeInTheDocument();
     expect(
-      within(screen.getByTestId('node-heel')).getByText('85')
+      within(screen.getByTestId('node-heel')).getByText('210')
     ).toBeInTheDocument();
 
     // r = 18 + min(kPa, 100) * 0.22
@@ -143,13 +143,14 @@ describe('PlantarHeatmap', () => {
       18 + 15 * 0.22,
       5
     );
+    // The radius caps at 100 kPa, so 210 kPa draws at the maximum size.
     expect(Number(nodeCircle('node-heel').getAttribute('r'))).toBeCloseTo(
-      18 + 85 * 0.22,
+      18 + 100 * 0.22,
       5
     );
   });
 
-  it('pulses the node at or above the 70 kPa danger threshold', () => {
+  it('pulses the node at or above the 200 kPa danger threshold', () => {
     renderOverride();
 
     const pulseClass = (nodeId: string) =>
@@ -165,7 +166,7 @@ describe('PlantarHeatmap', () => {
 
     expect(screen.queryByText('Tumit (Heel)')).not.toBeInTheDocument();
     expect(
-      within(screen.getByTestId('node-heel')).getByText('85')
+      within(screen.getByTestId('node-heel')).getByText('210')
     ).toBeInTheDocument();
   });
 
@@ -207,10 +208,10 @@ describe('PlantarHeatmap', () => {
     ).toBeInTheDocument();
 
     act(() => {
-      liveContext().setReadings({ forefoot: 12, midfoot: 44, heel: 77 });
+      liveContext().setReadings({ forefoot: 12, midfoot: 44, heel: 210 });
     });
     expect(
-      within(screen.getByTestId('node-heel')).getByText('77')
+      within(screen.getByTestId('node-heel')).getByText('210')
     ).toBeInTheDocument();
     expect(nodeCircle('node-heel').getAttribute('class')).toContain(
       'plantar-node-pulse'

@@ -22,6 +22,7 @@ import {
 } from "../context/InsoleContext";
 import { useUser } from "../context/UserContext";
 import { t } from "../utils/i18n";
+import { DURATION_WINDOWS } from "../utils/randomForestRisk";
 import {
   GlassCard,
   PanelHeader,
@@ -369,7 +370,7 @@ const DashboardPage = () => {
   );
 
   const duration = Number(readings.sustainedDuration || 0);
-  const overDurationLimit = duration >= thresholds.dangerSeconds;
+  const overDurationLimit = duration >= DURATION_WINDOWS.sustainedWarningSeconds;
 
   /**
    * The spark reads the buffer's real peaks, new end last (the timeline of the
@@ -407,19 +408,19 @@ const DashboardPage = () => {
       tint: "cream",
       title: t("metrics.sustainedDuration", language),
       icon: <Timer className="h-5 w-5" />,
-      iconTone: overDurationLimit ? "danger" : "neutral",
+      iconTone: overDurationLimit ? "warning" : "neutral",
       value: String(duration),
       unit: t("metrics.unit.seconds", language),
-      meter: { value: duration, max: thresholds.dangerSeconds },
+      meter: { value: duration, max: DURATION_WINDOWS.sustainedWarningSeconds },
       badge: (
-        <Chip tone={overDurationLimit ? "danger" : "success"}>
+        <Chip tone={overDurationLimit ? "warning" : "success"}>
           {overDurationLimit
             ? t("dashboard.overLimit", language)
             : t("dashboard.withinLimit", language)}
         </Chip>
       ),
       caption: t("dashboard.caption.durationLimit", language, {
-        value: thresholds.dangerSeconds,
+        value: DURATION_WINDOWS.sustainedWarningSeconds,
       }),
     },
     {

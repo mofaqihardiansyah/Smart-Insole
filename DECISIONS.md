@@ -106,6 +106,27 @@ and stat strips, `max-w-prose` for running prose.
 Wide cards expose stretched internals, so a page that gains width must lay its
 content out in columns rather than let a single field or line span the card.
 
+## ADR-008: Danger starts at 200 kPa, not 70
+
+- **Date:** 2026-11-05
+- **Status:** Accepted
+
+**Context.** The danger rule shipped at 70 kPa with a 0.1 s window. A review of
+the project's own library (Castro-Martins et al., Heliyon 2024, e26161) found
+seven plantar-pressure thresholds and no 70 kPa among them; the most consensual
+in-shoe figure is 200 kPa. The same review states that evidence for prolonged
+low pressure is still missing, so no duration threshold can be cited.
+
+**Decision.** Danger is `peak >= 200 kPa` on one sample. The `sustained`
+feature still feeds the forest's safe/warning boundary, but it is not part of
+the danger rule. The number is exported from `models/rf-model.json`, so web and
+firmware cannot drift.
+
+**Consequences.** The device alarms later than before, closer to published
+practice. Figshare DFU cannot validate the new threshold (its peak is
+123.8 kPa), so the validation report says so instead of claiming coverage. A
+future duration-based rule needs new evidence and a new decision.
+
 ## ADR-007: Random Forest is the only risk algorithm
 
 - **Date:** 2026-11-04

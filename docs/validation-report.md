@@ -65,13 +65,15 @@ plantar pressure*; buku kerja tidak memuat durasi.
 | Median | 18,1 kPa |
 | Puncak tertinggi | 123,8 kPa |
 | >= ambang warning (35 kPa) | 19,3% |
-| >= ambang danger (70 kPa) | 1,4% |
+| >= ambang danger lama (70 kPa) | 1,4% |
+| >= ambang danger sekarang (200 kPa) | 0,0% |
 
-**Tafsir.** Kedua ambang model berada di dalam rentang yang benar-benar dicapai
-kaki diabetik: 70 kPa bukan angka teoretis, melainkan tekanan yang terukur pada
-1,4% pengukuran DFU dan terlampaui sampai 123,8 kPa. Ambang 35 kPa memisahkan
-sepertiga terbawah distribusi. Catatan penting: validasi ini hanya untuk
-tekanan, bukan durasi — dataset tidak menyediakan durasi tumpu.
+**Tafsir.** Ambang warning 35 kPa berada di dalam rentang terukur: 19,3%
+pengukuran DFU melewatinya. Ambang danger yang dipakai sekarang (200 kPa,
+konsensus in-shoe) tidak pernah tercapai di dataset ini; puncaknya 123,8 kPa.
+Jadi 3.2 memvalidasi arah ambang, bukan ambang danger 200 kPa. Catatan penting:
+validasi ini hanya untuk tekanan — dataset tidak menyediakan durasi, dan durasi
+memang bukan kriteria danger pada model ini.
 
 ## 3.3 Edge case
 
@@ -95,10 +97,10 @@ Paket sensor yang hilang dibaca sebagai nol, bukan sebagai peringatan palsu.
   mesin; kesalahan pemetaan satu sensor akan menggeser porsi beban, tidak
   mengubah kesimpulan urutan.
 - Figshare DFU tidak memuat durasi, jadi 3.2 memvalidasi tekanan saja.
-- Pada beban 35-69 kPa yang bertahan lebih dari 20 detik, model tetap `warning`,
-  lebih permisif daripada aturan klinis yang menaikkan ke `danger`. Celah ini
-  hanya muncul pada pemakaian berkepanjangan dan wajib disebutkan saat
-  pemakaian alat.
+- Ambang danger 200 kPa tidak dapat divalidasi pada Figshare DFU: puncak
+  dataset 123,8 kPa. Klaim validasi danger harus memakai dataset lain.
+- Durasi bukan kriteria danger; `sustained` hanya memengaruhi fitur RF dan
+  batas `safe` 20 detik.
 
 ## Reproduksi
 

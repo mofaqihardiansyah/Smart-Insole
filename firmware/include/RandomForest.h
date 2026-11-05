@@ -3,7 +3,7 @@
  *
  * Hybrid approach:
  *   - RF classifier (data-driven) for safe vs warning
- *   - Rule-based override for danger (peak >= 70 kPa AND sustained >= 0.1s)
+ *   - Rule-based override for danger (peak >= 200 kPa on a single sample)
  *
  * Interface mirrors web-dashboard randomForestRisk.js:
  *   predict(peakPressure, sustainedDuration) → { level, score }

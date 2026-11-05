@@ -68,20 +68,9 @@ const FIELDS: ThresholdField[] = [
     max: 400,
     step: 1,
   },
-  {
-    key: "warningSeconds",
-    labelKey: "settings.warningSeconds",
-    min: 1,
-    max: 120,
-    step: 1,
-  },
-  {
-    key: "dangerSeconds",
-    labelKey: "settings.dangerSeconds",
-    min: 2,
-    max: 300,
-    step: 1,
-  },
+  // The duration windows come from the trained model and are not editable
+  // here: the firmware runs the same model, so a client edit would make the
+  // dashboard disagree with the device that measured the foot.
 ];
 
 /** A spread of pressure and duration pairs that reaches each consequence. */
@@ -89,8 +78,8 @@ const PREVIEW_INPUTS = [
   { peakPressure: 20, sustainedDuration: 5 },
   { peakPressure: 40, sustainedDuration: 5 },
   { peakPressure: 40, sustainedDuration: 25 },
-  { peakPressure: 75, sustainedDuration: 10 },
-  { peakPressure: 75, sustainedDuration: 35 },
+  { peakPressure: 210, sustainedDuration: 10 },
+  { peakPressure: 210, sustainedDuration: 35 },
 ];
 
 const toDraft = (source: RiskThresholds): ThresholdDraft => ({

@@ -7,6 +7,14 @@ summary line per month.
 
 ## Done
 
+- **2026-11-05 — Ambang danger 200 kPa + audit fixes.** Danger naik dari 70
+  menjadi 200 kPa (Castro-Martins dkk., Heliyon 2024) dengan satu sumber angka:
+  `train-model.js` → `models/rf-model.json` → header C++ dan salinan web. Turut
+  ditutup: filter median 3 sampel di ADC firmware, bug count leaf pada fallback
+  `train-model.js`, clip class weight 10x, kontrol durasi mati di Settings, dan
+  `train-model.js` yang menimpa laporan model. Dokumen diselaraskan (model,
+  validasi, roadmap, bab III, slide). `npm test` 384 tes, typecheck, build,
+  `pio test -e native` 13/13. (working tree)
 - **2026-11-04 — Random Forest only, fuzzy removed.** Deleted
   `fuzzyRisk.ts` and its test; `RISK_THRESHOLDS`, `SCORE_BANDS`, and
   `alignScoreToLevel` moved into `randomForestRisk.ts`. Wire field
@@ -108,9 +116,8 @@ summary line per month.
    the hardware is validated.
 3. **Thesis review** — fill the `[sitasi]` placeholders in
    `docs/thesis-methodology.md` and render the slide outline into real slides.
-4. **RF limitation** — the forest stays `warning` on 35-69 kPa held for over
-   20 s where the rule base says `danger`; revisit if sustained-load use is in
-   scope.
+4. **Label RF vs ambang** — model mereproduksi `peak >= 35`; putuskan apakah
+   skripsi menyebutnya aturan ambang atau melatih ulang dengan label DFN/DM.
 
 > Update rule: Done entries carry a date and a commit hash or `(working tree)`.
 > Keep entries short — detail belongs in the commit message or `CHANGELOG.md`.

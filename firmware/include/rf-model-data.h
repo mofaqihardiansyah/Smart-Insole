@@ -16,7 +16,7 @@
 #define FEATURE_SUSTAINED 1
 
 // Danger rule (from model)
-#define DANGER_PEAK_KPA      70
+#define DANGER_PEAK_KPA      200
 #define DANGER_SUSTAINED_RAW 1
 
 // Safe rule (clinical contract)

@@ -34,13 +34,15 @@ static const TestCase CASES[] = {
   {48, 2,  RISK_WARNING, "48 kPa, 2s"},
   {60, 5,  RISK_WARNING, "60 kPa, 5s"},
 
-  // Danger: peak >= 70 AND sustained >= 0.1s (rule-based)
-  {70, 1,  RISK_DANGER,  "70 kPa, 1s"},
-  {72, 15, RISK_DANGER,  "72 kPa, 15s"},
-  {80, 15, RISK_DANGER,  "80 kPa, 15s"},
-  {80, 30, RISK_DANGER,  "80 kPa, 30s"},
-  {80, 31, RISK_DANGER,  "80 kPa, 31s"},
-  {90, 45, RISK_DANGER,  "90 kPa, 45s"},
+  // Danger: peak >= 200 kPa on one sample (rule-based)
+  {200, 1,  RISK_DANGER,  "200 kPa, 1s"},
+  {205, 15, RISK_DANGER,  "205 kPa, 15s"},
+  {210, 15, RISK_DANGER,  "210 kPa, 15s"},
+  {210, 30, RISK_DANGER,  "210 kPa, 30s"},
+  {210, 31, RISK_DANGER,  "210 kPa, 31s"},
+  {220, 45, RISK_DANGER,  "220 kPa, 45s"},
+  // Just below the limit stays a warning, however long it is held.
+  {199, 45, RISK_WARNING, "199 kPa, 45s"},
 
   // Warning: prolonged moderate load (peak < 35 but sustained >= 20s)
   {30, 25, RISK_WARNING, "30 kPa, 25s"},
@@ -78,7 +80,7 @@ void test_warning_at_threshold(void) {
 }
 
 void test_danger_high_pressure(void) {
-  RiskResult r = rf.predict(80, 1);
+  RiskResult r = rf.predict(210, 1);
   TEST_ASSERT_EQUAL(RISK_DANGER, r.level);
   TEST_ASSERT_EQUAL(75, r.score);
 }
@@ -114,7 +116,7 @@ void test_vote_counts_sum_to_tree_count(void) {
 
 void test_danger_override_wins_over_rf(void) {
   // Even though RF might say warning, danger rule overrides
-  RiskResult r = rf.predict(70, 1);
+  RiskResult r = rf.predict(200, 1);
   TEST_ASSERT_EQUAL(RISK_DANGER, r.level);
   TEST_ASSERT_EQUAL(20, r.dangerVotes); // all trees
 }
@@ -129,7 +131,7 @@ void test_safe_to_warning_crossover(void) {
 
 void test_pressure_relief_resets(void) {
   // Start high, then relief
-  RiskResult high = rf.predict(80, 5);
+  RiskResult high = rf.predict(210, 5);
   TEST_ASSERT_EQUAL(RISK_DANGER, high.level);
 
   RiskResult relief = rf.predict(12, 0);
@@ -139,7 +141,7 @@ void test_pressure_relief_resets(void) {
 void test_scores_in_band(void) {
   RiskResult safe = rf.predict(15, 0);
   RiskResult warning = rf.predict(50, 5);
-  RiskResult danger = rf.predict(85, 10);
+  RiskResult danger = rf.predict(215, 10);
 
   TEST_ASSERT_TRUE(safe.score >= 0 && safe.score <= 47);
   TEST_ASSERT_TRUE(warning.score >= 48 && warning.score <= 74);

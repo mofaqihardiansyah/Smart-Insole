@@ -218,7 +218,7 @@ describe('InsoleProvider', () => {
 
     expect(text('risk')).toBe('safe');
 
-    // 40 kPa peak: inside the 35-70 kPa warning band
+    // 40 kPa peak: inside the 35-200 kPa warning band
     setReadings({ forefoot: 40, midfoot: 22, heel: 18 });
     expect(text('risk')).toBe('warning');
     expect(text('riskLabel')).toBe('Waspada'); // t('risk.warning', 'id')
@@ -242,14 +242,12 @@ describe('InsoleProvider', () => {
     expect(text('incidentTypes')).toBe('["warning"]');
   });
 
-  it('escalates to danger immediately when sustained above 70 kPa', () => {
+  it('escalates to danger on one sample above 200 kPa', () => {
     renderProvider();
 
-    // Clinical contract: peak >= 70 kPa AND sustained >= 0.1s triggers danger
-    // At 1Hz sampling, 0.1s rounds to 0 samples, but the context passes
-    // dangerDuration starting at 1 for the first sample above threshold.
-    // So a single sample above 70 kPa triggers danger.
-    setReadings({ forefoot: 80, midfoot: 75, heel: 72 });
+    // peak >= 200 kPa triggers danger on the sample that carries it; the
+    // context passes dangerDuration starting at 1 for that sample.
+    setReadings({ forefoot: 220, midfoot: 215, heel: 210 });
     expect(text('risk')).toBe('danger');
     expect(text('riskLabel')).toBe('Bahaya');
     expect(Number(text('riskScore'))).toBeGreaterThanOrEqual(75);
@@ -259,8 +257,8 @@ describe('InsoleProvider', () => {
   it('does not report danger for high pressure that immediately subsides', () => {
     renderProvider();
 
-    // One sample above 70 kPa, then relief. The dangerDuration resets.
-    setReadings({ forefoot: 80, midfoot: 75, heel: 72 });
+    // One sample above 200 kPa, then relief. The danger run resets.
+    setReadings({ forefoot: 220, midfoot: 215, heel: 210 });
     expect(text('risk')).toBe('danger');
 
     // Pressure relief: below danger threshold resets danger run

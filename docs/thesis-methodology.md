@@ -68,15 +68,16 @@ pustaka tambahan.
 Aturan klinis menangani kelas `danger`:
 
 ```
-danger  : peak >= 70 kPa dan sustained >= 0,1 detik
+danger  : peak >= 200 kPa (satu sampel; tidak ada syarat durasi)
 safe    : peak < 35 kPa dan sustained < 20 detik
 ```
 
-Pemisahan ini didasari komposisi dataset: hanya 31 sampel (0,05%) dari 3 pasien
-yang berlabel `danger`. Jumlah tersebut tidak cukup bagi Random Forest untuk
-mempelajari pola bahaya yang dapat digeneralisasi, sedangkan ambang bahayanya
-sudah terdefinisi secara klinis `[sitasi]`. Dengan pembagian ini, 99,95% data
-tetap ditangani model data-driven.
+Pemisahan ini didasari komposisi dataset: puncak tekanan tertinggi di DFN-DS
+hanya 87,06 kPa, sehingga 0 dari 81.000 sampel mencapai ambang 200 kPa. Tidak
+ada contoh `danger` yang bisa dipelajari Random Forest, sedangkan ambangnya
+sudah terdefinisi untuk pengukuran in-shoe (Castro-Martins dkk., 2024). Dengan
+pembagian ini, model hanya memutuskan `safe`/`warning`; `danger` selalu berasal
+dari aturan.
 
 Konfigurasi terpilih dari sapuan hiperparameter ringan: 20 pohon, kedalaman
 maksimum 8, Gini impurity, dan *bootstrap* berbobot dengan bobot kelas
@@ -112,10 +113,10 @@ Empat evaluasi dijalankan:
 | --- | --- |
 | Accuracy `safe` vs `warning` (28 pasien) | 100,0% |
 | Macro-F1 | 100,0% |
-| Clinical contract | 4/4 lolos |
+| Clinical contract | 5/5 lolos |
 | Edge case degenerat (kosong, `NaN`, 500 kPa) | Tidak ada galat, skor tetap 0-100 |
 | OptiTrack: tumit mendahului forefoot | 99,9% dari 902 fase tumpu |
-| Figshare DFU: pengukuran >= 70 kPa | 1,4% (puncak 123,8 kPa) |
+| Figshare DFU: >= 70 kPa / >= 200 kPa | 1,4% / 0,0% (puncak 123,8 kPa) |
 | Uji native firmware | 13/13 lolos |
 
 Akurasi 100% perlu dibaca bersama keterbatasan di 3.8: kelas yang dievaluasi

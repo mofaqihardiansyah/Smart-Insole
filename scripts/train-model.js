@@ -19,7 +19,6 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const DATA_FILE = path.join(ROOT, 'models', 'training-data.json');
 const OUTPUT_FILE = path.join(ROOT, 'models', 'rf-model.json');
-const REPORT_FILE = path.join(ROOT, 'docs', 'rf-model-report.md');
 
 // ------------------------------------------------------------ utilities ----
 function createRng(seed) {
@@ -102,7 +101,7 @@ function buildTree(samples, features, weights, depth, maxDepth, minSamples, rng)
   const split = bestSplit(samples, features, weights);
   if (!split) {
     const counts = {};
-    for (const l of labels) labels.forEach((l) => (counts[l] = (counts[l] || 0) + 1));
+    for (const l of labels) counts[l] = (counts[l] || 0) + 1;
     return { leaf: true, counts };
   }
 
@@ -245,7 +244,8 @@ function main() {
   const nClasses = 2;
   const classWeights = {};
   for (const [l, c] of Object.entries(counts)) {
-    classWeights[l] = trainSamples.length / (nClasses * c);
+    // Inverse frequency, capped at 10x so a rare class cannot dominate the vote.
+    classWeights[l] = Math.min(10, trainSamples.length / (nClasses * c));
   }
   console.log('  class counts:', counts);
   console.log('  class weights:', Object.fromEntries(Object.entries(classWeights).map(([k, v]) => [k, v.toFixed(2)])));
@@ -277,7 +277,11 @@ function main() {
   }
 
   // clinical contract check
-  const DANGER_RULE = { peakThreshold: 70, sustainedThreshold: 1 }; // 0.1s pada 10Hz
+  // 200 kPa: ambang in-shoe paling konsensus (Castro-Martins dkk., Heliyon
+  // 2024, e26161). `sustainedThreshold` dihitung dalam sampel 10 Hz; nilai 1
+  // berarti danger berlaku pada sampel pertama di atas ambang, bukan kriteria
+  // durasi klinis.
+  const DANGER_RULE = { peakThreshold: 200, sustainedThreshold: 1, sustainedUnit: 'samples_10hz' };
   function predictWithRule(sample) {
     if (sample.peak >= DANGER_RULE.peakThreshold && sample.sustained >= DANGER_RULE.sustainedThreshold) {
       return 'danger';
@@ -287,7 +291,8 @@ function main() {
 
   const checks = [
     { peak: 40, sustained: 1, expect: 'warning' },
-    { peak: 80, sustained: 31, expect: 'danger' },
+    { peak: 199, sustained: 31, expect: 'warning' },
+    { peak: 210, sustained: 31, expect: 'danger' },
     { peak: 20, sustained: 0, expect: 'safe' }, // realistic: peak < 35 → sustained = 0
     { peak: 30, sustained: 0, expect: 'safe' },
   ];
@@ -329,39 +334,8 @@ function main() {
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(model));
   console.log(`\nModel exported: ${OUTPUT_FILE} (${(fs.statSync(OUTPUT_FILE).size / 1024).toFixed(0)} KB)`);
 
-  // report
-  const report = `# RF Model Report
-
-## Training
-- Data: DFN-DS (135 patients, 81k samples)
-- Features: peak pressure (kPa), sustained duration (s)
-- **Approach: Hybrid RF + Rule**
-  - RF classifier untuk safe/warning boundary (data-driven)
-  - Rule-based untuk danger: peak ≥ ${DANGER_RULE.peakThreshold} kPa AND sustained ≥ ${DANGER_RULE.sustainedThreshold} (0.1s)
-- Class weighting: inverse frequency, clipped max 10x
-- Best hyperparameters: n_trees=${best.combo.nTrees}, max_depth=${best.combo.maxDepth}
-
-## Validation Results (RF only: safe vs warning)
-- Accuracy: ${(best.metrics.accuracy * 100).toFixed(1)}%
-- Macro-F1: ${(best.metrics.macroF1 * 100).toFixed(1)}%
-
-| Level | Precision | Recall | F1 | Support |
-|---|---|---|---|---|
-${Object.entries(best.metrics.perLevel).map(([l, m]) => `| ${l} | ${(m.precision * 100).toFixed(1)}% | ${(m.recall * 100).toFixed(1)}% | ${(m.f1 * 100).toFixed(1)}% | ${m.support} |`).join('\n')}
-
-## Clinical Contract (RF + Rule)
-${checks.map((c) => `- ${c.peak} kPa, ${c.sustained}s -> ${predictWithRule({ peak: c.peak, sustained: c.sustained })} (expect ${c.expect})`).join('\n')}
-
-## Rationale
-DFN-DS dataset hanya memiliki 31 danger samples (0.05%) dari 3 pasien. 
-RF tidak cukup data untuk belajar pattern danger yang generalizable.
-Danger ditentukan rule-based karena secara klinis sudah well-defined 
-(tekanan >70 kPa dalam durasi signifikan sudah berbahaya).
-
-RF tetap data-driven untuk safe/warning boundary (99.95% data).
-`;
-  fs.writeFileSync(REPORT_FILE, report);
-  console.log(`Report: ${REPORT_FILE}`);
+  console.log('  danger rule: peak >=', DANGER_RULE.peakThreshold, 'kPa');
+  console.log('  docs/rf-model-report.md is edited by hand; this script no longer writes it.');
 }
 
 main();

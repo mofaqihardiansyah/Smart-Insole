@@ -12,7 +12,7 @@
  *   2. Track sustained duration (consecutive seconds above 35 kPa)
  *   3. Run RandomForest inference → risk level
  *   4. Drive the local buzzer from that level — works with NO internet
- *   5. Upload to Firebase every 2 s (once WiFi AND NTP time are up)
+ *   5. Upload to Firebase every second (once WiFi AND NTP time are up)
  *
  * The alarm path (sensors → inference → buzzer) never depends on WiFi or
  * Firebase. A dropped connection delays telemetry only; it never silences
@@ -63,7 +63,7 @@ static unsigned long lastBuzzerToggleMs = 0;
 static bool buzzerOn = false;
 static unsigned long pushFailStreak = 0;
 
-// Latest sample, kept so the 2 s push cadence can outlive the 1 s sample
+// Latest sample, kept so the push cadence can outlive the 1 s sample
 // cadence without re-reading the ADC.
 static float lastForefoot = 0.0f;
 static float lastMidfoot = 0.0f;
@@ -86,9 +86,13 @@ static bool timeSynced() {
   return time(nullptr) > 1600000000L;
 }
 
-// Read one FSR and convert to kPa.
+// Read one FSR through a 3-sample median, then convert to kPa. The median
+// rejects a single ADC spike without adding lag to a real, held load.
 static float readFsrKpa(int pin) {
-  int raw = analogRead(pin);
+  int a = analogRead(pin);
+  int b = analogRead(pin);
+  int c = analogRead(pin);
+  int raw = max(min(a, b), min(max(a, b), c));
   float kPa = (raw - ADC_OFFSET) * ADC_TO_KPA;
   return (kPa > 0.0f) ? kPa : 0.0f;
 }
@@ -170,8 +174,8 @@ static void pushReadings(time_t timestampSec) {
     pushFailStreak = 0;
   } else {
     pushFailStreak++;
-    // First failure, then every 12th (once a minute at a 2 s cadence).
-    if (pushFailStreak == 1 || pushFailStreak % 12 == 0) {
+    // First failure, then every 60th (once a minute at a 1 s cadence).
+    if (pushFailStreak == 1 || pushFailStreak % 60 == 0) {
       Serial.printf("[WARN] Firebase push failed: %s\n", fbdo.errorReason().c_str());
     }
   }

@@ -69,7 +69,7 @@ Model hibrida: RF memutuskan `safe`/`warning`, aturan klinis memutuskan
 | `version` | `"1.0"` |
 | `features` | `["peak", "sustained"]` — dua fitur yang dipakai pohon |
 | `levels` | `["safe", "warning"]` |
-| `dangerRule` | `{ peakThreshold: 70, sustainedThreshold: 1 }` kPa / detik |
+| `dangerRule` | `{ peakThreshold: 200, sustainedThreshold: 1, sustainedUnit: "samples_10hz" }` — danger aktif pada sampel pertama di atas 200 kPa |
 | `calibration` | identik dengan `training-data.json` (skala kPa) |
 | `combo` | `{ nTrees: 20, maxDepth: 8, minSamples: 4 }` |
 | `metrics` | `accuracy`, `macroF1`, `perLevel` (precision/recall/f1/support) |
@@ -92,7 +92,9 @@ di riwayat commit.
 
 > Metrik `accuracy: 1.0` / `macroF1: 1.0` pada validasi bukan bukti model
 > sempurna — label DFN-DS diturunkan dari sinyal yang sama dengan fiturnya
-> (lihat `docs/rf-model-report.md`). Kinerja di kaki nyata harus diukur ulang.
+> (lihat `docs/rf-model-report.md`). Label per sampel adalah `peak >= 35`, jadi
+> pohon hanya mempelajari ambang itu sendiri; sebut ini aturan ambang, bukan
+> classifier yang menemukan pola. Kinerja di kaki nyata harus diukur ulang.
 
 ## Kenapa ada salinan di `web-dashboard/src/utils/`
 
@@ -119,8 +121,6 @@ cd web-dashboard && npm test
 seperti `provenance` tidak mengubah header firmware. Kalau jumlah pohon atau
 ambang berubah, header ikut berubah dan firmware harus di-flash ulang.
 
-Perhatian: `train-model.js` juga menulis ulang `docs/rf-model-report.md` dengan
-template bawaan (bahasa Inggris). Versi yang di-commit sudah disunting manual
-dalam bahasa Indonesia — setelah regenerasi, pulihkan dengan
-`git checkout -- docs/rf-model-report.md` dan perbarui angkanya bila metrik
-berubah.
+`train-model.js` tidak lagi menulis `docs/rf-model-report.md`; laporan itu
+disunting manual supaya versi Indonesia tidak tertimpa. Skrip hanya mencetak
+ringkasan ke stdout.

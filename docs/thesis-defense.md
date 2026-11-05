@@ -20,17 +20,17 @@ jangan menambah klaim akurasi baru di luar itu.
 | Komponen | Nilai |
 | --- | --- |
 | Batas `safe`/`warning` | dipelajari dari 81.000 sampel DFN-DS |
-| Kelas `danger` | aturan klinis (peak >= 70 kPa dan sustained >= 0,1 s) |
+| Kelas `danger` | aturan klinis (peak >= 200 kPa, satu sampel) |
 | Perangkat | dashboard web dan ESP32 |
 | Dasar keputusan | suara 20 pohon |
 
 Poin bicara: batas safe/warning dipelajari dari data. Aturan bahaya sengaja
-tetap manual karena datanya hanya 31 sampel dari 3 pasien.
+tetap manual karena 0 dari 81.000 sampel mencapai 200 kPa (puncak 87,06 kPa).
 
 ### Slide 3 — Kinerja
 
 Angka yang ditampilkan: accuracy 100,0% dan macro-F1 100,0% pada 28 pasien yang
-tidak dipakai melatih, clinical contract 4/4.
+tidak dipakai melatih, clinical contract 5/5.
 
 Poin bicara: akurasi 100% hanya berlaku untuk dua kelas, pada populasi diabetes,
 dengan batas yang ditentukan durasi tumpu. Sebutkan ini lebih dulu sebelum
@@ -40,14 +40,14 @@ penguji bertanya.
 
 Tiga pemeriksaan: OptiTrack (310 rekaman, 902 fase tumpu, tumit mendahului
 forefoot 99,9%), Figshare DFU (1.296 pengukuran, 19,3% >= 35 kPa, 1,4% >=
-70 kPa, puncak 123,8 kPa), dan edge case (input kosong, `NaN`, 500 kPa tidak
+70 kPa, 0% >= 200 kPa, puncak 123,8 kPa), dan edge case (input kosong, `NaN`, 500 kPa tidak
 pernah melempar galat).
 
 ### Slide 5 — Interpretabilitas: jawaban jujur
 
 Random Forest hanya memberi suara 20 pohon; model 3,4 KB ini tidak dapat
 dijelaskan per pasien. Kompensasinya: (a) kontrak klinis diuji eksplisit,
-(b) ambang bahaya tetap aturan klinis yang dapat dibaca, (c) tekanan >= 70 kPa
+(b) ambang bahaya tetap aturan klinis yang dapat dibaca, (c) tekanan >= 200 kPa
 tidak pernah dilaporkan `safe`, dan (d) model cukup kecil untuk berjalan di
 ESP32 (7,9 KB header C++).
 

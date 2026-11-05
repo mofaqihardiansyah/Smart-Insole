@@ -39,7 +39,7 @@ const ZERO_READINGS = { forefoot: 0, midfoot: 0, heel: 0 };
  * Zone colour per pressure value, on the SAME thresholds and the SAME
  * boundaries the risk engine uses (at or above the safe limit is warning,
  * at or above the danger limit is danger). The map used to keep its own
- * 30/70 constants with strict `>`, so a 70 kPa foot could read "danger" on
+ * 30/70 constants with strict `>`, so a high-pressure foot could read "danger" on
  * the chip and amber on the map.
  */
 const zoneColor = (kpa: number, warningKpa: number, dangerKpa: number) => {

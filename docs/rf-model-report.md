@@ -14,7 +14,7 @@ _warning_, sedangkan aturan klinis menangani _danger_.
 ## Metode
 
 - **RF classifier** untuk batas `safe` / `warning` (data-driven).
-- **Rule-based** untuk `danger`: peak ≥ 70 kPa **dan** sustained ≥ 0,1 detik.
+- **Rule-based** untuk `danger`: peak ≥ 200 kPa pada satu sampel (Castro-Martins dkk., Heliyon 2024). Tidak ada syarat durasi.
 - _Class weighting_: inverse frequency, dipotong maksimum 10x.
 - Hyperparameter terbaik: `n_trees=20`, `max_depth=8`.
 
@@ -33,18 +33,44 @@ _warning_, sedangkan aturan klinis menangani _danger_.
 | Input | Ekspektasi | Hasil |
 | --- | --- | --- |
 | 40 kPa, 1 s | `warning` | Lolos |
-| 80 kPa, 31 s | `danger` | Lolos |
+| 210 kPa, 31 s | `danger` | Lolos |
 | 20 kPa, 0 s | `safe` | Lolos |
 | 30 kPa, 0 s | `safe` | Lolos |
 
 ## Rasional
 
-DFN-DS hanya memiliki 31 sampel `danger` (0,05%) dari 3 pasien. Jumlah ini
-tidak cukup bagi RF untuk mempelajari pola `danger` yang dapat
-digeneralisasi. Karena itu `danger` ditentukan secara rule-based — ambangnya
-sudah _well-defined_ secara klinis (tekanan > 70 kPa dalam durasi signifikan
-sudah berbahaya). RF tetap data-driven untuk batas `safe` / `warning` yang
-mencakup 99,95% data.
+DFN-DS tidak memiliki satu pun sampel `danger`: puncak tertinggi 87,06 kPa,
+sedangkan ambang in-shoe paling konsensus adalah 200 kPa (Castro-Martins dkk.,
+Heliyon 2024). Tidak ada contoh untuk dilatih, jadi `danger` ditentukan
+rule-based.
+
+Catatan kejujuran: label `safe`/`warning` juga diturunkan dari ambang
+`peak >= 35`, sehingga RF di sini mereproduksi ambang tersebut. Angka 100%
+berarti konsisten terhadap aturan label, bukan bukti generalisasi.
+
+## Kenapa ambang danger bisa diubah tanpa retraining
+
+`scripts/train-model.js` memakai data, fitur, dan label untuk membangun pohon;
+`dangerRule` baru dibaca setelah pohon selesai (`predictWithRule`) dan saat
+ekspor. Label per sampel tidak berubah saat ambang danger berubah, jadi keluaran
+latih juga tidak berubah. Diuji pada regenerasi 5 November 2026:
+
+| Keluaran | Model lama | Model baru |
+| --- | --- | --- |
+| Hash `trees` | `94478a0e5c7fd0e7` | `94478a0e5c7fd0e7` |
+| `metrics`, `combo` | identik | identik |
+| Field berubah | — | `dangerRule`, `calibration` |
+
+Hash adalah SHA-256 dari JSON `trees` dengan kunci terurut, 16 karakter pertama.
+
+Syaratnya dua. Pertama, label tidak berubah: `peak >= 35` tetap batas
+`safe`/`warning`. Kedua, tidak ada sampel yang berpindah kelas: DFN-DS tidak
+punya sampel >= 200 kPa (puncak 87,06 kPa). Perubahan 70 -> 200 justru
+menghapus konflik lama: 31 sampel di 70-87 kPa dulu berlabel `warning` padahal
+aturan eksekusi menyebut `danger`.
+
+Retraining baru relevan kalau label diganti (misalnya diagnosis DFN/DM) atau
+ada data >= 200 kPa. Tanpa itu, retrain hanya menghasilkan artefak yang sama.
 
 ## Reproduksi
 

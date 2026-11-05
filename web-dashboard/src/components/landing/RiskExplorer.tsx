@@ -38,7 +38,7 @@ const PRESETS = [
   {
     key: "high",
     label: "landing.tech.sim.presetHigh",
-    pressure: 78,
+    pressure: 210,
     duration: 2,
   },
 ];
@@ -99,7 +99,7 @@ const RiskExplorer = ({ language }: { language?: string }) => {
             id="risk-pressure"
             type="range"
             min={0}
-            max={100}
+            max={300}
             step={1}
             value={pressure}
             onChange={(event) => setPressure(Number(event.target.value))}

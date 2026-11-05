@@ -59,12 +59,12 @@ kondisi *offloading* (control, post-op shoe, post-op shoe + wool felt, RCW,
 RCW + Even-Up) → 1.296 pengukuran *peak plantar pressure*.
 
 **Dipakai untuk:** validasi 3.2 — memeriksa berapa persen pengukuran nyata
-melewati ambang 35 kPa dan 70 kPa (hasil: 19,3% dan 1,4%; lihat
+melewati ambang 35 kPa, 70 kPa, dan 200 kPa (hasil: 19,3%, 1,4%, dan 0%; lihat
 `docs/validation-report.md`).
 
 **Batasan:** buku kerja tidak memuat kolom durasi, jadi dataset ini hanya
-memvalidasi **tekanan**, bukan `sustainedDuration`. Karena itu validasi 3.2
-tidak bisa menguji jalur danger yang butuh tekanan *dan* durasi.
+memvalidasi **tekanan**. Puncaknya 123,8 kPa, di bawah ambang danger 200 kPa,
+sehingga jalur danger tidak dapat diuji di sini.
 
 **Lisensi:** tidak disertakan dalam file yang diunduh. Rujuk halaman Figshare
 dataset sebelum mempublikasikan turunannya.

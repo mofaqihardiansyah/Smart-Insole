@@ -222,7 +222,7 @@ describe("the score tile's semantic tone", () => {
 
   it("paints a danger reading with the danger tone", () => {
     renderDashboard({ autoConnect: true });
-    push({ forefoot: 75, midfoot: 20, heel: 20 });
+    push({ forefoot: 210, midfoot: 20, heel: 20 });
     assertTone("danger");
   });
 });

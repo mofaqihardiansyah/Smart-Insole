@@ -11,7 +11,7 @@ import {
  * These tests encode the clinical contract the Random Forest has to honour.
  * The system uses a hybrid approach:
  *   - Random Forest (data-driven) for safe vs warning
- *   - Rule-based override for danger (peak >= 70 kPa AND sustained >= 0.1s)
+ *   - Rule-based override for danger (peak >= 200 kPa on one sample)
  *
  * The danger rule is clinically well-defined and overrides RF prediction.
  */
@@ -28,14 +28,15 @@ describe('clinical classification', () => {
     [40, 1, 'warning'],
     [48, 2, 'warning'],
     [60, 5, 'warning'],
-    // High pressure, sustained past 0.1s triggers danger (rule-based)
-    [70, 1, 'danger'],
-    [72, 15, 'danger'],
-    [80, 15, 'danger'],
-    // High pressure, sustained past the danger window.
-    [80, 30, 'danger'],
-    [80, 31, 'danger'],
-    [90, 45, 'danger'],
+    // High pressure at or above 200 kPa triggers danger (rule-based)
+    [200, 1, 'danger'],
+    [205, 15, 'danger'],
+    [210, 15, 'danger'],
+    [210, 30, 'danger'],
+    [210, 31, 'danger'],
+    [220, 45, 'danger'],
+    // Just below the limit stays a warning, however long it is held.
+    [199, 45, 'warning'],
     // Prolonged load below the pressure limit is still a warning.
     [30, 25, 'warning'],
     [30, 45, 'warning'],
@@ -63,21 +64,24 @@ describe('clinical classification', () => {
   it('crosses from warning to danger at or before the danger duration', () => {
     let crossover = null;
     for (let d = 0; d <= 40; d += 0.1) {
-      if (classifyRisk(80, d) === 'danger') {
+      if (classifyRisk(210, d) === 'danger') {
         crossover = d;
         break;
       }
     }
     expect(crossover).not.toBeNull();
-    // Danger triggers at sustained >= 0.1s (1 sample at 10Hz)
+    // Danger triggers on the first sample (1 sample at 10 Hz)
     expect(crossover).toBeLessThanOrEqual(0.2);
     expect(crossover).toBeGreaterThanOrEqual(0.05);
   });
 
-  it('reports danger from high pressure alone when sustained', () => {
-    // With rule-based danger: peak >= 70 AND sustained >= 0.1s triggers danger
+  it('reports danger from high pressure alone', () => {
+    // With rule-based danger: peak >= 200 kPa triggers on this sample.
     expect(classifyRisk(500, 1)).toBe('danger');
-    expect(classifyRisk(70, 1)).toBe('danger');
+    expect(classifyRisk(200, 1)).toBe('danger');
+    // Called with no duration there is no sample carrying the peak, so the
+    // reading stays a warning; the live path always passes one sample.
+    expect(classifyRisk(200, 0)).toBe('warning');
   });
 
   it('degrades gracefully on missing or invalid input', () => {
@@ -113,7 +117,7 @@ describe('severity score', () => {
   it('scores representative states in a sensible order', () => {
     const safe = inferRisk({ peakPressure: 15, sustainedDuration: 2 }).score;
     const warning = inferRisk({ peakPressure: 50, sustainedDuration: 5 }).score;
-    const danger = inferRisk({ peakPressure: 85, sustainedDuration: 35 }).score;
+    const danger = inferRisk({ peakPressure: 215, sustainedDuration: 35 }).score;
 
     expect(safe).toBeLessThan(warning);
     expect(warning).toBeLessThan(danger);
@@ -153,13 +157,13 @@ describe('configurable peak thresholds', () => {
   });
 
   it('moves the danger override to the configured danger limit', () => {
-    expect(classifyRisk(60, 1, custom)).toBe('danger'); // default 70 would warn
+    expect(classifyRisk(60, 1, custom)).toBe('danger'); // default 200 would warn
     expect(inferRisk({ peakPressure: 65, sustainedDuration: 1, thresholds: custom }).level).toBe(
       'danger'
     );
   });
 
-  it('leaves the model duration windows alone: 0.1 s danger, 20 s safe floor', () => {
+  it('leaves the model duration windows alone: one-sample danger, 20 s safe floor', () => {
     // Duration is NOT client-configurable; a 60 kPa spike for a fraction of a
     // sample still does not earn danger, and a sub-limit peak sustained past
     // the floor is still at least a warning.

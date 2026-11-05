@@ -24,6 +24,11 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Danger threshold raised from 70 kPa to 200 kPa, the most consensual in-shoe
+  figure (Castro-Martins et al., Heliyon 2024, e26161). The number comes from
+  one place: `scripts/train-model.js` → `models/rf-model.json`, then the C++
+  header and the web copy. Duration is not a danger criterion; the schema keeps
+  the field as `sustainedUnit: "samples_10hz"`.
 - Agent workflow now ends with a Markdown upkeep question: which root `.md`
   files (`TASK.md`, `CHANGELOG.md`, `READY.md`, `DECISIONS.md`) need updating.
   Frozen documents (`AGENTS.md`, `DESIGN.md`, `README.md`, `docs/**`,

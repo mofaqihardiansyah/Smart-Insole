@@ -2,11 +2,11 @@
  * RandomForest.cpp — On-device Random Forest inference for ESP32.
  *
  * Hybrid approach:
- *   1. Danger rule: peak >= 70 kPa AND sustained >= 0.1s → danger
+ *   1. Danger rule: peak >= 200 kPa on one sample     → danger
  *   2. Safe rule:   peak < 35 kPa AND sustained < 20s    → safe
  *   3. RF classifier: majority vote across 20 trees       → safe/warning
  *
- * Mirrors web-dashboard src/utils/randomForestRisk.js exactly.
+ * Mirrors web-dashboard src/utils/randomForestRisk.ts exactly.
  */
 
 #include "RandomForest.h"
@@ -73,7 +73,7 @@ RiskResult RandomForest::predict(float peakPressure, float sustainedDuration) co
   RiskResult result = {RISK_SAFE, 0, 0, 0, 0};
 
   // --- Rule 1: Danger override ---
-  // peak >= 70 kPa AND sustained >= 1 sample (0.1s)
+  // peak >= 200 kPa on one sample (1 sample at 10 Hz)
   if (pressure >= (float)DANGER_PEAK_KPA && sustainedSamples >= DANGER_SUSTAINED_RAW) {
     result.level = RISK_DANGER;
     result.score = 75;
