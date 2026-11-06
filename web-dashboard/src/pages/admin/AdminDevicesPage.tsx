@@ -3,6 +3,7 @@ import { Activity, BatteryMedium, Download } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { useUser } from "../../context/UserContext";
 import { t } from "../../utils/i18n";
+import { AdminEmpty, AdminPageHeader, AdminSection } from "./AdminPrimitives";
 import { logAdminAction } from "../../utils/adminAudit";
 import {
   GlassButton,
@@ -106,10 +107,8 @@ const DeviceCard = ({ deviceId, owner, language, onError }: DeviceCardProps) => 
   };
 
   return (
-    <GlassCard flush>
-      <PanelHeader
+    <AdminSection
         title={deviceId}
-        icon={<Activity className="h-4 w-4" />}
         action={
           <StatusChip
             level={online ? "safe" : "danger"}
@@ -121,8 +120,8 @@ const DeviceCard = ({ deviceId, owner, language, onError }: DeviceCardProps) => 
             size="sm"
           />
         }
-      />
-      <div className="space-y-4 px-6 pb-6">
+      >
+      <div className="space-y-4 pb-2">
         <dl className="divide-y divide-border-strong">
           <div className="flex items-center justify-between gap-4 py-2">
             <dt className="text-body-sm text-muted">{t("admin.devices.owner", language)}</dt>
@@ -188,7 +187,7 @@ const DeviceCard = ({ deviceId, owner, language, onError }: DeviceCardProps) => 
           )}
         </div>
       </div>
-    </GlassCard>
+    </AdminSection>
   );
 };
 
@@ -220,7 +219,7 @@ const AdminDevicesPage = () => {
 
   return (
     <section className="space-y-5 lg:space-y-6">
-      <PageHeader
+      <AdminPageHeader
         title={t("admin.nav.devices", language)}
         subtitle={t("admin.devices.title", language)}
       />
@@ -236,15 +235,20 @@ const AdminDevicesPage = () => {
       )}
 
       {deviceIds.length === 0 ? (
-        <StatePanel
-          variant="empty"
+        <AdminEmpty
+          icon={
+            <Activity className="mx-auto h-6 w-6 text-muted" aria-hidden="true" />
+          }
           title={t("admin.devices.none", language)}
-          description={t("admin.devices.noneBody", language)}
-          nextAction={t("admin.devices.emptyNext", language)}
-          nextActionLabel={t("common.nextStep", language)}
+          body={t("admin.devices.noneBody", language)}
+          action={
+            <p className="text-body-sm text-muted">
+              {t("admin.devices.emptyNext", language)}
+            </p>
+          }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-10 lg:grid-cols-2">
           {deviceIds.map((id) => (
             <DeviceCard
               key={id}

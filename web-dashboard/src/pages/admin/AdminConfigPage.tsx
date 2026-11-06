@@ -3,6 +3,7 @@ import { Settings } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { useUser } from "../../context/UserContext";
 import { t } from "../../utils/i18n";
+import { AdminPageHeader, AdminSection } from "./AdminPrimitives";
 import { logAdminAction } from "../../utils/adminAudit";
 import {
   GlassCard,
@@ -104,18 +105,16 @@ const AdminConfigPage = () => {
 
   return (
     <section className="space-y-5 lg:space-y-6">
-      <PageHeader
+      <AdminPageHeader
         title={t("admin.nav.config", language)}
         subtitle={t("admin.subtitle", language)}
       />
 
-      <GlassCard flush>
-        <PanelHeader
-          title={t("admin.config.title", language)}
-          subtitle={t("admin.config.hint", language)}
-          icon={<Settings className="h-4 w-4" />}
-        />
-        <div className="px-6 pb-6">
+      <AdminSection
+          title={t("admin.config.section", language)}
+          description={t("admin.config.hint", language)}
+        >
+        <div className="pb-2">
           {invalid && (
             <StatusBanner
               tone="danger"
@@ -186,7 +185,7 @@ const AdminConfigPage = () => {
             )}
           </div>
         </div>
-      </GlassCard>
+      </AdminSection>
     </section>
   );
 };

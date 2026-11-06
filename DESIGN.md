@@ -12,7 +12,13 @@ surface:
 |---|---|---|
 | The **app** (signed in, and the auth forms that share its tokens) | Cadra light clinical console. Warm `#EFEFEC` canvas, white cards, one floating dark nav pill over a 1400px content column. | Dashboard, Monitoring, History, Device, Settings, Profile, Notifications, Login, Register |
 | The **landing** (public) | The app's palette at marketing scale: same light canvas, ink and navy CTAs, larger radii, deeper shadows. | `/` for a signed-out visitor |
+| The **admin console** | The same tokens at operations density: one ink instrument band for the header, open sections separated by rules instead of cards, mono figures, no bell and no alert dialog. | `/admin/*` |
 
+The console shares the token layer but not the composition: it is a work tool
+read across a desk, so its readings sit in one divided strip rather than three
+elevated cards, its navigation is an underline row rather than the patient pill,
+and its tables stack into labelled rows below `md` instead of scrolling
+sideways.
 Both draw on one token layer. The landing re-declares its own values under
 `.landing-scope`, so the shared components (GlassCard, GlassButton, StatusChip)
 keep their measured light form there instead of being restyled twice.

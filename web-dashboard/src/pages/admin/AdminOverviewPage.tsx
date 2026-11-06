@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Activity, ClipboardList, Users } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
+import { AdminPageHeader, AdminSection } from "./AdminPrimitives";
 import {
   GlassCard,
   GlassTable,
@@ -19,13 +20,30 @@ import {
   type AuditEntry,
 } from "../../services/firebaseRealtime";
 
-/** One count in the console's summary strip. */
+/**
+ * One reading in the console's status strip. A strip rather than three cards:
+ * across a desk these are one instrument reading, and three floating cards
+ * would add elevation that carries no hierarchy.
+ */
 const Stat = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded-card border border-border bg-surface px-6 py-5 shadow-panel">
-    <p className="text-label uppercase text-fg-2">{label}</p>
-    <p className="mt-2 tabular-data font-heading text-stat text-fg">{value}</p>
+  <div className="px-6 py-5">
+    <dt className="text-label uppercase text-fg-2">{label}</dt>
+    <dd className="mt-1.5 font-mono text-stat tabular-nums text-fg">{value}</dd>
   </div>
 );
+
+/** Machine verbs the console writes, in the words an operator reads. */
+const ACTION_LABELS: Record<string, string> = {
+  "user.active": "Status akun",
+  "user.role": "Role akun",
+  "user.delete": "Hapus akun",
+  "device.pair": "Pasangkan perangkat",
+  "device.unpair": "Lepas perangkat",
+  "device.prune": "Retensi riwayat",
+  "incident.ack": "Tandai insiden",
+  "incident.unack": "Batalkan insiden",
+  "config.thresholds": "Ubah ambang",
+};
 
 /**
  * AdminOverviewPage — the console's landing view.
@@ -70,7 +88,7 @@ const AdminOverviewPage = () => {
 
   return (
     <section className="space-y-5 lg:space-y-6">
-      <PageHeader
+      <AdminPageHeader
         title={t("admin.nav.overview", language)}
         subtitle={t("admin.subtitle", language)}
       />
@@ -85,21 +103,19 @@ const AdminOverviewPage = () => {
         />
       )}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <dl className="grid grid-cols-1 divide-y divide-border-strong border-y border-border-strong sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         <Stat label={t("admin.overview.users", language)} value={users.length} />
         <Stat label={t("admin.overview.active", language)} value={activeUsers} />
         <Stat
           label={t("admin.overview.devices", language)}
           value={deviceIds.length}
         />
-      </div>
+      </dl>
 
-      <GlassCard flush>
-        <PanelHeader
+      <AdminSection
           title={t("admin.overview.audit", language)}
-          icon={<ClipboardList className="h-4 w-4" />}
-        />
-        <div className="px-6 pb-6">
+        >
+        <div className="pb-2">
           {audit.length === 0 ? (
             <p className="text-body-sm text-muted">
               {t("admin.overview.emptyAudit", language)}
@@ -138,7 +154,9 @@ const AdminOverviewPage = () => {
                           {entry.actorEmail || entry.actorUid}
                         </span>
                       </GlassTableCell>
-                      <GlassTableCell>{entry.action}</GlassTableCell>
+                      <GlassTableCell>
+                        {ACTION_LABELS[entry.action] ?? entry.action}
+                      </GlassTableCell>
                       <GlassTableCell>
                         <span className="text-muted">
                           {entry.target || t("common.notAvailable", language)}
@@ -163,14 +181,8 @@ const AdminOverviewPage = () => {
             </Link>
           </div>
         </div>
-      </GlassCard>
+      </AdminSection>
 
-      <div className="flex items-center gap-2 text-body-sm text-muted">
-        <Users className="h-4 w-4" aria-hidden="true" />
-        <span>{t("admin.overview.users", language)}</span>
-        <Activity className="ml-3 h-4 w-4" aria-hidden="true" />
-        <span>{t("admin.overview.devices", language)}</span>
-      </div>
     </section>
   );
 };

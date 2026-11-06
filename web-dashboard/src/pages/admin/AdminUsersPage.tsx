@@ -3,6 +3,7 @@ import { Search, Trash2, UserCheck, UserX, Users } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { useUser } from "../../context/UserContext";
 import { t } from "../../utils/i18n";
+import { AdminEmpty, AdminPageHeader, AdminSection } from "./AdminPrimitives";
 import { logAdminAction } from "../../utils/adminAudit";
 import {
   GlassButton,
@@ -283,22 +284,20 @@ const AdminUsersPage = () => {
 
   return (
     <section className="space-y-5 lg:space-y-6">
-      <PageHeader
+      <AdminPageHeader
         title={t("admin.nav.users", language)}
         subtitle={t("admin.users.title", language)}
       />
 
-      <GlassCard flush>
-        <PanelHeader
-          title={t("admin.users.title", language)}
-          icon={<Users className="h-4 w-4" />}
+      <AdminSection
+          title={t("admin.users.list", language)}
           action={
             <GlassButton type="button" variant="outline" size="sm" onClick={handleExport}>
               {t("admin.users.export", language)}
             </GlassButton>
           }
-        />
-        <div className="px-6 pb-6">
+        >
+        <div className="pb-2">
           {actionError && (
             <StatusBanner
               tone="danger"
@@ -341,15 +340,13 @@ const AdminUsersPage = () => {
               nextActionLabel={t("common.nextStep", language)}
             />
           ) : filtered.length === 0 ? (
-            <StatePanel
-              variant="empty"
+            <AdminEmpty
               title={t("admin.users.empty", language)}
-              nextAction={t("admin.users.emptyNext", language)}
-              nextActionLabel={t("common.nextStep", language)}
+              body={t("admin.users.emptyNext", language)}
             />
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="hidden overflow-x-auto md:block">
                 <GlassTable>
                   <thead>
                     <GlassTableRow>
@@ -509,6 +506,51 @@ const AdminUsersPage = () => {
                 </GlassTable>
               </div>
 
+              {/* Below md the register becomes stacked rows: a table cannot
+                  reflow, and horizontal scroll is not a layout. */}
+              <ul className="divide-y divide-border-strong border-t border-border md:hidden">
+                {visible.map((row) => {
+                  const devices = pairings[row.uid] ?? [];
+                  return (
+                    <li key={row.uid} className="px-6 py-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-medium text-fg">
+                          {row.displayName || unavailable}
+                        </span>
+                        <StatusChip
+                          level={row.active === false ? "danger" : "safe"}
+                          label={
+                            row.active === false
+                              ? t("admin.users.inactive", language)
+                              : t("admin.users.active", language)
+                          }
+                          size="sm"
+                        />
+                      </div>
+                      <p className="mt-0.5 break-words text-body-sm text-muted">
+                        {row.email || unavailable}
+                      </p>
+                      <dl className="mt-3 grid grid-cols-2 gap-3">
+                        <div>
+                          <dt className="text-label uppercase text-muted">
+                            {t("admin.users.role", language)}
+                          </dt>
+                          <dd className="text-body-sm">{row.role === "admin" ? "admin" : "user"}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-label uppercase text-muted">
+                            {t("admin.users.device", language)}
+                          </dt>
+                          <dd className="tabular-data text-body-sm">
+                            {devices[0] || t("admin.users.noDevice", language)}
+                          </dd>
+                        </div>
+                      </dl>
+                    </li>
+                  );
+                })}
+              </ul>
+
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-body-sm text-muted">
                   {t("history.showing", language, {
@@ -529,7 +571,7 @@ const AdminUsersPage = () => {
             </>
           )}
         </div>
-      </GlassCard>
+      </AdminSection>
     </section>
   );
 };

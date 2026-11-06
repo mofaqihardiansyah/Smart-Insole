@@ -89,6 +89,7 @@ describe("shipped copy", () => {
     expect(admin).toMatch(
       /const\s+unavailable\s*=\s*t\(\s*["']common\.notAvailable["']/
     );
-    expect(admin.match(/\|\|\s*unavailable\b/g) || []).toHaveLength(2);
+    // Two fallbacks in the desktop table and two in the stacked mobile rows.
+    expect(admin.match(/\|\|\s*unavailable\b/g) || []).toHaveLength(4);
   });
 });

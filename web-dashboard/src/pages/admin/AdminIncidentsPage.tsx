@@ -3,6 +3,7 @@ import { CheckCircle2, RotateCcw, TriangleAlert } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { useUser } from "../../context/UserContext";
 import { t } from "../../utils/i18n";
+import { AdminEmpty, AdminPageHeader } from "./AdminPrimitives";
 import { logAdminAction } from "../../utils/adminAudit";
 import {
   GlassButton,
@@ -117,9 +118,9 @@ const AdminIncidentsPage = () => {
 
   return (
     <section className="space-y-5 lg:space-y-6">
-      <PageHeader
+      <AdminPageHeader
         title={t("admin.nav.incidents", language)}
-        subtitle={t("admin.incidents.emptyBody", language)}
+        subtitle={t("admin.incidents.subtitle", language)}
       />
 
       {error && (
@@ -132,40 +133,48 @@ const AdminIncidentsPage = () => {
         </StatusBanner>
       )}
 
-      <GlassCard flush>
-        <PanelHeader
-          title={t("admin.nav.incidents", language)}
-          icon={<TriangleAlert className="h-4 w-4" />}
-        />
-        <div className="px-6 pb-6">
-          <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mt-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+          <p className="text-body-sm text-muted">
+            {t("admin.incidents.count", language, { count: rows.length })}
+          </p>
+          <div className="flex flex-wrap gap-2">
             {(["open", "done", "all"] as const).map((value) => (
               <GlassButton
                 key={value}
                 type="button"
                 size="sm"
-                variant={filter === value ? "filled" : "outline"}
+                variant="outline"
+                className={
+                  filter === value
+                    ? "border-fg font-semibold text-fg"
+                    : "text-muted"
+                }
                 aria-pressed={filter === value}
                 onClick={() => setFilter(value)}
               >
                 {value === "open"
-                  ? t("admin.incidents.ack", language)
+                  ? t("admin.incidents.open", language)
                   : value === "done"
                     ? t("admin.incidents.done", language)
-                    : t("history.filter.all", language)}
+                    : t("admin.incidents.all", language)}
               </GlassButton>
             ))}
           </div>
+        </div>
 
-          {rows.length === 0 ? (
-            <StatePanel
-              variant="empty"
-              title={t("admin.incidents.empty", language)}
-              description={t("admin.incidents.emptyBody", language)}
-              nextAction={t("admin.devices.emptyNext", language)}
-              nextActionLabel={t("common.nextStep", language)}
-            />
-          ) : (
+        {rows.length === 0 ? (
+          <AdminEmpty
+            icon={
+              <TriangleAlert
+                className="mx-auto h-6 w-6 text-muted"
+                aria-hidden="true"
+              />
+            }
+            title={t("admin.incidents.empty", language)}
+            body={t("admin.incidents.emptyBody", language)}
+          />
+        ) : (
             <div className="overflow-x-auto">
               <GlassTable>
                 <thead>
@@ -233,9 +242,8 @@ const AdminIncidentsPage = () => {
                 </tbody>
               </GlassTable>
             </div>
-          )}
-        </div>
-      </GlassCard>
+        )}
+      </div>
     </section>
   );
 };

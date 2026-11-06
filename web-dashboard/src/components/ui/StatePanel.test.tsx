@@ -313,7 +313,9 @@ describe("the admin console's feedback sites", () => {
       )
     );
 
-    expect(panels.length).toBeGreaterThanOrEqual(3);
+    // Empty states moved to the console's open `AdminEmpty` band, which is a
+    // state region rather than a card; only the error panels remain StatePanel.
+    expect(panels.length).toBeGreaterThanOrEqual(2);
 
     const offenders = panels
       .filter((block) => !/\baction=|\bnextAction=/.test(block))
@@ -322,5 +324,20 @@ describe("the admin console's feedback sites", () => {
     expect(offenders, "panels naming a cause with nothing to do about it").toEqual(
       []
     );
+
+    // The console's own empty band carries the same contract: a cause (title)
+    // and a next step (body).
+    const empties = ADMIN_FILES.flatMap((file) => {
+      const source = fs.readFileSync(file, "utf8");
+      return source
+        .split("<AdminEmpty")
+        .slice(1)
+        .map((chunk) => chunk.slice(0, 600));
+    });
+    expect(empties.length).toBeGreaterThanOrEqual(1);
+    for (const block of empties) {
+      expect(block).toMatch(/\btitle=/);
+      expect(block).toMatch(/\bbody=/);
+    }
   });
 });

@@ -78,18 +78,20 @@ describe("AdminUsersPage", () => {
     const user = userEvent.setup();
     renderPage();
 
-    expect(await screen.findByText("Budi")).toBeInTheDocument();
-    expect(screen.getByText("Siti")).toBeInTheDocument();
+    // Both the table and the stacked mobile list are in the DOM; CSS decides
+    // which one a viewport shows, so the assertions collect all copies.
+    expect((await screen.findAllByText("Budi")).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Siti").length).toBeGreaterThan(0);
 
     await user.type(screen.getByLabelText("Cari nama atau email"), "budi");
-    expect(screen.getByText("Budi")).toBeInTheDocument();
-    expect(screen.queryByText("Siti")).toBeNull();
+    expect(screen.getAllByText("Budi").length).toBeGreaterThan(0);
+    expect(screen.queryAllByText("Siti")).toHaveLength(0);
   });
 
   it("disables self-actions so the console cannot lock its own door", async () => {
     renderPage();
 
-    const selfRow = (await screen.findByText("Admin Satu")).closest("tr") as HTMLElement;
+    const selfRow = (await screen.findAllByText("Admin Satu"))[0].closest("tr") as HTMLElement;
     expect(selfRow.textContent).toContain("Tidak bisa mengubah akun sendiri.");
   });
 
@@ -97,7 +99,7 @@ describe("AdminUsersPage", () => {
     const user = userEvent.setup();
     renderPage();
 
-    await screen.findByText("Budi");
+    await screen.findAllByText("Budi");
     await user.type(screen.getAllByLabelText("Belum dipasangkan")[0], "insole-07");
     await user.click(screen.getAllByRole("button", { name: "Pasangkan" })[0]);
 
@@ -114,7 +116,7 @@ describe("AdminUsersPage", () => {
     );
     renderPage();
 
-    await screen.findByText("Siti");
+    await screen.findAllByText("Siti");
     // Budi already owns insole-07, so the field under Siti's row is the second.
     await user.type(screen.getAllByLabelText("Belum dipasangkan")[0], "insole-07");
     await user.click(screen.getAllByRole("button", { name: "Pasangkan" })[0]);
