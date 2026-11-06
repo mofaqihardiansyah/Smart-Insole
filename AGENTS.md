@@ -24,7 +24,7 @@ file that owns it.
 | `firmware/` | ESP32 PlatformIO project (C++17): `src/main.cpp`, `src/RandomForest.cpp` |
 | `models/` | `rf-model.json`, `training-data.json` |
 | `scripts/` | `prepare-dataset.py`, `train-model.js`, `export-model-cpp.js` |
-| `docs/` | Hardware spec, roadmap, model report, design brief |
+| `docs/` | Guidebook HTML, hardware spec, roadmap, model report, and the PRD/TRD/AFD/DBD/BSD/IPD set |
 | `datasets/` | DFN-DS, Figshare DFU, OptiTrack (large, local only) |
 | `tasks/` | PRDs |
 
@@ -43,6 +43,9 @@ file that owns it.
   and `src/index.css`.
 - Do not rewrite `DESIGN.md`, the historical `docs/DESIGN-BRIEF.md`, or PRDs
   to make a change fit.
+- Keep `docs/guidebook.html` current. Any material change to system behaviour,
+  the data contract, model thresholds, tech stack, or repository layout must
+  update the guidebook in the same task, not later.
 - `web-dashboard/dist/` is tracked. Rebuild it only when the user asks.
 
 ## Anti over-analysis
@@ -96,6 +99,7 @@ Living files — check on every task, ask every time:
 | `CHANGELOG.md` | the change is user-visible: added, changed, fixed, removed |
 | `READY.md` | environment, stack, paths, or verified state changed |
 | `DECISIONS.md` | a choice that would cost real rework to reverse was made |
+| `docs/guidebook.html` | any material change: behaviour, data contract, thresholds, stack, or layout |
 
 Frozen or one-shot files — do not offer them by default:
 

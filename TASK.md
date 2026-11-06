@@ -7,6 +7,42 @@ summary line per month.
 
 ## Done
 
+- **2026-11-06 — Dokumentasi: aturan guidebook, 6 dokumen spesifikasi baru.**
+  `AGENTS.md` ditambah aturan "jaga `docs/guidebook.html` tetap mutakhir pada
+  perubahan material" (rules + tabel markdown upkeep; diedit atas permintaan
+  pemilik). `docs/` ditambah `PRD.md`, `TRD.md`, `AFD.md`, `DBD.md`, `BSD.md`,
+  `IPD.md`; `docs/README.md` dan `CHANGELOG.md` diperbarui; `guidebook.html`
+  disinkronkan (struktur folder + tabel dokumen terkait). `README.md` root
+  menambah indeks 6 dokumen. Bersih-bersih: `DESIGN1.md` dan `WORKFLOW.md`
+  (root, duplikat/scratch, untracked) dihapus. Verifikasi: anchor
+  guidebook utuh, 0 em dash, semua code fence `.md` seimbang, tautan internal
+  resolve. (working tree)
+- **2026-11-06 — Guidebook HTML lengkap di `docs/guidebook.html`.** Satu berkas
+  mandiri (tanpa CDN) yang mengikuti token `DESIGN.md`: kanvas `#EFEFEC`, kartu
+  putih, aksen sage, tanpa heks liar di komponen. Empat belas bagian untuk tiga
+  audiens (dosen/pembimbing, developer, pengguna akhir): gambaran & tujuan,
+  dasar teori (DM, DPN, DFU, FSR, agregasi region), arsitektur & alur data,
+  metode hybrid Random Forest + aturan klinis (DFN-DS, praproses, konfigurasi,
+  pita skor, kontrak klinis, metrik), cara kerja firmware & web, tech stack,
+  struktur folder, mulai cepat, kontrak data & Firebase, validasi (OptiTrack,
+  Figshare, edge case), troubleshooting, batasan & etika, referensi. Semua
+  angka dari `rf-model-report.md`, `validation-report.md`,
+  `thesis-methodology.md`, dan `randomForestRisk.ts`. Verifikasi: 14/14 anchor
+  TOC cocok, tag seimbang, 0 em dash, render Chrome headless bersih di 1440px.
+  Tak ada sumber web yang disentuh; `dist/` utuh. (working tree)
+- **2026-11-06 — Desain Dashboard di FigCraft, 1440 + 375.** File baru
+  `design/smart-insole-dashboard.figcraft`. Token `DESIGN.md` dibuat sebagai
+  variabel warna bernama (koleksi "Token"), semua isian memakai `$var`, tanpa
+  heks di layer. Dua artboard mengikuti komposisi `DESIGN.md` §311: header
+  (brand pill, nav pill 6 tujuan, cari, lonceng, akun), hero (sapaan, tanggal,
+  status berlabel teks, ekspor CSV, tandai dibaca, timeline buffer), meter band
+  4 kartu dengan satu kartu terbalik untuk puncak, Station 01/02 tren + beban
+  zona, Station 03 feed terbuka, Station 04 peta tekanan + legenda kPa. Ambang
+  legenda diambil dari `randomForestRisk.ts` (< 35 / 35–199 / ≥ 200 kPa).
+  Catatan: DM Sans dan Plus Jakarta Sans tidak terpasang dan unduhan font
+  dimatikan, jadi teks memakai Inter + Fira Code (pengganti). Layar belum
+  diverifikasi di browser. Tak ada sumber web yang disentuh, `dist/` utuh.
+  (working tree)
 - **2026-11-05 — Konsol admin dipisah dari aplikasi pengguna.** `/admin/*`
   memakai `AdminLayout` + `RequireAdmin`: lima tab (Ringkasan, Pengguna,
   Perangkat, Insiden, Konfigurasi), tanpa nav pill, bell, pencarian, atau alert

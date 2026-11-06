@@ -260,6 +260,13 @@ Dokumentasi proyek:
 | [`docs/HARDWARE-SPEC.md`](docs/HARDWARE-SPEC.md) | Spesifikasi hardware, daftar bahan, dan panduan perakitan |
 | [`docs/ROADMAP-RF.md`](docs/ROADMAP-RF.md) | Roadmap pelatihan dan integrasi model Random Forest |
 | [`docs/rf-model-report.md`](docs/rf-model-report.md) | Hasil pelatihan model, metrik evaluasi, dan clinical contract |
+| [`docs/guidebook.html`](docs/guidebook.html) | Guidebook lengkap proyek (satu berkas): teori, metode, cara kerja, tech stack, kontrak data, validasi, troubleshooting |
+| [`docs/PRD.md`](docs/PRD.md) | Product Requirement Documentation |
+| [`docs/TRD.md`](docs/TRD.md) | Technical Requirement Documentation |
+| [`docs/AFD.md`](docs/AFD.md) | App Flow Documentation |
+| [`docs/DBD.md`](docs/DBD.md) | Design Brief Documentation (ringkasan; otoritas di `DESIGN.md`) |
+| [`docs/BSD.md`](docs/BSD.md) | Backend Schema Documentation (skema Firebase RTDB) |
+| [`docs/IPD.md`](docs/IPD.md) | Implementation Plan Documentation |
 | [`docs/DESIGN-BRIEF.md`](docs/DESIGN-BRIEF.md) | Brief desain dashboard (dokumen historis) |
 | [`DESIGN.md`](DESIGN.md) | Otoritas arah desain visual dashboard saat ini |
 | [`AGENTS.md`](AGENTS.md) | Aturan kerja dan batasan untuk AI agent |

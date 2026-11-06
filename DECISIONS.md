@@ -203,3 +203,26 @@ mounting any route. Every successful admin action appends one entry to
 **Consequences.** Deactivation now works even against a signed-in session on
 another device. Rules deployment is required for the new denial to take effect.
 Audit adds one write per admin action, not per reading.
+
+## ADR-011: Design artifacts live in `design/` as FigCraft, with substitute fonts
+
+- **Date:** 2026-11-06
+- **Status:** Accepted
+
+**Context.** UI work needs a visual source that can be reviewed and revised
+without touching shipped code, and `DESIGN.md` is prose, not a canvas. The
+authoring machine (and FigCraft) does not have `DM Sans` or `Plus Jakarta Sans`
+installed, and FigCraft font download is disabled, so the exact brand faces
+cannot be drawn.
+
+**Decision.** Keep design artifacts as `.figcraft` files under `design/`, with
+the `DESIGN.md` palette stored as named colour variables so layers reference
+tokens instead of hex. Draw headings and body in `Inter` and kPa figures in
+`Fira Code` as visual stand-ins; the shipped app keeps the real families in
+`src/index.css`.
+
+**Consequences.** The design file is a layout and token reference, not a type
+proof. Any pixel-exact type comparison needs the real fonts installed first.
+`design/` is a durable location; new screens belong there rather than in an
+untitled FigCraft document. If the fonts are installed later, re-run the
+artboards instead of editing the substitutes.

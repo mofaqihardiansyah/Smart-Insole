@@ -1,0 +1,1272 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Guidebook Smart Insole IoT · Panduan Lengkap</title>
+<meta name="description" content="Guidebook lengkap proyek Smart Insole IoT: dasar teori, metode Random Forest, cara kerja firmware dan web, tech stack, kontrak data, validasi, dan troubleshooting." />
+<style>
+  /* ============================================================
+     Token warna mengikuti DESIGN.md (light clinical console).
+     Berkas ini self-contained: tanpa CDN, tanpa aset eksternal.
+     ============================================================ */
+  :root {
+    --bg: #EFEFEC;
+    --surface: #FFFFFF;
+    --surface-2: #F7F7F5;
+    --surface-3: #EBEBE7;
+    --fg: #0A0A0F;
+    --fg-2: #282832;
+    --muted: #46464F;
+    --primary: #0A0A0F;
+    --secondary: #04644C;
+    --secondary-ink: #054B37;
+    --tertiary: #0987B8;
+    --border: #E4E4E0;
+    --border-strong: #DCDCD8;
+    --border-control: #78787F;
+    --safe: #15803D;
+    --safe-ink: #12552D;
+    --warning: #A16207;
+    --warning-ink: #823700;
+    --danger: #B41E1E;
+    --danger-ink: #821414;
+    --tint-cream: #F3DFA6;
+    --tint-mint: #CBE8D4;
+    --tint-blue: #CADCF1;
+    --radius-sm: 4px;
+    --radius-control: 8px;
+    --radius-tile: 12px;
+    --radius-card: 16px;
+    --shadow-panel: 0 1px 2px rgba(10,10,15,0.06);
+    --shadow-md: 0 4px 16px rgba(10,10,15,0.07);
+    --mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: "DM Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: var(--secondary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible,
+  button:focus-visible { outline: 3px solid var(--secondary); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+  /* ---------- Layout: sidebar + main ---------- */
+  .layout { display: grid; grid-template-columns: 288px minmax(0, 1fr); max-width: 1440px; margin: 0 auto; }
+
+  .sidebar {
+    position: sticky; top: 0; align-self: start;
+    height: 100vh; overflow-y: auto;
+    padding: 28px 20px 40px;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .brand-mark {
+    width: 38px; height: 38px; border-radius: var(--radius-tile);
+    background: var(--primary); color: #fff; flex: 0 0 auto;
+    display: grid; place-items: center; font-weight: 700; font-size: 18px;
+    font-family: var(--mono);
+  }
+  .brand-name { font-weight: 700; font-size: 16px; line-height: 1.2; }
+  .brand-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .nav-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 8px; }
+  .toc { list-style: none; margin: 0; padding: 0; }
+  .toc li { margin: 1px 0; }
+  .toc a {
+    display: flex; gap: 10px; align-items: baseline;
+    padding: 7px 10px; border-radius: var(--radius-control);
+    color: var(--fg-2); font-size: 14px; line-height: 1.35;
+  }
+  .toc a:hover { background: var(--surface); text-decoration: none; color: var(--fg); }
+  .toc .num { font-family: var(--mono); font-size: 11px; color: var(--muted); flex: 0 0 auto; min-width: 16px; }
+  .sidebar-note {
+    margin-top: 24px; padding: 14px; border-radius: var(--radius-tile);
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 12px; color: var(--muted); line-height: 1.5;
+  }
+
+  main { padding: 0 40px 120px; }
+  .content { max-width: 900px; margin: 0 auto; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    margin-top: 40px; padding: 40px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-card); box-shadow: var(--shadow-panel);
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--secondary-ink);
+    background: var(--tint-mint); padding: 5px 12px; border-radius: var(--radius-sm);
+  }
+  .hero h1 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.12; margin: 18px 0 12px; letter-spacing: -0.02em; }
+  .hero .lede { font-size: 18px; color: var(--fg-2); max-width: 60ch; margin: 0; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 22px; font-size: 13px; color: var(--muted); }
+  .hero-meta span { display: inline-flex; gap: 6px; align-items: center; }
+  .dot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; }
+
+  /* ---------- Sections ---------- */
+  section { scroll-margin-top: 20px; padding-top: 20px; }
+  .section-head { display: flex; align-items: baseline; gap: 14px; margin: 56px 0 6px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .section-head .idx { font-family: var(--mono); font-size: 14px; color: var(--muted); font-weight: 500; }
+  h2 { font-size: 27px; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+  h3 { font-size: 19px; margin: 34px 0 8px; line-height: 1.3; }
+  h4 { font-size: 16px; margin: 22px 0 6px; color: var(--fg-2); }
+  p { margin: 10px 0; }
+  ul, ol { margin: 10px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  strong { color: var(--fg); }
+  code {
+    font-family: var(--mono); font-size: 0.88em;
+    background: var(--surface-3); color: var(--fg-2);
+    padding: 1px 6px; border-radius: var(--radius-sm);
+  }
+
+  /* ---------- Cards & callouts ---------- */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-card); box-shadow: var(--shadow-panel);
+    padding: 24px 26px; margin: 18px 0;
+  }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+
+  .tile {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-tile); padding: 18px 18px;
+  }
+  .tile .k { font-size: 13px; color: var(--muted); }
+  .tile .v { font-family: var(--mono); font-size: 26px; font-weight: 700; margin-top: 4px; letter-spacing: -0.01em; }
+  .tile .u { font-size: 12px; color: var(--muted); }
+  .tile.mint { background: var(--tint-mint); border-color: transparent; }
+  .tile.cream { background: var(--tint-cream); border-color: transparent; }
+  .tile.blue { background: var(--tint-blue); border-color: transparent; }
+
+  .callout {
+    display: flex; gap: 14px; padding: 16px 18px; border-radius: var(--radius-tile);
+    border: 1px solid var(--border); background: var(--surface-2); margin: 16px 0;
+    font-size: 15px;
+  }
+  .callout .bar { flex: 0 0 auto; width: 4px; border-radius: 999px; background: var(--secondary); }
+  .callout.warn .bar { background: var(--warning); }
+  .callout.danger .bar { background: var(--danger); }
+  .callout.info .bar { background: var(--tertiary); }
+  .callout strong { display: block; margin-bottom: 2px; }
+
+  /* ---------- Tables ---------- */
+  .table-wrap { overflow-x: auto; margin: 16px 0; border: 1px solid var(--border); border-radius: var(--radius-tile); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; background: var(--surface); }
+  thead th {
+    text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); background: var(--surface-2);
+    padding: 11px 14px; border-bottom: 1px solid var(--border-strong); white-space: nowrap;
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+  td.num, th.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .chip {
+    display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: var(--radius-sm);
+    white-space: nowrap;
+  }
+  .chip.safe { background: rgba(21,128,61,0.15); color: var(--safe-ink); }
+  .chip.warning { background: rgba(161,98,7,0.15); color: var(--warning-ink); }
+  .chip.danger { background: rgba(180,30,30,0.15); color: var(--danger-ink); }
+  .chip.info { background: rgba(9,135,184,0.14); color: #0b4d68; }
+  .chip.neutral { background: var(--surface-3); color: var(--fg-2); }
+
+  /* ---------- Code blocks ---------- */
+  pre {
+    background: #141414; color: #EAEAEA;
+    border-radius: var(--radius-tile); padding: 18px 20px; overflow-x: auto;
+    font-family: var(--mono); font-size: 13px; line-height: 1.6; margin: 16px 0;
+    border: 1px solid #222;
+  }
+  pre .c { color: #8B9AA8; }   /* comment */
+  pre .k { color: #7FD1B9; }   /* keyword/string */
+  pre .n { color: #EAB308; }   /* number */
+
+  .ascii {
+    background: var(--surface-2); color: var(--fg-2); border: 1px solid var(--border);
+    border-radius: var(--radius-tile); padding: 18px 20px; overflow-x: auto;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.5; margin: 16px 0;
+  }
+
+  /* ---------- Flow steps ---------- */
+  .flow { display: grid; gap: 10px; margin: 18px 0; }
+  .flow-step { display: flex; gap: 14px; align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-tile); padding: 14px 16px; }
+  .flow-step .n {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: 999px;
+    background: var(--primary); color: #fff; display: grid; place-items: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+  }
+  .flow-step .t { font-weight: 600; }
+  .flow-step .d { color: var(--muted); font-size: 14px; }
+
+  .kbd { font-family: var(--mono); font-size: 12px; background: var(--surface-3); border: 1px solid var(--border-control); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; }
+
+  footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+  footer .foot-grid { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1023px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 20px; }
+    .toc { display: flex; flex-wrap: wrap; gap: 4px; }
+    .toc a { padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); }
+    .sidebar-note { display: none; }
+    main { padding: 0 20px 80px; }
+    .grid-3 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .hero { padding: 26px 22px; }
+    .card { padding: 18px; }
+    h2 { font-size: 23px; }
+  }
+
+  @media print {
+    .sidebar { display: none; }
+    .layout { display: block; }
+    main { padding: 0; }
+    .card, .tile, pre { break-inside: avoid; }
+    a { color: var(--fg); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ============================= SIDEBAR ============================= -->
+  <aside class="sidebar" aria-label="Daftar isi">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">SI</div>
+      <div>
+        <div class="brand-name">Smart Insole IoT</div>
+        <div class="brand-sub">Guidebook</div>
+      </div>
+    </div>
+    <p class="nav-title">Daftar Isi</p>
+    <ul class="toc">
+      <li><a href="#gambaran"><span class="num">01</span><span>Gambaran &amp; Tujuan</span></a></li>
+      <li><a href="#teori"><span class="num">02</span><span>Dasar Teori</span></a></li>
+      <li><a href="#arsitektur"><span class="num">03</span><span>Arsitektur &amp; Alur Data</span></a></li>
+      <li><a href="#metode"><span class="num">04</span><span>Metode: Random Forest</span></a></li>
+      <li><a href="#firmware"><span class="num">05</span><span>Cara Kerja Firmware</span></a></li>
+      <li><a href="#web"><span class="num">06</span><span>Cara Kerja Web</span></a></li>
+      <li><a href="#stack"><span class="num">07</span><span>Tech Stack</span></a></li>
+      <li><a href="#struktur"><span class="num">08</span><span>Struktur Folder</span></a></li>
+      <li><a href="#quickstart"><span class="num">09</span><span>Mulai Cepat</span></a></li>
+      <li><a href="#kontrak"><span class="num">10</span><span>Kontrak Data &amp; Firebase</span></a></li>
+      <li><a href="#validasi"><span class="num">11</span><span>Validasi &amp; Hasil</span></a></li>
+      <li><a href="#troubleshooting"><span class="num">12</span><span>Troubleshooting</span></a></li>
+      <li><a href="#batasan"><span class="num">13</span><span>Batasan &amp; Etika</span></a></li>
+      <li><a href="#referensi"><span class="num">14</span><span>Referensi</span></a></li>
+    </ul>
+    <div class="sidebar-note">
+      <strong>Untuk tiga pembaca.</strong> Dosen/pembimbing (teori &amp; metode),
+      developer (arsitektur &amp; cara jalan), dan pengguna akhir (cara pakai &amp; arti
+      status). Setiap bagian diberi penanda audiensnya.
+    </div>
+  </aside>
+
+  <!-- ============================= MAIN ============================= -->
+  <main>
+    <div class="content">
+
+      <!-- ===== HERO ===== -->
+      <header class="hero">
+        <span class="eyebrow">Tugas Akhir · Panduan Lengkap</span>
+        <h1>Smart Insole IoT: pemantauan tekanan plantar dengan Random Forest</h1>
+        <p class="lede">
+          Rancang bangun insole berbasis IoT untuk memantau tekanan telapak kaki
+          penderita Diabetes Mellitus dan memberi peringatan dini sebelum ulkus
+          kaki diabetik terbentuk. Guidebook ini menjelaskan teori, metode,
+          cara kerja, tech stack, dan penanganan masalah, dari sensor sampai
+          dashboard.
+        </p>
+        <div class="hero-meta">
+          <span><i class="dot" style="background:var(--secondary)"></i> ESP32 + 3 FSR per kaki</span>
+          <span><i class="dot" style="background:var(--tertiary)"></i> Firebase Realtime Database</span>
+          <span><i class="dot" style="background:var(--warning)"></i> React 18 + Vite + Tailwind</span>
+          <span><i class="dot" style="background:var(--danger)"></i> Hybrid Random Forest + aturan klinis</span>
+        </div>
+      </header>
+
+      <!-- =========================================================
+           01 GAMBARAN & TUJUAN
+           ========================================================= -->
+      <section id="gambaran">
+        <div class="section-head"><span class="idx">01</span><h2>Gambaran &amp; Tujuan</h2></div>
+        <p>
+          <strong>Smart Insole IoT</strong> adalah sistem pemantauan tekanan
+          telapak kaki (<em>plantar pressure</em>) secara real-time yang terdiri
+          dari perangkat keras tertanam dan aplikasi web. Sistem membantu
+          penderita <strong>Diabetes Mellitus (DM)</strong> yang mengalami
+          <strong>Diabetic Peripheral Neuropathy (DPN)</strong>, yaitu hilangnya
+          sensasi pelindung (<em>loss of protective sensation</em>), untuk
+          mencegah <strong>ulkus kaki diabetik</strong> (<em>Diabetic Foot
+          Ulcer</em> / DFU).
+        </p>
+
+        <div class="grid-3">
+          <div class="tile"><div class="k">Sensor per kaki</div><div class="v">3</div><div class="u">FSR 402: forefoot, midfoot, heel</div></div>
+          <div class="tile mint"><div class="k">Laju sampel</div><div class="v">10<span style="font-size:15px"> Hz</span></div><div class="u">10 sampel per detik</div></div>
+          <div class="tile blue"><div class="k">Kelas risiko</div><div class="v">3</div><div class="u">Aman · Waspada · Bahaya</div></div>
+        </div>
+
+        <h3>Tujuan sistem</h3>
+        <ul>
+          <li><strong>Mengukur</strong> tekanan plantar pada tiga titik anatomis kritis secara berkelanjutan.</li>
+          <li><strong>Menilai risiko</strong> dari kombinasi besaran tekanan (kPa) dan lama tumpuan (<em>sustained duration</em>) ke dalam tiga tingkat: Aman, Waspada, Bahaya.</li>
+          <li><strong>Memberi peringatan dini</strong> lewat alarm lokal di perangkat (buzzer) dan notifikasi di web.</li>
+          <li><strong>Menyimpan riwayat</strong> kuantitatif pola tumpuan harian dan menyediakan ekspor CSV untuk mendukung rekomendasi klinis.</li>
+        </ul>
+
+        <div class="callout info">
+          <div class="bar"></div>
+          <div>
+            <strong>Untuk pengguna akhir.</strong> Alat ini adalah <em>alat bantu
+            pemantauan</em>, bukan alat diagnosis. Keluarannya berupa tingkat
+            risiko dan alarm, dan tidak menggantikan pemeriksaan dokter. Bila
+            muncul status <span class="chip warning">Waspada</span> atau
+            <span class="chip danger">Bahaya</span>, kurangi beban pada kaki dan
+            ikuti anjuran tenaga medis.
+          </div>
+        </div>
+
+        <h3>Fitur utama</h3>
+        <div class="grid-2">
+          <div class="card" style="margin:0">
+            <h4>Real-time plantar heatmap</h4>
+            <p style="margin:6px 0 0;font-size:14px;color:var(--muted)">Visualisasi kontur tekanan telapak kaki langsung di browser (komponen SVG <code>PlantarHeatmap</code>).</p>
+          </div>
+          <div class="card" style="margin:0">
+            <h4>Penilaian risiko Random Forest</h4>
+            <p style="margin:6px 0 0;font-size:14px;color:var(--muted)">Klasifikasi hybrid Random Forest + aturan klinis, dijalankan di sisi klien tanpa pemrosesan server.</p>
+          </div>
+          <div class="card" style="margin:0">
+            <h4>Early Warning System</h4>
+            <p style="margin:6px 0 0;font-size:14px;color:var(--muted)">Notifikasi web (Web Notification API) dan alarm audio (Web Audio API) saat risiko Waspada atau Bahaya.</p>
+          </div>
+          <div class="card" style="margin:0">
+            <h4>Riwayat &amp; ekspor CSV</h4>
+            <p style="margin:6px 0 0;font-size:14px;color:var(--muted)">Register insiden dan statistik sesi, dapat diekspor untuk mendukung terapi.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           02 DASAR TEORI
+           ========================================================= -->
+      <section id="teori">
+        <div class="section-head"><span class="idx">02</span><h2>Dasar Teori</h2></div>
+
+        <h3>2.1 Diabetes Mellitus dan neuropati perifer</h3>
+        <p>
+          Diabetes Mellitus adalah penyakit metabolik dengan kadar glukosa darah
+          kronis yang tinggi. Salah satu komplikasi paling umum adalah
+          <strong>Diabetic Peripheral Neuropathy (DPN)</strong>: kerusakan saraf
+          tepi, terutama pada tungkai dan kaki. DPN menurunkan sensasi nyeri dan
+          suhu (<em>loss of protective sensation</em>). Karena pasien tidak
+          merasakan nyeri, cedera dan tekanan berlebih pada telapak kaki luput
+          disadari.
+        </p>
+
+        <h3>2.2 Ulkus kaki diabetik (DFU)</h3>
+        <p>
+          DFU adalah luka terbuka pada kaki penderita diabetes, sering dipicu
+          oleh <strong>tekanan plantar berulang pada titik yang sama</strong>
+          yang berlangsung lama. Kombinasi neuropati (tidak merasa nyeri),
+          iskemia (aliran darah buruk), dan tekanan mekanis tinggi membuat
+          jaringan rusak tanpa disadari sampai menjadi ulkus. Mencegah tekanan
+          berlebih pada titik kritis lebih murah dan lebih aman daripada
+          mengobati ulkus, sehingga pemantauan dini menjadi penting.
+        </p>
+
+        <div class="callout">
+          <div class="bar"></div>
+          <div>
+            <strong>Dua besaran yang dipantau.</strong> Risiko tidak hanya soal
+            seberapa besar tekanan (<em>peak pressure</em>, kPa), tetapi juga
+            seberapa lama tekanan itu bertahan serta berapa kali berulang.
+            Tekanan sedang yang bertahan lama dapat sama berbahayanya dengan
+            tekanan tinggi sesaat. Karena itu model memakai dua fitur:
+            <strong>peak pressure</strong> dan <strong>sustained duration</strong>.
+          </div>
+        </div>
+
+        <h3>2.3 Force Sensitive Resistor (FSR)</h3>
+        <p>
+          FSR adalah sensor yang hambatannya menurun saat diberi gaya. Rangkaian
+          pembagi tegangan (<em>voltage divider</em>) mengubah perubahan
+          hambatan menjadi tegangan yang dibaca ADC. Spesifikasi FSR 402:
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Parameter</th><th>Nilai</th></tr></thead>
+            <tbody>
+              <tr><td>Area aktif</td><td class="num">12,7 mm diameter</td></tr>
+              <tr><td>Rentang gaya</td><td class="num">0,1 N – 100 N</td></tr>
+              <tr><td>Tebal</td><td class="num">0,5 mm</td></tr>
+              <tr><td>Waktu respons</td><td class="num">&lt; 1 ms</td></tr>
+              <tr><td>Tegangan kerja</td><td class="num">3,3 V (kompatibel ESP32)</td></tr>
+              <tr><td>Umur pakai</td><td class="num">&gt; 1 juta aktuasi</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>2.4 Penempatan sensor dan alasan klinis</h3>
+        <p>
+          Tiga titik anatomis dipakai per kaki, sesuai susunan insole:
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Region</th><th>Posisi</th><th>Fungsi</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Forefoot</strong></td><td>Bola kaki (metatarsal), 20–25% dari ujung depan</td><td>Tekanan area depan</td></tr>
+              <tr><td><strong>Midfoot</strong></td><td>Lengkung (arch), 50–55%</td><td>Tekanan area tengah</td></tr>
+              <tr><td><strong>Heel</strong></td><td>Tumit (calcaneus), 80–85%</td><td>Area impact, <strong>hanya sensor</strong>, tanpa elektronik</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warn">
+          <div class="bar"></div>
+          <div>
+            <strong>Area tumit harus murni busa.</strong> Heel strike menghasilkan
+            impact 1,5–2x berat badan. Komponen keras di tumit bisa merusak
+            jaringan pasien diabetes yang tidak merasakan nyeri, berujung
+            iskemia lalu ulkus. Karena itu elektronik (ESP32, baterai) ditempatkan
+            di <em>pouch</em> di pergelangan kaki (top of sock), mengikuti
+            Billings et al. (2024), bukan di bawah tumit.
+          </div>
+        </div>
+
+        <h3>2.5 Dari sensor ke region (agregasi)</h3>
+        <p>
+          Data latih DFN-DS memakai 8 sensor per kaki, sedangkan perangkat
+          memakai 3. Untuk menyamakan ruang fitur, 8 sensor diagregasi menjadi
+          tiga region: <code>L1–L3 → forefoot</code>, <code>L4–L5 → midfoot</code>,
+          <code>L6–L8 → heel</code>. Tiap region lalu diekstrak dua fitur:
+          <em>peak pressure</em> (kPa) dan <em>sustained duration</em> (detik).
+        </p>
+      </section>
+
+      <!-- =========================================================
+           03 ARSITEKTUR & ALUR DATA
+           ========================================================= -->
+      <section id="arsitektur">
+        <div class="section-head"><span class="idx">03</span><h2>Arsitektur &amp; Alur Data</h2></div>
+        <p>
+          Sistem terdiri dari tiga bagian yang saling terhubung: insole
+          (sensor + ESP32), cloud (Firebase Realtime Database), dan dashboard
+          web (React). Alur datanya:
+        </p>
+
+        <div class="ascii" role="img" aria-label="Diagram alur data sensor ke Firebase ke dashboard">
+[ 3x FSR (forefoot, midfoot, heel) ]
+              │  (Analog ADC, 12-bit)
+              ▼
+[ ESP32 · inferensi Random Forest di perangkat ]
+   • median-of-3 filter  • akumulasi durasi tumpuan
+   • putuskan risiko → buzzer lokal (tetap jalan tanpa internet)
+              │  (Wi-Fi / JSON, 1 paket per detik)
+              ▼
+[ Firebase Realtime Database ]
+     devices/&lt;DEVICE_ID&gt;/readings/latest   (overwrite)
+     devices/&lt;DEVICE_ID&gt;/readings/history  (append)
+              │  (Realtime Listener)
+              ▼
+[ React Web Dashboard ]
+   • plantar heatmap  • grafik tren  • badge risiko
+   • Early Warning (Web Notification + Web Audio)  • riwayat + ekspor CSV
+        </div>
+
+        <h3>Prinsip penting: dua tempat, satu model</h3>
+        <p>
+          Klasifikasi risiko dihitung <strong>dua kali dari model yang sama</strong>:
+          di ESP32 (untuk alarm lokal) dan di dashboard (untuk tampilan dan
+          riwayat). Keduanya memakai bobot model dan aturan klinis yang identik,
+          sehingga tidak dapat memberi kesimpulan berbeda atas pembacaan yang
+          sama. Model diekspor dari satu sumber ke dua format:
+        </p>
+        <ul>
+          <li><code>web-dashboard/src/utils/rf-model.json</code> untuk web,</li>
+          <li><code>firmware/include/rf-model-data.h</code> untuk ESP32 (array C++).</li>
+        </ul>
+
+        <div class="callout">
+          <div class="bar"></div>
+          <div>
+            <strong>Jalur alarm tidak bergantung jaringan.</strong> Rantai
+            sensor → inferensi → buzzer berjalan sepenuhnya di perangkat. Koneksi
+            Wi-Fi yang putus hanya menunda telemetri; ia tidak pernah mematikan
+            keputusan bahaya.
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           04 METODE: RANDOM FOREST
+           ========================================================= -->
+      <section id="metode">
+        <div class="section-head"><span class="idx">04</span><h2>Metode: Random Forest &amp; Aturan Klinis</h2></div>
+        <p>
+          Model yang dipakai adalah <strong>hybrid Random Forest + aturan
+          klinis</strong>. Random Forest menangani batas <span class="chip safe">Aman</span>
+          / <span class="chip warning">Waspada</span> (data-driven), sedangkan
+          kelas <span class="chip danger">Bahaya</span> ditangani aturan klinis.
+        </p>
+
+        <h3>4.1 Dataset DFN-DS</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Properti</th><th class="num">Nilai</th></tr></thead>
+            <tbody>
+              <tr><td>Sumber</td><td>DFN-DS (rekaman tekanan plantar pasien diabetes)</td></tr>
+              <tr><td>Jumlah pasien</td><td class="num">135</td></tr>
+              <tr><td>Sampel per pasien</td><td class="num">600</td></tr>
+              <tr><td>Total sampel</td><td class="num">81.000</td></tr>
+              <tr><td>Sensor per kaki</td><td class="num">8 (L1–L8)</td></tr>
+              <tr><td>Baris waktu per rekaman</td><td class="num">6.001</td></tr>
+              <tr><td>Kelompok</td><td>DM (tanpa neuropati) dan DFN (dengan neuropati)</td></tr>
+              <tr><td>Puncak tekanan tertinggi</td><td class="num">87,06 kPa</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>4.2 Praproses</h3>
+        <ul>
+          <li>Agregasi 8 sensor menjadi tiga region (forefoot, midfoot, heel).</li>
+          <li>Ekstrak dua fitur per region: <em>peak pressure</em> (kPa) dan <em>sustained duration</em> (detik).</li>
+          <li>Kalibrasi ambang peringatan memakai kuantil ke-75 distribusi DFN-DS, menghasilkan <strong>35 kPa</strong>.</li>
+          <li>Pelabelan per sampel: <code>peak &gt;= 35 kPa</code> → <span class="chip warning">warning</span>, selain itu <span class="chip safe">safe</span>.</li>
+          <li>Pembagian data <strong>per pasien</strong> (bukan per sampel) dengan rasio 80/20: 107 pasien latih, 28 pasien validasi. Split per sampel akan membocorkan karakteristik pasien dan membuat akurasi terlalu optimistis.</li>
+        </ul>
+
+        <h3>4.3 Mengapa hybrid (RF + aturan)</h3>
+        <p>
+          DFN-DS tidak punya satu pun sampel <span class="chip danger">danger</span>:
+          puncak tertinggi hanya 87,06 kPa, sedangkan ambang <em>in-shoe</em>
+          paling konsensus adalah <strong>200 kPa</strong> (Castro-Martins dkk.,
+          Heliyon 2024). Tanpa contoh untuk dilatih, Random Forest tidak bisa
+          mempelajari batas bahaya. Karena itu:
+        </p>
+        <ul>
+          <li><strong>Random Forest</strong> menangani batas Aman/Waspada, yang mencakup 99,95% data.</li>
+          <li><strong>Aturan klinis</strong> menangani Bahaya: <code>peak &gt;= 200 kPa</code> pada satu sampel (tanpa syarat durasi).</li>
+        </ul>
+
+        <h3>4.4 Konfigurasi model</h3>
+        <div class="grid-2">
+          <div class="table-wrap" style="margin:0">
+            <table>
+              <thead><tr><th>Hyperparameter</th><th class="num">Nilai</th></tr></thead>
+              <tbody>
+                <tr><td>Jumlah pohon</td><td class="num">20</td></tr>
+                <tr><td>Kedalaman maksimum</td><td class="num">8</td></tr>
+                <tr><td>Kriteria split</td><td class="num">Gini impurity</td></tr>
+                <tr><td>Bootstrap</td><td>Berbobot</td></tr>
+                <tr><td>Bobot kelas</td><td>Inverse frequency, cap 10x</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card" style="margin:0">
+            <h4 style="margin-top:0">Aturan klinis (kontrak)</h4>
+            <ul style="margin:6px 0 0;font-size:14px">
+              <li><code>peak &lt; 35 kPa</code> dan <code>sustained &lt; 20 s</code> → <span class="chip safe">Aman</span></li>
+              <li><code>peak &gt;= 35 kPa</code> → minimal <span class="chip warning">Waspada</span></li>
+              <li><code>peak &gt;= 200 kPa</code> (satu sampel) → <span class="chip danger">Bahaya</span></li>
+              <li>Tekanan bertahan &gt; ~20 s → minimal <span class="chip warning">Waspada</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>4.5 Inferensi dan pita skor</h3>
+        <p>
+          Inferensi adalah <em>majority vote</em> 20 pohon untuk Aman vs Waspada.
+          Skor adalah proporsi suara yang dipetakan ke pita tetap, sehingga
+          angka dan level tidak pernah bertentangan:
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Level</th><th class="num">Pita skor</th><th>Catatan</th></tr></thead>
+            <tbody>
+              <tr><td><span class="chip safe">Aman</span></td><td class="num">0 – 47</td><td>Override: peak &lt; 35 kPa dan durasi &lt; 20 s</td></tr>
+              <tr><td><span class="chip warning">Waspada</span></td><td class="num">48 – 74</td><td>Hasil vote RF</td></tr>
+              <tr><td><span class="chip danger">Bahaya</span></td><td class="num">75 – 100</td><td>Override aturan, laporan skor 75</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:14px;color:var(--muted)">
+          Ambang peak (35 / 200 kPa) dapat diubah lewat pengaturan admin. Jendela
+          durasi berasal dari model dan sengaja <strong>tidak</strong> dapat
+          dikonfigurasi klien, karena firmware menjalankan model yang sama:
+          mengubah durasi di klien akan membuat klien berbeda kesimpulan dengan
+          perangkat yang mengukur kaki.
+        </p>
+
+        <h3>4.6 Hasil evaluasi</h3>
+        <div class="grid-3">
+          <div class="tile mint"><div class="k">Accuracy (safe vs warning)</div><div class="v">100,0%</div><div class="u">pada 28 pasien uji</div></div>
+          <div class="tile mint"><div class="k">Macro-F1</div><div class="v">100,0%</div><div class="u">safe vs warning</div></div>
+          <div class="tile"><div class="k">Clinical contract</div><div class="v">Lolos</div><div class="u">semua kasus acuan</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Kelas</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th><th class="num">Support</th></tr></thead>
+            <tbody>
+              <tr><td><span class="chip safe">safe</span></td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">12.934</td></tr>
+              <tr><td><span class="chip warning">warning</span></td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">3.866</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warn">
+          <div class="bar"></div>
+          <div>
+            <strong>Membaca akurasi 100% dengan jujur.</strong> Angka ini hanya
+            berlaku untuk dua kelas (safe vs warning), pada populasi diabetes, dan
+            batas antara keduanya ditentukan oleh durasi tumpu yang juga menjadi
+            fitur masukan. Jadi 100% berarti <em>konsisten terhadap aturan label</em>,
+            bukan bukti generalisasi ke populasi umum. Kemampuan mendeteksi bahaya
+            diukur terpisah oleh clinical contract, bukan oleh akurasi ini.
+          </div>
+        </div>
+
+        <h3>4.7 Kontrak klinis</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Input</th><th>Ekspektasi</th><th>Hasil</th></tr></thead>
+            <tbody>
+              <tr><td class="num">40 kPa, 1 s</td><td><span class="chip warning">warning</span></td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td class="num">210 kPa, 31 s</td><td><span class="chip danger">danger</span></td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td class="num">20 kPa, 0 s</td><td><span class="chip safe">safe</span></td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td class="num">30 kPa, 0 s</td><td><span class="chip safe">safe</span></td><td><span class="chip safe">Lolos</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>4.8 Mengapa ambang bahaya bisa diubah tanpa retraining</h3>
+        <p>
+          Pelatihan memakai data, fitur, dan label untuk membangun pohon;
+          <code>dangerRule</code> baru dibaca setelah pohon selesai dan saat
+          ekspor. Label per sampel tidak berubah saat ambang danger berubah, jadi
+          keluaran latih juga tidak berubah (dibuktikan pada regenerasi 5 November
+          2026: hash <code>trees</code> identik). Syaratnya dua: batas
+          <code>peak &gt;= 35</code> tetap, dan tidak ada sampel yang berpindah
+          kelas (DFN-DS tidak punya sampel &gt;= 200 kPa).
+        </p>
+      </section>
+
+      <!-- =========================================================
+           05 CARA KERJA FIRMWARE
+           ========================================================= -->
+      <section id="firmware">
+        <div class="section-head"><span class="idx">05</span><h2>Cara Kerja Firmware (ESP32)</h2></div>
+        <p>
+          Firmware C++ dijalankan dengan PlatformIO. Tiap siklus loop melakukan:
+          baca sensor, perbarui durasi tumpuan, jalankan inferensi, gerakkan
+          buzzer, lalu unggah ke Firebase saat syarat terpenuhi.
+        </p>
+
+        <h3>5.1 Pin mapping (satu kaki)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Sensor / aktuator</th><th>GPIO ESP32</th><th>ADC Channel</th></tr></thead>
+            <tbody>
+              <tr><td>FSR Forefoot</td><td class="num">GPIO 34</td><td class="num">ADC1_CH6</td></tr>
+              <tr><td>FSR Midfoot</td><td class="num">GPIO 35</td><td class="num">ADC1_CH7</td></tr>
+              <tr><td>FSR Heel</td><td class="num">GPIO 32</td><td class="num">ADC1_CH4</td></tr>
+              <tr><td>Buzzer (+)</td><td class="num">GPIO 27</td><td>Alarm lokal</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:14px;color:var(--muted)">
+          Gunakan pin <strong>ADC1</strong>: ADC2 konflik dengan modul Wi-Fi
+          bawaan. Pembagi tegangan per FSR: <code>VDD → FSR → 10kΩ → GND</code>,
+          titik tengah ke pin ADC.
+        </p>
+
+        <h3>5.2 Alur loop</h3>
+        <div class="flow">
+          <div class="flow-step"><div class="n">1</div><div><div class="t">Baca sensor</div><div class="d">Tiga FSR dibaca via median-of-3 (menolak spike ADC tanpa menambah lag), lalu dikonversi ke kPa: <code>(raw − offset) × skala</code>, negatif dipaksa 0.</div></div></div>
+          <div class="flow-step"><div class="n">2</div><div><div class="t">Akumulasi durasi tumpuan</div><div class="d">Jika peak ≥ ambang peringatan, tambah <code>dt</code>; jika tidak, reset ke 0. Nilai dibatasi maksimum 60 detik.</div></div></div>
+          <div class="flow-step"><div class="n">3</div><div><div class="t">Inferensi Random Forest</div><div class="d"><code>rf.predict(peakPressure, sustainedDuration)</code> mengembalikan level dan skor.</div></div></div>
+          <div class="flow-step"><div class="n">4</div><div><div class="t">Buzzer lokal</div><div class="d">Bahaya: pulsa cepat 300 ms nyala / 200 ms mati. Waspada: satu bip 100 ms tiap 3 detik. Aman: senyap. Jalan setiap loop, offline atau online.</div></div></div>
+          <div class="flow-step"><div class="n">5</div><div><div class="t">Unggah ke Firebase</div><div class="d">Hanya bila terkonfigurasi, Wi-Fi tersambung, dan jam masuk akal (NTP &gt; 2020-09-13). Telemetri menunggu; alarm tidak pernah menunggu.</div></div></div>
+        </div>
+
+        <h3>5.3 Pola buzzer</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Level</th><th>Pola buzzer</th></tr></thead>
+            <tbody>
+              <tr><td><span class="chip danger">Bahaya</span></td><td class="num">300 ms nyala / 200 ms mati</td></tr>
+              <tr><td><span class="chip warning">Waspada</span></td><td class="num">100 ms nyala / 2900 ms mati</td></tr>
+              <tr><td><span class="chip safe">Aman</span></td><td>Senyap</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>5.4 Cuplikan push Firebase (main.cpp)</h3>
+        <pre><span class="c">// Satu paket JSON per push, di path milik perangkat ini.</span>
+FirebaseJson json;
+json.add(<span class="k">"deviceId"</span>, DEVICE_ID);
+json.add(<span class="k">"timestamp"</span>, (int64_t)timestampSec * <span class="n">1000</span>);
+json.add(<span class="k">"forefoot_kpa"</span>, lastForefoot);
+json.add(<span class="k">"midfoot_kpa"</span>, lastMidfoot);
+json.add(<span class="k">"heel_kpa"</span>, lastHeel);
+json.add(<span class="k">"sustained_duration_sec"</span>, sustainedDuration);
+json.add(<span class="k">"risk_score"</span>, lastResult.score);
+json.add(<span class="k">"risk_status"</span>, RandomForest::levelToString(lastResult.level));
+
+String base = String(<span class="k">"/devices/"</span>) + DEVICE_ID + <span class="k">"/readings"</span>;
+<span class="c">// Terbaru: overwrite. Riwayat: append.</span>
+Firebase.RTDB.setJSON (&amp;fbdo, (base + <span class="k">"/latest"</span>).c_str(), &amp;json);
+Firebase.RTDB.pushJSON(&amp;fbdo, (base + <span class="k">"/history"</span>).c_str(), &amp;json);</pre>
+
+        <div class="callout">
+          <div class="bar"></div>
+          <div>
+            <strong>Model ter-ekspor kecil.</strong> Model 20 pohon dengan
+            kedalaman 8 diekspor ke header C++ sekitar <strong>7,9 KB</strong>
+            (JSON web sekitar 3,4 KB), cukup kecil untuk berjalan di ESP32 tanpa
+            pustaka tambahan. Uji native firmware: <strong>13/13 lolos</strong>.
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           06 CARA KERJA WEB
+           ========================================================= -->
+      <section id="web">
+        <div class="section-head"><span class="idx">06</span><h2>Cara Kerja Web Dashboard</h2></div>
+        <p>
+          Dashboard adalah aplikasi React yang membaca data real-time dari
+          Firebase, menghitung ulang risiko dari model yang sama, dan
+          menampilkannya dalam antarmuka mobile-first.
+        </p>
+
+        <h3>6.1 Halaman utama (12 halaman)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Halaman</th><th>Isi</th></tr></thead>
+            <tbody>
+              <tr><td>Dashboard</td><td>Status real-time, hero, meter band, tren, beban zona, bacaan langsung, peta tekanan</td></tr>
+              <tr><td>Monitoring</td><td>Grafik tren tekanan 3 sensor (live)</td></tr>
+              <tr><td>History</td><td>Register insiden, filter risiko, ekspor CSV</td></tr>
+              <tr><td>Device</td><td>Status perangkat: baterai, firmware, koneksi</td></tr>
+              <tr><td>Settings</td><td>Ambang batas dan notifikasi</td></tr>
+              <tr><td>Profile</td><td>Identitas akun dan statistik sesi</td></tr>
+              <tr><td>Admin (/admin/*)</td><td>Ringkasan, Pengguna, Perangkat, Insiden, Konfigurasi</td></tr>
+              <tr><td>Landing / Login / Register / Verify / Forgot</td><td>Halaman publik dan autentikasi</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>6.2 Alur data di web</h3>
+        <ol>
+          <li><code>firebaseRealtime.ts</code> berlangganan node pembacaan per perangkat.</li>
+          <li><code>InsoleContext</code> menampung pembacaan, risiko, dan sumber data (live/simulasi), satu listener untuk seluruh shell.</li>
+          <li><code>randomForestRisk.ts</code> menghitung ulang level dan skor dari fitur yang sama.</li>
+          <li>Komponen menampilkan heatmap, tren, badge risiko, dan memicu peringatan bila level naik.</li>
+        </ol>
+
+        <h3>6.3 Inferensi di klien (randomForestRisk.ts)</h3>
+        <p>
+          API publiknya <code>inferRisk({ peakPressure, sustainedDuration })</code>
+          mengembalikan <code>{ level, score, severity, votes }</code>. Fungsi ini
+          juga mengekspor <code>RISK_THRESHOLDS</code>, <code>SCORE_BANDS</code>,
+          <code>levelFromScore</code>, dan <code>alignScoreToLevel</code> agar
+          angka dan level tidak pernah bertentangan.
+        </p>
+        <pre><span class="c">// Kontrak klinis yang dijaga di kode (ringkas)</span>
+<span class="k">peak</span> &lt;  <span class="n">35</span> kPa dan durasi &lt; <span class="n">20</span> s   → <span class="k">safe</span>
+<span class="k">peak</span> &gt;= <span class="n">35</span> kPa                     → minimal <span class="k">warning</span>
+<span class="k">peak</span> &gt;= <span class="n">200</span> kPa (satu sampel)        → <span class="k">danger</span> (aturan)
+durasi &gt; ~<span class="n">20</span> s                     → minimal <span class="k">warning</span>
+
+<span class="c">// Pita skor: safe 0–47, warning 48–74, danger 75–100</span></pre>
+
+        <div class="callout info">
+          <div class="bar"></div>
+          <div>
+            <strong>Untuk developer.</strong> Ubah perilaku hanya lewat
+            <code>randomForestRisk.ts</code> (satu sumber kebenaran) dan uji
+            dengan <code>randomForestRisk.test.js</code>. Gerbang verifikasi web:
+            <code>npm test &amp;&amp; npm run typecheck &amp;&amp; npm run build</code>.
+          </div>
+        </div>
+
+        <h3>6.4 Early Warning System</h3>
+        <p>
+          Saat level naik ke Waspada/Bahaya, aplikasi memicu notifikasi web
+          (<em>Web Notification API</em>) dan alarm audio (<em>Web Audio API</em>).
+          Izin notifikasi hanya bisa diminta setelah halaman dimuat di konteks
+          aman (<code>https://</code> atau <code>localhost</code>), dan tidak
+          bisa diprompt di seluler non-HTTPS.
+        </p>
+
+        <h3>6.5 Gaya visual</h3>
+        <p>
+          Dashboard mengikuti <code>DESIGN.md</code>: kanvas terang klinis
+          (<code>#EFEFEC</code>), kartu putih, satu aksen sage
+          (<code>#04644C</code>), dan warna hanya untuk tekanan/risiko. Angka kPa
+          memakai <em>tabular numerals</em>. Penanda artefak desain tersimpan di
+          <code>design/smart-insole-dashboard.figcraft</code> (Desktop 1440 +
+          Mobile 375).
+        </p>
+      </section>
+
+      <!-- =========================================================
+           07 TECH STACK
+           ========================================================= -->
+      <section id="stack">
+        <div class="section-head"><span class="idx">07</span><h2>Tech Stack</h2></div>
+
+        <div class="grid-2">
+          <div class="card" style="margin:0">
+            <h4 style="margin-top:0">Hardware &amp; Firmware</h4>
+            <ul style="margin:6px 0 0;font-size:14px">
+              <li>Mikrokontroler: ESP32-WROOM-32</li>
+              <li>Sensor: 3x FSR 402 per kaki (6 total)</li>
+              <li>Power: LiPo 3.7V 600 mAh + TP4056 + step-up 5V</li>
+              <li>Bahasa: C++ (PlatformIO)</li>
+              <li>Pustaka: <code>WiFi.h</code>, <code>Firebase_ESP_Client</code></li>
+            </ul>
+          </div>
+          <div class="card" style="margin:0">
+            <h4 style="margin-top:0">Cloud &amp; Backend</h4>
+            <ul style="margin:6px 0 0;font-size:14px">
+              <li>Database: Firebase Realtime Database</li>
+              <li>Format data: JSON</li>
+              <li>Protokol: Wi-Fi (HTTP REST / WebSocket)</li>
+              <li>Autentikasi: Firebase Authentication</li>
+              <li>Tanpa server aplikasi tambahan</li>
+            </ul>
+          </div>
+          <div class="card" style="margin:0">
+            <h4 style="margin-top:0">Frontend Web</h4>
+            <ul style="margin:6px 0 0;font-size:14px">
+              <li>React 18 + Vite 5</li>
+              <li>TypeScript + Tailwind CSS 3</li>
+              <li>Visualisasi: SVG / HTML5 Canvas</li>
+              <li>Notifikasi: Web Notification + Web Audio API</li>
+              <li>Pengujian: Vitest</li>
+            </ul>
+          </div>
+          <div class="card" style="margin:0">
+            <h4 style="margin-top:0">Tools &amp; Deployment</h4>
+            <ul style="margin:6px 0 0;font-size:14px">
+              <li>Version control: Git &amp; GitHub</li>
+              <li>Hosting: Vercel / Netlify / Firebase Hosting</li>
+              <li>Model training: Node.js (<code>scripts/train-model.js</code>)</li>
+              <li>Data prep: Python (<code>scripts/prepare-dataset.py</code>)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           08 STRUKTUR FOLDER
+           ========================================================= -->
+      <section id="struktur">
+        <div class="section-head"><span class="idx">08</span><h2>Struktur Folder</h2></div>
+        <div class="ascii" role="img" aria-label="Struktur folder proyek">
+smart-insole-ta/
+├── firmware/                 <span style="color:var(--muted)"># Firmware ESP32 (PlatformIO, C++)</span>
+│   ├── platformio.ini
+│   ├── include/              <span style="color:var(--muted)">config.h.example, RandomForest.h, rf-model-data.h</span>
+│   ├── src/                  <span style="color:var(--muted)">main.cpp, RandomForest.cpp</span>
+│   └── test/                 <span style="color:var(--muted)">unit test native</span>
+├── web-dashboard/            <span style="color:var(--muted)"># Frontend React + Tailwind</span>
+│   ├── src/
+│   │   ├── pages/            <span style="color:var(--muted)">12 halaman .tsx</span>
+│   │   ├── components/       <span style="color:var(--muted)">layout, dashboard, monitoring, ui, PlantarHeatmap</span>
+│   │   ├── context/          <span style="color:var(--muted)">InsoleContext</span>
+│   │   ├── services/         <span style="color:var(--muted)">firebaseConfig.ts, firebaseRealtime.ts</span>
+│   │   ├── types/            <span style="color:var(--muted)">insole.ts (kontrak data)</span>
+│   │   └── utils/            <span style="color:var(--muted)">randomForestRisk.ts, rf-model.json, i18n.ts, ...</span>
+│   └── package.json
+├── docs/                     <span style="color:var(--muted)"># Dokumentasi (lihat docs/README.md)</span>
+│   ├── guidebook.html        <span style="color:var(--muted)"># Berkas ini</span>
+│   ├── PRD.md TRD.md AFD.md DBD.md BSD.md IPD.md
+│   ├── HARDWARE-SPEC.md
+│   ├── rf-model-report.md
+│   ├── ROADMAP-RF.md
+│   ├── validation-report.md
+│   ├── thesis-methodology.md
+│   ├── thesis-defense.md
+│   └── diagrams/ schematics/ reference-design/
+├── models/                   <span style="color:var(--muted)">rf-model.json, training-data.json</span>
+├── scripts/                  <span style="color:var(--muted)">prepare-dataset.py, train-model.js, export-model-cpp.js</span>
+├── datasets/                 <span style="color:var(--muted)">DFN-DS, Figshare DFU, OptiTrack (lokal)</span>
+├── design/                   <span style="color:var(--muted)">smart-insole-dashboard.figcraft</span>
+├── DESIGN.md                 <span style="color:var(--muted)">otoritas desain visual</span>
+├── AGENTS.md, READY.md, TASK.md, CHANGELOG.md, DECISIONS.md
+└── README.md
+        </div>
+      </section>
+
+      <!-- =========================================================
+           09 QUICK START
+           ========================================================= -->
+      <section id="quickstart">
+        <div class="section-head"><span class="idx">09</span><h2>Mulai Cepat</h2></div>
+
+        <h3>9.1 Firmware (ESP32)</h3>
+        <pre><span class="c"># 1. Siapkan kredensial</span>
+cp include/config.h.example include/config.h
+$EDITOR include/config.h   <span class="c"># isi WIFI_SSID, WIFI_PASSWORD, FIREBASE_HOST, FIREBASE_AUTH</span>
+
+<span class="c"># 2. Build &amp; upload (dari folder firmware/)</span>
+pio run
+pio run --target upload
+pio device monitor</pre>
+        <p style="font-size:14px;color:var(--muted)">
+          Di mesin pengembangan ini, <code>pio</code> ada di
+          <code>~/.venvs/platformio/bin/pio</code> (tidak di PATH), dan
+          <code>/dev/ttyUSB0</code> perlu <code>chmod 666</code> bila izin port
+          ditolak.
+        </p>
+
+        <h3>9.2 Web dashboard</h3>
+        <pre><span class="c"># dari folder web-dashboard/</span>
+npm install
+cp .env.example .env.local   <span class="c"># isi VITE_FIREBASE_*</span>
+npm run dev                  <span class="c"># http://localhost:5173</span>
+
+npm test          <span class="c"># Vitest</span>
+npm run typecheck <span class="c"># tsc --noEmit</span>
+npm run build     <span class="c"># output di dist/</span></pre>
+
+        <h3>9.3 Reproduksi model (opsional)</h3>
+        <pre><span class="c"># Dari dataset mentah ke model portable</span>
+python3 scripts/prepare-dataset.py    <span class="c"># → models/training-data.json</span>
+node scripts/train-model.js           <span class="c"># → models/rf-model.json</span>
+node scripts/export-model-cpp.js      <span class="c"># → firmware/include/rf-model-data.h</span></pre>
+
+        <h3>9.4 Deployment</h3>
+        <p>
+          Bangun aset statis (<code>npm run build</code>) lalu unggah folder
+          <code>dist/</code> ke Vercel, Netlify, atau Firebase Hosting (free
+          tier). Tidak ada backend tambahan yang perlu dideploy: ESP32 menulis
+          langsung ke Firebase.
+        </p>
+      </section>
+
+      <!-- =========================================================
+           10 KONTRAK DATA & FIREBASE
+           ========================================================= -->
+      <section id="kontrak">
+        <div class="section-head"><span class="idx">10</span><h2>Kontrak Data &amp; Firebase</h2></div>
+        <p>
+          Firmware mengirim satu paket JSON per sampel; dashboard membacanya
+          kembali. Tidak ada server yang memvalidasi bentuk data, sehingga
+          <code>types/insole.ts</code> adalah satu-satunya tempat yang menyatakan
+          apa yang dibawa kabel. Firmware membangun nama field yang sama; jaga
+          keduanya tetap sinkron.
+        </p>
+
+        <h3>10.1 Bentuk paket (wire packet)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Field</th><th>Tipe</th><th>Arti</th></tr></thead>
+            <tbody>
+              <tr><td><code>deviceId</code></td><td>string</td><td>ID perangkat</td></tr>
+              <tr><td><code>timestamp</code></td><td>number</td><td>Epoch milidetik</td></tr>
+              <tr><td><code>forefoot_kpa</code></td><td>number</td><td>Tekanan forefoot (kPa)</td></tr>
+              <tr><td><code>midfoot_kpa</code></td><td>number</td><td>Tekanan midfoot (kPa)</td></tr>
+              <tr><td><code>heel_kpa</code></td><td>number</td><td>Tekanan heel (kPa)</td></tr>
+              <tr><td><code>sustained_duration_sec</code></td><td>number</td><td>Durasi tumpuan (detik)</td></tr>
+              <tr><td><code>risk_score</code></td><td>number</td><td>Skor 0–100</td></tr>
+              <tr><td><code>risk_status</code></td><td>string</td><td><code>safe</code> / <code>warning</code> / <code>danger</code></td></tr>
+              <tr><td><code>battery_percent</code></td><td>number?</td><td>Baterai (opsional)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:14px;color:var(--muted)">
+          Setiap field bertipe <code>unknown</code> di sisi web dengan sengaja:
+          perangkat adalah batas kepercayaan. Mapper mengoersi tiap field secara
+          defensif, dan field yang tidak valid ditampilkan sebagai "tidak
+          diketahui", bukan sebagai nol.
+        </p>
+
+        <h3>10.2 Contoh paket (ilustrasi bentuk, bukan telemetri nyata)</h3>
+        <pre>{
+  <span class="k">"deviceId"</span>: <span class="k">"insole-01"</span>,
+  <span class="k">"timestamp"</span>: <span class="n">1762387200000</span>,
+  <span class="k">"forefoot_kpa"</span>: <span class="n">54.0</span>,
+  <span class="k">"midfoot_kpa"</span>: <span class="n">47.0</span>,
+  <span class="k">"heel_kpa"</span>: <span class="n">68.0</span>,
+  <span class="k">"sustained_duration_sec"</span>: <span class="n">0.4</span>,
+  <span class="k">"risk_score"</span>: <span class="n">62</span>,
+  <span class="k">"risk_status"</span>: <span class="k">"warning"</span>
+}</pre>
+
+        <h3>10.3 Lokasi di Realtime Database</h3>
+        <pre>devices/&lt;DEVICE_ID&gt;/readings/latest    <span class="c"># di-overwrite tiap push</span>
+devices/&lt;DEVICE_ID&gt;/readings/history   <span class="c"># di-append</span>
+config/global                         <span class="c"># ambang risiko global</span></pre>
+
+        <h3>10.4 Aturan database minimum</h3>
+        <pre>{
+  <span class="k">"rules"</span>: {
+    <span class="k">".read"</span>: <span class="k">false</span>,
+    <span class="k">".write"</span>: <span class="k">false</span>,
+    <span class="k">"readings"</span>: { <span class="k">".read"</span>: <span class="k">"auth != null"</span>, <span class="k">".write"</span>: <span class="k">false</span> },
+    <span class="k">"users"</span>: {
+      <span class="k">"$uid"</span>: { <span class="k">".read"</span>: <span class="k">"$uid"</span>, <span class="k">".write"</span>: <span class="k">"$uid"</span> }
+    }
+  }
+}</pre>
+        <div class="callout warn">
+          <div class="bar"></div>
+          <div>
+            <strong>Keamanan.</strong> <code>firmware/include/config.h</code> dan
+            <code>web-dashboard/.env.local</code> tidak boleh di-commit (hanya
+            berkas <code>.example</code> yang masuk repo). Kredensial Firebase web
+            bersifat <em>public by design</em>: andalkan proteksi lewat aturan
+            database, bukan dengan menyembunyikan API key.
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           11 VALIDASI & HASIL
+           ========================================================= -->
+      <section id="validasi">
+        <div class="section-head"><span class="idx">11</span><h2>Validasi &amp; Hasil</h2></div>
+        <p>
+          Tiga pemeriksaan validasi dijalankan terhadap data nyata. Semua angka
+          dapat direproduksi (lihat perintah di akhir bagian).
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Butir</th><th>Hasil</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Pola 3 region saat gait (OptiTrack v2)</td><td>902 fase tumpu, tumit memuncak sebelum forefoot pada 99,9%</td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td>Ambang klinis vs peak pressure DFU (Figshare)</td><td>1.296 pengukuran, 19,3% ≥ 35 kPa, 1,4% ≥ 70 kPa</td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td>Edge case (kosong, NaN, 500 kPa)</td><td>Semua input degenerat → safe, tidak melempar galat</td><td><span class="chip safe">Lolos</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>11.1 Validasi silang OptiTrack v2</h3>
+        <p>
+          Data: 15 partisipan, 155 take, 310 rekaman tekanan, 32 sensor per
+          insole. Tiap rekaman dijumlahkan per region; fase tumpu dipotong pada
+          awal kenaikan beban tumit, lalu dicari puncak tiap region.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ukuran</th><th class="num">Nilai</th></tr></thead>
+            <tbody>
+              <tr><td>Rekaman diproses</td><td class="num">310</td></tr>
+              <tr><td>Fase tumpu terdeteksi</td><td class="num">902</td></tr>
+              <tr><td>Puncak tumit mendahului forefoot</td><td class="num">99,9%</td></tr>
+              <tr><td>Urutan lengkap tumit → midfoot → forefoot</td><td class="num">69,7%</td></tr>
+              <tr><td>Porsi beban F / M / H</td><td class="num">42,1% / 20,7% / 37,3%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:14px;color:var(--muted)">
+          Urutan lengkap turun ke 69,7% karena midfoot hanya diwakili 3 sensor dan
+          membawa 20,7% beban; puncaknya bergerak liar di antara dua region lain.
+          Ini keterbatasan resolusi midfoot pada perangkat, bukan kesalahan model.
+        </p>
+
+        <h3>11.2 Ambang klinis vs data DFU (Figshare)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ukuran</th><th class="num">Nilai</th></tr></thead>
+            <tbody>
+              <tr><td>Pengukuran peak pressure</td><td class="num">1.296</td></tr>
+              <tr><td>Median</td><td class="num">18,1 kPa</td></tr>
+              <tr><td>Puncak tertinggi</td><td class="num">123,8 kPa</td></tr>
+              <tr><td>≥ ambang warning (35 kPa)</td><td class="num">19,3%</td></tr>
+              <tr><td>≥ ambang danger lama (70 kPa)</td><td class="num">1,4%</td></tr>
+              <tr><td>≥ ambang danger sekarang (200 kPa)</td><td class="num">0,0%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:14px;color:var(--muted)">
+          Ambang warning 35 kPa berada di dalam rentang terukur (19,3%
+          melewatinya). Ambang danger 200 kPa tidak pernah tercapai di dataset
+          ini (puncak 123,8 kPa), jadi validasi ini menguatkan arah ambang, bukan
+          ambang danger 200 kPa. Dataset tidak memuat durasi.
+        </p>
+
+        <h3>11.3 Edge case</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Input</th><th>Hasil</th></tr></thead>
+            <tbody>
+              <tr><td>Tanpa argumen / peak kosong</td><td><span class="chip safe">safe</span></td></tr>
+              <tr><td><code>NaN</code> / <code>Infinity</code></td><td><span class="chip safe">safe</span></td></tr>
+              <tr><td>Tekanan/durasi negatif</td><td><span class="chip safe">safe</span></td></tr>
+              <tr><td>500 kPa sesaat</td><td><span class="chip warning">warning</span></td></tr>
+              <tr><td>500 kPa selama 1 s</td><td><span class="chip danger">danger</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:14px;color:var(--muted)">
+          Tidak ada input yang melempar galat atau menghasilkan skor di luar
+          0–100.
+        </p>
+
+        <h3>11.4 Reproduksi</h3>
+        <pre>python3 scripts/validate-datasets.py        <span class="c"># 11.1 dan 11.2</span>
+cd web-dashboard
+npx vitest run src/utils/randomForestRisk.test.js   <span class="c"># 11.3</span></pre>
+      </section>
+
+      <!-- =========================================================
+           12 TROUBLESHOOTING
+           ========================================================= -->
+      <section id="troubleshooting">
+        <div class="section-head"><span class="idx">12</span><h2>Troubleshooting</h2></div>
+
+        <h3>12.1 Hardware</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Gejala</th><th>Pemeriksaan / solusi</th></tr></thead>
+            <tbody>
+              <tr><td>FSR tidak membaca nilai</td><td>Cek sambungan solder, rangkaian pembagi 10kΩ, pin GPIO benar; uji dengan multimeter (tegangan berubah saat ditekan?).</td></tr>
+              <tr><td>Nilai tidak stabil / noisy</td><td>Tambah kapasitor 100 nF di pin GPIO (low-pass filter), software averaging (baca 10x, ambil rata-rata), jauhkan kabel dari antena Wi-Fi.</td></tr>
+              <tr><td>ESP32 tidak connect Wi-Fi</td><td>Cek SSID &amp; password, kekuatan sinyal, URL Firebase; periksa output serial untuk pesan galat.</td></tr>
+              <tr><td>Baterai cepat habis</td><td>Aktifkan deep sleep di luar periode sampling, batasi duty cycle Wi-Fi, matikan LED yang tak perlu, pakai 10 Hz (bukan 100 Hz).</td></tr>
+              <tr><td>Pouch lepas saat berjalan</td><td>Pastikan Velcro kuat, posisi pouch di pergelangan (bukan tumit), panjang kabel 10–15 cm secukupnya.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>12.2 Firmware &amp; lingkungan</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Gejala</th><th>Solusi</th></tr></thead>
+            <tbody>
+              <tr><td><code>config.h not found</code></td><td>Salin <code>include/config.h.example</code> menjadi <code>include/config.h</code> lalu isi kredensial.</td></tr>
+              <tr><td><code>pio: command not found</code></td><td>Pakai path lengkap: <code>~/.venvs/platformio/bin/pio</code>, atau aktifkan venv-nya.</td></tr>
+              <tr><td>Upload gagal, port ditolak</td><td><code>sudo chmod 666 /dev/ttyUSB0</code>, lalu ulangi upload.</td></tr>
+              <tr><td>Data tidak masuk Firebase</td><td>Push menunggu Wi-Fi, kredensial valid, dan jam NTP masuk akal (&gt; 2020). Bila placeholder, firmware tetap alarm lokal + serial saja.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>12.3 Web dashboard</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Gejala</th><th>Solusi</th></tr></thead>
+            <tbody>
+              <tr><td>Notifikasi tidak muncul</td><td>Izin notifikasi hanya bisa diminta di konteks aman (<code>https://</code> atau <code>localhost</code>). Untuk uji di HP via jaringan lokal, pakai port forwarding atau deploy ke domain HTTPS.</td></tr>
+              <tr><td>Data tidak tampil</td><td>Cek <code>VITE_FIREBASE_*</code> di <code>.env.local</code>, aturan database, dan pastikan perangkat menulis ke path <code>devices/&lt;DEVICE_ID&gt;/readings</code>.</td></tr>
+              <tr><td>Link verifikasi email / reset kata sandi salah arah</td><td>Tambahkan domain produksi ke Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains.</td></tr>
+              <tr><td>Build gagal</td><td>Jalankan <code>npm test</code>, <code>npm run typecheck</code>, <code>npm run build</code> berurutan untuk melihat sumber galat.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout info">
+          <div class="bar"></div>
+          <div>
+            <strong>Untuk pengguna akhir.</strong> Bila dashboard menunjukkan
+            "tidak terhubung" atau data lama, jangan mengarang pembacaan. Periksa
+            apakah perangkat menyala dan Wi-Fi tersambung, lalu muat ulang
+            halaman. Bila status Waspada/Bahaya muncul, kurangi beban pada kaki
+            dan hubungi tenaga medis.
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           13 BATASAN & ETIKA
+           ========================================================= -->
+      <section id="batasan">
+        <div class="section-head"><span class="idx">13</span><h2>Batasan &amp; Etika</h2></div>
+
+        <h3>13.1 Batasan pemakaian</h3>
+        <p>
+          Sistem ini adalah <strong>alat bantu pemantauan, bukan alat
+          diagnosis</strong>. Keluaran berupa tingkat risiko dan alarm lokal, dan
+          tidak menggantikan pemeriksaan klinis.
+        </p>
+
+        <h3>13.2 Ancaman validitas</h3>
+        <ul>
+          <li><strong>Ketidakseimbangan kelas.</strong> Kelas bahaya hanya 0,05% data, sehingga diserahkan ke aturan klinis. Akurasi 100% tidak mengukur kemampuan mendeteksi bahaya; bagian itu diukur oleh clinical contract.</li>
+          <li><strong>Populasi.</strong> DFN-DS berisi pasien diabetes, bukan populasi umum. Model belum divalidasi untuk pengguna tanpa riwayat diabetes.</li>
+          <li><strong>Jumlah sensor.</strong> Insole memakai 3 sensor per kaki, sedangkan data latih 8 sensor yang diagregasi. Resolusi midfoot hanya tiga titik ukur.</li>
+          <li><strong>Jendela durasi.</strong> Pada beban 35–69 kPa yang bertahan lebih dari 20 detik, model tetap warning (lebih permisif daripada aturan klinis yang menaikkan ke danger). Celah ini hanya muncul pada pemakaian berkepanjangan dan wajib disebutkan saat pemakaian alat.</li>
+          <li><strong>Ambang Figshare.</strong> Dataset DFU tidak memuat durasi, sehingga validasi hanya berlaku untuk ambang tekanan.</li>
+          <li><strong>Uji perangkat fisik.</strong> Firmware terbangun dan lulus uji native (13/13), tetapi uji pada insole fisik belum dijalankan.</li>
+        </ul>
+      </section>
+
+      <!-- =========================================================
+           14 REFERENSI
+           ========================================================= -->
+      <section id="referensi">
+        <div class="section-head"><span class="idx">14</span><h2>Referensi</h2></div>
+        <ul>
+          <li>Billings, J., Gee, J., Ghulam, Z., &amp; Abdullah, H.A. (2024). <em>Smart Compression Sock for Early Detection of Diabetic Foot Ulcers.</em> Sensors, 24(21), 6928. (Referensi utama penempatan pouch sock-top.)</li>
+          <li>Castro-Martins dkk. (2024). Heliyon, e26161. (Ambang in-shoe 200 kPa.)</li>
+          <li>Interlink Electronics. <em>FSR 402 Integration Guide.</em></li>
+          <li>Dataset DFN-DS, OptiTrack v2, dan Figshare DFU (rincian di <code>docs/</code>).</li>
+        </ul>
+
+        <h3>Dokumen terkait di repo</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Dokumen</th><th>Isi</th></tr></thead>
+            <tbody>
+              <tr><td><code>docs/HARDWARE-SPEC.md</code></td><td>Spesifikasi hardware, BOM, wiring, build guide</td></tr>
+              <tr><td><code>docs/rf-model-report.md</code></td><td>Laporan model, metrik, clinical contract</td></tr>
+              <tr><td><code>docs/validation-report.md</code></td><td>Laporan validasi Fase 3</td></tr>
+              <tr><td><code>docs/thesis-methodology.md</code></td><td>Draf Bab III metodologi</td></tr>
+              <tr><td><code>docs/thesis-defense.md</code></td><td>Materi sidang dan skrip demo</td></tr>
+              <tr><td><code>docs/PRD.md</code></td><td>Product Requirement Documentation</td></tr>
+              <tr><td><code>docs/TRD.md</code></td><td>Technical Requirement Documentation</td></tr>
+              <tr><td><code>docs/AFD.md</code></td><td>App Flow Documentation</td></tr>
+              <tr><td><code>docs/DBD.md</code></td><td>Design Brief Documentation (ringkasan, otoritas di <code>DESIGN.md</code>)</td></tr>
+              <tr><td><code>docs/BSD.md</code></td><td>Backend Schema Documentation</td></tr>
+              <tr><td><code>docs/IPD.md</code></td><td>Implementation Plan Documentation</td></tr>
+              <tr><td><code>DECISIONS.md</code></td><td>Catatan keputusan teknis (ADR)</td></tr>
+              <tr><td><code>DESIGN.md</code></td><td>Otoritas arah desain visual</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer>
+        <div class="foot-grid">
+          <span><strong>Smart Insole IoT</strong> · Guidebook lengkap</span>
+          <span>Lisensi MIT · untuk kepentingan akademis dan riset non-komersial</span>
+          <span>Alat bantu pemantauan, bukan alat diagnosis</span>
+        </div>
+      </footer>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

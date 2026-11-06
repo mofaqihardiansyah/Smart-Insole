@@ -34,9 +34,25 @@ All notable changes to this project are documented here. The format follows
   fresh-regeneration steps.
 - `src/utils/rf-modelSync.test.js`: fails if the web copy of `rf-model.json`
   stops matching `models/rf-model.json`.
+- Design artifact `design/smart-insole-dashboard.figcraft` (FigCraft): the
+  dashboard at 1440 and 375, with `DESIGN.md` colours as named variables rather
+  than literals. Text is set in Inter and Fira Code because DM Sans and Plus
+  Jakarta Sans are not installed on the authoring machine (see
+  `DECISIONS.md` ADR-011).
+- Guidebook HTML lengkap `docs/guidebook.html` (satu berkas mandiri, tanpa CDN):
+  teori, metode Random Forest, cara kerja firmware dan web, tech stack, struktur
+  folder, mulai cepat, kontrak data Firebase, validasi, troubleshooting, dan
+  batasan. Gaya mengikuti token `DESIGN.md`.
+- Set dokumen spesifikasi di `docs/`: `PRD.md`, `TRD.md`, `AFD.md`, `DBD.md`,
+  `BSD.md`, `IPD.md` (product, technical, app flow, design brief, backend
+  schema, dan implementation plan).
 
 ### Changed
 
+- The admin console got its own visual register: one divided status strip
+  instead of three equal stat cards, underline navigation instead of the patient
+  pill, human-readable audit verbs, filter names that describe the filter, and
+  stacked user rows below `md` instead of a sideways-scrolling table.
 - The admin console is now a separate surface at `/admin/*` with its own shell,
   guard, and five tabs; the patient navigation no longer links to it.
 - Deactivated accounts are actually blocked: the app shows a deactivated screen,

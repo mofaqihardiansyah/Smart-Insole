@@ -14,6 +14,13 @@ pelatihan.
 | [`validation-report.md`](validation-report.md) | Laporan validasi Fase 3: pola region OptiTrack, ambang DFU, dan edge case |
 | [`thesis-methodology.md`](thesis-methodology.md) | Draf Bab III (metodologi): data, praproses, model, evaluasi, hasil, ancaman validitas |
 | [`thesis-defense.md`](thesis-defense.md) | Materi sidang: kerangka slide metode Random Forest dan skrip demo ujung-ke-ujung |
+| [`guidebook.html`](guidebook.html) | Guidebook lengkap proyek: teori, metode, cara kerja firmware & web, tech stack, kontrak data, validasi, troubleshooting |
+| [`PRD.md`](PRD.md) | Product Requirement Documentation: masalah, pengguna, ruang lingkup, dan metrik keberhasilan |
+| [`TRD.md`](TRD.md) | Technical Requirement Documentation: stack, arsitektur, dan kebutuhan non-fungsional |
+| [`AFD.md`](AFD.md) | App Flow Documentation: peta navigasi dan alur pengguna tiap halaman |
+| [`DBD.md`](DBD.md) | Design Brief Documentation: ringkasan arah desain dan tautan ke otoritas `../DESIGN.md` |
+| [`BSD.md`](BSD.md) | Backend Schema Documentation: skema Firebase RTDB, aturan, dan kontrak perangkat |
+| [`IPD.md`](IPD.md) | Implementation Plan Documentation: fase pengerjaan, status, dan gate verifikasi |
 | [`DESIGN-BRIEF.md`](DESIGN-BRIEF.md) | Brief desain web dashboard — dokumen **historis**, digantikan oleh [`../DESIGN.md`](../DESIGN.md) sebagai otoritas desain |
 
 ## Struktur Folder

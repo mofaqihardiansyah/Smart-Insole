@@ -42,6 +42,7 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
 | `models/` | `rf-model.json`, `training-data.json` |
 | `scripts/` | `prepare-dataset.py`, `train-model.js`, `export-model-cpp.js`, `validate-datasets.py` |
 | `datasets/` | `dfn-ds/` (273 MB), `optitrack/` (84 MB), `figshare-dfu/` (32 KB) |
+| `design/` | `smart-insole-dashboard.figcraft` (FigCraft: dashboard 1440 + 375) |
 
 ## Current state (as of 1 Nov 2026)
 
@@ -68,6 +69,10 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
   ESP32-D0WD-V3. `/dev/ttyUSB0` is `root:uucp 660`, so `chmod 666` (sudo) is
   needed before upload; a re-plug restores 660.
 - Vitest is the only executable proof for web. Browser checks are manual.
+- The design fonts `DM Sans` and `Plus Jakarta Sans` are not installed on this
+  machine and FigCraft font download is disabled, so the design artifact in
+  `design/` uses `Inter` and `Fira Code` instead. The shipped web app still
+  declares the real families in `src/index.css`.
 - `docs/DESIGN-BRIEF.md` is historical. `DESIGN.md` is the design authority.
 - `docs/HARDWARE-SPEC.md` is still marked Draft.
 - Profile-photo upload needs a provisioned Storage bucket; it was deferred
