@@ -1,7 +1,7 @@
 # READY.md
 
 Verified environment and repository state. Read this before exploring.
-Snapshot: **1 November 2026**. Update only when a fact changes.
+Snapshot: **8 November 2026**. Update only when a fact changes.
 
 ## Runtime
 
@@ -10,7 +10,7 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
 | Node.js | v26.7.0 |
 | npm | 12.0.2 |
 | Python | 3.14.9 (`openpyxl` 3.1.5 present; `pandas` absent) |
-| PlatformIO (`pio`) | Core 6.2.0 in `~/.venvs/platformio/bin/pio` (not on `PATH`) |
+| PlatformIO (`pio`) | Core 6.2.0, two copies: `~/.platformio/penv/bin/pio` (used for builds) and `~/.venvs/platformio/bin/pio`; neither is on `PATH` |
 | PlatformIO envs | `esp32dev` (hardware), `native` (Unity unit tests) |
 | Git branch | `main` |
 
@@ -40,11 +40,11 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
 | `firmware/include/` | `config.h.example`, `RandomForest.h`, `rf-model-data.h` |
 | `firmware/test/` | `test_randomforest.cpp` |
 | `models/` | `rf-model.json`, `training-data.json` |
-| `scripts/` | `prepare-dataset.py`, `train-model.js`, `export-model-cpp.js`, `validate-datasets.py` |
+| `scripts/` | `prepare-dataset.py`, `train-model.js`, `export-model-cpp.js`, `validate-datasets.py`, `prepare-session-dataset.py`, `train-session-model.js`, `lib/forest.js` |
 | `datasets/` | `dfn-ds/` (273 MB), `optitrack/` (84 MB), `figshare-dfu/` (32 KB) |
 | `design/` | `smart-insole-dashboard.figcraft` (FigCraft: dashboard 1440 + 375) |
 
-## Current state (as of 1 Nov 2026)
+## Current state (as of 8 Nov 2026)
 
 - The admin console lives at `/admin/*` (`pages/admin/`) with its own
   `AdminLayout` and `RequireAdmin`; `/admin` is no longer part of the patient
@@ -59,15 +59,28 @@ Snapshot: **1 November 2026**. Update only when a fact changes.
 - `web-dashboard/public/` contains `icon.svg` and `manifest.webmanifest`.
 - UI ships Indonesian only (`LANG-01`); the i18n dictionary keeps ID + EN.
 - Model is Random Forest + clinical rule: the forest separates `safe` /
-  `warning`; `danger` is rule-based (peak ≥ 70 kPa and sustained ≥ 0.1 s).
+  `warning`; `danger` is rule-based (`peak >= 200 kPa` on one sample). Warning
+  is `peak >= 35 kPa` sustained 20 s (200 samples at 10 Hz).
+- Firmware is flashed and boots clean: WiFi joins, Firebase is configured,
+  `RandomForest model loaded (20 trees)`, and live samples print with
+  `warning`/`safe` transitions. Sensor calibration is still the template
+  default (`ADC_OFFSET 0.0f`, `ADC_TO_KPA 0.085f`), so unloaded readings jump
+  between 0 and ~125 kPa.
+- `firmware/platformio.ini` pins `[platformio] default_envs = esp32dev`;
+  without it `pio run` also builds `native`, which has no `main()` and fails to
+  link. Native tests still run through `pio test -e native`.
 - `DISCUSSION-GUIDE.md` is git-ignored (personal working note, not in history).
 
 ## Known gaps
 
-- PlatformIO lives in a venv at `~/.venvs/platformio`; call it by full path.
-  Build, native tests, and USB flash were verified 3 Nov 2026 on an
-  ESP32-D0WD-V3. `/dev/ttyUSB0` is `root:uucp 660`, so `chmod 666` (sudo) is
-  needed before upload; a re-plug restores 660.
+- PlatformIO is not on `PATH`; call `~/.platformio/penv/bin/pio` by full path.
+  Build, native tests, and USB flash were verified 8 Nov 2026 on an
+  ESP32-D0WD-V3 (CP2102, `/dev/ttyUSB0`, `10C4:EA60`). `qihh` is in `uucp`,
+  so the port is writable after a fresh login; a session started before the
+  group change still needs `sudo chmod a+rw /dev/ttyUSB0`. `upload_speed` is
+  **460800** because 921600 fails with `Unable to verify flash chip
+  connection`. Flash usage is 83.1% of 1.25 MB (`1089753 / 1310720` bytes);
+  `board_build.partitions = huge_app.csv` is the escape hatch if it overflows.
 - Vitest is the only executable proof for web. Browser checks are manual.
 - The design fonts `DM Sans` and `Plus Jakarta Sans` are not installed on this
   machine and FigCraft font download is disabled, so the design artifact in

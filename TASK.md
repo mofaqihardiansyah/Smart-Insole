@@ -7,6 +7,19 @@ summary line per month.
 
 ## Done
 
+- **2026-11-08 — Firmware flashed, boot terverifikasi.** Board ESP32-D0WD-V3
+  ter-flash dan boot bersih: WiFi tersambung, `Firebase configured`,
+  `RandomForest model loaded (20 trees)`, sampel live dengan transisi
+  `warning`/`safe` dan buzzer. Tiga penghalang ditutup: port tidak terdeteksi
+  (USB dicolok, `/dev/ttyUSB0` CP2102 `10C4:EA60`), izin (`qihh` masuk grup
+  `uucp` permanen), dan port sibuk (serial monitor lama, PID 127660). Di
+  `firmware/platformio.ini`: `[platformio] default_envs = esp32dev` supaya
+  `pio run` tidak ikut membangun env `native` tanpa `main()`, dan
+  `upload_speed` 921600 → 460800 karena 921600 gagal `Unable to verify flash
+  chip connection`. Flash 83,1% (1089753 / 1310720 byte). `READY.md`
+  diselaraskan (path `pio`, grup `uucp`, baud, ambang danger 200 kPa).
+  Verifikasi: `pio run` SUCCESS 46,5 s, upload SUCCESS 28,9 s, log boot di
+  atas. (working tree)
 - **2026-11-08 — Dokumen: batas penggunaan + koreksi klaim metodologi.**
   `docs/thesis-methodology.md`: §3.3 tidak lagi mengklaim label per grup pasien
   (label sebenarnya `peak >= 35 kPa`; klausa `sustained >= 200 sampel` tidak
@@ -223,18 +236,18 @@ summary line per month.
 1. **Deploy rules** — `firebase deploy --only database`, lalu uji satu akun
    non-admin dan satu admin. Rules kini menolak `active === false` dan memberi
    admin baca `/devices`, `/audit`, `/triage`.
-2. **Pairing + flash** — pasangkan device ke akun
-   (`firebase database:set /users/<uid>/devices/insole-01 true`), deploy
-   `database.rules.json`, lalu flash firmware baru. Sampai flash, dashboard
-   memakai path lama.
-3. **Firmware 5.4** — flash with real credentials and test with real sensors.
-   Unblocks the end-to-end demo (Fase 6.4).
-4. **Thesis docs** — `docs/thesis-methodology.md` masih membantah kode: §3.3
-   mengklaim label per grup pasien (kode memakai ambang 35 kPa), §3.1 menulis
-   10 Hz (firmware 1 Hz), §3.6–3.7 memakai angka sebelum ambang 200 kPa.
-   Tambahkan subbab hasil negatif model sesi (OOF AUC 0,503, kontrol demografi
-   0,525) sebagai alasan memilih Bentuk 1, lalu isi `[sitasi]` dan render slide.
-   `docs/HARDWARE-SPEC.md` tetap Draft sampai perangkat divalidasi.
+2. **Pairing** — pasangkan device ke akun
+   (`firebase database:set /users/<uid>/devices/insole-01 true`). Firmware
+   sudah ter-flash dan menulis ke `devices/<DEVICE_ID>/readings`; tanpa
+   pairing dashboard tidak menemukan perangkatnya.
+3. **Kalibrasi sensor** — `ADC_OFFSET`/`ADC_TO_KPA` di `config.h` masih nilai
+   template, jadi bacaan tanpa beban melompat 0–125 kPa. Ikuti prosedur di
+   `docs/HARDWARE-SPEC.md`, lalu catat konstanta hasil kalibrasi.
+4. **Thesis docs** — klaim metodologi sudah dikoreksi 2026-11-08. Sisa: subbab
+   hasil negatif model sesi (OOF AUC 0,503, kontrol demografi 0,525) sebagai
+   alasan memilih Bentuk 1, isi semua `[sitasi]` (§3.9.1 ambang 200 kPa belum
+   punya rujukan), render slide, dan angkat `docs/HARDWARE-SPEC.md` dari Draft
+   setelah perangkat divalidasi.
 5. **Riwayat RTDB tumbuh tanpa batas** — firmware push 1 Hz, node
    `readings/history` tak pernah dibersihkan; putuskan retensi/arsip.
 
