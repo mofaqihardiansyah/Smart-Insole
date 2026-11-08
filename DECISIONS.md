@@ -226,3 +226,35 @@ proof. Any pixel-exact type comparison needs the real fonts installed first.
 `design/` is a durable location; new screens belong there rather than in an
 untitled FigCraft document. If the fonts are installed later, re-run the
 artboards instead of editing the substitutes.
+
+## ADR-012: The session-level DFN/DM model is not shipped; the contribution stays rule-based
+
+- **Date:** 2026-11-08
+- **Status:** Accepted
+
+**Context.** The thesis goal is real-time plantar pressure monitoring to
+prevent ulcers. The sample-level Random Forest reproduces its own label rule
+(`peak >= 35 kPa`), so its 100% accuracy is circular and carries no
+generalisation claim. A session-level model (DFN vs DM from 17 pressure
+aggregates, one row per patient, 135 rows) was built to give the thesis a real
+ML contribution.
+
+**Decision.** The gate was fixed before training: out-of-fold AUC >= 0.65 on
+5-fold stratified CV, **and** at least 0.03 above the best single pressure
+feature. The model scored AUC 0.503 (accuracy 60.7% against a 69.6% majority
+baseline; best single feature 0.531). The demographic control scored 0.525,
+which rules out a broken pipeline. `models/session-model.json` is therefore
+**not** exported, and the dashboard and firmware are untouched. Bentuk 1 is
+the shipped shape: the alarm stays a clinical rule, and the Random Forest is
+documented as an artifact with an explicit limitation.
+
+**Consequences.** The thesis claims a monitoring system, not a learned
+diagnosis, and reports the negative result as evidence rather than hiding it.
+The scripts stay in the repo so the result is reproducible
+(`node scripts/train-session-model.js --sweep`). The full sweep lands the
+pressure model between 0.503 and 0.511 across six regularisations, and the best
+cell in the whole grid is 0.548 (demographics, depth 2) — no configuration
+reaches the floor. Reversing this needs a different input, not a different
+hyperparameter: clinical outcome labels (DFN-DS has none, Figshare DFU has no
+non-ulcer controls) or a temporal model over raw sensor signals, with its gate
+fixed the same way beforehand.
