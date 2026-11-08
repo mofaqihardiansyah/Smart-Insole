@@ -1204,19 +1204,50 @@ npx vitest run src/utils/randomForestRisk.test.js   <span class="c"># 11.3</span
       <section id="batasan">
         <div class="section-head"><span class="idx">13</span><h2>Batasan &amp; Etika</h2></div>
 
-        <h3>13.1 Batasan pemakaian</h3>
+        <h3>13.1 Indikasi pemakaian</h3>
         <p>
           Sistem ini adalah <strong>alat bantu pemantauan, bukan alat
-          diagnosis</strong>. Keluaran berupa tingkat risiko dan alarm lokal, dan
-          tidak menggantikan pemeriksaan klinis.
+          diagnosis</strong>. Alat ditujukan untuk <strong>pasien
+          diabetes</strong>, idealnya dengan neuropati perifer atau riwayat
+          ulkus kaki. Ambang 200 kPa adalah ambang <em>in-shoe</em> dengan
+          konsensus terluas untuk populasi itu (Castro-Martins dkk., 2024),
+          dan seluruh data latih DFN-DS berasal dari pasien diabetes. Alat ini
+          bukan alat skrining umum dan tidak ditujukan untuk orang tanpa
+          diabetes.
         </p>
 
-        <h3>13.2 Ancaman validitas</h3>
+        <h3>13.2 Arti ambang di luar populasi sasaran</h3>
+        <p>
+          Pada orang tanpa neuropati, sensasi protektif masih utuh: tekanan
+          tinggi terasa nyeri dan otomatis di-<em>offload</em>, sehingga tidak
+          menimbulkan ulkus. Karena itu alarm pada pengguna non-diabetes bukan
+          peringatan risiko, melainkan positif palsu. Angka 35 kPa pun bukan
+          batas cedera, melainkan penanda beban relatif hasil kalibrasi
+          dataset.
+        </p>
+        <p>
+          Ambang 200 kPa praktis tidak pernah tercapai pada data acuan: 0 dari
+          81.000 sampel DFN-DS dan 0 dari 1.296 pengukuran Figshare
+          melampauinya. Alarm bahaya adalah plafon untuk kejadian ekstrem,
+          sedangkan pita yang bekerja sehari-hari adalah 35 kPa selama 20
+          detik.
+        </p>
+
+        <h3>13.3 Prasyarat pemakaian</h3>
         <ul>
-          <li><strong>Ketidakseimbangan kelas.</strong> Kelas bahaya hanya 0,05% data, sehingga diserahkan ke aturan klinis. Akurasi 100% tidak mengukur kemampuan mendeteksi bahaya; bagian itu diukur oleh clinical contract.</li>
+          <li>Diagnosis diabetes sudah terkonfirmasi.</li>
+          <li>Idealnya uji sensasi protektif (monofilamen 10 g) sebelum alarm ditafsirkan.</li>
+          <li>Alarm berarti &ldquo;geser beban&rdquo;, bukan &ldquo;segera ke dokter&rdquo;.</li>
+          <li>Tekanan hanya satu dari empat faktor risiko ulkus (neuropati, iskemia perifer, deformitas, riwayat ulkus); bacaan <code>safe</code> tidak menyingkirkan risiko.</li>
+        </ul>
+
+        <h3>13.4 Ancaman validitas</h3>
+        <ul>
+          <li><strong>Tidak ada sampel bahaya.</strong> Dataset tidak memuat satu pun sampel <code>danger</code> (0 dari 81.000; puncak DFN-DS 87,06 kPa), sehingga kelas itu diserahkan ke aturan klinis. Akurasi 100% tidak mengukur kemampuan mendeteksi bahaya; bagian itu diukur oleh clinical contract.</li>
+          <li><strong>Sirkularitas label.</strong> Label latih adalah ambang <code>peak &gt;= 35 kPa</code>, dan pohon memisah pada fitur yang sama: 19 dari 20 pohon pada <code>sustained &gt; 0</code>, satu pada <code>peak</code> 34,97 kPa. Akurasi tinggi berarti model mereproduksi aturan yang melabelinya.</li>
           <li><strong>Populasi.</strong> DFN-DS berisi pasien diabetes, bukan populasi umum. Model belum divalidasi untuk pengguna tanpa riwayat diabetes.</li>
           <li><strong>Jumlah sensor.</strong> Insole memakai 3 sensor per kaki, sedangkan data latih 8 sensor yang diagregasi. Resolusi midfoot hanya tiga titik ukur.</li>
-          <li><strong>Jendela durasi.</strong> Pada beban 35–69 kPa yang bertahan lebih dari 20 detik, model tetap warning (lebih permisif daripada aturan klinis yang menaikkan ke danger). Celah ini hanya muncul pada pemakaian berkepanjangan dan wajib disebutkan saat pemakaian alat.</li>
+          <li><strong>Jendela durasi.</strong> Beban 35&ndash;199 kPa yang bertahan lama tetap <code>warning</code>; hanya 200 kPa yang menaikkan ke <code>danger</code>. Tumpu berkepanjangan di bawah 200 kPa tidak pernah menjadi bahaya, dan celah ini wajib disebutkan saat pemakaian alat.</li>
           <li><strong>Ambang Figshare.</strong> Dataset DFU tidak memuat durasi, sehingga validasi hanya berlaku untuk ambang tekanan.</li>
           <li><strong>Uji perangkat fisik.</strong> Firmware terbangun dan lulus uji native (13/13), tetapi uji pada insole fisik belum dijalankan.</li>
         </ul>

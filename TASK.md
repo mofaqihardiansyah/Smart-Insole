@@ -7,6 +7,27 @@ summary line per month.
 
 ## Done
 
+- **2026-11-08 — Dokumen: batas penggunaan + koreksi klaim metodologi.**
+  `docs/thesis-methodology.md`: §3.3 tidak lagi mengklaim label per grup pasien
+  (label sebenarnya `peak >= 35 kPa`; klausa `sustained >= 200 sampel` tidak
+  pernah tercapai karena run terpanjang 30 sampel), §3.1 laju data 10 Hz
+  menjadi 1 Hz, §3.4 mencatat batas yang dipelajari berimpit dengan ambang
+  label, §3.5 `minSamples` 2/5 menjadi 4, §3.6 kasus kontrak 80 kPa menjadi
+  199/210 kPa, §3.7 dan §3.8 memuat catatan sirkularitas, §3.9 diperluas
+  menjadi indikasi, arti ambang di luar populasi, risiko negatif palsu, dan
+  prasyarat pemakaian. `docs/guidebook.html` §13 mengikuti. Verifikasi: HTML
+  seimbang, code fence seimbang. (working tree)
+- **2026-11-08 — Model sesi DFN/DM diuji, gagal gerbang, tidak dipakai.**
+  Dua skrip baru: `scripts/prepare-session-dataset.py` membangun
+  `models/session-dataset.json` (135 sesi, 1 baris per pasien, 17 fitur
+  tekanan), dan `scripts/train-session-model.js` melatihnya dengan 5-fold
+  cross-validation berstrata. Gerbang ditetapkan sebelum melihat hasil:
+  OOF AUC >= 0,65 **dan** >= AUC fitur tunggal terbaik + 0,03. Hasil: AUC 0,503,
+  akurasi 60,7% (baseline mayoritas 69,6%), fitur tunggal terbaik 0,531.
+  Kontrol demografi (umur/sex/durasi DM/BMI) hanya 0,525, jadi bukan pipeline
+  yang rusak. `models/session-model.json` **tidak diekspor**. Mesin pohon
+  diekstrak ke `scripts/lib/forest.js`; `models/rf-model.json` yang dihasilkan
+  ulang identik byte-per-byte. (working tree)
 - **2026-11-06 — Dokumentasi: aturan guidebook, 6 dokumen spesifikasi baru.**
   `AGENTS.md` ditambah aturan "jaga `docs/guidebook.html` tetap mutakhir pada
   perubahan material" (rules + tabel markdown upkeep; diedit atas permintaan
@@ -206,18 +227,16 @@ summary line per month.
    (`firebase database:set /users/<uid>/devices/insole-01 true`), deploy
    `database.rules.json`, lalu flash firmware baru. Sampai flash, dashboard
    memakai path lama.
-2. **Firmware 5.4** — flash with real credentials and test with real sensors.
+3. **Firmware 5.4** — flash with real credentials and test with real sensors.
    Unblocks the end-to-end demo (Fase 6.4).
-2. **Halaman Riwayat lanjutan** — filter level, sorting kolom, header lengket;
-   rincian kerja di `TUGAS-TERSISA.md` (H-02 … H-04).
-2. **Riwayat RTDB tumbuh tanpa batas** — firmware push 1 Hz, node
+4. **Thesis docs** — `docs/thesis-methodology.md` masih membantah kode: §3.3
+   mengklaim label per grup pasien (kode memakai ambang 35 kPa), §3.1 menulis
+   10 Hz (firmware 1 Hz), §3.6–3.7 memakai angka sebelum ambang 200 kPa.
+   Tambahkan subbab hasil negatif model sesi (OOF AUC 0,503, kontrol demografi
+   0,525) sebagai alasan memilih Bentuk 1, lalu isi `[sitasi]` dan render slide.
+   `docs/HARDWARE-SPEC.md` tetap Draft sampai perangkat divalidasi.
+5. **Riwayat RTDB tumbuh tanpa batas** — firmware push 1 Hz, node
    `readings/history` tak pernah dibersihkan; putuskan retensi/arsip.
-3. **Docs polish** — `docs/HARDWARE-SPEC.md` is still Draft; promote it once
-   the hardware is validated.
-4. **Thesis review** — fill the `[sitasi]` placeholders in
-   `docs/thesis-methodology.md` and render the slide outline into real slides.
-5. **Label RF vs ambang** — model mereproduksi `peak >= 35`; putuskan apakah
-   skripsi menyebutnya aturan ambang atau melatih ulang dengan label DFN/DM.
 
 > Update rule: Done entries carry a date and a commit hash or `(working tree)`.
 > Keep entries short — detail belongs in the commit message or `CHANGELOG.md`.
