@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Panduan Bangun Hardware Smart Insole · Dari Insole sampai Pouch</title>
+<meta name="description" content="Panduan lengkap merakit hardware smart insole: daftar bahan, keselamatan, diagram kabel, soldering, fabrikasi insole EVA, pouch neoprene, pengeleman, kalibrasi sensor, dan QC." />
+<style>
+  /* ============================================================
+     Token warna mengikuti DESIGN.md (light clinical console).
+     Berkas ini self-contained: tanpa CDN, tanpa aset eksternal.
+     ============================================================ */
+  :root {
+    --bg: #EFEFEC;
+    --surface: #FFFFFF;
+    --surface-2: #F7F7F5;
+    --surface-3: #EBEBE7;
+    --fg: #0A0A0F;
+    --fg-2: #282832;
+    --muted: #46464F;
+    --primary: #0A0A0F;
+    --secondary: #04644C;
+    --secondary-ink: #054B37;
+    --tertiary: #0987B8;
+    --border: #E4E4E0;
+    --border-strong: #DCDCD8;
+    --border-control: #78787F;
+    --safe: #15803D;
+    --safe-ink: #12552D;
+    --warning: #A16207;
+    --warning-ink: #823700;
+    --danger: #B41E1E;
+    --danger-ink: #821414;
+    --tint-cream: #F3DFA6;
+    --tint-mint: #CBE8D4;
+    --tint-blue: #CADCF1;
+    --radius-sm: 4px;
+    --radius-control: 8px;
+    --radius-tile: 12px;
+    --radius-card: 16px;
+    --shadow-panel: 0 1px 2px rgba(10,10,15,0.06);
+    --shadow-md: 0 4px 16px rgba(10,10,15,0.07);
+    --mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: "DM Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: var(--secondary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible { outline: 3px solid var(--secondary); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+  /* ---------- Layout ---------- */
+  .layout { display: grid; grid-template-columns: 292px minmax(0, 1fr); max-width: 1440px; margin: 0 auto; }
+
+  .sidebar {
+    position: sticky; top: 0; align-self: start;
+    height: 100vh; overflow-y: auto;
+    padding: 28px 20px 40px;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .brand-mark {
+    width: 38px; height: 38px; border-radius: var(--radius-tile);
+    background: var(--primary); color: #fff; flex: 0 0 auto;
+    display: grid; place-items: center; font-weight: 700; font-size: 16px;
+    font-family: var(--mono);
+  }
+  .brand-name { font-weight: 700; font-size: 15px; line-height: 1.2; }
+  .brand-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .nav-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 8px; }
+  .toc { list-style: none; margin: 0; padding: 0; }
+  .toc li { margin: 1px 0; }
+  .toc a {
+    display: flex; gap: 10px; align-items: baseline;
+    padding: 6px 10px; border-radius: var(--radius-control);
+    color: var(--fg-2); font-size: 13.5px; line-height: 1.35;
+  }
+  .toc a:hover { background: var(--surface); text-decoration: none; color: var(--fg); }
+  .toc .num { font-family: var(--mono); font-size: 11px; color: var(--muted); flex: 0 0 auto; min-width: 18px; }
+  .sidebar-note {
+    margin-top: 24px; padding: 14px; border-radius: var(--radius-tile);
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 12px; color: var(--muted); line-height: 1.5;
+  }
+  .sidebar-note strong { color: var(--fg-2); }
+
+  main { padding: 0 40px 120px; min-width: 0; }
+  .content { max-width: 920px; margin: 0 auto; min-width: 0; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    margin-top: 40px; padding: 40px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-card); box-shadow: var(--shadow-panel);
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--secondary-ink);
+    background: var(--tint-mint); padding: 5px 12px; border-radius: var(--radius-sm);
+  }
+  .hero h1 { font-size: clamp(27px, 3.4vw, 38px); line-height: 1.14; margin: 18px 0 12px; letter-spacing: -0.02em; }
+  .hero .lede { font-size: 17px; color: var(--fg-2); max-width: 62ch; margin: 0; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 22px; font-size: 13px; color: var(--muted); }
+  .hero-meta b { color: var(--fg-2); font-weight: 600; }
+
+  /* ---------- Sections ---------- */
+  section { margin-top: 56px; scroll-margin-top: 24px; }
+  .section-head { display: flex; align-items: baseline; gap: 14px; border-bottom: 1px solid var(--border-strong); padding-bottom: 10px; }
+  .section-head .idx {
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    color: var(--secondary-ink); background: var(--tint-mint);
+    border-radius: var(--radius-sm); padding: 3px 8px;
+  }
+  .section-head h2 { font-size: clamp(21px, 2.4vw, 27px); line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+  h3 { font-size: 18px; margin: 30px 0 8px; letter-spacing: -0.01em; }
+  h4 { font-size: 15px; margin: 22px 0 6px; }
+  p { margin: 10px 0; }
+  ul, ol { margin: 10px 0; padding-left: 24px; }
+  li { margin: 5px 0; }
+  li > ul, li > ol { margin: 4px 0; }
+  strong { font-weight: 650; }
+  code {
+    font-family: var(--mono); font-size: 0.88em;
+    background: var(--surface-3); padding: 1px 5px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+
+  /* ---------- Cards & callouts ---------- */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-card); padding: 22px 24px; margin: 16px 0;
+    box-shadow: var(--shadow-panel);
+  }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-tile); padding: 14px 16px; }
+  .stat .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
+  .stat .v { font-size: 20px; font-weight: 700; margin-top: 2px; letter-spacing: -0.01em; }
+  .stat .s { font-size: 12px; color: var(--muted); }
+
+  .callout {
+    display: grid; grid-template-columns: 4px minmax(0, 1fr);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-tile); overflow: hidden; margin: 18px 0;
+  }
+  .callout .bar { background: var(--border-control); }
+  .callout .body { padding: 14px 18px; }
+  .callout .body > :first-child { margin-top: 0; }
+  .callout .body > :last-child { margin-bottom: 0; }
+  .callout .label {
+    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .callout.critical .bar { background: var(--danger); }
+  .callout.critical .label { color: var(--danger-ink); }
+  .callout.warn .bar { background: var(--warning); }
+  .callout.warn .label { color: var(--warning-ink); }
+  .callout.tip .bar { background: var(--secondary); }
+  .callout.tip .label { color: var(--secondary-ink); }
+  .callout.info .bar { background: var(--tertiary); }
+  .callout.info .label { color: var(--tertiary); }
+
+  /* ---------- Gates ---------- */
+  .gates { counter-reset: gate; display: grid; gap: 10px; margin: 18px 0; }
+  .gate {
+    counter-increment: gate;
+    display: grid; grid-template-columns: 34px minmax(0, 1fr);
+    gap: 12px; align-items: start;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-tile); padding: 14px 16px;
+  }
+  .gate::before {
+    content: counter(gate);
+    width: 30px; height: 30px; border-radius: 999px;
+    background: var(--primary); color: #fff;
+    display: grid; place-items: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 700;
+  }
+  .gate b { display: block; font-size: 15px; }
+  .gate span { font-size: 13.5px; color: var(--muted); }
+
+  /* ---------- Tables ---------- */
+  .table-wrap { overflow-x: auto; max-width: 100%; margin: 16px 0; border: 1px solid var(--border); border-radius: var(--radius-tile); background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 520px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th { background: var(--surface-2); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  tfoot td { font-weight: 700; background: var(--surface-2); }
+
+  /* ---------- Checklist ---------- */
+  ul.check { list-style: none; padding-left: 0; }
+  ul.check > li { position: relative; padding-left: 30px; margin: 7px 0; }
+  ul.check > li::before {
+    content: ""; position: absolute; left: 0; top: 4px;
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1.5px solid var(--border-control); background: var(--surface);
+  }
+
+  /* ---------- Figures ---------- */
+  figure { margin: 20px 0; }
+  .fig {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-card); padding: 18px;
+    box-shadow: var(--shadow-panel);
+  }
+  .fig svg { display: block; width: 100%; height: auto; }
+  figcaption { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+
+  /* ---------- Steps ---------- */
+  ol.steps { list-style: none; padding-left: 0; counter-reset: step; }
+  ol.steps > li {
+    counter-increment: step; position: relative;
+    padding: 0 0 0 44px; margin: 0 0 18px;
+  }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 0;
+    width: 28px; height: 28px; border-radius: 999px;
+    background: var(--surface-3); border: 1px solid var(--border-strong);
+    color: var(--fg-2); font-family: var(--mono); font-size: 12.5px; font-weight: 700;
+    display: grid; place-items: center;
+  }
+  ol.steps > li > b { display: block; margin-bottom: 2px; }
+
+  /* ---------- Code ---------- */
+  pre {
+    background: var(--primary); color: #F4F4F2;
+    padding: 16px 18px; border-radius: var(--radius-tile);
+    overflow-x: auto; max-width: 100%; font-size: 12.5px; line-height: 1.55;
+    font-family: var(--mono); margin: 14px 0;
+  }
+  pre code { background: none; border: 0; padding: 0; color: inherit; font-size: inherit; }
+  .kbd { font-family: var(--mono); font-size: 12px; border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; background: var(--surface-2); }
+
+  footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--border-strong); font-size: 12.5px; color: var(--muted); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    .sidebar {
+      position: static; height: auto; overflow: visible;
+      border-right: 0; border-bottom: 1px solid var(--border);
+      padding: 22px 24px;
+    }
+    .toc { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 10px; }
+    main { padding: 0 22px 80px; }
+    .hero { margin-top: 24px; padding: 26px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .table-wrap table { min-width: 560px; }
+  }
+  @media (max-width: 520px) {
+    .toc { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 25px; }
+  }
+
+  /* ---------- Print ---------- */
+  @media print {
+    :root { --bg: #FFFFFF; }
+    .sidebar, .hero-meta { display: none; }
+    .layout { display: block; max-width: none; }
+    main { padding: 0; }
+    .content { max-width: none; }
+    .card, .fig, .callout, .table-wrap { box-shadow: none; break-inside: avoid; }
+    section { break-inside: auto; page-break-inside: auto; }
+    h2, h3, h4 { break-after: avoid; }
+    a { color: var(--fg); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">SI</div>
+      <div>
+        <div class="brand-name">Hardware Build Guide</div>
+        <div class="brand-sub">Smart Insole IoT</div>
+      </div>
+    </div>
+
+    <div class="nav-title">Isi panduan</div>
+    <nav aria-label="Daftar isi">
+      <ul class="toc">
+        <li><a href="#ringkasan"><span class="num">01</span><span>Ringkasan &amp; prinsip desain</span></a></li>
+        <li><a href="#bahan"><span class="num">02</span><span>Daftar bahan &amp; alat</span></a></li>
+        <li><a href="#keselamatan"><span class="num">03</span><span>Keselamatan kerja</span></a></li>
+        <li><a href="#diagram"><span class="num">04</span><span>Diagram kabel</span></a></li>
+        <li><a href="#solder"><span class="num">05</span><span>Potong kabel &amp; soldering</span></a></li>
+        <li><a href="#bench"><span class="num">06</span><span>Uji bangku sebelum ditanam</span></a></li>
+        <li><a href="#insole"><span class="num">07</span><span>Fabrikasi insole EVA</span></a></li>
+        <li><a href="#pouch"><span class="num">08</span><span>Pouch pergelangan</span></a></li>
+        <li><a href="#assembly"><span class="num">09</span><span>Perakitan akhir</span></a></li>
+        <li><a href="#kalibrasi"><span class="num">10</span><span>Kalibrasi sensor</span></a></li>
+        <li><a href="#qc"><span class="num">11</span><span>Uji coba &amp; QC</span></a></li>
+        <li><a href="#troubleshooting"><span class="num">12</span><span>Troubleshooting</span></a></li>
+        <li><a href="#perawatan"><span class="num">13</span><span>Perawatan &amp; batas pakai</span></a></li>
+        <li><a href="#biaya"><span class="num">14</span><span>Biaya &amp; jadwal</span></a></li>
+        <li><a href="#referensi"><span class="num">15</span><span>Referensi &amp; berkas terkait</span></a></li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-note">
+      <strong>Status: draf kerja.</strong> Angka spesifikasi diturunkan dari
+      <code>docs/HARDWARE-SPEC.md</code> v1.2 dan pin dari
+      <code>firmware/include/config.h.example</code>. Perangkat fisik belum
+      diuji; kalibrasi masih default.
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN ==================== -->
+  <main>
+    <div class="content">
+
+      <header class="hero">
+        <span class="eyebrow">Panduan perakitan · 1 sepasang insole</span>
+        <h1>Bangun hardware smart insole dari nol</h1>
+        <p class="lede">
+          Dari memilih FSR, memotong EVA, menyolder 6 sensor, menjahit pouch
+          pergelangan, sampai mengelem cover dan mengalibrasi ADC. Urutannya
+          penting: setiap tahap punya gerbang uji, dan tidak ada komponen yang
+          boleh ditanam sebelum gerbang sebelumnya lolos.
+        </p>
+        <div class="hero-meta">
+          <span><b>Target</b> ESP32-WROOM-32</span>
+          <span><b>Sensor</b> 3 × FSR 402 per kaki</span>
+          <span><b>Tebal insole</b> ± 8 mm</span>
+          <span><b>Waktu</b> 3–5 minggu</span>
+        </div>
+      </header>
+
+      <!-- ==================== 01 ==================== -->
+      <section id="ringkasan">
+        <div class="section-head"><span class="idx">01</span><h2>Ringkasan &amp; prinsip desain</h2></div>
+
+        <p>
+          Sistem terdiri dari insole berisi tiga sensor tekanan, kotak
+          (<em>pouch</em>) di pergelangan kaki yang menampung ESP32 dan baterai,
+          serta kabel 6 inti yang menghubungkan keduanya. ESP32 membaca ADC,
+          menjalankan Random Forest, membunyikan buzzer lokal, lalu mengirim satu
+          paket per detik ke Firebase.
+        </p>
+
+        <div class="grid-3">
+          <div class="stat"><div class="k">Sensor / kaki</div><div class="v">3</div><div class="s">forefoot, midfoot, heel</div></div>
+          <div class="stat"><div class="k">Tegangan</div><div class="v">3,3 V</div><div class="s">ADC ESP32, 12-bit</div></div>
+          <div class="stat"><div class="k">Laju</div><div class="v">1 Hz</div><div class="s">1 sampel + 1 push / detik</div></div>
+        </div>
+
+        <h3>Empat aturan yang tidak boleh dilanggar</h3>
+        <ol>
+          <li><strong>Area tumit hanya foam dan sensor.</strong> Tidak ada baterai, tidak ada board, tidak ada sambungan keras. Heel strike menerima 1,5–2× berat badan; komponen keras di sana berisiko cedera pada pasien neuropati.</li>
+          <li><strong>Pouch di pergelangan kaki, bukan di tumit.</strong> Mengikuti Billings et al. (2024) dan alasan klinis yang sama.</li>
+          <li><strong>Uji elektronik sebelum ditanam.</strong> Setelah cover EVA dilem, sensor tidak bisa diperbaiki tanpa merusak insole.</li>
+          <li><strong>Jangan menaruh kabel di jalur tumpu.</strong> Kabel melewati sisi medial, keluar di tumit, lalu naik ke pouch.</li>
+        </ol>
+
+        <div class="callout critical">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Batas yang harus kamu tahu sejak awal</span>
+            <p>
+              Insole memakai <strong>3 sensor per kaki</strong>, sedangkan model
+              dilatih dari <strong>8 sensor per kaki</strong> yang diagregasi.
+              Resolusi <em>midfoot</em> karena itu hanya tiga titik ukur, dan
+              ambang klinis 200 kPa praktis tidak pernah tercapai pada data
+              acuan. Ini batasan desain, bukan kesalahan perakitan, dan sudah
+              dicatat di <code>docs/thesis-methodology.md</code> §3.8–3.9.
+            </p>
+          </div>
+        </div>
+
+        <h3>Enam gerbang pengerjaan</h3>
+        <div class="gates">
+          <div class="gate"><div><b>G1 · Bahan utuh</b><span>Semua komponen datang, FSR diuji dengan multimeter, ESP32 bisa di-upload.</span></div></div>
+          <div class="gate"><div><b>G2 · 6 sensor tersolder</b><span>Kontinuitas &lt; 1 Ω, tidak ada short 3,3 V ke GND, tiap sensor bereaksi sendiri.</span></div></div>
+          <div class="gate"><div><b>G3 · Uji bangku lolos</b><span>Firmware asli membaca 3 kanal, nilai masuk akal, buzzer berbunyi.</span></div></div>
+          <div class="gate"><div><b>G4 · Insole selesai</b><span>Sensor tertanam, channel kabel tertutup, tumit bersih dari elektronik.</span></div></div>
+          <div class="gate"><div><b>G5 · Pouch terpasang</b><span>Pouch tidak bergeser saat jalan 10 menit, port USB bisa dijangkau.</span></div></div>
+          <div class="gate"><div><b>G6 · Terkalibrasi</b><span>Nol stabil saat tanpa beban, beban diketahui terbaca dalam toleransi ±15%.</span></div></div>
+        </div>
+      </section>
+
+      <!-- ==================== 02 ==================== -->
+      <section id="bahan">
+        <div class="section-head"><span class="idx">02</span><h2>Daftar bahan &amp; alat</h2></div>
+
+        <p>
+          Jumlah di bawah adalah untuk <strong>satu pasang</strong> (kiri dan
+          kanan). Harga adalah rentang pasar lokal, bukan patokan.
+        </p>
+
+        <h3>Elektronik</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Komponen</th><th class="num">Qty</th><th>Catatan</th></tr></thead>
+            <tbody>
+              <tr><td>FSR 402 (Interlink)</td><td class="num">6</td><td>3 per kaki. Area aktif 12,7 mm, tebal 0,5 mm, rentang 0,1–100 N.</td></tr>
+              <tr><td>Resistor 10 kΩ, 1/4 W</td><td class="num">6</td><td>Pembagi tegangan, satu per sensor. Beli 10 untuk cadangan.</td></tr>
+              <tr><td>ESP32-WROOM-32 DevKit</td><td class="num">2</td><td>Satu per kaki; unit ketiga untuk cadangan/debug.</td></tr>
+              <tr><td>Buzzer aktif 3,3–5 V</td><td class="num">2</td><td>Wajib: firmware memakai <code>GPIO 27</code>. Modul aktif, bukan piezo pasif.</td></tr>
+              <tr><td>LiPo 3,7 V 600 mAh, JST-PH</td><td class="num">2</td><td>Alternatif 1000 mAh (lebih tebal 6 mm).</td></tr>
+              <tr><td>TP4056 dengan proteksi</td><td class="num">2</td><td>Pilih board ber-chip DW01 + 8205A, bukan versi tanpa proteksi.</td></tr>
+              <tr><td>Konektor JST-PH 2-pin</td><td class="num">4</td><td>Dua pasang male-female: baterai ke TP4056 dan TP4056 ke beban.</td></tr>
+              <tr><td>Kabel silikon 30 AWG</td><td class="num">5 m</td><td>Fleksibel, tidak kaku saat insole ditekuk. 6 inti per kaki.</td></tr>
+              <tr><td>Heat shrink 2:1 (1,5 / 3 / 6 mm)</td><td class="num">1 set</td><td>Isolasi tiap sambungan, wajib.</td></tr>
+              <tr><td>Kapasitor 100 nF (opsional)</td><td class="num">6</td><td>Low-pass di pin ADC bila bacaan liar.</td></tr>
+              <tr><td>Header female 0,1" (opsional)</td><td class="num">2</td><td>Supaya ESP32 bisa dilepas dari pouch.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warn">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Buzzer belum ada di BOM lama</span>
+            <p>
+              <code>docs/HARDWARE-SPEC.md</code> memetakan buzzer ke GPIO 27, tapi
+              daftar belanjanya belum memuat buzzer. Firmware saat ini memanggil
+              <code>PIN_BUZZER 27</code>, jadi tanpa komponen ini alarm lokal
+              tidak berbunyi.
+            </p>
+          </div>
+        </div>
+
+        <h3>Bahan insole &amp; pouch</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Bahan</th><th class="num">Qty</th><th>Spesifikasi</th></tr></thead>
+            <tbody>
+              <tr><td>EVA foam 5 mm</td><td class="num">2 lembar</td><td>30 × 30 cm, densitas sedang (30–40 PPI), alas insole.</td></tr>
+              <tr><td>EVA foam 2 mm</td><td class="num">1 lembar</td><td>Cover di atas sensor.</td></tr>
+              <tr><td>Neoprene 3–5 mm</td><td class="num">1 lembar</td><td>30 × 30 cm, cukup untuk dua pouch.</td></tr>
+              <tr><td>Velcro dots</td><td class="num">1 pak</td><td>Perekat, 2–3 titik per pouch.</td></tr>
+              <tr><td>Kain nylon/polyester (opsional)</td><td class="num">0,5 m</td><td>Lapisan atas untuk kenyamanan.</td></tr>
+              <tr><td>Lem B-7000 atau contact adhesive</td><td class="num">1 tube</td><td>Untuk EVA dan neoprene. Hindari cyanoacrylate untuk sensor.</td></tr>
+              <tr><td>Hot glue</td><td class="num">1 batang set</td><td>Strain relief kabel, bukan untuk menempel sensor.</td></tr>
+              <tr><td>Double-sided tape 3M</td><td class="num">1 roll</td><td>Fiksasi kabel di channel sebelum cover.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Alat</h3>
+        <div class="grid-2">
+          <div class="card">
+            <h4>Wajib</h4>
+            <ul class="check">
+              <li>Soldering iron 30–60 W, ujung runcing</li>
+              <li>Timah 0,8 mm (lead-free lebih aman)</li>
+              <li>Flux / pasta solder</li>
+              <li>Multimeter dengan mode kontinuitas</li>
+              <li>Tang potong, pengupas kabel 30 AWG</li>
+              <li>Cutter tajam + gunting</li>
+              <li>Penggaris baja, spidol</li>
+              <li>Pinset</li>
+              <li>Kabel USB data (bukan charge-only)</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Sangat membantu</h4>
+            <ul class="check">
+              <li>Helping hands / third hand</li>
+              <li>Hot glue gun</li>
+              <li>Amplas 120 dan 240</li>
+              <li>Jarum + benang nylon (versi jahit)</li>
+              <li>Oven/microwave kecil untuk memanaskan EVA (opsional)</li>
+              <li>Timbangan dapur + beban 1 kg / 5 kg untuk kalibrasi</li>
+              <li>Pelat datar kecil 3 × 3 cm untuk menekan sensor saat kalibrasi</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout tip">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Beli cadangan</span>
+            <p>
+              FSR 402 mudah rusak di ujung kabel bila ditekuk berulang. Beli
+              1–2 cadangan per kaki, bukan pas-pasan 6. Resistor dan heat shrink
+              juga murah; kehabisan di tengah soldering lebih mahal daripada
+              stok lebih.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 03 ==================== -->
+      <section id="keselamatan">
+        <div class="section-head"><span class="idx">03</span><h2>Keselamatan kerja</h2></div>
+
+        <p>
+          Tidak ada tegangan listrik berbahaya di proyek ini, tetapi baterai
+          lithium dan uap lem punya risiko nyata.
+        </p>
+
+        <h3>Baterai LiPo</h3>
+        <ul>
+          <li><strong>Jangan pernah menusuk, menekan, atau melipat</strong> sel LiPo. Sel yang rusak bisa terbakar tanpa api.</li>
+          <li>Jangan menyolder langsung ke tab sel. Pakai konektor JST-PH; bila tab harus disambung, gunakan titik solder pabrik dan panas maksimal 2 detik.</li>
+          <li>Isi daya di permukaan tidak mudah terbakar, diawasi, dan jauh dari kertas/kain.</li>
+          <li>Hentikan pengisian bila sel terasa panas, menggelembung, atau berbau manis.</li>
+          <li>Simpan pada 3,7–3,8 V bila tidak dipakai berminggu-minggu, jangan 100% atau 0%.</li>
+          <li>Periksa polaritas JST dua kali sebelum mencolok. Terbalik = board mati.</li>
+        </ul>
+
+        <h3>Soldering</h3>
+        <ul>
+          <li>Ventilasi ruangan; jangan menghirup asap flux.</li>
+          <li>Ujung besi 350 °C cukup untuk 30 AWG. Suhu lebih tinggi merusak film FSR.</li>
+          <li>Jangan menahan panas &gt; 2 detik pada pad FSR. Jika gagal, tunggu dingin lalu ulangi.</li>
+          <li>Matikan besi bila meninggalkan meja. Letakkan di stand, bukan di meja.</li>
+        </ul>
+
+        <h3>Lem dan bahan kimia</h3>
+        <ul>
+          <li>B-7000 dan contact adhesive mengeluarkan uap; pakai di ruang berventilasi dan tunggu 24 jam sebelum dipakai di kaki.</li>
+          <li>Jangan memakai cyanoacrylate (super glue) di area aktif sensor: uapnya mengeras dan merusak film, dan lemnya getas saat insole ditekuk.</li>
+          <li>EVA dan neoprene mudah terbakar; jangan mendekatkan heat gun terlalu lama di satu titik.</li>
+        </ul>
+
+        <h3>ESD</h3>
+        <p>
+          Sentuh benda logam yang dibumikan sebelum memegang ESP32. Jangan
+          memegang pin atau modul Wi-Fi dengan jari basah.
+        </p>
+      </section>
+
+      <!-- ==================== 04 ==================== -->
+      <section id="diagram">
+        <div class="section-head"><span class="idx">04</span><h2>Diagram kabel</h2></div>
+
+        <h3>Pembagi tegangan per sensor</h3>
+        <p>
+          FSR menurunkan hambatannya saat ditekan. Dengan pembagi 10 kΩ,
+          tegangan di titik tengah <strong>naik</strong> seiring tekanan:
+          <code>Vout = 3,3 V × 10k / (R_fsr + 10k)</code>. Karena itu pin ADC
+          membaca nilai lebih besar ketika sensor ditekan.
+        </p>
+
+        <figure>
+          <div class="fig">
+            <svg viewBox="0 0 460 330" role="img" aria-labelledby="figDividerTitle figDividerDesc">
+              <title id="figDividerTitle">Rangkaian pembagi tegangan FSR dan resistor 10 kilo ohm</title>
+              <desc id="figDividerDesc">Tegangan 3,3 volt masuk ke FSR 402, titik tengah menuju pin GPIO 34 35 atau 32, lalu resistor 10 kilo ohm ke ground.</desc>
+              <g font-family="system-ui, sans-serif" font-size="13" fill="#0A0A0F">
+                <!-- rails -->
+                <line x1="60" y1="40" x2="400" y2="40" stroke="#04644C" stroke-width="2.5"/>
+                <text x="60" y="30" fill="#054B37" font-weight="700">3,3 V</text>
+                <!-- FSR -->
+                <rect x="205" y="70" width="50" height="70" rx="6" fill="#CBE8D4" stroke="#04644C" stroke-width="2"/>
+                <text x="230" y="100" text-anchor="middle" font-size="12" font-weight="700">FSR</text>
+                <text x="230" y="116" text-anchor="middle" font-size="11">402</text>
+                <line x1="230" y1="40" x2="230" y2="70" stroke="#0A0A0F" stroke-width="2"/>
+                <!-- node -->
+                <line x1="230" y1="140" x2="230" y2="180" stroke="#0A0A0F" stroke-width="2"/>
+                <circle cx="230" cy="160" r="5" fill="#0A0A0F"/>
+                <line x1="230" y1="160" x2="360" y2="160" stroke="#0A0A0F" stroke-width="2"/>
+                <text x="368" y="150" font-size="12" font-weight="700">ADC</text>
+                <text x="368" y="166" font-size="11" fill="#46464F">GPIO 34</text>
+                <text x="368" y="180" font-size="11" fill="#46464F">35 / 32</text>
+                <!-- resistor -->
+                <rect x="205" y="205" width="50" height="60" rx="4" fill="#F7F7F5" stroke="#46464F" stroke-width="2"/>
+                <text x="230" y="232" text-anchor="middle" font-size="11" font-weight="700">10 kΩ</text>
+                <text x="230" y="248" text-anchor="middle" font-size="10" fill="#46464F">1/4 W</text>
+                <line x1="230" y1="180" x2="230" y2="205" stroke="#0A0A0F" stroke-width="2"/>
+                <line x1="230" y1="265" x2="230" y2="300" stroke="#0A0A0F" stroke-width="2"/>
+                <!-- gnd -->
+                <line x1="196" y1="300" x2="264" y2="300" stroke="#0A0A0F" stroke-width="2.5"/>
+                <line x1="206" y1="308" x2="254" y2="308" stroke="#0A0A0F" stroke-width="2"/>
+                <line x1="216" y1="316" x2="244" y2="316" stroke="#0A0A0F" stroke-width="2"/>
+                <text x="276" y="304" font-size="12" fill="#46464F">GND</text>
+                <!-- note -->
+                <text x="60" y="70" font-size="11.5" fill="#46464F">Tekanan naik</text>
+                <text x="60" y="86" font-size="11.5" fill="#46464F">→ R FSR turun</text>
+                <text x="60" y="102" font-size="11.5" fill="#46464F">→ Vout naik</text>
+                <text x="60" y="118" font-size="11.5" fill="#46464F">→ nilai ADC naik</text>
+              </g>
+            </svg>
+          </div>
+          <figcaption>Gambar 1. Satu sensor, satu resistor. Ulangi tiga kali per kaki pada pin yang berbeda.</figcaption>
+        </figure>
+
+        <h3>Peta pin yang dipakai firmware</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fungsi</th><th>Pin ESP32</th><th>Alasan</th></tr></thead>
+            <tbody>
+              <tr><td>FSR <em>forefoot</em></td><td><code>GPIO 34</code></td><td>ADC1_CH6, input-only</td></tr>
+              <tr><td>FSR <em>midfoot</em></td><td><code>GPIO 35</code></td><td>ADC1_CH7, input-only</td></tr>
+              <tr><td>FSR <em>heel</em></td><td><code>GPIO 32</code></td><td>ADC1_CH4</td></tr>
+              <tr><td>Buzzer aktif (+)</td><td><code>GPIO 27</code></td><td>Output bebas; 34/35 tidak bisa output</td></tr>
+              <tr><td>Buzzer (−)</td><td><code>GND</code></td><td>Common ground</td></tr>
+              <tr><td>Sensor VCC</td><td><code>3V3</code></td><td>Bukan 5 V. ADC ESP32 maksimum 3,3 V.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout critical">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Jangan pakai ADC2</span>
+            <p>
+              <code>GPIO 34</code>, <code>35</code>, dan <code>32</code> semuanya
+              di ADC1. Pin ADC2 (contoh 25, 26, 33) <strong>tidak bisa dipakai
+              saat Wi-Fi aktif</strong>. Jangan "memindahkan" sensor ke pin lain
+              tanpa memeriksa ini.
+            </p>
+          </div>
+        </div>
+
+        <h3>Harness satu kaki</h3>
+        <p>
+          Tiga sensor, masing-masing dua kabel. Supaya rapi, jadikan satu bundel
+          6 inti dengan panjang sama, lalu pisahkan hanya di ujung sensor.
+        </p>
+
+        <figure>
+          <div class="fig">
+            <svg viewBox="0 0 660 420" role="img" aria-labelledby="figHarnessTitle figHarnessDesc">
+              <title id="figHarnessTitle">Harness enam kabel dari tiga sensor FSR ke ESP32</title>
+              <desc id="figHarnessDesc">Tiga sensor di dalam insole, masing masing dua kabel menuju pouch pergelangan yang berisi ESP32, resistor 10 kilo ohm, TP4056, dan baterai.</desc>
+              <g font-family="system-ui, sans-serif" font-size="12" fill="#0A0A0F">
+                <!-- pouch -->
+                <rect x="210" y="20" width="240" height="128" rx="12" fill="#F7F7F5" stroke="#04644C" stroke-width="2"/>
+                <text x="330" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="#054B37">POUCH · PERGELANGAN</text>
+                <rect x="232" y="54" width="120" height="34" rx="5" fill="#CADCF1" stroke="#0987B8" stroke-width="1.5"/>
+                <text x="292" y="75" text-anchor="middle" font-size="11">ESP32</text>
+                <rect x="368" y="54" width="62" height="34" rx="5" fill="#CBE8D4" stroke="#04644C" stroke-width="1.5"/>
+                <text x="399" y="75" text-anchor="middle" font-size="11">10 kΩ ×3</text>
+                <rect x="232" y="96" width="92" height="30" rx="5" fill="#F3DFA6" stroke="#A16207" stroke-width="1.5"/>
+                <text x="278" y="115" text-anchor="middle" font-size="11">LiPo 600</text>
+                <rect x="336" y="96" width="94" height="30" rx="5" fill="#EBEBE7" stroke="#46464F" stroke-width="1.5"/>
+                <text x="383" y="115" text-anchor="middle" font-size="11">TP4056</text>
+                <!-- wires -->
+                <path d="M280 148 L280 192 L150 192 L150 230" fill="none" stroke="#B41E1E" stroke-width="2"/>
+                <path d="M310 148 L310 230" fill="none" stroke="#A16207" stroke-width="2"/>
+                <path d="M336 148 L336 200 L510 200 L510 230" fill="none" stroke="#15803D" stroke-width="2"/>
+                <!-- insole -->
+                <rect x="70" y="230" width="520" height="120" rx="60" fill="#F7F7F5" stroke="#46464F" stroke-width="2"/>
+                <circle cx="150" cy="290" r="16" fill="#CADCF1" stroke="#0987B8" stroke-width="2"/>
+                <text x="150" y="294" text-anchor="middle" font-size="10" font-weight="700">F</text>
+                <circle cx="330" cy="290" r="16" fill="#CADCF1" stroke="#0987B8" stroke-width="2"/>
+                <text x="330" y="294" text-anchor="middle" font-size="10" font-weight="700">M</text>
+                <circle cx="510" cy="290" r="16" fill="#CADCF1" stroke="#0987B8" stroke-width="2"/>
+                <text x="510" y="294" text-anchor="middle" font-size="10" font-weight="700">H</text>
+                <text x="150" y="332" text-anchor="middle" font-size="10" fill="#46464F">forefoot</text>
+                <text x="330" y="332" text-anchor="middle" font-size="10" fill="#46464F">midfoot</text>
+                <text x="510" y="332" text-anchor="middle" font-size="10" fill="#46464F">heel</text>
+                <!-- percentages -->
+                <text x="150" y="374" text-anchor="middle" font-size="10.5" fill="#46464F">20–25%</text>
+                <text x="330" y="374" text-anchor="middle" font-size="10.5" fill="#46464F">50–55%</text>
+                <text x="510" y="374" text-anchor="middle" font-size="10.5" fill="#46464F">80–85%</text>
+                <text x="510" y="396" text-anchor="middle" font-size="10.5" fill="#821414">tanpa elektronik, hanya sensor</text>
+                <!-- exit note -->
+                <text x="70" y="410" font-size="10.5" fill="#46464F">kabel keluar di sisi tumit insole, lalu naik ke pouch</text>
+              </g>
+            </svg>
+          </div>
+          <figcaption>Gambar 2. Bundel 6 inti: dua kabel per sensor. Resistor 10 kΩ diletakkan di pouch, bukan di insole.</figcaption>
+        </figure>
+
+        <h3>Catu daya</h3>
+        <pre><code>USB 5 V ──► TP4056 ──► LiPo 3,7 V ──► (JST) ──► ESP32 5V/VIN
+                │                                   (regulator onboard → 3,3 V)
+                └── LED indikator charge</code></pre>
+        <p class="small muted">
+          Baterai dilepas untuk diisi, atau diisi lewat USB di pouch. Jangan
+          mengisi saat insole dipakai.
+        </p>
+      </section>
+
+      <!-- ==================== 05 ==================== -->
+      <section id="solder">
+        <div class="section-head"><span class="idx">05</span><h2>Potong kabel &amp; soldering</h2></div>
+
+        <p>
+          Tahap ini menentukan umur alat. Sambungan yang buruk akan gagal
+          setelah insole ditekuk beberapa ratus kali, dan saat itu cover sudah
+          terlem.
+        </p>
+
+        <h3>Tentukan panjang kabel lebih dulu</h3>
+        <ol class="steps">
+          <li>
+            <b>Ukur di kaki, bukan di meja</b>
+            Pakai kaus kaki dan sepatu yang akan dipakai. Ukur jalur dari tiap
+            posisi sensor, menyusuri sisi medial, keluar di tumit, lalu naik ke
+            pouch. Untuk orang dewasa biasanya 28–40 cm, bukan 10–15 cm seperti
+            angka kasar di spec: pouch baru benar-benar dekat bukaan sepatu.
+          </li>
+          <li>
+            <b>Tambah service loop 5 cm</b>
+            Kabel tidak boleh tegang saat kaki menekuk. Loop kecil di dalam pouch
+            mencegah tarikan langsung ke pad sensor.
+          </li>
+          <li>
+            <b>Potong 6 kabel sama panjang</b>
+            Tiga untuk sinyal, tiga untuk 3,3 V. GND disalurkan terpisah di
+            pouch, jadi 6 inti cukup untuk satu kaki.
+          </li>
+          <li>
+            <b>Beri label sebelum menyolder</b>
+            Tulis <code>L-F</code>, <code>L-M</code>, <code>L-H</code> (kiri) dan
+            <code>R-F</code>, <code>R-M</code>, <code>R-H</code> (kanan) di
+            selongsong heat shrink. Salah tukar sensor = data salah tanpa error.
+          </li>
+        </ol>
+
+        <h3>Menyolder pad FSR 402</h3>
+        <div class="callout warn">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">FSR bukan komponen biasa</span>
+            <p>
+              Pad-nya menempel pada film plastik tipis. Panas berlebih membuat
+              film melengkung dan area aktif retak. Solder satu pad per
+              kesempatan, maksimal 2 detik, lalu dinginkan.
+            </p>
+          </div>
+        </div>
+
+        <ol class="steps">
+          <li><b>Kupas 3 mm, jangan 5 mm</b> Kawat 30 AWG sangat halus; kupas pendek supaya tidak ada konduktor telanjang di luar heat shrink.</li>
+          <li><b>Tin kawat</b> Beri flux, tempel timah tipis. Hasil baik: mengkilap, tidak menggumpal.</li>
+          <li><b>Tin pad FSR dengan cepat</b> Sentuh pad + timah &lt; 2 detik. Jangan menekan dengan ujung besi.</li>
+          <li><b>Sambung dan tahan</b> Pegang kawat dengan pinset, sentuh keduanya sampai timah melebur, lepas besi, tahan 1 detik sampai beku.</li>
+          <li><b>Uji tarik ringan</b> Tarik pelan. Sambungan lepas berarti kurang panas atau kotor, ulangi setelah dibersihkan.</li>
+          <li><b>Isolasi dengan heat shrink</b> Potong 10 mm, geser menutupi sambungan, panaskan sampai menyusut. Jangan sampai heat shrink menutupi area aktif 12,7 mm.</li>
+          <li><b>Ukur kontinuitas</b> Dari ujung kabel ke pad: harus &lt; 1 Ω. Dari pad ke lapisan konduktif lain: tidak boleh 0 Ω.</li>
+        </ol>
+
+        <h3>Menyolder sisi pouch</h3>
+        <ol class="steps">
+          <li><b>Siapkan board perantara kecil (opsional)</b> Potongan PCB berlubang 20 × 20 mm membuat titik sambung 3,3 V dan GND lebih rapi daripada menumpuk 6 kabel di satu pin.</li>
+          <li><b>Pasang resistor 10 kΩ</b> Satu per sensor: satu kaki ke jalur sinyal, satu kaki ke GND bersama.</li>
+          <li><b>Pasang header female</b> Untuk ESP32, supaya board bisa dilepas saat perlu di-flash ulang tanpa membongkar pouch.</li>
+          <li><b>Buzzer</b> Positif ke GPIO 27, negatif ke GND. Buzzer aktif akan langsung berbunyi saat pin HIGH.</li>
+          <li><b>TP4056</b> OUT+ ke VIN ESP32, OUT− ke GND. Baterai masuk ke B+/B− lewat JST. Periksa polaritas dua kali.</li>
+        </ol>
+
+        <div class="callout tip">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Urutan yang menghemat waktu</span>
+            <p>
+              Solder keenam sensor <em>sebelum</em> memotong EVA. Kalau satu
+              sensor rusak, kamu masih bisa menggantinya tanpa membuang insole
+              yang sudah dibentuk.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 06 ==================== -->
+      <section id="bench">
+        <div class="section-head"><span class="idx">06</span><h2>Uji bangku sebelum ditanam</h2></div>
+
+        <p>
+          Semua elektronik diuji di meja, dengan sensor masih bebas, sebelum
+          masuk EVA. Ini gerbang terakhir yang murah.
+        </p>
+
+        <h3>1. Periksa short sebelum memberi daya</h3>
+        <ul>
+          <li>Multimeter mode kontinuitas: antara <code>3V3</code> dan <code>GND</code> <strong>tidak boleh</strong> berbunyi.</li>
+          <li>Antara <code>VIN</code> dan <code>GND</code> juga tidak boleh berbunyi.</li>
+          <li>Jika berbunyi, lepas kabel satu per satu sampai short hilang. Jangan pernah "coba colok saja".</li>
+        </ul>
+
+        <h3>2. Sketch uji ADC</h3>
+        <p>
+          Upload sketch minimal berikut. Tujuannya hanya membuktikan tiap kanal
+          bergerak sendiri, bukan kalibrasi.
+        </p>
+        <pre><code>const int PIN_F = 34;   // forefoot
+const int PIN_M = 35;   // midfoot
+const int PIN_H = 32;   // heel
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);
+  analogSetAttenuation(ADC_11db);   // rentang 0-3,3 V
+  Serial.println("FSR bench test");
+}
+
+void loop() {
+  Serial.printf("F=%4d  M=%4d  H=%4d\n",
+                analogRead(PIN_F),
+                analogRead(PIN_M),
+                analogRead(PIN_H));
+  delay(250);
+}</code></pre>
+
+        <h3>3. Kriteria lolos</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Uji</th><th>Lolos bila</th></tr></thead>
+            <tbody>
+              <tr><td>Idle (tanpa sentuhan)</td><td>Ketiga nilai stabil, selisih antar-pembacaan &lt; ±30 ADC</td></tr>
+              <tr><td>Tekan F saja</td><td>Hanya F yang naik; M dan H berubah &lt; 30</td></tr>
+              <tr><td>Tekan M saja</td><td>Hanya M yang naik</td></tr>
+              <tr><td>Tekan H saja</td><td>Hanya H yang naik</td></tr>
+              <tr><td>Tekan kuat</td><td>Nilai mendekati 4095 dan turun kembali saat dilepas</td></tr>
+              <tr><td>Wi-Fi aktif</td><td>Nilai ADC tetap stabil (bukti memakai ADC1)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout info">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Kenapa bacaan tanpa beban bisa 0–125 kPa</span>
+            <p>
+              Firmware memakai <code>ADC_OFFSET 0.0f</code> dan
+              <code>ADC_TO_KPA 0.085f</code>, nilai template. Noise ADC dan
+              pembagi tegangan membuat angka melompat. Itu bukan kerusakan;
+              bagian 10 memperbaikinya.
+            </p>
+          </div>
+        </div>
+
+        <h3>4. Uji buzzer dan firmware asli</h3>
+        <ol>
+          <li>Isi <code>config.h</code> dari <code>config.h.example</code>, lalu upload firmware proyek (bukan sketch uji).</li>
+          <li>Serial harus memuat <code>RandomForest model loaded (20 trees)</code>.</li>
+          <li>Tekan sensor &gt; 35 kPa selama 20 detik; level berubah ke <code>warning</code> dan buzzer berbunyi.</li>
+          <li>Lepas beban; setelah jendela aman, buzzer berhenti.</li>
+        </ol>
+
+        <div class="callout critical">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Gerbang G3</span>
+            <p>
+              Jangan lanjut ke bagian 07 sebelum keenam sensor lolos uji tekan
+              terpisah, tidak ada short, dan buzzer berbunyi. Setelah cover
+              dilem, perbaikan berarti membongkar insole.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 07 ==================== -->
+      <section id="insole">
+        <div class="section-head"><span class="idx">07</span><h2>Fabrikasi insole EVA</h2></div>
+
+        <h3>Struktur lapisan</h3>
+        <figure>
+          <div class="fig">
+            <svg viewBox="0 0 640 230" role="img" aria-labelledby="figLayerTitle figLayerDesc">
+              <title id="figLayerTitle">Potongan melintang insole empat lapisan</title>
+              <desc id="figLayerDesc">Kain atas nol koma lima milimeter, cover EVA dua milimeter, sensor FSR nol koma lima milimeter di dalam pocket, alas EVA lima milimeter, total sekitar delapan milimeter.</desc>
+              <g font-family="system-ui, sans-serif" font-size="12" fill="#0A0A0F">
+                <text x="60" y="30" font-size="11" fill="#46464F">kain (opsional)</text>
+                <rect x="60" y="38" width="330" height="14" rx="3" fill="#CADCF1" stroke="#0987B8"/>
+
+                <rect x="60" y="58" width="330" height="44" rx="4" fill="#F7F7F5" stroke="#46464F"/>
+                <text x="70" y="85" font-size="12">EVA 2 mm · cover</text>
+
+                <rect x="60" y="108" width="330" height="64" rx="4" fill="#F7F7F5" stroke="#46464F"/>
+                <text x="70" y="132" font-size="12">EVA 5 mm · alas</text>
+
+                <rect x="205" y="108" width="70" height="32" fill="#EBEBE7" stroke="#78787F" stroke-width="1.4" stroke-dasharray="4 3"/>
+                <rect x="207" y="114" width="66" height="10" rx="2" fill="#F3DFA6" stroke="#A16207" stroke-width="1.5"/>
+                <text x="240" y="164" text-anchor="middle" font-size="9.5" fill="#46464F">pocket 14×14, dalam 2–3 mm</text>
+
+                <line x1="275" y1="119" x2="300" y2="119" stroke="#78787F"/>
+                <text x="304" y="123" font-size="11" fill="#823700">FSR 0,5 mm</text>
+
+                <line x1="392" y1="45" x2="424" y2="45" stroke="#78787F"/>
+                <text x="430" y="49" font-size="11" fill="#46464F">0,5 mm</text>
+                <line x1="392" y1="80" x2="424" y2="80" stroke="#78787F"/>
+                <text x="430" y="84" font-size="11" fill="#46464F">2 mm</text>
+                <line x1="392" y1="140" x2="424" y2="140" stroke="#78787F"/>
+                <text x="430" y="144" font-size="11" fill="#46464F">5 mm</text>
+
+                <line x1="60" y1="196" x2="110" y2="196" stroke="#0A0A0F"/>
+                <line x1="60" y1="190" x2="60" y2="202" stroke="#0A0A0F"/>
+                <line x1="110" y1="190" x2="110" y2="202" stroke="#0A0A0F"/>
+                <text x="122" y="200" font-size="11" fill="#46464F">total ± 7,5–8 mm</text>
+              </g>
+            </svg>
+          </div>
+          <figcaption>Gambar 3. Empat lapisan. Pocket dan channel hanya dibuat di alas, tidak menembus.</figcaption>
+        </figure>
+
+        <h3>Langkah 1 · Cetak pola</h3>
+        <ol class="steps">
+          <li>
+            <b>Pakai insole bawaan sepatu sebagai pola</b>
+            Bukan telapak kaki. Yang menentukan kenyamanan adalah ruang dalam
+            sepatu. Lepas insole bawaan, jiplak di EVA 5 mm.
+          </li>
+          <li>
+            <b>Tambahkan 0 mm di sisi, 3 mm di ujung</b>
+            Margin berlebih membuat insole terjepit dan justru menambah tekanan.
+            Lebih baik pas lalu dirapikan dengan amplas.
+          </li>
+          <li>
+            <b>Potong dengan cutter, bukan gunting</b>
+            Beberapa lintasan ringan menghasilkan tepi tegak. Gunting EVA
+            meninggalkan tepi miring dan pocket jadi tidak presisi.
+          </li>
+          <li>
+            <b>Haluskan tepi</b>
+            Amplas 120 lalu 240 pada sisi luar supaya tidak menggesek kulit.
+          </li>
+        </ol>
+
+        <h3>Langkah 2 · Tandai posisi sensor</h3>
+        <figure>
+          <div class="fig">
+            <svg viewBox="-30 0 420 560" role="img" aria-labelledby="figInsoleTitle figInsoleDesc">
+              <title id="figInsoleTitle">Tata letak tiga sensor pada insole, tampak atas</title>
+              <desc id="figInsoleDesc">Sensor forefoot di dua puluh lima persen panjang, midfoot di tengah, heel di delapan puluh dua persen. Kabel mengalir di sisi medial menuju tumit lalu keluar ke pergelangan. Area tumit tanpa elektronik.</desc>
+              <g font-family="system-ui, sans-serif" font-size="11" fill="#0A0A0F">
+                <path d="M160 24 C236 24 272 74 272 150 C272 214 250 246 246 300 C242 360 258 420 252 474 C246 528 206 548 160 548 C114 548 74 528 68 474 C62 420 78 360 74 300 C70 246 48 214 48 150 C48 74 84 24 160 24 Z"
+                      fill="#F7F7F5" stroke="#46464F" stroke-width="2"/>
+                <!-- heel zone -->
+                <path d="M88 470 C120 440 200 440 232 470 C238 512 206 540 160 540 C114 540 82 512 88 470 Z"
+                      fill="#FFFFFF" stroke="#B41E1E" stroke-width="1.5" stroke-dasharray="5 4"/>
+                <text x="160" y="500" text-anchor="middle" font-size="10.5" fill="#821414">tanpa elektronik</text>
+                <!-- channel -->
+                <path d="M160 140 C120 160 104 200 104 300 C104 380 112 440 122 492"
+                      fill="none" stroke="#78787F" stroke-width="2" stroke-dasharray="5 4"/>
+                <path d="M160 290 C130 300 110 330 106 380" fill="none" stroke="#78787F" stroke-width="2" stroke-dasharray="5 4"/>
+                <path d="M160 455 C140 462 128 476 122 492" fill="none" stroke="#78787F" stroke-width="2" stroke-dasharray="5 4"/>
+                <!-- sensors -->
+                <circle cx="160" cy="140" r="15" fill="#CADCF1" stroke="#0987B8" stroke-width="2"/>
+                <text x="160" y="144" text-anchor="middle" font-size="10" font-weight="700">F</text>
+                <circle cx="160" cy="290" r="15" fill="#CADCF1" stroke="#0987B8" stroke-width="2"/>
+                <text x="160" y="294" text-anchor="middle" font-size="10" font-weight="700">M</text>
+                <circle cx="160" cy="455" r="15" fill="#CADCF1" stroke="#0987B8" stroke-width="2"/>
+                <text x="160" y="459" text-anchor="middle" font-size="10" font-weight="700">H</text>
+                <!-- labels -->
+                <text x="285" y="132" font-size="10.5" fill="#46464F">forefoot</text>
+                <text x="285" y="146" font-size="10.5" fill="#46464F">20–25%</text>
+                <text x="285" y="282" font-size="10.5" fill="#46464F">midfoot</text>
+                <text x="285" y="296" font-size="10.5" fill="#46464F">50–55%</text>
+                <text x="285" y="447" font-size="10.5" fill="#46464F">heel</text>
+                <text x="285" y="461" font-size="10.5" fill="#46464F">80–85%</text>
+                <!-- exit -->
+                <path d="M122 492 C96 500 84 476 92 452" fill="none" stroke="#04644C" stroke-width="2"/>
+                <text x="46" y="436" font-size="10" fill="#054B37">keluar</text>
+                <text x="46" y="449" font-size="10" fill="#054B37">ke pouch</text>
+                <!-- center line -->
+                <line x1="160" y1="60" x2="160" y2="520" stroke="#DCDCD8" stroke-width="1"/>
+              </g>
+            </svg>
+          </div>
+          <figcaption>Gambar 4. Posisi sensor dan jalur kabel. Channel berhenti di tumit, lalu kabel naik ke pouch.</figcaption>
+        </figure>
+
+        <ul>
+          <li><strong>Forefoot:</strong> 20–25% dari ujung depan, tepat di bawah bantalan metatarsal (ball of foot).</li>
+          <li><strong>Midfoot:</strong> 50–55%, di tengah lengkung.</li>
+          <li><strong>Heel:</strong> 80–85%, di tengah calcaneus. Hanya sensor.</li>
+        </ul>
+
+        <h3>Langkah 3 · Buat pocket dan channel</h3>
+        <ol class="steps">
+          <li><b>Pocket 14 × 14 mm</b> Untuk area aktif 12,7 mm plus margin. Kedalaman 2–3 mm, diukur dengan penggaris, jangan ditembus.</li>
+          <li><b>Dasar pocket rata</b> Ratakan dengan ujung cutter atau amplas. Permukaan bergelombang membuat sensor menumpuk tekanan di satu titik.</li>
+          <li><b>Channel 2 mm</b> Dari tiap pocket ke sisi medial, lalu menyatu menuju tumit. Lebar cukup untuk dua kabel 30 AWG, sekitar 3 mm.</li>
+          <li><b>Uji dengan sensor</b> Masukkan FSR ke pocket. Area aktif harus duduk di bawah permukaan EVA sedikit, bukan menonjol.</li>
+        </ol>
+
+        <div class="callout warn">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Jangan menebalkan tumit</span>
+            <p>
+              Cover tambahan di tumit mengubah tinggi tumit relatif terhadap
+              forefoot dan bisa menggeser beban ke area lain. Biarkan tumit
+              setebal alas ditambah cover standar, tanpa pocket dan tanpa
+              channel lebar.
+            </p>
+          </div>
+        </div>
+
+        <h3>Langkah 4 · Tanam sensor dan lem</h3>
+        <ol class="steps">
+          <li><b>Bersihkan</b> Debu EVA membuat lem tidak menempel. Sapu dengan kain kering.</li>
+          <li><b>Lem hanya di tepi</b> B-7000 tipis di sekeliling badan sensor, <strong>bukan</strong> di area aktif 12,7 mm. Area aktif harus tetap bebas bergerak.</li>
+          <li><b>Tempel dan tekan 30 detik</b> Jangan menggeser setelah menempel; lem kontak langsung mengikat.</li>
+          <li><b>Rekat kabel di channel</b> Double-sided tape 3M tiap 3 cm. Jangan menarik kabel saat menempel.</li>
+          <li><b>Tunggu 24 jam</b> Sebelum cover dilem. Lem yang belum kering akan terperangkap dan menggelembung.</li>
+        </ol>
+
+        <h3>Langkah 5 · Pasang cover</h3>
+        <ol class="steps">
+          <li><b>Potong EVA 2 mm</b> Bentuk sama dengan alas, tanpa margin.</li>
+          <li><b>Lem tepi dan sekitar sensor</b> Pola lem: garis keliling 4 mm dari tepi, plus cincin di sekitar tiap pocket. Bagian tengah tidak perlu penuh.</li>
+          <li><b>Tekan dengan beban 2–3 kg</b> Selama 12–24 jam. Beban rata (buku tebal) mencegah cover bergelombang.</li>
+          <li><b>Periksa tepi</b> Tidak ada celah yang bisa dimasuki keringat. Rapikan kelebihan lem dengan cutter setelah kering.</li>
+          <li><b>Ulangi uji tekan</b> Sebelum lanjut, ulangi uji bangku: ketiga kanal masih merespons dan tidak ada yang mati.</li>
+        </ol>
+
+        <h3>Langkah 6 · Lapisan kain (opsional)</h3>
+        <p>
+          Kain 0,5 mm menutupi seluruh permukaan dan dilipat ke bawah, dilem di
+          sisi bawah. Tujuannya kenyamanan dan mengurangi gesekan, bukan
+          waterproofing. Jangan menjahit menembus cover EVA: jarum bisa
+          mengenai kabel.
+        </p>
+      </section>
+
+      <!-- ==================== 08 ==================== -->
+      <section id="pouch">
+        <div class="section-head"><span class="idx">08</span><h2>Pouch pergelangan</h2></div>
+
+        <p>
+          Pouch menampung ESP32, TP4056, dan baterai. Ukuran internal
+          <strong>65 × 80 × 20 mm</strong>, eksternal 70 × 85 × 22 mm.
+        </p>
+
+        <h3>Pola</h3>
+        <ol class="steps">
+          <li><b>Potong dua lembar 70 × 85 mm</b> Satu untuk kiri, satu untuk kanan. Neoprene 3–5 mm.</li>
+          <li><b>Lipat jadi 70 × 42,5 mm</b> atau jahit dua lembar dengan jarak jahit 5 mm dari tepi.</li>
+          <li><b>Tutup tiga sisi</b> Kiri, kanan, bawah. Sisakan sisi atas terbuka sebagai mulut slip-in.</li>
+          <li><b>Balik</b> Supaya jahitan di dalam dan tepi rapi.</li>
+          <li><b>Buat lubang USB</b> 12 × 8 mm di sisi luar, sejajar port TP4056. Perkuat tepi dengan jahitan festoon atau setitik lem tekstil.</li>
+        </ol>
+
+        <div class="callout tip">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Jahit vs lem</span>
+            <p>
+              Jahit lebih tahan terhadap keringat dan tarikan; lem lebih cepat
+              dan tidak butuh mesin jahit. Kalau menjahit dengan tangan, pakai
+              jahitan <em>backstitch</em> dan benang nylon, bukan benang katun.
+            </p>
+          </div>
+        </div>
+
+        <h3>Pemasangan ke kaus kaki</h3>
+        <div class="grid-3">
+          <div class="card">
+            <h4>A · Velcro (disarankan)</h4>
+            <p class="small">Dua sampai tiga titik velcro di belakang pouch, pasangannya di kaus kaki. Bisa dilepas untuk mencuci kaus kaki dan mengisi baterai.</p>
+          </div>
+          <div class="card">
+            <h4>B · Jahit permanen</h4>
+            <p class="small">Mengikuti Billings et al. Paling rapi dan aman, tetapi kaus kaki tidak bisa dicuci tanpa melepas elektronik.</p>
+          </div>
+          <div class="card">
+            <h4>C · Strap pergelangan</h4>
+            <p class="small">Pouch dengan tali velcro, dipakai di atas kaus kaki. Universal dan bisa dipindah, tapi kurang menyatu.</p>
+          </div>
+        </div>
+
+        <h3>Posisi</h3>
+        <ul>
+          <li><strong>Sisi lateral</strong> (luar) pergelangan, di atas mulut sepatu, supaya kabel tidak tertekuk oleh sepatu.</li>
+          <li>Hindari <em>medial malleolus</em> (tulang dalam pergelangan): tekanan pouch di sana tidak nyaman dan bisa menggeser saat berjalan.</li>
+          <li>Tinggi pouch harus di atas garis sepatu, minimal 2 cm, agar tidak bergesekan.</li>
+          <li>Port USB menghadap ke atas atau ke luar, jangan ke dalam sepatu.</li>
+        </ul>
+
+        <h3>Uji fit sebelum dipakai</h3>
+        <ul class="check">
+          <li>ESP32 + baterai masuk tanpa dipaksa</li>
+          <li>Baterai bisa dilepas dengan satu tangan</li>
+          <li>Port USB bisa dicolok tanpa melepas pouch</li>
+          <li>Pouch tidak menekan tulang pergelangan</li>
+          <li>Kabel tidak tertarik saat kaki menekuk 90°</li>
+        </ul>
+      </section>
+
+      <!-- ==================== 09 ==================== -->
+      <section id="assembly">
+        <div class="section-head"><span class="idx">09</span><h2>Perakitan akhir</h2></div>
+
+        <h3>Urutan</h3>
+        <ol class="steps">
+          <li><b>Pasang pouch ke kaus kaki</b> Sesuaikan posisi sebelum mengunci velcro. Coba dengan sepatu terpasang.</li>
+          <li><b>Masukkan insole ke sepatu</b> Lepas insole bawaan. Pastikan tidak terlipat dan tidak menggeser.</li>
+          <li><b>Hubungkan harness</b> Kabel dari insole keluar di sisi tumit, naik di sisi luar pergelangan, masuk ke pouch.</li>
+          <li><b>Buat strain relief</b> Setitik hot glue di titik kabel masuk pouch. Ini yang menahan tarikan, bukan pad solder.</li>
+          <li><b>Service loop</b> Sisakan 3–5 cm kabel di dalam pouch, lipat longgar, ikat dengan cable tie kecil.</li>
+          <li><b>Colok baterai</b> Periksa polaritas, lalu colok JST. ESP32 harus menyala.</li>
+          <li><b>Rapikan</b> Tidak ada kabel menjuntai di jalur tumpu atau menyentuh lantai.</li>
+        </ol>
+
+        <div class="callout critical">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Jalur kabel yang dilarang</span>
+            <p>
+              Jangan melewati bawah tumit, bawah bola kaki, atau sisi dalam
+              sepatu yang bergesekan dengan sepatu lain. Kabel di jalur tumpu
+              akan tertekuk, putus, dan menimbulkan titik tekanan baru.
+            </p>
+          </div>
+        </div>
+
+        <h3>Checklist sambungan</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Sambungan</th><th>Periksa</th></tr></thead>
+            <tbody>
+              <tr><td>Sensor ke harness</td><td>Heat shrink menutup penuh, tarik ringan tidak lepas</td></tr>
+              <tr><td>Harness ke board</td><td>Header duduk penuh, tidak ada pin bengkok</td></tr>
+              <tr><td>TP4056 ke ESP32</td><td>OUT+ ke VIN, OUT− ke GND</td></tr>
+              <tr><td>Baterai ke TP4056</td><td>JST terkunci, polaritas sesuai tanda</td></tr>
+              <tr><td>Buzzer</td><td>Positif ke GPIO 27</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ==================== 10 ==================== -->
+      <section id="kalibrasi">
+        <div class="section-head"><span class="idx">10</span><h2>Kalibrasi sensor</h2></div>
+
+        <p>
+          Firmware memakai hubungan linear:
+          <code>kPa = (ADC − ADC_OFFSET) × ADC_TO_KPA</code>. Dua konstanta itu
+          masih default, jadi bacaan belum berarti. Kalibrasi dilakukan
+          <strong>setelah insole selesai</strong>, karena cover dan lem
+          menambah <em>preload</em>.
+        </p>
+
+        <h3>Alat</h3>
+        <ul>
+          <li>Beban diketahui: 1 kg dan 5 kg (atau barbel kecil), plus wadah untuk menambah beban bertahap.</li>
+          <li>Pelat datar kaku 3 × 3 cm (akrilik/kayu) untuk menyalurkan beban ke seluruh area sensor.</li>
+          <li>Serial monitor, penggaris, timbangan.</li>
+        </ul>
+
+        <h3>Prosedur</h3>
+        <ol class="steps">
+          <li>
+            <b>Ukur baseline (nol)</b>
+            Insole di permukaan datar, tanpa beban. Tunggu 30 detik, catat rata-rata
+            ADC. Inilah yang masuk ke <code>ADC_OFFSET</code>.
+          </li>
+          <li>
+            <b>Tekan dengan pelat, bukan jari</b>
+            Jari memberi tekanan tidak merata. Pelat 3 × 3 cm = 9 cm² membuat
+            beban bisa dihitung: <code>P (kPa) = 98,1 × massa (kg) / luas (cm²)</code>.
+            Contoh: 1 kg di 9 cm² = 10,9 kPa.
+          </li>
+          <li>
+            <b>Catat tiga titik</b>
+            Nol, 1 kg, dan 5 kg per sensor. Ulangi tiga kali, ambil median.
+          </li>
+          <li>
+            <b>Hitung dua konstanta</b>
+            Ambil dua titik yang jauh:
+            <pre><code>ADC_TO_KPA = (P2 - P1) / (ADC2 - ADC1)
+ADC_OFFSET = ADC1 - (P1 / ADC_TO_KPA)</code></pre>
+          </li>
+          <li>
+            <b>Tulis ke <code>firmware/include/config.h</code></b>
+            Ganti kedua nilai, lalu build dan flash ulang.
+          </li>
+          <li>
+            <b>Verifikasi</b>
+            Tanpa beban harus terbaca ± 0 kPa. Dengan beban yang belum dipakai
+            untuk fitting, hasil harus dalam ±15% dari nilai hitung.
+          </li>
+        </ol>
+
+        <div class="callout warn">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Batas fisik FSR 402</span>
+            <p>
+              Sensor ini memiliki rating 0,1–100 N dan mulai jenuh di ujung atas. Dengan
+              pelat 9 cm², 100 N setara ± 111 kPa, jadi di atas itu kurva
+              mendatar. Catat titik jenuh yang kamu amati dan sebutkan di
+              laporan; jangan mengklaim akurasi linear sampai 200 kPa tanpa
+              bukti.
+            </p>
+          </div>
+        </div>
+
+        <div class="callout tip">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Kalibrasi per kaki</span>
+            <p>
+              Tiga sensor dalam satu insole tidak identik. Kalau firmware hanya
+              punya satu pasang konstanta, kalibrasi memakai rata-rata ketiganya
+              dan catat simpangan tiap sensor. Mencampur konstanta kiri dan
+              kanan akan membuat perbandingan antar-kaki bias.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 11 ==================== -->
+      <section id="qc">
+        <div class="section-head"><span class="idx">11</span><h2>Uji coba &amp; QC</h2></div>
+
+        <h3>Sebelum dipakai di kaki</h3>
+        <ul class="check">
+          <li>Ketiga kanal merespons sensor yang benar (tekan F, M, H satu per satu)</li>
+          <li>Tidak ada short 3,3 V ke GND</li>
+          <li>Buzzer berbunyi saat level <code>warning</code></li>
+          <li>ESP32 tersambung Wi-Fi 2,4 GHz dan <code>Firebase configured</code></li>
+          <li><code>RandomForest model loaded (20 trees)</code> muncul di serial</li>
+          <li>Dashboard menerima data baru setiap ± 1 detik</li>
+          <li>Permukaan insole rata, tidak ada tonjolan sensor</li>
+          <li>Area tumit bersih dari kabel dan komponen</li>
+        </ul>
+
+        <h3>Uji pakai</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Uji</th><th>Durasi</th><th>Kriteria</th></tr></thead>
+            <tbody>
+              <tr><td>Duduk, kaki diam</td><td>5 menit</td><td>Nilai stabil, tidak ada alarm palsu berulang</td></tr>
+              <tr><td>Berdiri</td><td>2 menit</td><td>Tekanan naik di ketiga region, tidak saturasi</td></tr>
+              <tr><td>Jalan dalam ruang</td><td>10 menit</td><td>Pouch tidak bergeser, kabel tidak tertarik, tidak ada nyeri</td></tr>
+              <tr><td>Naik tangga</td><td>5 menit</td><td>Tidak ada kabel terjepit di lipatan sepatu</td></tr>
+              <tr><td>Daya tahan baterai</td><td>sampai mati</td><td>Catat jam operasi; harapan 8–10 jam untuk 600 mAh</td></tr>
+              <tr><td>Isi ulang</td><td>1 siklus</td><td>LED TP4056 berubah, baterai tidak panas</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Uji alarm</h3>
+        <ol>
+          <li>Tekan satu sensor hingga terbaca &gt; 35 kPa selama 20 detik; level harus <code>warning</code> dan buzzer berbunyi.</li>
+          <li>Lepas beban; setelah jendela aman, level kembali <code>safe</code> dan buzzer berhenti.</li>
+          <li>Uji <code>danger</code> hanya dengan simulasi di dashboard, bukan dengan menekan sensor sampai 200 kPa. FSR 402 bisa jenuh dan rusak.</li>
+        </ol>
+
+        <div class="callout info">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Kontrak klinis yang diuji suite</span>
+            <p>
+              40 kPa harus <code>warning</code>, 199 kPa selama 31 detik tetap
+              <code>warning</code>, 210 kPa selama 31 detik menjadi
+              <code>danger</code>, dan 20 kPa tanpa durasi <code>safe</code>.
+              Angka ini ada di tes web dan di
+              <code>docs/thesis-methodology.md</code> §3.6.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 12 ==================== -->
+      <section id="troubleshooting">
+        <div class="section-head"><span class="idx">12</span><h2>Troubleshooting</h2></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Gejala</th><th>Penyebab tersering</th><th>Tindakan</th></tr></thead>
+            <tbody>
+              <tr><td>ADC selalu 0</td><td>Kabel sinyal putus, resistor tidak tersambung, atau sensor tidak diberi 3,3 V</td><td>Ukur tegangan di titik tengah; harus bergerak saat ditekan</td></tr>
+              <tr><td>ADC selalu 4095</td><td>Short ke 3,3 V atau resistor ke GND tidak tersolder</td><td>Periksa short dan kaki resistor</td></tr>
+              <tr><td>Nilai liar / naik-turun</td><td>Kabel tidak terisolasi, ground bersama buruk, noise Wi-Fi</td><td>Perbaiki heat shrink, satukan GND di satu titik, tambah 100 nF ke GND</td></tr>
+              <tr><td>Satu sensor tidak bereaksi</td><td>Polaritas sensor terbalik atau pad retak</td><td>Tukar dua kabel sensor untuk uji; ganti sensor bila tetap diam</td></tr>
+              <tr><td>Dua sensor saling memengaruhi</td><td>Kabel terjepit bersama atau ground floating</td><td>Pisahkan jalur, sambungkan GND ke satu rail</td></tr>
+              <tr><td>Bacaan tidak nol saat tanpa beban</td><td><code>ADC_OFFSET</code> masih default</td><td>Ulangi kalibrasi baseline dengan insole utuh</td></tr>
+              <tr><td>Buzzer tidak bunyi</td><td>Buzzer pasif, atau polaritas terbalik</td><td>Ganti dengan buzzer aktif; cek GPIO 27 ke positif</td></tr>
+              <tr><td>Wi-Fi putus saat sensor dibaca</td><td>Pin ADC2 dipakai</td><td>Pindah ke GPIO 34, 35, atau 32</td></tr>
+              <tr><td>Pouch lepas saat jalan</td><td>Velcro kurang, posisi terlalu rendah</td><td>Tambah titik velcro, naikkan di atas mulut sepatu</td></tr>
+              <tr><td>Kabel putus setelah beberapa minggu</td><td>Tidak ada strain relief, kabel tegang saat menekuk</td><td>Ganti kabel, tambah service loop dan hot glue di pintu masuk pouch</td></tr>
+              <tr><td>Baterai cepat habis</td><td>Wi-Fi terus aktif, LED menyala, sampling terlalu cepat</td><td>Firmware sudah 1 Hz; jangan menaikkan laju tanpa alasan</td></tr>
+              <tr><td>Baterai panas saat charge</td><td>Modul tanpa proteksi atau arus terlalu besar</td><td>Hentikan, ganti TP4056 berproteksi, isi daya di permukaan aman</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ==================== 13 ==================== -->
+      <section id="perawatan">
+        <div class="section-head"><span class="idx">13</span><h2>Perawatan &amp; batas pakai</h2></div>
+
+        <h3>Perawatan</h3>
+        <ul>
+          <li><strong>Jangan mencuci insole.</strong> Lap dengan kain lembap, keringkan di tempat teduh. Elektronik tidak kedap air.</li>
+          <li>Lepas baterai bila alat tidak dipakai lebih dari satu minggu; simpan di 3,7–3,8 V.</li>
+          <li>Periksa kabel di pintu masuk pouch setiap bulan: retak, keras, atau berubah warna berarti ganti.</li>
+          <li>Ganti cover EVA bila sudah memadat (tidak kembali setelah ditekan), karena distribusi tekanan berubah.</li>
+          <li>Jangan menjemur di bawah matahari langsung; EVA dan neoprene melengkung.</li>
+        </ul>
+
+        <h3>Batas pakai</h3>
+        <ul>
+          <li>Alat ini <strong>alat bantu pemantauan, bukan diagnosis</strong>.</li>
+          <li>Ditujukan untuk pasien diabetes, idealnya dengan neuropati atau riwayat ulkus. Bukan untuk skrining orang sehat.</li>
+          <li>Alarm berarti "geser beban", bukan "segera ke dokter".</li>
+          <li>Tekanan hanya satu dari empat faktor risiko ulkus (neuropati, iskemia, deformitas, riwayat ulkus). Bacaan <code>safe</code> tidak menyingkirkan risiko.</li>
+          <li>Ambang 200 kPa praktis tidak pernah tercapai pada data acuan; pita kerja sehari-hari adalah 35 kPa selama 20 detik.</li>
+        </ul>
+
+        <div class="callout warn">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Sebelum dipakai pasien</span>
+            <p>
+              Pastikan diagnosis diabetes terkonfirmasi dan, idealnya, uji
+              sensasi protektif (monofilamen 10 g) sudah dilakukan. Detailnya
+              di <code>docs/thesis-methodology.md</code> §3.9.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 14 ==================== -->
+      <section id="biaya">
+        <div class="section-head"><span class="idx">14</span><h2>Biaya &amp; jadwal</h2></div>
+
+        <h3>Perkiraan biaya satu pasang</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Kategori</th><th class="num">Rendah</th><th class="num">Tinggi</th></tr></thead>
+            <tbody>
+              <tr><td>Sensor (FSR + resistor)</td><td class="num">305.000</td><td class="num">610.000</td></tr>
+              <tr><td>Daya (LiPo + TP4056 + JST)</td><td class="num">120.000</td><td class="num">220.000</td></tr>
+              <tr><td>Insole (EVA + kain)</td><td class="num">110.000</td><td class="num">180.000</td></tr>
+              <tr><td>Pouch + velcro</td><td class="num">65.000</td><td class="num">105.000</td></tr>
+              <tr><td>Kabel + heat shrink</td><td class="num">55.000</td><td class="num">95.000</td></tr>
+              <tr><td>Buzzer + misc</td><td class="num">30.000</td><td class="num">60.000</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>Total tanpa alat</td><td class="num">685.000</td><td class="num">1.270.000</td></tr>
+              <tr><td>Total dengan alat</td><td class="num">1.005.000</td><td class="num">1.890.000</td></tr>
+            </tfoot>
+          </table>
+        </div>
+        <p class="small muted">
+          Angka mengikuti <code>docs/HARDWARE-SPEC.md</code>; harga pasar bisa
+          berbeda. ESP32 diasumsikan sudah tersedia (3 unit).
+        </p>
+
+        <h3>Jadwal</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Minggu</th><th>Kegiatan</th><th>Gerbang</th></tr></thead>
+            <tbody>
+              <tr><td>1–2</td><td>Belanja bahan, uji FSR dengan multimeter, uji ESP32</td><td>G1</td></tr>
+              <tr><td>2</td><td>Potong kabel, solder 6 sensor, uji kontinuitas</td><td>G2</td></tr>
+              <tr><td>2–3</td><td>Uji bangku: ADC, buzzer, firmware asli</td><td>G3</td></tr>
+              <tr><td>3</td><td>Fabrikasi insole: pola, pocket, channel, tanam sensor, cover</td><td>G4</td></tr>
+              <tr><td>3</td><td>Jahit/lem pouch, velcro, uji fit</td><td>G5</td></tr>
+              <tr><td>4</td><td>Perakitan, strain relief, uji jalan</td><td>G5</td></tr>
+              <tr><td>4–5</td><td>Kalibrasi, verifikasi beban, uji baterai</td><td>G6</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout tip">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Kalau waktu mepet</span>
+            <p>
+              Kerjakan satu kaki dulu sampai G6, baru ulangi untuk kaki kedua.
+              Dua kaki setengah jadi lebih berisiko daripada satu kaki yang
+              terbukti bekerja, dan kesalahan soldering bisa diperbaiki sebelum
+              menular ke sisi lain.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 15 ==================== -->
+      <section id="referensi">
+        <div class="section-head"><span class="idx">15</span><h2>Referensi &amp; berkas terkait</h2></div>
+
+        <h3>Berkas di repositori</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Berkas</th><th>Isi</th></tr></thead>
+            <tbody>
+              <tr><td><code>docs/HARDWARE-SPEC.md</code></td><td>Spesifikasi sumber: BOM, pin, material, fase build</td></tr>
+              <tr><td><code>docs/guidebook.html</code></td><td>Guidebook sistem lengkap (teori, firmware, web, validasi)</td></tr>
+              <tr><td><code>firmware/include/config.h.example</code></td><td>Pin, konstanta kalibrasi, interval sampling</td></tr>
+              <tr><td><code>firmware/src/main.cpp</code></td><td>Alarm-first loop, pembacaan ADC, push Firebase</td></tr>
+              <tr><td><code>firmware/README.md</code></td><td>Cara build dan flash</td></tr>
+              <tr><td><code>docs/thesis-methodology.md</code></td><td>Metodologi dan batas penggunaan (§3.9)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Rujukan eksternal</h3>
+        <ol>
+          <li>Billings, J., Gee, J., Ghulam, Z., &amp; Abdullah, H.A. (2024). Smart Compression Sock for Early Detection of Diabetic Foot Ulcers. <em>Sensors</em>, 24(21), 6928. <a href="https://doi.org/10.3390/s24216928">doi:10.3390/s24216928</a></li>
+          <li>Interlink Electronics. <em>FSR 402 Integration Guide</em> (datasheet dan kurva gaya-hambatan).</li>
+          <li>Espressif Systems. <em>ESP32 Technical Reference Manual</em> (ADC1 vs ADC2, atenuasi).</li>
+          <li>Castro-Martins dkk. (2024). <em>Heliyon</em>. Ambang tekanan in-shoe 200 kPa untuk populasi diabetes.</li>
+        </ol>
+
+        <h3>Istilah</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Istilah</th><th>Arti di panduan ini</th></tr></thead>
+            <tbody>
+              <tr><td>Pocket</td><td>Cekungan di EVA untuk menempatkan sensor</td></tr>
+              <tr><td>Channel</td><td>Alur dangkal untuk kabel</td></tr>
+              <tr><td>Service loop</td><td>Sisa kabel longgar di dalam pouch agar tidak tegang</td></tr>
+              <tr><td>Strain relief</td><td>Penahan mekanis agar tarikan tidak sampai ke sambungan solder</td></tr>
+              <tr><td>Preload</td><td>Tekanan awal dari cover/lem yang membuat bacaan tidak nol</td></tr>
+              <tr><td>Harness</td><td>Bundel kabel dari sensor ke board</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <footer>
+          <p>
+            Panduan ini diturunkan dari <code>docs/HARDWARE-SPEC.md</code> v1.2
+            dan kondisi firmware saat ini (3 FSR per kaki, ADC 12-bit, sampling
+            1 Hz, buzzer GPIO 27). Perangkat fisik belum diuji; bagian kalibrasi
+            dan QC adalah prosedur yang harus dijalankan, bukan hasil yang sudah
+            terbukti.
+          </p>
+        </footer>
+      </section>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

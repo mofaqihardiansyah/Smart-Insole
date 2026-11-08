@@ -158,6 +158,7 @@ smart-insole-ta/
 │
 ├── docs/                        # Dokumentasi proyek (lihat docs/README.md)
 │   ├── HARDWARE-SPEC.md         # Spesifikasi hardware & build guide
+│   ├── hardware-build-guide.html # Panduan rakit fisik (solder, EVA, pouch, kalibrasi)
 │   ├── DESIGN-BRIEF.md          # Brief desain dashboard (historis)
 │   ├── ROADMAP-RF.md            # Roadmap pelatihan model Random Forest
 │   ├── rf-model-report.md       # Laporan hasil pelatihan model
@@ -258,6 +259,7 @@ Dokumentasi proyek:
 | Dokumen | Isi |
 | --- | --- |
 | [`docs/HARDWARE-SPEC.md`](docs/HARDWARE-SPEC.md) | Spesifikasi hardware, daftar bahan, dan panduan perakitan |
+| [`docs/hardware-build-guide.html`](docs/hardware-build-guide.html) | Panduan rakit fisik lengkap: BOM, keselamatan, diagram kabel, soldering, insole EVA, pouch, pengeleman, kalibrasi, QC |
 | [`docs/ROADMAP-RF.md`](docs/ROADMAP-RF.md) | Roadmap pelatihan dan integrasi model Random Forest |
 | [`docs/rf-model-report.md`](docs/rf-model-report.md) | Hasil pelatihan model, metrik evaluasi, dan clinical contract |
 | [`docs/guidebook.html`](docs/guidebook.html) | Guidebook lengkap proyek (satu berkas): teori, metode, cara kerja, tech stack, kontrak data, validasi, troubleshooting |
