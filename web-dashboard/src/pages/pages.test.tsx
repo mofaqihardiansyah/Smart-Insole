@@ -23,6 +23,7 @@ const mockAuth = {
   login: vi.fn().mockResolvedValue({ success: true }),
   register: vi.fn().mockResolvedValue({ success: true }),
   logout: vi.fn(),
+  deleteAccount: vi.fn().mockResolvedValue({ success: true }),
   uploadProfilePhoto: vi.fn(),
 };
 

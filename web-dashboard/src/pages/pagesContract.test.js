@@ -60,10 +60,29 @@ describe("page contract: register separation (PAGE-12)", () => {
   it("the clinical surface tokens never appear on the landing", () => {
     // The landing re-declares light semantics in .landing-scope; a raw
     // app surface class inside the landing file would be a drift away from
-    // the warm dialect rather than a reuse.
-    expect(
-      source("LandingPage.tsx").match(/(?:bg|border|text)-(?:bg|surface|fg|danger|muted|control)\b/g)
-    ).toBeNull();
+    // the warm dialect rather than a reuse. The scan follows the landing's own
+    // components too: a section moved out of LandingPage.tsx is still the
+    // landing, and scanning only the page would let the register leak through
+    // the door the extraction opened.
+    const landingDir = path.join(here, "..", "components", "landing");
+    const landingFiles = [
+      path.join(here, "LandingPage.tsx"),
+      ...fs
+        .readdirSync(landingDir)
+        .filter(
+          (name) => /\.(jsx|tsx)$/.test(name) && !/\.test\.(jsx|tsx)$/.test(name)
+        )
+        .map((name) => path.join(landingDir, name)),
+    ];
+
+    for (const file of landingFiles) {
+      expect(
+        fs
+          .readFileSync(file, "utf8")
+          .match(/(?:bg|border|text)-(?:bg|surface|fg|danger|muted|control)\b/g),
+        path.basename(file)
+      ).toBeNull();
+    }
   });
 });
 

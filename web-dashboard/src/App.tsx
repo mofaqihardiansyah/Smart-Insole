@@ -30,7 +30,6 @@ import AdminOverviewPage from "./pages/admin/AdminOverviewPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminDevicesPage from "./pages/admin/AdminDevicesPage";
 import AdminIncidentsPage from "./pages/admin/AdminIncidentsPage";
-import AdminConfigPage from "./pages/admin/AdminConfigPage";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { RequireAdmin } from "./components/layout/RequireAdmin";
 import DeactivatedScreen from "./pages/DeactivatedScreen";
@@ -197,7 +196,6 @@ function ProtectedApp() {
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/devices" element={<AdminDevicesPage />} />
             <Route path="/admin/incidents" element={<AdminIncidentsPage />} />
-            <Route path="/admin/config" element={<AdminConfigPage />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
         </AdminLayout>

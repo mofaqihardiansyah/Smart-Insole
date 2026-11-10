@@ -64,7 +64,12 @@ export interface HistoryEntry extends MappedReading {
   id: string;
 }
 
-/** Clinical thresholds, in kPa and seconds. Admin-configurable. */
+/**
+ * Clinical thresholds, in kPa and seconds.
+ *
+ * Constants, not settings: the dashboard and the firmware compile the same
+ * numbers, so there is no editor and no runtime override to drift from them.
+ */
 export interface RiskThresholds {
   warningKpa: number;
   dangerKpa: number;
@@ -72,17 +77,11 @@ export interface RiskThresholds {
   dangerSeconds: number;
 }
 
-/** The global risk configuration stored at `config/global` in RTDB. */
-export interface GlobalRiskConfig {
-  safeThreshold: number;
-  dangerThreshold: number;
-}
-
 /**
  * The Realtime Database surface InsoleContext consumes. The provider receives
  * this instead of importing the service, so tests inject a stub and the
  * wiring can be re-pointed without touching the context. Only the readings
- * feed is required; the config subscription is optional so a minimal stub
+ * feed is required; the history subscription is optional so a minimal stub
  * still satisfies the contract.
  */
 export interface InsoleTransport {
@@ -103,10 +102,6 @@ export interface InsoleTransport {
   ) => () => void;
   subscribeToReadings: (
     onData: (reading: MappedReading) => void,
-    onError?: (error: Error) => void
-  ) => () => void;
-  subscribeToGlobalConfig?: (
-    onData: (config: GlobalRiskConfig) => void,
     onError?: (error: Error) => void
   ) => () => void;
   subscribeToHistory?: (

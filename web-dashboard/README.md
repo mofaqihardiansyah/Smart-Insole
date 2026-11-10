@@ -15,9 +15,9 @@ heatmap_, grafik tren, dan _Early Warning System_.
 | `src/pages/MonitoringPage.tsx` | Grafik tren tekanan 3 sensor (live) |
 | `src/pages/HistoryPage.tsx` | Statistik & tabel riwayat sesi + ekspor CSV |
 | `src/pages/DevicePage.tsx` | Status perangkat: baterai, firmware, koneksi |
-| `src/pages/SettingsPage.tsx` | Konfigurasi ambang batas & notifikasi |
-| `src/pages/ProfilePage.tsx` | Identitas akun & statistik |
-| `src/pages/admin/` | Konsol admin: ringkasan, pengguna, perangkat, insiden, konfigurasi |
+| `src/pages/SettingsPage.tsx` | Ambang batas (baca saja) & notifikasi |
+| `src/pages/ProfilePage.tsx` | Identitas akun, statistik, hapus akun |
+| `src/pages/admin/` | Konsol admin: ringkasan, pengguna, perangkat, insiden |
 | `src/pages/LandingPage.tsx` | Halaman publik (landing) |
 | `src/pages/LoginPage.tsx` / `RegisterPage.tsx` | Halaman masuk / daftar akun |
 | `src/pages/VerifyEmailPage.tsx` / `ForgotPasswordPage.tsx` | Verifikasi email & reset kata sandi |

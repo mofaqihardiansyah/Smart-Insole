@@ -327,7 +327,7 @@
 
         <div class="grid-3">
           <div class="tile"><div class="k">Sensor per kaki</div><div class="v">3</div><div class="u">FSR 402: forefoot, midfoot, heel</div></div>
-          <div class="tile mint"><div class="k">Laju sampel</div><div class="v">10<span style="font-size:15px"> Hz</span></div><div class="u">10 sampel per detik</div></div>
+          <div class="tile mint"><div class="k">Laju sampel</div><div class="v">1<span style="font-size:15px"> Hz</span></div><div class="u">1 sampel per detik</div></div>
           <div class="tile blue"><div class="k">Kelas risiko</div><div class="v">3</div><div class="u">Aman · Waspada · Bahaya</div></div>
         </div>
 
@@ -616,11 +616,13 @@
           </table>
         </div>
         <p style="font-size:14px;color:var(--muted)">
-          Ambang peak (35 / 200 kPa) dapat diubah lewat pengaturan admin. Jendela
-          durasi berasal dari model dan sengaja <strong>tidak</strong> dapat
-          dikonfigurasi klien, karena firmware menjalankan model yang sama:
-          mengubah durasi di klien akan membuat klien berbeda kesimpulan dengan
-          perangkat yang mengukur kaki.
+          Ambang peak (35 / 200 kPa) dan jendela durasi adalah konstanta klinis:
+          angka yang sama dikompilasi ke firmware dan ke web. Keduanya
+          <strong>tidak</strong> dapat diubah dari aplikasi, karena perangkat
+          yang mengukur kaki memakai angka yang sama; mengubah satu sisi saja
+          akan membuat dasbor dan alarm lokal berbeda kesimpulan. Mengubah
+          kontrak ini berarti keputusan klinis baru, ekspor ulang model, dan
+          flash ulang perangkat.
         </p>
 
         <h3>4.6 Hasil evaluasi</h3>
@@ -664,7 +666,7 @@
           </table>
         </div>
 
-        <h3>4.8 Mengapa ambang bahaya bisa diubah tanpa retraining</h3>
+        <h3>4.8 Mengapa ambang bahaya dapat diganti tanpa melatih ulang model</h3>
         <p>
           Pelatihan memakai data, fitur, dan label untuk membangun pohon;
           <code>dangerRule</code> baru dibaca setelah pohon selesai dan saat
@@ -672,7 +674,10 @@
           keluaran latih juga tidak berubah (dibuktikan pada regenerasi 5 November
           2026: hash <code>trees</code> identik). Syaratnya dua: batas
           <code>peak &gt;= 35</code> tetap, dan tidak ada sampel yang berpindah
-          kelas (DFN-DS tidak punya sampel &gt;= 200 kPa).
+          kelas (DFN-DS tidak punya sampel &gt;= 200 kPa). Ini alasan teknis
+          mengapa ambang dapat direvisi tanpa retraining; tetap saja revisi
+          berarti kontrak klinis baru, ekspor ulang model, dan flash ulang
+          perangkat, bukan isian di aplikasi.
         </p>
       </section>
 
@@ -774,9 +779,9 @@ Firebase.RTDB.pushJSON(&amp;fbdo, (base + <span class="k">"/history"</span>).c_s
               <tr><td>Monitoring</td><td>Grafik tren tekanan 3 sensor (live)</td></tr>
               <tr><td>History</td><td>Register insiden, filter risiko, ekspor CSV</td></tr>
               <tr><td>Device</td><td>Status perangkat: baterai, firmware, koneksi</td></tr>
-              <tr><td>Settings</td><td>Ambang batas dan notifikasi</td></tr>
-              <tr><td>Profile</td><td>Identitas akun dan statistik sesi</td></tr>
-              <tr><td>Admin (/admin/*)</td><td>Ringkasan, Pengguna, Perangkat, Insiden, Konfigurasi</td></tr>
+              <tr><td>Settings</td><td>Ambang batas (baca saja) dan notifikasi</td></tr>
+              <tr><td>Profile</td><td>Identitas akun, statistik sesi, hapus akun</td></tr>
+              <tr><td>Admin (/admin/*)</td><td>Ringkasan, Pengguna, Perangkat, Insiden</td></tr>
               <tr><td>Landing / Login / Register / Verify / Forgot</td><td>Halaman publik dan autentikasi</td></tr>
             </tbody>
           </table>
@@ -825,7 +830,21 @@ durasi &gt; ~<span class="n">20</span> s                     → minimal <span c
           bisa diprompt di seluler non-HTTPS.
         </p>
 
-        <h3>6.5 Gaya visual</h3>
+        <h3>6.5 Penghapusan akun</h3>
+        <p>
+          Pemilik akun menghapus akunnya sendiri dari halaman Profile dengan
+          memasukkan kata sandi. Urutannya sengaja: autentikasi ulang, hapus
+          mirror Realtime Database (<code>users/&lt;uid&gt;</code>, termasuk
+          pemasangan perangkat), hapus dokumen profil Firestore, lalu hapus
+          pengguna Firebase Authentication. Langkah terakhir adalah titik commit;
+          bila gagal, profil dipulihkan agar akun tidak tertinggal sebagai sesi
+          tanpa peran. Akun admin tidak dapat menghapus dirinya sendiri, dan
+          konsol admin hanya punya tombol Nonaktifkan, bukan Hapus: browser tidak
+          dapat menghapus pengguna Auth akun lain tanpa server, dan tombol yang
+          hanya menghapus dokumen akan meninggalkan akun yang tetap bisa masuk.
+        </p>
+
+        <h3>6.6 Gaya visual</h3>
         <p>
           Dashboard mengikuti <code>DESIGN.md</code>: kanvas terang klinis
           (<code>#EFEFEC</code>), kartu putih, satu aksen sage
@@ -1025,7 +1044,15 @@ node scripts/export-model-cpp.js      <span class="c"># → firmware/include/rf-
         <h3>10.3 Lokasi di Realtime Database</h3>
         <pre>devices/&lt;DEVICE_ID&gt;/readings/latest    <span class="c"># di-overwrite tiap push</span>
 devices/&lt;DEVICE_ID&gt;/readings/history   <span class="c"># di-append</span>
-config/global                         <span class="c"># ambang risiko global</span></pre>
+users/&lt;uid&gt;/devices                   <span class="c"># pemasangan perangkat ke akun</span>
+users/&lt;uid&gt;/role                      <span class="c"># "user" | "admin"</span>
+users/&lt;uid&gt;/active                    <span class="c"># false memblokir baca</span>
+audit/                                <span class="c"># catatan aksi admin</span></pre>
+        <p>
+          Tidak ada node ambang global. Ambang risiko adalah konstanta di
+          <code>randomForestRisk.ts</code> dan di firmware, jadi tidak ada jalur
+          tulis dari klien.
+        </p>
 
         <h3>10.4 Aturan database minimum</h3>
         <pre>{
@@ -1048,6 +1075,15 @@ config/global                         <span class="c"># ambang risiko global</sp
             database, bukan dengan menyembunyikan API key.
           </div>
         </div>
+        <p style="font-size:14px;color:var(--muted)">
+          Aturan yang berlaku di repo lebih ketat daripada contoh minimum di
+          atas. Mirror <code>users/&lt;uid&gt;</code> hanya ditulis admin,
+          kecuali satu kasus: pemilik boleh menghapus node-nya sendiri
+          (<code>auth.uid === $uid &amp;&amp; !newData.exists()</code>) supaya
+          penghapusan akun tidak meninggalkan pemasangan perangkat di bawah uid
+          yang sudah mati. Dokumen profil Firestore mengikuti aturan yang sama:
+          admin atau pemilik, dan pemilik hanya boleh menghapus.
+        </p>
       </section>
 
       <!-- =========================================================

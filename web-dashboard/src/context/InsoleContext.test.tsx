@@ -3,7 +3,7 @@ import { render, screen, act } from '@testing-library/react';
 import React from 'react';
 import { InsoleProvider, useInsole, measureSustainedDurations, MAX_PACKET_GAP_MS } from './InsoleContext';
 import type { HistoryRecord, InsoleContextValue, RegionReadings } from './InsoleContext';
-import type { GlobalRiskConfig, HistoryEntry, InsoleTransport, MappedReading } from '../types/insole';
+import type { HistoryEntry, InsoleTransport, MappedReading } from '../types/insole';
 import { t } from '../utils/i18n';
 
 /**
@@ -474,62 +474,6 @@ describe('InsoleProvider', () => {
     // 90 sits in the danger band, so the chip and the score agree.
     expect(text('risk')).toBe('danger');
     expect(text('riskScore')).toBe('90');
-  });
-
-  it('seeds thresholds from the admin global config when no local override exists', () => {
-    let configOnData: ((config: GlobalRiskConfig) => void) | null = null;
-    const transport = {
-      subscribeToReadings: () => () => {},
-      subscribeToGlobalConfig: (callback: (config: GlobalRiskConfig) => void) => {
-        configOnData = callback;
-        return () => {};
-      },
-    };
-
-    render(
-      <InsoleProvider transport={transport} autoConnect>
-        <TestComponent />
-      </InsoleProvider>
-    );
-
-    act(() => {
-      configOnData?.({ safeThreshold: 30, dangerThreshold: 65 });
-    });
-
-    expect(text('warningKpa')).toBe('30');
-  });
-
-  it('a saved Settings preference wins over the admin global config', () => {
-    localStorage.setItem(
-      'riskThresholds.v2',
-      JSON.stringify({
-        warningKpa: 40,
-        dangerKpa: 80,
-        warningSeconds: 20,
-        dangerSeconds: 30,
-      })
-    );
-
-    let configOnData: ((config: GlobalRiskConfig) => void) | null = null;
-    const transport = {
-      subscribeToReadings: () => () => {},
-      subscribeToGlobalConfig: (callback: (config: GlobalRiskConfig) => void) => {
-        configOnData = callback;
-        return () => {};
-      },
-    };
-
-    render(
-      <InsoleProvider transport={transport} autoConnect>
-        <TestComponent />
-      </InsoleProvider>
-    );
-
-    act(() => {
-      configOnData?.({ safeThreshold: 30, dangerThreshold: 65 });
-    });
-
-    expect(text('warningKpa')).toBe('40');
   });
 
   /**

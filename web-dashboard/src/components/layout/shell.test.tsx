@@ -599,6 +599,20 @@ describe("SHELL-06: labels, and no motion the dial forbids", () => {
     }
 
     expect(offenders).toEqual([]);
+
+    // The Tailwind scan covers the door this rule was first broken through.
+    // framer-motion is the second door: an entrance animation is an entrance
+    // animation whether it is a class or a component, and the app pages run at
+    // MOTION 1. The router wrapper and the dashboard stagger were removed for
+    // exactly this reason.
+    const motionImports: string[] = [];
+    for (const file of FILES) {
+      const text = stripComments(fs.readFileSync(file, "utf8"));
+      if (/from\s+["']framer-motion["']/.test(text)) {
+        motionImports.push(path.relative(SRC, file));
+      }
+    }
+    expect(motionImports).toEqual([]);
   });
 
   it("keeps the splash's announcement, which is what now carries its meaning", () => {

@@ -3,6 +3,7 @@ import { CheckCircle2, RotateCcw, TriangleAlert } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { useUser } from "../../context/UserContext";
 import { t } from "../../utils/i18n";
+import { adminErrorCopy, type AdminErrorCopy } from "../../utils/adminErrors";
 import { AdminEmpty, AdminPageHeader } from "./AdminPrimitives";
 import { logAdminAction } from "../../utils/adminAudit";
 import {
@@ -11,8 +12,6 @@ import {
   GlassTable,
   GlassTableCell,
   GlassTableRow,
-  PageHeader,
-  PageHeader as _PageHeader,
   PanelHeader,
   StatePanel,
   StatusBanner,
@@ -46,15 +45,15 @@ const AdminIncidentsPage = () => {
   const [history, setHistory] = useState<Record<string, HistoryRowWithId[]>>({});
   const [triage, setTriage] = useState<Record<string, Record<string, TriageMark>>>({});
   const [filter, setFilter] = useState<"open" | "done" | "all">("open");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AdminErrorCopy | null>(null);
 
   useEffect(
     () =>
       subscribeToDeviceIds(
         (ids) => setDeviceIds(ids.slice(0, 50)),
-        (err) => setError(err?.message || t("admin.devices.error", language))
+        (err) => setError(adminErrorCopy(err))
       ),
-    [language]
+    []
   );
 
   useEffect(() => {
@@ -63,7 +62,7 @@ const AdminIncidentsPage = () => {
         id,
         (rows) => setHistory((prev) => ({ ...prev, [id]: rows })),
         100,
-        (err) => setError(err?.message || t("admin.devices.error", language))
+        (err) => setError(adminErrorCopy(err))
       ),
       subscribeToTriage(
         id,
@@ -74,7 +73,7 @@ const AdminIncidentsPage = () => {
       ),
     ]);
     return () => unsubscribers.forEach((unsub) => unsub());
-  }, [deviceIds, language]);
+  }, [deviceIds]);
 
   const rows = useMemo<Triaged[]>(() => {
     const all = deviceIds.flatMap((deviceId) =>
@@ -112,7 +111,7 @@ const AdminIncidentsPage = () => {
         /* triage is what matters here; audit failure is not worth blocking */
       }
     } catch (err) {
-      setError((err as { message?: string })?.message || t("admin.actionError", language));
+      setError(adminErrorCopy(err));
     }
   };
 
@@ -126,11 +125,9 @@ const AdminIncidentsPage = () => {
       {error && (
         <StatusBanner
           tone="danger"
-          title={t("admin.actionError", language)}
-          nextAction={t("common.nextStepCheckConnection", language)}
-        >
-          {error}
-        </StatusBanner>
+          title={t(error.message, language)}
+          nextAction={t(error.next, language)}
+        />
       )}
 
       <div className="mt-6">
@@ -175,73 +172,71 @@ const AdminIncidentsPage = () => {
             body={t("admin.incidents.emptyBody", language)}
           />
         ) : (
-            <div className="overflow-x-auto">
-              <GlassTable>
-                <thead>
-                  <GlassTableRow>
-                    <GlassTableCell as="th" scope="col">
-                      {t("admin.audit.time", language)}
-                    </GlassTableCell>
-                    <GlassTableCell as="th" scope="col">
-                      {t("admin.incidents.device", language)}
-                    </GlassTableCell>
-                    <GlassTableCell as="th" scope="col">
-                      {t("risk.status", language)}
-                    </GlassTableCell>
-                    <GlassTableCell as="th" scope="col">
-                      {t("admin.users.actions", language)}
-                    </GlassTableCell>
-                  </GlassTableRow>
-                </thead>
-                <tbody>
-                  {rows.map((row) => (
-                    <GlassTableRow key={`${row.deviceId}-${row.id}`}>
-                      <GlassTableCell>
-                        <span className="whitespace-nowrap tabular-data">
-                          {row.timestamp
-                            ? new Date(row.timestamp).toLocaleString(
-                                language === "id" ? "id-ID" : "en-GB"
-                              )
-                            : t("common.notAvailable", language)}
-                        </span>
-                      </GlassTableCell>
-                      <GlassTableCell>{row.deviceId}</GlassTableCell>
-                      <GlassTableCell>
-                        <StatusChip
-                          level={row.ack ? "safe" : "danger"}
-                          label={
-                            row.ack
-                              ? t("admin.incidents.done", language)
-                              : t("risk.danger", language)
-                          }
-                          size="sm"
-                        />
-                      </GlassTableCell>
-                      <GlassTableCell>
-                        <GlassButton
-                          type="button"
-                          size="sm"
-                          variant={row.ack ? "quiet" : "outline"}
-                          onClick={() => handleAck(row, !row.ack)}
-                        >
-                          {row.ack ? (
-                            <>
-                              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                              {t("admin.incidents.unack", language)}
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                              {t("admin.incidents.ack", language)}
-                            </>
-                          )}
-                        </GlassButton>
-                      </GlassTableCell>
-                    </GlassTableRow>
-                  ))}
-                </tbody>
-              </GlassTable>
-            </div>
+          <GlassTable>
+            <thead>
+              <GlassTableRow>
+                <GlassTableCell as="th" scope="col">
+                  {t("admin.audit.time", language)}
+                </GlassTableCell>
+                <GlassTableCell as="th" scope="col">
+                  {t("admin.incidents.device", language)}
+                </GlassTableCell>
+                <GlassTableCell as="th" scope="col">
+                  {t("risk.status", language)}
+                </GlassTableCell>
+                <GlassTableCell as="th" scope="col">
+                  {t("admin.incidents.actions", language)}
+                </GlassTableCell>
+              </GlassTableRow>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <GlassTableRow key={`${row.deviceId}-${row.id}`}>
+                  <GlassTableCell>
+                    <span className="whitespace-nowrap tabular-data">
+                      {row.timestamp
+                        ? new Date(row.timestamp).toLocaleString(
+                            language === "id" ? "id-ID" : "en-GB"
+                          )
+                        : t("common.notAvailable", language)}
+                    </span>
+                  </GlassTableCell>
+                  <GlassTableCell>{row.deviceId}</GlassTableCell>
+                  <GlassTableCell>
+                    <StatusChip
+                      level={row.ack ? "safe" : "danger"}
+                      label={
+                        row.ack
+                          ? t("admin.incidents.done", language)
+                          : t("risk.danger", language)
+                      }
+                      size="sm"
+                    />
+                  </GlassTableCell>
+                  <GlassTableCell>
+                    <GlassButton
+                      type="button"
+                      size="sm"
+                      variant={row.ack ? "quiet" : "outline"}
+                      onClick={() => handleAck(row, !row.ack)}
+                    >
+                      {row.ack ? (
+                        <>
+                          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                          {t("admin.incidents.unack", language)}
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                          {t("admin.incidents.ack", language)}
+                        </>
+                      )}
+                    </GlassButton>
+                  </GlassTableCell>
+                </GlassTableRow>
+              ))}
+            </tbody>
+          </GlassTable>
         )}
       </div>
     </section>

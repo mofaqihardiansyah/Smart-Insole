@@ -7,9 +7,11 @@
 ## 1. Ikhtisar
 
 Backend tunggal: **Firebase Realtime Database (RTDB)**. Tidak ada server
-aplikasi. ESP32 menulis langsung ke RTDB; web membaca lewat listener. Firmware
-membangun nama field yang sama dengan yang dibaca web, dan
-`src/types/insole.ts` adalah satu-satunya tempat yang menyatakan bentuk kabel.
+aplikasi. ESP32 menulis langsung ke RTDB; web membaca lewat listener. Profil
+akun (`role`, `active`) tinggal di Firestore koleksi `users`, dan RTDB
+menyimpan mirror yang dibaca aturan database. Firmware membangun nama field
+yang sama dengan yang dibaca web, dan `src/types/insole.ts` adalah satu-satunya
+tempat yang menyatakan bentuk kabel.
 
 ## 2. Pohon RTDB
 
@@ -21,7 +23,6 @@ readings/history                        # jalur legacy
 users/<uid>/active                      # bool: akun aktif
 users/<uid>/role                        # "user" | "admin"
 users/<uid>/devices                     # pemasangan perangkat ke akun
-config/global                           # ambang risiko global
 audit/                                  # catatan aksi admin
 ```
 
@@ -48,15 +49,7 @@ Setiap field bertipe `unknown` di web dengan sengaja: perangkat adalah batas
 kepercayaan. Mapper mengoersi tiap field; field tak valid tampil sebagai "tidak
 diketahui", bukan nol.
 
-### 3.2 `config/global`
-
-```json
-{ "safeThreshold": 35, "dangerThreshold": 200 }
-```
-
-Ambang peak dapat diubah admin. Jendela durasi tidak dapat dikonfigurasi klien.
-
-### 3.3 `users/<uid>`
+### 3.2 `users/<uid>`
 
 | Field | Tipe | Arti |
 | --- | --- | --- |
@@ -64,10 +57,31 @@ Ambang peak dapat diubah admin. Jendela durasi tidak dapat dikonfigurasi klien.
 | `role` | string | Peran akun |
 | `devices` | object | Pemetaan perangkat yang dipasangkan |
 
-### 3.4 `audit/`
+Tidak ada node `config/global`. Ambang risiko adalah konstanta klinis yang
+sama di `randomForestRisk.ts` dan firmware, jadi tidak ada jalur tulis dari
+klien.
+
+### 3.3 `audit/`
 
 Satu entri per aksi admin yang sukses (bukan per pembacaan). Dipakai untuk
 triage dan jejak perubahan peran, aktivasi, dan pemasangan perangkat.
+
+### 3.4 Penghapusan akun
+
+Penghapusan bersifat layanan mandiri, hanya untuk akun yang sedang masuk.
+Urutannya tetap dan tidak boleh ditukar:
+
+1. autentikasi ulang dengan kata sandi (`reauthenticateWithCredential`);
+2. hapus `users/<uid>` di RTDB — termasuk pemasangan perangkat, karena
+   pemasangan di bawah uid mati akan memblokir perangkat itu dipasangkan lagi;
+3. hapus dokumen profil di Firestore;
+4. hapus pengguna Firebase Authentication (`deleteUser`) — titik commit.
+
+Bila langkah 4 gagal, dokumen profil dibuat ulang agar akun tidak bertahan
+sebagai sesi tanpa peran. Akun admin tidak dapat menghapus dirinya sendiri.
+Konsol admin tidak punya tombol hapus; browser tidak dapat menghapus pengguna
+Auth akun lain tanpa server, dan menghapus dokumen saja akan meninggalkan akun
+yang tetap bisa masuk.
 
 ## 4. Tipe TypeScript bersama
 
@@ -76,7 +90,7 @@ triage dan jejak perubahan peran, aktivasi, dan pemasangan perangkat.
 - `RiskLevel = 'safe' | 'warning' | 'danger'`
 - `WireReadingPacket` (semua field `unknown`)
 - `SensorReadings`, `MappedReading`, `HistoryEntry`
-- `RiskThresholds`, `GlobalRiskConfig`
+- `RiskThresholds`
 - `InsoleTransport` (permukaan RTDB yang dikonsumsi `InsoleContext`)
 
 `InsoleContext` menerima `InsoleTransport`, bukan modul layanan, sehingga tes
@@ -93,11 +107,18 @@ Default menolak. Contoh minimum:
     ".write": false,
     "readings": { ".read": "auth != null", ".write": false },
     "users": {
-      "$uid": { ".read": "$uid", ".write": "$uid" }
+      "$uid": {
+        ".read": "auth.uid === $uid",
+        ".write": "auth.uid === $uid && !newData.exists()"
+      }
     }
   }
 }
 ```
+
+Contoh di atas adalah bentuk minimum: pemilik hanya membaca dan menghapus
+mirror-nya sendiri; penulisan peran, aktivasi, dan pemasangan perangkat
+dilakukan admin lewat konsol.
 
 Ketentuan tambahan yang berlaku di repo:
 

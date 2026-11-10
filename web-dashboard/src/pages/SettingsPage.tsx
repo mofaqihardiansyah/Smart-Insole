@@ -1,86 +1,43 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Info,
   Radio,
-  RotateCcw,
-  Save,
   Vibrate,
   Volume2,
   VolumeX,
 } from "lucide-react";
 import {
-  GlassButton,
   GlassCard,
-  GlassInput,
   GlassSwitch,
   GlassTable,
   GlassTableRow,
   GlassTableCell,
   PanelHeader,
   PageHeader,
-  StatusBanner,
   StatusChip,
   StatePanel,
   StateRetry,
 } from "../components/ui/GlassComponents";
 import { useInsole } from "../context/InsoleContext";
-import { useUser } from "../context/UserContext";
-import { inferRisk } from "../utils/randomForestRisk";
+import { DURATION_WINDOWS, inferRisk } from "../utils/randomForestRisk";
 import { t } from "../utils/i18n";
-import type { RiskThresholds } from "../types/insole";
 import type { LucideIcon } from "lucide-react";
 
 /**
- * SettingsPage, the thresholds and the alarm preferences.
+ * SettingsPage, the active thresholds and the alarm preferences.
  *
- * The four threshold fields are the values the Random Forest inference actually
- * runs on: setThresholds() writes them straight into InsoleContext, so a save
- * changes the risk level on the dashboard without a reload. The preview table
- * below runs the same inferRisk() against the active thresholds, which lets a
- * clinician see the effect of an edit before trusting it.
+ * The thresholds are clinical constants: `RISK_THRESHOLDS` in the engine and
+ * the same numbers compiled into the firmware. There is no editor here, and
+ * nothing on this page writes them — a dashboard that could move the boundary
+ * without reflashing the device would disagree with the device that measured
+ * the foot. The preview table runs the real `inferRisk()` against those
+ * constants, so a reader can see where each band starts.
  *
  * Every panel opens with a PanelHeader, the same structural layer the dashboard
  * uses. The preview renders a real table from `md` up, wrapped in thead/tbody,
  * and the same rows as stacked definitions below that, because a table cannot
  * reflow onto a phone.
  */
-
-/** The threshold form as strings, ready for text inputs. */
-interface ThresholdDraft {
-  warningKpa: string;
-  dangerKpa: string;
-  warningSeconds: string;
-  dangerSeconds: string;
-}
-
-/** One threshold input: the draft key it edits, and its bounds. */
-interface ThresholdField {
-  key: keyof ThresholdDraft;
-  labelKey: string;
-  min: number;
-  max: number;
-  step: number;
-}
-
-const FIELDS: ThresholdField[] = [
-  {
-    key: "warningKpa",
-    labelKey: "settings.warningKpa",
-    min: 1,
-    max: 200,
-    step: 1,
-  },
-  {
-    key: "dangerKpa",
-    labelKey: "settings.dangerKpa",
-    min: 2,
-    max: 400,
-    step: 1,
-  },
-  // The duration windows come from the trained model and are not editable
-  // here: the firmware runs the same model, so a client edit would make the
-  // dashboard disagree with the device that measured the foot.
-];
 
 /** A spread of pressure and duration pairs that reaches each consequence. */
 const PREVIEW_INPUTS = [
@@ -90,13 +47,6 @@ const PREVIEW_INPUTS = [
   { peakPressure: 210, sustainedDuration: 10 },
   { peakPressure: 210, sustainedDuration: 35 },
 ];
-
-const toDraft = (source: RiskThresholds): ThresholdDraft => ({
-  warningKpa: String(source.warningKpa),
-  dangerKpa: String(source.dangerKpa),
-  warningSeconds: String(source.warningSeconds),
-  dangerSeconds: String(source.dangerSeconds),
-});
 
 const readStoredVibration = () => {
   try {
@@ -147,8 +97,6 @@ const PreferenceRow = ({
 const SettingsPage = () => {
   const {
     thresholds,
-    setThresholds,
-    resetThresholds,
     isMuted,
     toggleMute,
     language,
@@ -156,40 +104,11 @@ const SettingsPage = () => {
     connectionState,
     reconnect,
   } = useInsole();
-  const { role } = useUser();
-  // Thresholds are a clinical decision. Only an admin edits them; everyone
-  // else reads the values the admin set and sees why the form is locked.
-  const canEditThresholds = role === "admin";
 
-  const [draft, setDraft] = useState(() => toDraft(thresholds));
-  const [saveState, setSaveState] = useState<"saved" | "reset" | null>(null);
   const [vibrationEnabled, setVibrationEnabled] = useState(
     readStoredVibration
   );
   const [previewNonce, setPreviewNonce] = useState(0);
-
-  // A save or a reset replaces the active thresholds; the form follows them.
-  useEffect(() => {
-    setDraft(toDraft(thresholds));
-  }, [thresholds]);
-
-  const parsed = useMemo(
-    () => ({
-      warningKpa: Number(draft.warningKpa),
-      dangerKpa: Number(draft.dangerKpa),
-      warningSeconds: Number(draft.warningSeconds),
-      dangerSeconds: Number(draft.dangerSeconds),
-    }),
-    [draft]
-  );
-
-  const allPositive = Object.values(parsed).every(
-    (value) => Number.isFinite(value) && value > 0
-  );
-  const invalid =
-    !allPositive ||
-    parsed.dangerKpa <= parsed.warningKpa ||
-    parsed.dangerSeconds <= parsed.warningSeconds;
 
   const previewResult = useMemo(() => {
     try {
@@ -204,17 +123,6 @@ const SettingsPage = () => {
       return { failed: true, rows: [] };
     }
   }, [thresholds, previewNonce]);
-
-  const handleSave = useCallback(() => {
-    if (invalid) return;
-    setThresholds(parsed);
-    setSaveState("saved");
-  }, [invalid, parsed, setThresholds]);
-
-  const handleReset = useCallback(() => {
-    resetThresholds();
-    setSaveState("reset");
-  }, [resetThresholds]);
 
   const handleVibrationChange = useCallback((next: boolean) => {
     setVibrationEnabled(next);
@@ -247,104 +155,39 @@ const SettingsPage = () => {
       <GlassCard flush>
         <PanelHeader
           title={t("settings.thresholds", language)}
-          subtitle={t(
-            canEditThresholds
-              ? "settings.thresholdsBody"
-              : "settings.thresholdsReadOnlyBody",
-            language
-          )}
+          subtitle={t("settings.thresholdsBody", language)}
         />
 
         <div className="px-6 pb-6">
-          {canEditThresholds ? (
-            <>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {FIELDS.map((field) => (
-                  <GlassInput
-                    key={field.key}
-                    id={`threshold-${field.key}`}
-                    type="number"
-                    inputMode="numeric"
-                    min={field.min}
-                    max={field.max}
-                    step={field.step}
-                    label={t(field.labelKey, language)}
-                    value={draft[field.key]}
-                    onChange={(event) => {
-                      setSaveState(null);
-                      setDraft((prev) => ({
-                        ...prev,
-                        [field.key]: event.target.value,
-                      }));
-                    }}
-                  />
-                ))}
-              </div>
-
-              {invalid && (
-                <StatusBanner
-                  tone="danger"
-                  className="mt-4"
-                  title={t("settings.invalidOrder", language)}
-                />
-              )}
-
-              {saveState === "saved" && (
-                <StatusBanner
-                  tone="success"
-                  className="mt-4"
-                  title={t("settings.saved", language)}
-                  onDismiss={() => setSaveState(null)}
-                  dismissLabel={t("common.dismiss", language)}
-                />
-              )}
-
-              {saveState === "reset" && (
-                <StatusBanner
-                  tone="success"
-                  className="mt-4"
-                  title={t("settings.resetDone", language)}
-                  onDismiss={() => setSaveState(null)}
-                  dismissLabel={t("common.dismiss", language)}
-                />
-              )}
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                <GlassButton
-                  type="button"
-                  variant="filled"
-                  onClick={handleSave}
-                  disabled={invalid}
-                >
-                  <Save className="h-4 w-4" aria-hidden="true" />
-                  {t("settings.save", language)}
-                </GlassButton>
-                <GlassButton type="button" variant="quiet" onClick={handleReset}>
-                  <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                  {t("settings.reset", language)}
-                </GlassButton>
-              </div>
-            </>
-          ) : (
-            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <dt className="text-label uppercase text-fg-2">
-                  {t("settings.warningKpa", language)}
-                </dt>
-                <dd className="mt-1 tabular-data text-stat text-fg">
-                  {thresholds.warningKpa}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-label uppercase text-fg-2">
-                  {t("settings.dangerKpa", language)}
-                </dt>
-                <dd className="mt-1 tabular-data text-stat text-fg">
-                  {thresholds.dangerKpa}
-                </dd>
-              </div>
-            </dl>
-          )}
+          <dl className="grid grid-cols-1 gap-4 sm:auto-rows-fr sm:grid-cols-3">
+            <div className="flex flex-col">
+              <dt className="text-label uppercase text-fg-2">
+                {t("settings.warningKpa", language)}
+              </dt>
+              <dd className="mt-auto pt-1 tabular-data text-stat text-fg">
+                {thresholds.warningKpa}
+              </dd>
+            </div>
+            <div className="flex flex-col">
+              <dt className="text-label uppercase text-fg-2">
+                {t("settings.dangerKpa", language)}
+              </dt>
+              <dd className="mt-auto pt-1 tabular-data text-stat text-fg">
+                {thresholds.dangerKpa}
+              </dd>
+            </div>
+            <div className="flex flex-col">
+              <dt className="text-label uppercase text-fg-2">
+                {t("settings.warningSeconds", language)}
+              </dt>
+              <dd className="mt-auto pt-1 tabular-data text-stat text-fg">
+                {DURATION_WINDOWS.sustainedWarningSeconds}
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-4 max-w-prose text-body-sm text-muted">
+            {t("settings.thresholdsDeviceNote", language)}
+          </p>
         </div>
       </GlassCard>
 

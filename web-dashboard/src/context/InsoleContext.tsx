@@ -11,7 +11,6 @@ import { RISK_THRESHOLDS, alignScoreToLevel, inferRisk, levelFromScore } from '.
 import { playAlertBeep, stopAlertBeep } from '../utils/audioAlert';
 import * as defaultTransport from '../services/firebaseRealtime';
 import type {
-  GlobalRiskConfig,
   HistoryEntry,
   InsoleTransport,
   MappedReading,
@@ -88,9 +87,13 @@ export interface InsoleContextValue {
   sourceReason: string | null;
   isLive: boolean;
   batteryPercent: number | null;
+  /**
+   * The clinical constants the risk engine runs on. Read-only: the same
+   * numbers are compiled into the firmware, and changing one side without the
+   * other would make the dashboard disagree with the device that measured the
+   * foot. There is no editor, and no runtime override.
+   */
   thresholds: RiskThresholds;
-  setThresholds: (next: Partial<RiskThresholds>) => void;
-  resetThresholds: () => void;
   history: HistoryRecord[];
   incidentLogs: IncidentLog[];
   /**
@@ -115,13 +118,6 @@ export const InsoleContext = createContext<InsoleContextValue | undefined>(undef
 
 /** Ring buffer length for the live chart. */
 export const HISTORY_LIMIT = 30;
-
-/**
- * Versioned key for the browser's threshold override. Bumping it drops a saved
- * object written against older defaults: a browser that saved 70 kPa must not
- * keep enforcing that after the danger limit moved to 200 kPa.
- */
-const THRESHOLDS_KEY = 'riskThresholds.v2';
 
 /** localStorage key for the "mark as read" marker. */
 const ACKNOWLEDGED_KEY = "incidentsAcknowledgedAt";
@@ -243,42 +239,6 @@ export const measureSustainedDurations = (
   return { warningDuration, dangerDuration };
 };
 
-/** Validate a partial threshold object, falling back to the defaults. */
-const sanitiseThresholds = (
-  candidate: Partial<RiskThresholds> | null | undefined
-): RiskThresholds => {
-  const next = { ...RISK_THRESHOLDS };
-  if (!candidate || typeof candidate !== 'object') return next;
-
-  for (const key of Object.keys(RISK_THRESHOLDS) as Array<keyof RiskThresholds>) {
-    const value = Number(candidate[key]);
-    if (Number.isFinite(value) && value > 0) next[key] = value;
-  }
-  // Danger must stay above warning or the bands would invert.
-  if (next.dangerKpa <= next.warningKpa) {
-    next.dangerKpa = next.warningKpa + 1;
-  }
-  return next;
-};
-
-const readStoredThresholds = () => {
-  try {
-    const raw = localStorage.getItem(THRESHOLDS_KEY);
-    return raw ? sanitiseThresholds(JSON.parse(raw)) : RISK_THRESHOLDS;
-  } catch {
-    return RISK_THRESHOLDS;
-  }
-};
-
-/** Has this browser ever saved its own thresholds in Settings? */
-const readHasLocalOverride = () => {
-  try {
-    return localStorage.getItem(THRESHOLDS_KEY) != null;
-  } catch {
-    return false;
-  }
-};
-
 const readStoredLanguage = () => {
   try {
     // Indonesian is the only shipped language, so a preference left over from
@@ -325,11 +285,10 @@ export const InsoleProvider = ({
   );
   const [sourceReason, setSourceReason] = useState<string | null>(null);
   const [batteryPercent, setBatteryPercent] = useState<number | null>(null);
-  const [thresholds, setThresholdsState] = useState<RiskThresholds>(readStoredThresholds);
-  // True once this browser saves its own thresholds in Settings (or already
-  // had a stored copy at load). The admin global config seeds the defaults
-  // for everyone else and never rewrites a personal choice.
-  const hasLocalOverrideRef = useRef(readHasLocalOverride());
+  // Clinical constants, identical to the firmware's compiled thresholds. No
+  // editor, no localStorage override, no fleet config: a dashboard that could
+  // move the boundary without reflashing the device would disagree with it.
+  const thresholds: RiskThresholds = RISK_THRESHOLDS;
   const [isMuted, setIsMuted] = useState(() => {
     try {
       return localStorage.getItem('isMuted') === 'true';
@@ -353,15 +312,10 @@ export const InsoleProvider = ({
 
   const historyRef = useRef<HistoryRecord[]>([]);
   const previousRiskRef = useRef<RiskLevel>('safe');
-  // Identity of the last processed input. It tracks the threshold set as well
-  // as the sample, because changing a threshold has to re-derive the verdict
-  // from the reading already on screen rather than waiting for the next one.
-  // Seeded with the initial values so the mount render is not treated as a
-  // reading, and StrictMode's double-invoked effect cannot append a duplicate.
-  const lastProcessedRef = useRef<{ sample: LiveSample; thresholds: RiskThresholds }>({
-    sample: INITIAL_SAMPLE,
-    thresholds,
-  });
+  // Identity of the last processed sample. Seeded with the initial sample so
+  // the mount render is not treated as a reading, and StrictMode's
+  // double-invoked effect cannot append a duplicate.
+  const lastProcessedRef = useRef<LiveSample>(INITIAL_SAMPLE);
 
   /* ------------------------------ persistence ----------------------------- */
 
@@ -383,11 +337,6 @@ export const InsoleProvider = ({
       document.documentElement.lang = language;
     }
   }, [language]);
-
-  // Thresholds are persisted by setThresholds/resetThresholds only — the
-  // explicit Settings actions. Persisting every change here would snapshot the
-  // admin's global config into localStorage on first load and permanently pin
-  // it as a "personal" override.
 
   /* -------------------------------- firebase ------------------------------- */
 
@@ -444,35 +393,6 @@ export const InsoleProvider = ({
     };
   }, [transport, autoConnect, connectNonce, deviceId]);
 
-  // Admin-configured thresholds: `config/global` seeds the safe/danger kPa
-  // for every dashboard that has NOT saved its own values in Settings. A
-  // saved personal preference always wins — the admin panel sets the fleet
-  // default, not an override of a clinician's per-patient tuning. Failures
-  // are silent on purpose: the defaults already in place are correct, and the
-  // readings feed reports its own connectivity problems.
-  useEffect(() => {
-    if (!autoConnect || typeof transport.subscribeToGlobalConfig !== 'function') {
-      return undefined;
-    }
-    let unsubscribe = () => {};
-    try {
-      unsubscribe = transport.subscribeToGlobalConfig(
-        (config: GlobalRiskConfig) => {
-        if (hasLocalOverrideRef.current) return;
-        setThresholdsState(
-          sanitiseThresholds({
-            ...RISK_THRESHOLDS,
-            warningKpa: config.safeThreshold,
-            dangerKpa: config.dangerThreshold,
-          })
-        );
-      });
-    } catch {
-      /* unconfigured or denied: the defaults already in place apply */
-    }
-    return () => unsubscribe?.();
-  }, [transport, autoConnect]);
-
   /**
    * Stored history: the register that survives a reload.
    *
@@ -502,16 +422,12 @@ export const InsoleProvider = ({
 
   /* ------------------------------ ingestion ------------------------------- */
 
-  // Single ingestion effect. It is keyed on the sample and the thresholds, and
-  // everything it derives is written to *other* state, so it cannot re-trigger
-  // itself.
+  // Single ingestion effect. It is keyed on the sample only — the thresholds
+  // are constants now — and everything it derives is written to *other* state,
+  // so it cannot re-trigger itself.
   useEffect(() => {
-    const isNewSample = sample !== lastProcessedRef.current.sample;
-    const thresholdsChanged =
-      thresholds !== lastProcessedRef.current.thresholds;
-
-    if (!isNewSample && !thresholdsChanged) return;
-    lastProcessedRef.current = { sample, thresholds };
+    if (sample === lastProcessedRef.current) return;
+    lastProcessedRef.current = sample;
 
     const readings = sample.readings;
     const currentMax = peakOf(readings);
@@ -561,14 +477,6 @@ export const InsoleProvider = ({
     setRiskScore(score);
     setSeverity(inference.severity);
 
-    // Only a genuinely new reading joins the ring buffer and the incident log.
-    // A threshold edit re-derives the current verdict but must not invent an
-    // incident that no reading produced.
-    if (!isNewSample) {
-      previousRiskRef.current = level;
-      return;
-    }
-
     const sampleReadings = { ...readings, sustainedDuration: warningDuration };
     const record = {
       readings: sampleReadings,
@@ -593,7 +501,7 @@ export const InsoleProvider = ({
       ]);
     }
     previousRiskRef.current = level;
-  }, [sample, thresholds]);
+  }, [sample]);
 
   /* -------------------------------- audio --------------------------------- */
 
@@ -629,40 +537,6 @@ export const InsoleProvider = ({
   }, []);
 
   /**
-   * Explicit Settings save: merges the change, persists it as this browser's
-   * override (so the admin global default stops rewriting it), and applies it
-   * immediately — the ingestion effect re-derives the verdict from the
-   * reading already on screen.
-   */
-  const setThresholds = useCallback(
-    (next: Partial<RiskThresholds>) => {
-      const value = sanitiseThresholds({ ...thresholds, ...next });
-      setThresholdsState(value);
-      try {
-        localStorage.setItem(THRESHOLDS_KEY, JSON.stringify(value));
-      } catch {
-        /* storage unavailable (private mode); the change still applies this session */
-      }
-      hasLocalOverrideRef.current = true;
-    },
-    [thresholds]
-  );
-
-  /**
-   * Back to the shared defaults — which now includes the admin's global
-   * config: dropping the stored override lets the fleet default apply again.
-   */
-  const resetThresholds = useCallback(() => {
-    setThresholdsState(RISK_THRESHOLDS);
-    try {
-      localStorage.removeItem(THRESHOLDS_KEY);
-    } catch {
-      /* ignore */
-    }
-    hasLocalOverrideRef.current = false;
-  }, []);
-
-  /**
    * Raw ingestion path: used by tests, and available for a future on-device
    * manual reading entry.
    */
@@ -686,7 +560,7 @@ export const InsoleProvider = ({
       : Date.now();
     setAcknowledgedAt(next);
     // Persisted so a reload does not resurrect alerts the carer already read.
-    // Per browser, like the threshold override: the device has no write path.
+    // Per browser: the device has no write path.
     try {
       localStorage.setItem(ACKNOWLEDGED_KEY, String(next));
     } catch {
@@ -740,10 +614,8 @@ export const InsoleProvider = ({
     sourceReason,
     isLive,
     batteryPercent,
-    // Thresholds
+    // Thresholds: clinical constants, identical to the firmware's
     thresholds,
-    setThresholds,
-    resetThresholds,
     // Alerts and history
     history,
     incidentLogs,

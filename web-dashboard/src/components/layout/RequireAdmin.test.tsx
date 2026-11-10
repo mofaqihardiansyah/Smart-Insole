@@ -58,7 +58,7 @@ describe("RequireAdmin", () => {
 describe("AdminLayout", () => {
   beforeEach(() => localStorage.clear());
 
-  it("renders five tabs and no patient-shell controls", () => {
+  it("renders the four console tabs and no patient-shell controls", () => {
     render(
       <MemoryRouter initialEntries={["/admin"]}>
         <InsoleProvider>
@@ -78,7 +78,7 @@ describe("AdminLayout", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getAllByRole("link", { name: /Ringkasan|Pengguna|Perangkat|Insiden|Konfigurasi/ })).toHaveLength(5);
+    expect(screen.getAllByRole("link", { name: /Ringkasan|Pengguna|Perangkat|Insiden/ })).toHaveLength(4);
     expect(screen.queryByTestId("alert-bell")).toBeNull();
     expect(screen.getByRole("link", { name: "Buka aplikasi" })).toHaveAttribute("href", "/");
   });

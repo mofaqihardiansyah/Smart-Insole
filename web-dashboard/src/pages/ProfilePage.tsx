@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Activity, CalendarDays, Save, User } from "lucide-react";
+import { Activity, CalendarDays, Save, Trash2, User } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useInsole } from "../context/InsoleContext";
+import { useUser } from "../context/UserContext";
 import { t } from "../utils/i18n";
 import type { RiskLevel } from "../types/insole";
 import {
@@ -38,12 +39,36 @@ interface StatItem {
   level: RiskLevel | null;
 }
 
+/**
+ * Firebase reports these codes; the page turns them into one sentence each.
+ * Anything unknown falls back to the generic "not deleted" line, because a
+ * failed deletion must never read as a success.
+ */
+const DELETE_ERROR_KEYS: Record<string, string> = {
+  "auth/wrong-password": "profile.deleteWrongPassword",
+  "auth/invalid-credential": "profile.deleteWrongPassword",
+  "auth/too-many-requests": "profile.deleteTooMany",
+  "auth/network-request-failed": "profile.deleteNetwork",
+  "auth/admin-account": "profile.deleteAdmin",
+};
+
+const deleteErrorKey = (code?: string) =>
+  (code && DELETE_ERROR_KEYS[code]) || "profile.deleteFailed";
+
 const ProfilePage = () => {
-  const { user, displayName, loading } = useAuth();
+  const { user, displayName, loading, deleteAccount, updateDisplayName } =
+    useAuth();
+  const { role } = useUser();
   const { language, incidentLogs } = useInsole();
 
   const [fullName, setFullName] = useState(displayName || "");
   const [saved, setSaved] = useState(false);
+  const [savingName, setSavingName] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // displayName arrives asynchronously from the auth listener, so the field
   // follows it until the user starts typing.
@@ -53,6 +78,28 @@ const ProfilePage = () => {
 
   const identity = displayName || user?.email || "";
   const initial = identity.trim().charAt(0).toUpperCase();
+
+  /**
+   * Persist the name.
+   *
+   * The button used to raise a success banner without writing anything, so a
+   * reload silently discarded the edit. It now reports the real outcome: the
+   * banner appears only after `updateDisplayName` resolves, and a failed write
+   * keeps the error on screen instead of claiming success.
+   */
+  const handleSaveName = async () => {
+    if (savingName) return;
+    setSaved(false);
+    setSaveError(false);
+    setSavingName(true);
+    try {
+      const result = await updateDisplayName(fullName);
+      if (result.success) setSaved(true);
+      else setSaveError(true);
+    } finally {
+      setSavingName(false);
+    }
+  };
 
   const creationTime = user?.metadata?.creationTime;
   const creationDate = creationTime ? new Date(creationTime) : null;
@@ -73,6 +120,27 @@ const ProfilePage = () => {
     { key: "history.dangerCount", value: dangerCount, level: "danger" },
     { key: "history.warningCount", value: warningCount, level: "warning" },
   ];
+
+  /**
+   * Delete this account for real.
+   *
+   * The password is not decoration: Firebase refuses a stale session, and the
+   * re-authentication it demands is the last confirmation the reader gives. On
+   * success the auth listener signs the shell out, so there is nothing to
+   * navigate here.
+   */
+  const handleDeleteAccount = async () => {
+    if (!deletePassword || deleting) return;
+    if (!window.confirm(t("profile.deleteConfirm", language))) return;
+    setDeleteError(null);
+    setDeleting(true);
+    try {
+      const result = await deleteAccount(deletePassword);
+      if (!result.success) setDeleteError(deleteErrorKey(result.code));
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <section className="space-y-5 lg:space-y-6">
@@ -151,11 +219,21 @@ const ProfilePage = () => {
               />
             )}
 
+            {saveError && (
+              <StatusBanner
+                tone="danger"
+                title={t("profile.saveFailed", language)}
+                onDismiss={() => setSaveError(false)}
+                dismissLabel={t("common.dismiss", language)}
+              />
+            )}
+
             <div className="flex justify-end">
               <GlassButton
                 type="button"
                 variant="filled"
-                onClick={() => setSaved(true)}
+                onClick={handleSaveName}
+                disabled={savingName}
               >
                 <Save className="h-4 w-4" aria-hidden="true" />
                 {t("profile.save", language)}
@@ -173,7 +251,7 @@ const ProfilePage = () => {
               {incidentLogs.length === 0 ? (
                 <StatePanel
                   variant="empty"
-                  title={t("profile.unavailable", language)}
+                  title={t("history.empty", language)}
                   description={t("history.emptyBody", language)}
                   nextAction={t("profile.emptyNext", language)}
                 />
@@ -199,6 +277,58 @@ const ProfilePage = () => {
                     </div>
                   ))}
                 </dl>
+              )}
+            </div>
+          </GlassCard>
+
+          <GlassCard flush>
+            <PanelHeader title={t("profile.deleteTitle", language)} />
+
+            <div className="space-y-4 px-6 pb-6">
+              <p className="max-w-prose text-body-sm text-muted">
+                {t("profile.deleteBody", language)}
+              </p>
+
+              {role === "admin" ? (
+                <p className="max-w-prose text-body-sm text-muted">
+                  {t("profile.deleteAdmin", language)}
+                </p>
+              ) : (
+                <>
+                  {deleteError && (
+                    <StatusBanner
+                      tone="danger"
+                      title={t(deleteError, language)}
+                    />
+                  )}
+
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <div className="sm:max-w-xs sm:flex-1">
+                      <GlassInput
+                        id="profile-delete-password"
+                        type="password"
+                        label={t("profile.deletePassword", language)}
+                        value={deletePassword}
+                        onChange={(event) => {
+                          setDeletePassword(event.target.value);
+                          setDeleteError(null);
+                        }}
+                        autoComplete="current-password"
+                      />
+                    </div>
+                    <GlassButton
+                      type="button"
+                      variant="danger"
+                      disabled={!deletePassword || deleting}
+                      onClick={handleDeleteAccount}
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      {deleting
+                        ? t("profile.deleting", language)
+                        : t("profile.deleteAction", language)}
+                    </GlassButton>
+                  </div>
+                </>
               )}
             </div>
           </GlassCard>

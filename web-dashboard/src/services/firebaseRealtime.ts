@@ -23,7 +23,6 @@
 import { ref, onValue, query, limitToLast, set, push, get, remove } from 'firebase/database';
 import { realtimeDb } from './firebaseConfig';
 import type {
-  GlobalRiskConfig,
   HistoryEntry,
   MappedReading,
   RiskLevel,
@@ -63,7 +62,6 @@ export interface AuditEntry {
   detail?: string | null;
   at: number;
 }
-export const GLOBAL_CONFIG_PATH = 'config/global';
 
 /** The three sensor points, in anatomical order. */
 export const SENSOR_KEYS = ['forefoot', 'midfoot', 'heel'] as const;
@@ -194,32 +192,6 @@ export function subscribeToHistory(
 }
 
 /**
- * Subscribe to the global risk thresholds (admin-configured).
- */
-export function subscribeToGlobalConfig(
-  onData: (config: GlobalRiskConfig) => void,
-  onError?: (error: Error) => void
-): () => void {
-  const configRef = ref(realtimeDb, GLOBAL_CONFIG_PATH);
-
-  const unsubscribe = onValue(
-    configRef,
-    (snapshot) => {
-      const value = snapshot.val() as Partial<GlobalRiskConfig> | null;
-      onData({
-        safeThreshold: Number(value?.safeThreshold) || 35,
-        dangerThreshold: Number(value?.dangerThreshold) || 200,
-      });
-    },
-    (error) => {
-      onError?.(error instanceof Error ? error : new Error(String(error)));
-    }
-  );
-
-  return unsubscribe;
-}
-
-/**
  * Subscribe to one device's latest reading.
  */
 export function subscribeToDeviceReadings(
@@ -290,14 +262,6 @@ export function subscribeToUserDevices(
       onError?.(error instanceof Error ? error : new Error(String(error)));
     }
   );
-}
-
-/**
- * Write the global risk thresholds (admin only; the RTDB rules are what
- * actually enforce that — this function does not check).
- */
-export function setGlobalConfig(config: GlobalRiskConfig): Promise<void> {
-  return set(ref(realtimeDb, GLOBAL_CONFIG_PATH), config);
 }
 
 /* ---------------------------- admin console ---------------------------- */
@@ -507,12 +471,9 @@ export async function pruneDeviceHistory(
 export default {
   READINGS_PATH,
   HISTORY_PATH,
-  GLOBAL_CONFIG_PATH,
   SENSOR_KEYS,
   subscribeToReadings,
   subscribeToHistory,
-  subscribeToGlobalConfig,
-  setGlobalConfig,
   mapReadingPacket,
   mapHistory,
   subscribeToDeviceReadings,

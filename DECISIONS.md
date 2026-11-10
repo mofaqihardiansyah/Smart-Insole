@@ -258,3 +258,106 @@ reaches the floor. Reversing this needs a different input, not a different
 hyperparameter: clinical outcome labels (DFN-DS has none, Figshare DFU has no
 non-ulcer controls) or a temporal model over raw sensor signals, with its gate
 fixed the same way beforehand.
+
+## ADR-013: Risk thresholds are clinical constants, not settings
+
+- **Date:** 2026-11-10
+- **Status:** Accepted
+
+**Context.** The dashboard stored the peak thresholds in localStorage, seeded
+them from an admin-editable `/config/global`, and let an admin edit them in
+Settings and a dedicated console page. The firmware compiled the same numbers.
+`warningKpa` is not a free parameter either: the model's only split is
+`sustained > 0`, and `sustained` counts samples at or above the safe limit, so
+moving that limit changes what the model measures. The device's local alarm is
+authoritative offline, so a dashboard that could move the boundary without
+reflashing would disagree with the device beside the patient.
+
+**Decision.** Keep one constant set: `RISK_THRESHOLDS` (35/200 kPa) and
+`DURATION_WINDOWS` (20 s) in `randomForestRisk.ts`, identical to the firmware.
+Settings shows the values read-only; the editor, the local override, the
+`config/global` node and subscription, the admin config page, and their i18n
+strings and tests are removed. Rules no longer carry a `config` block.
+
+**Consequences.** Changing a threshold is now a clinical decision with a
+release: edit both code paths, re-export the model if the label boundary moves,
+reflash the device. There is no runtime knob to drift, and no browser that can
+enforce 70 kPa while the device enforces 200. The tradeoff is that per-patient
+tuning is not possible from the UI; it was not possible safely before, because
+it never reached the alarm.
+
+## ADR-014: Account deletion is self-service; the admin console has no delete
+
+- **Date:** 2026-11-10
+- **Status:** Accepted
+
+**Context.** The admin console had a "Hapus" action that deleted only the
+Firestore document, leaving the Firebase Auth user able to sign in while
+vanishing from the user list. On the Spark plan there is no server and no
+Admin SDK in the browser, so the only Auth account an app can delete is the
+signed-in one (`deleteUser`, which requires a recent login). Faking wider
+erasure was the mismatch.
+
+**Decision.** Delete the console button and keep "Nonaktifkan". Implement real
+erasure in Profile for the signed-in owner: re-authenticate, remove the RTDB
+mirror (`users/<uid>`, including device pairings), remove the Firestore profile,
+then `deleteUser`. If the last step fails, recreate the profile. Firestore and
+RTDB rules allow a delete only by an admin or the owner; RTDB allows the owner
+to delete only their own node. Admin accounts cannot self-delete.
+
+**Consequences.** "Hapus akun" now means the account is gone: it cannot sign in
+again, and no pairing is left under a dead uid. The order is load-bearing — a
+mirror removed after a failed Auth delete is recoverable, a pairing left behind
+is not. Operating an Admin SDK script to delete other users remains future
+work, not a quiet half-feature.
+
+## ADR-015: The profile name is written to Firestore before Firebase Auth
+
+- **Date:** 2026-11-10
+- **Status:** Accepted
+
+**Context.** "Simpan profil" only raised a success banner; the name was never
+persisted, so a reload discarded it. Two copies of the name exist: the Firestore
+document (`users/<uid>.displayName`, which the admin console reads) and the
+Firebase Auth profile (`displayName`, which the header shows). The auth listener
+resolves the name as `profile.displayName || currentUser.displayName`.
+
+**Decision.** Write the document first (`createUserDoc` merges, so role and
+`active` are untouched and the existing owner-update rule already permits a name
+change), then `updateProfile`, then local state. A document write failure returns
+an error and the page keeps it on screen; an Auth failure is logged but does not
+discard a durable write that succeeded.
+
+**Consequences.** The source of truth is the document, and the UI can never show
+a name the document does not have. Reversing the order would let a failed
+document write leave the header claiming a name the console cannot see. If the
+Auth write fails, other devices keep the old Auth name until the next document
+read, which the listener already prefers.
+
+## ADR-016: Landing motion is a CSS budget, not a motion library
+
+- **Date:** 2026-11-10
+- **Status:** Accepted
+
+**Context.** The landing page wanted more motion than `MOTION 1` allows on the
+app pages: staggered section openings, cards settling into place, a chip
+cross-fade, a score count-up. `framer-motion` was still a dependency but imported
+nowhere, and `shell.test.tsx` fails any import of it — the app shell has no
+entrance animation by design, and the gate exists to keep it that way.
+
+**Decision.** Keep the landing's motion in CSS: transitions on `[data-reveal]`,
+one IntersectionObserver that adds a class, two keyframes (`chip-in`,
+`sheet-in`), and two JavaScript moves that must read values rather than
+interpolate with CSS — the score count-up and the drifting tiles. The engine
+choice follows the gate rather than fighting it: adding `framer-motion` back
+would mean relaxing a test that protects the app pages, and every move in the
+new budget is a transition or a simple keyframe. The full budget, with timings,
+now lives in `DESIGN.md` next to the colour and radius rules.
+
+**Consequences.** The whole budget is disabled by the existing
+`prefers-reduced-motion` block, plus the two JavaScript moves read the same query
+before starting, so the preference is honoured in one place instead of per
+effect. Motion cannot express anything CSS cannot (no spring physics, no
+orchestration beyond transition delays), which is the trade accepted here. The
+dependency itself is left in `package.json` until removing it is decided
+separately; no shipped source imports it.

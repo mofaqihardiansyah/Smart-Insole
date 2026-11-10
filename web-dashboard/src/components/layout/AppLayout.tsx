@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
@@ -62,7 +61,6 @@ const AppLayout = ({
   children,
 }: AppLayoutProps) => {
   const { language } = useInsole();
-  const shouldReduceMotion = useReducedMotion();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -261,15 +259,12 @@ const AppLayout = ({
           id="main-content"
           className="w-full px-4 pb-16 pt-6 sm:px-6 lg:px-8 lg:pt-8"
         >
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="mx-auto w-full max-w-[1400px]"
-          >
+          {/* No entrance animation: MOTION 1 forbids it on app pages, and the
+              numbers below already update every second. The key still remounts
+              the subtree per route, so a page cannot leak state into the next. */}
+          <div key={location.pathname} className="mx-auto w-full max-w-[1400px]">
             {children}
-          </motion.div>
+          </div>
 
           <footer className="mx-auto mt-12 max-w-[1400px] border-t border-border pt-4 text-body-sm text-muted">
             {t("app.footer", language)}

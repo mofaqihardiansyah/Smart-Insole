@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Search, Trash2, UserCheck, UserX, Users } from "lucide-react";
+import { Search, UserCheck, UserX, Users } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { useUser } from "../../context/UserContext";
 import { t } from "../../utils/i18n";
+import { adminErrorCopy, type AdminErrorCopy } from "../../utils/adminErrors";
 import { AdminEmpty, AdminPageHeader, AdminSection } from "./AdminPrimitives";
 import { logAdminAction } from "../../utils/adminAudit";
 import {
@@ -12,20 +13,17 @@ import {
   GlassTable,
   GlassTableCell,
   GlassTableRow,
-  PageHeader,
   PanelHeader,
   StatePanel,
   StatusBanner,
   StatusChip,
 } from "../../components/ui/GlassComponents";
 import {
-  deleteUserDoc,
   listUsers,
   updateUserDoc,
 } from "../../services/firebaseConfig";
 import {
   pairDevice,
-  removeUserMirror,
   subscribeToAllUserDevices,
   unpairDevice,
   mirrorAccountFlag,
@@ -54,9 +52,15 @@ const csvCell = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}
  * holds the mirror the database rules actually read. Pairing lives only in
  * RTDB (`users/<uid>/devices/<id>`).
  *
- * Safety rails are deliberate: an admin cannot deactivate, demote, or delete
+ * Safety rails are deliberate: an admin cannot deactivate or demote
  * themselves, and the last active admin cannot be demoted, so the console can
  * never lock its own door.
+ *
+ * There is no delete action here. A browser cannot delete another account's
+ * Auth user on Spark, and a button that only removed the Firestore document
+ * would leave the account able to sign in while disappearing from this list —
+ * the opposite of erasure. Deactivation is the admin's real lever; the owner
+ * erases their own account from Profile.
  */
 const AdminUsersPage = () => {
   const { language } = useInsole();
@@ -64,9 +68,13 @@ const AdminUsersPage = () => {
 
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [auditWarning, setAuditWarning] = useState(false);
+  const [loadError, setLoadError] = useState<AdminErrorCopy | null>(null);
+  const [actionError, setActionError] = useState<AdminErrorCopy | null>(null);
+  /* A warning is a fact the operator should know but did not lose the action to:
+     the mirror write failed after the save, or the account form was rejected
+     before any write. It holds one dictionary key, and only one is shown, so a
+     rejection and a stale mirror failure cannot stack into two banners. */
+  const [warning, setWarning] = useState<string | null>(null);
 
   const [pairings, setPairings] = useState<Record<string, string[]>>({});
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -86,7 +94,7 @@ const AdminUsersPage = () => {
       })
       .catch((err) => {
         if (cancelled) return;
-        setLoadError(err?.message || "Failed to load users");
+        setLoadError(adminErrorCopy(err));
         setLoading(false);
       });
     return () => {
@@ -100,11 +108,13 @@ const AdminUsersPage = () => {
 
   const record = useCallback(
     async (action: string, target: string | null, detail: string | null) => {
-      setAuditWarning(false);
       try {
         await logAdminAction(actor, action, target, detail);
       } catch {
-        setAuditWarning(true);
+        // The action itself already succeeded, so this is a warning. The mirror
+        // failure set a moment earlier is the more actionable of the two and
+        // keeps the slot; an audit failure alone is still worth stating.
+        setWarning((prev) => prev ?? "admin.auditError");
       }
     },
     // actor is rebuilt every render; key on its fields instead.
@@ -121,19 +131,24 @@ const AdminUsersPage = () => {
   const handleToggleActive = async (row: AdminUserRow) => {
     if (row.uid === user?.uid) return;
     const next = row.active === false;
+    const who = row.displayName || row.email || row.uid;
+    if (!window.confirm(t(next ? "admin.confirmActivate" : "admin.confirmDeactivate", language, { name: who }))) return;
     setActionError(null);
-    if (!window.confirm(t(next ? "admin.confirmActivate" : "admin.confirmDeactivate", language))) return;
+    setWarning(null);
     try {
       await updateUserDoc(row.uid, { active: next });
       setUser(row.uid, { active: next });
       try {
         await mirrorAccountFlag(row.uid, "active", next);
       } catch {
-        setActionError(t("admin.mirrorError", language));
+        // The Firestore write landed; only the Realtime mirror that gates
+        // access rules did not. Saying "the action failed" here would send the
+        // operator to repeat a write that already succeeded.
+        setWarning("admin.mirrorError");
       }
       await record("user.active", row.uid, next ? "active" : "inactive");
     } catch (err) {
-      setActionError((err as { message?: string })?.message || t("admin.actionError", language));
+      setActionError(adminErrorCopy(err));
     }
   };
 
@@ -141,37 +156,24 @@ const AdminUsersPage = () => {
     if (row.uid === user?.uid) return;
     const next = row.role === "admin" ? "user" : "admin";
     if (next === "user" && activeAdmins <= 1) return;
+    const who = row.displayName || row.email || row.uid;
+    if (!window.confirm(t("admin.confirmRole", language, {
+      name: who,
+      role: t(next === "admin" ? "admin.role.admin" : "admin.role.user", language),
+    }))) return;
     setActionError(null);
-    if (!window.confirm(t("admin.confirmRole", language))) return;
+    setWarning(null);
     try {
       await updateUserDoc(row.uid, { role: next });
       setUser(row.uid, { role: next });
       try {
         await mirrorAccountFlag(row.uid, "role", next);
       } catch {
-        setActionError(t("admin.mirrorError", language));
+        setWarning("admin.mirrorError");
       }
       await record("user.role", row.uid, next);
     } catch (err) {
-      setActionError((err as { message?: string })?.message || t("admin.actionError", language));
-    }
-  };
-
-  const handleDelete = async (row: AdminUserRow) => {
-    if (row.uid === user?.uid) return;
-    setActionError(null);
-    if (!window.confirm(t("admin.confirmDelete", language))) return;
-    try {
-      await deleteUserDoc(row.uid);
-      setUsers((prev) => prev.filter((u) => u.uid !== row.uid));
-      try {
-        await removeUserMirror(row.uid);
-      } catch {
-        setActionError(t("admin.mirrorError", language));
-      }
-      await record("user.delete", row.uid, row.email ?? null);
-    } catch (err) {
-      setActionError((err as { message?: string })?.message || t("admin.actionError", language));
+      setActionError(adminErrorCopy(err));
     }
   };
 
@@ -181,13 +183,14 @@ const AdminUsersPage = () => {
   const handlePair = async (row: AdminUserRow) => {
     const deviceId = (drafts[row.uid] ?? "").trim();
     setActionError(null);
+    setWarning(null);
     if (!DEVICE_ID.test(deviceId)) {
-      setActionError(t("admin.users.invalidDevice", language));
+      setWarning("admin.users.invalidDevice");
       return;
     }
     const owner = deviceOwner(deviceId);
     if (owner && owner !== row.uid) {
-      setActionError(t("admin.users.pairTaken", language));
+      setWarning("admin.users.pairTaken");
       return;
     }
     try {
@@ -196,17 +199,19 @@ const AdminUsersPage = () => {
       setDrafts((prev) => ({ ...prev, [row.uid]: "" }));
       await record("device.pair", deviceId, row.uid);
     } catch (err) {
-      setActionError((err as { message?: string })?.message || t("admin.actionError", language));
+      setActionError(adminErrorCopy(err));
     }
   };
 
   const handleUnpair = async (row: AdminUserRow, deviceId: string) => {
+    setActionError(null);
+    setWarning(null);
     try {
       await unpairDevice(row.uid, deviceId);
       setPairings((prev) => ({ ...prev, [row.uid]: [] }));
       await record("device.unpair", deviceId, row.uid);
     } catch (err) {
-      setActionError((err as { message?: string })?.message || t("admin.actionError", language));
+      setActionError(adminErrorCopy(err));
     }
   };
 
@@ -290,29 +295,32 @@ const AdminUsersPage = () => {
       />
 
       <AdminSection
-          title={t("admin.users.list", language)}
-          action={
-            <GlassButton type="button" variant="outline" size="sm" onClick={handleExport}>
-              {t("admin.users.export", language)}
-            </GlassButton>
-          }
-        >
+        title={t("admin.users.list", language)}
+        action={
+          <GlassButton
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+          >
+            {t("admin.users.export", language)}
+          </GlassButton>
+        }
+      >
         <div className="pb-2">
           {actionError && (
             <StatusBanner
               tone="danger"
               className="mb-4"
-              title={t("admin.actionError", language)}
-              nextAction={t("common.nextStepCheckConnection", language)}
-            >
-              {actionError}
-            </StatusBanner>
+              title={t(actionError.message, language)}
+              nextAction={t(actionError.next, language)}
+            />
           )}
-          {auditWarning && (
+          {warning && (
             <StatusBanner
               tone="warning"
               className="mb-4"
-              title={t("admin.auditError", language)}
+              title={t(warning, language)}
             />
           )}
 
@@ -334,8 +342,8 @@ const AdminUsersPage = () => {
           ) : loadError ? (
             <StatePanel
               variant="error"
-              title={t("admin.users.error", language)}
-              description={loadError}
+              title={t(loadError.message, language)}
+              description={t(loadError.next, language)}
               nextAction={t("admin.retryNext", language)}
               nextActionLabel={t("common.nextStep", language)}
             />
@@ -444,7 +452,12 @@ const AdminUsersPage = () => {
                           <GlassTableCell>
                             <div className="flex flex-col items-start gap-1">
                               <span className="text-body-sm font-medium">
-                                {row.role === "admin" ? "admin" : "user"}
+                                {t(
+                                  row.role === "admin"
+                                    ? "admin.role.admin"
+                                    : "admin.role.user",
+                                  language
+                                )}
                               </span>
                               <GlassButton
                                 type="button"
@@ -487,16 +500,6 @@ const AdminUsersPage = () => {
                                   </>
                                 )}
                               </GlassButton>
-                              <GlassButton
-                                type="button"
-                                size="sm"
-                                variant="danger"
-                                disabled={isSelf}
-                                onClick={() => handleDelete(row)}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                                {t("admin.users.delete", language)}
-                              </GlassButton>
                             </div>
                           </GlassTableCell>
                         </GlassTableRow>
@@ -535,7 +538,14 @@ const AdminUsersPage = () => {
                           <dt className="text-label uppercase text-muted">
                             {t("admin.users.role", language)}
                           </dt>
-                          <dd className="text-body-sm">{row.role === "admin" ? "admin" : "user"}</dd>
+                          <dd className="text-body-sm">
+                            {t(
+                              row.role === "admin"
+                                ? "admin.role.admin"
+                                : "admin.role.user",
+                              language
+                            )}
+                          </dd>
                         </div>
                         <div>
                           <dt className="text-label uppercase text-muted">

@@ -23,7 +23,6 @@ const TABS = [
   { to: "/admin/users", labelKey: "admin.nav.users" },
   { to: "/admin/devices", labelKey: "admin.nav.devices" },
   { to: "/admin/incidents", labelKey: "admin.nav.incidents" },
-  { to: "/admin/config", labelKey: "admin.nav.config" },
 ];
 
 const AdminLayout = ({ children }: { children?: ReactNode }) => {
@@ -56,7 +55,7 @@ const AdminLayout = ({ children }: { children?: ReactNode }) => {
                     end={tab.end}
                     className={({ isActive }) =>
                       [
-                        "inline-flex min-h-[40px] items-center border-b-2 pt-1 text-body-sm transition-colors",
+                        "inline-flex min-h-[44px] items-center border-b-2 pt-1 text-body-sm transition-colors",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface focus-visible:ring-inset",
                         isActive
                           ? "border-surface font-semibold text-surface"
@@ -77,14 +76,14 @@ const AdminLayout = ({ children }: { children?: ReactNode }) => {
             </span>
             <Link
               to="/"
-              className="inline-flex min-h-[40px] items-center text-body-sm text-surface/75 underline-offset-4 hover:text-surface hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface"
+              className="inline-flex min-h-[44px] items-center text-body-sm text-surface/75 underline-offset-4 hover:text-surface hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface"
             >
               {t("admin.backToApp", language)}
             </Link>
             <button
               type="button"
               onClick={signOut}
-              className="inline-flex min-h-[40px] items-center gap-1.5 text-body-sm font-medium text-surface/75 hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface"
+              className="inline-flex min-h-[44px] items-center gap-1.5 text-body-sm font-medium text-surface/75 hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />
               {t("common.signOut", language)}

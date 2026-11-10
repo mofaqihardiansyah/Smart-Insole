@@ -86,7 +86,7 @@ Di mobile, tujuan dipindah ke drawer.
 
 - Dijaga `RequireAdmin`: menampilkan panel memuat selama peran belum pasti,
   tidak pernah berkedip menolak.
-- Lima tab: Ringkasan, Pengguna, Perangkat, Insiden, Konfigurasi.
+- Empat tab: Ringkasan, Pengguna, Perangkat, Insiden.
 - Aksi destruktif: konfirmasi dulu, tulis entri audit setelah sukses, dan
   menonaktifkan diri terhadap akun pelaku (tanpa self-demote, self-deactivate,
   self-delete, atau menurunkan admin aktif terakhir).

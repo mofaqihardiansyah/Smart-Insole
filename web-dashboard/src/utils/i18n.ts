@@ -40,18 +40,23 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'nav.profile': 'Profil',
     'nav.admin': 'Admin',
     'admin.title': 'Konsol Admin',
-    'admin.subtitle': 'Kelola pengguna, perangkat, dan konfigurasi global.',
+    'admin.subtitle': 'Kelola pengguna, perangkat, dan aktivitas.',
     'admin.accessDenied': 'Akses ditolak',
     'admin.accessDeniedBody': 'Halaman ini hanya untuk administrator.',
     'admin.accessDeniedNext': 'Hubungi administrator bila Anda memerlukan akses.',
     'admin.retryNext': 'Muat ulang halaman untuk mencoba lagi.',
     'admin.actionError': 'Tindakan gagal.',
+    'admin.error.permissionDenied': 'Akun ini tidak diizinkan melakukan aksi tersebut.',
+    'admin.error.permissionDeniedNext':
+      'Masuk dengan akun admin yang punya akses penuh ke konsol.',
+    'admin.error.offline': 'Server tidak dapat dihubungi.',
+    'admin.error.tooMany': 'Terlalu banyak permintaan dalam waktu singkat.',
+    'admin.error.tooManyNext': 'Tunggu satu menit, lalu coba lagi.',
     'admin.brand': 'Konsol admin',
     'admin.nav.overview': 'Ringkasan',
     'admin.nav.users': 'Pengguna',
     'admin.nav.devices': 'Perangkat',
     'admin.nav.incidents': 'Insiden',
-    'admin.nav.config': 'Konfigurasi',
     'admin.backToApp': 'Buka aplikasi',
     'admin.accessLoading': 'Memeriksa akses admin',
     'admin.overview.users': 'Total pengguna',
@@ -60,6 +65,8 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.overview.openIncidents': 'Insiden belum selesai',
     'admin.overview.audit': 'Aktivitas admin terakhir',
     'admin.overview.emptyAudit': 'Belum ada aktivitas tercatat.',
+    'admin.overview.emptyAuditBody':
+      'Setiap perubahan akun, perangkat, atau insiden akan tercatat di sini.',
     'admin.audit.time': 'Waktu',
     'admin.audit.actor': 'Aktor',
     'admin.audit.action': 'Aksi',
@@ -72,6 +79,8 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.users.pairTaken': 'Perangkat itu sudah dipasangkan ke akun lain.',
     'admin.users.invalidDevice': 'ID perangkat: 3-32 huruf kecil, angka, atau tanda hubung.',
     'admin.users.role': 'Role',
+    'admin.role.admin': 'Admin',
+    'admin.role.user': 'Pengguna',
     'admin.users.makeAdmin': 'Jadikan admin',
     'admin.users.makeUser': 'Jadikan pengguna',
     'admin.users.selfLocked': 'Tidak bisa mengubah akun sendiri.',
@@ -83,6 +92,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.devices.retention': 'Retensi riwayat',
     'admin.devices.retentionBody': 'Unduh arsip lalu hapus baris yang lebih tua dari batas.',
     'admin.devices.days': 'Lebih tua dari (hari)',
+    'admin.devices.one': 'Perangkat {id}',
     'admin.devices.archive': 'Unduh arsip lalu hapus',
     'admin.devices.pruneResult': '{deleted} dihapus, {failed} gagal.',
     'admin.incidents.device': 'Perangkat',
@@ -94,6 +104,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.incidents.subtitle':
       'Kejadian bahaya lintas perangkat, dengan penandaan selesai.',
     'admin.incidents.count': '{count} insiden',
+    'admin.incidents.actions': 'Tindakan',
     'admin.incidents.open': 'Belum selesai',
     'admin.incidents.all': 'Semua',
     'admin.users.time': 'Waktu',
@@ -101,7 +112,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'deactivated.body': 'Akun ini tidak lagi punya akses ke dashboard. Hubungi admin untuk mengaktifkan kembali.',
     'deactivated.signOut': 'Keluar',
     'admin.mirrorError': 'Perubahan tersimpan, tetapi mirror Realtime Database gagal. Coba lagi sebelum mengandalkan aturan akses baru.',
-    'admin.confirmRole': 'Ubah role akun ini?',
+    'admin.confirmRole': 'Ubah role {name} menjadi {role}?',
     'admin.auditError': 'Aksi berhasil, tetapi entri audit gagal ditulis.',
     'admin.users.title': 'Pengguna',
     'admin.users.list': 'Akun terdaftar',
@@ -117,10 +128,9 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.users.actions': 'Aksi',
     'admin.users.activate': 'Aktifkan',
     'admin.users.deactivate': 'Nonaktifkan',
-    'admin.users.delete': 'Hapus',
-    'admin.confirmActivate': 'Aktifkan akun ini?',
-    'admin.confirmDeactivate': 'Nonaktifkan akun ini? Pengguna tidak bisa login selama dinonaktifkan.',
-    'admin.confirmDelete': 'Hapus akun ini permanen? Data pengguna akan dihapus dari Firestore.',
+    'admin.confirmActivate': 'Aktifkan akun {name}?',
+    'admin.confirmDeactivate':
+      'Nonaktifkan akun {name}? Akun tidak bisa masuk sampai diaktifkan lagi.',
     'admin.devices.title': 'Perangkat',
     'admin.devices.error': 'Gagal membaca status perangkat',
     'admin.devices.empty': 'Belum ada perangkat yang melaporkan data.',
@@ -131,19 +141,6 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.devices.online': 'Online',
     'admin.devices.offline': 'Offline',
     'admin.devices.lastSeen': 'Terakhir terlihat',
-    'admin.config.title': 'Konfigurasi Global',
-    'admin.config.section': 'Ambang armada',
-    'admin.config.safe': 'Batas Aman (kPa)',
-    'admin.config.danger': 'Batas Bahaya (kPa)',
-    'admin.config.save': 'Simpan',
-    'admin.config.saving': 'Menyimpan…',
-    'admin.config.saved': 'Tersimpan',
-    'admin.config.hint':
-      'Nilai ini menjadi ambang bawaan untuk semua dashboard; preferensi yang disimpan di halaman Pengaturan tetap menimpa.',
-    'admin.config.invalidOrder':
-      'Batas bahaya harus lebih tinggi daripada batas aman, dan keduanya harus lebih besar dari nol.',
-    'admin.config.forbidden':
-      'Peran admin tercatat di basis data pengguna, tetapi mirror admin di Realtime Database belum ada. Tulis users/<uid>/role = "admin" di Realtime Database, lalu coba lagi.',
     'nav.main': 'Navigasi utama',
     'nav.openMenu': 'Buka menu navigasi',
     'nav.closeMenu': 'Tutup menu navigasi',
@@ -342,23 +339,15 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     /* ---------------------------- Settings ----------------------------- */
     'settings.title': 'Ambang batas dan preferensi',
     'settings.subtitle':
-      'Batas kPa dipakai langsung oleh mesin risiko; nilai durasi mengatur tampilan batas durasi di dasbor.',
+      'Ambang risiko adalah konstanta klinis yang sama di dasbor dan di perangkat.',
     'settings.thresholds': 'Ambang batas risiko',
     'settings.thresholdsBody':
-      'Ubah nilai kPa untuk menyesuaikan kapan status naik dari aman ke waspada dan dari waspada ke bahaya.',
+      'Nilai yang dipakai mesin risiko, identik dengan yang tertanam di firmware.',
     'settings.warningKpa': 'Batas aman (kPa)',
     'settings.dangerKpa': 'Batas bahaya (kPa)',
     'settings.warningSeconds': 'Durasi waspada (detik)',
-    'settings.dangerSeconds': 'Durasi bahaya (detik)',
-    'settings.invalidOrder':
-      'Batas bahaya harus lebih tinggi daripada batas aman.',
-    'settings.thresholdsReadOnlyBody':
-      'Nilai yang dipakai mesin risiko saat ini.',
-    'settings.save': 'Simpan pengaturan',
-    'settings.saving': 'Menyimpan',
-    'settings.saved': 'Pengaturan tersimpan. Ambang batas berlaku langsung.',
-    'settings.reset': 'Kembalikan ke nilai awal',
-    'settings.resetDone': 'Ambang batas dikembalikan ke nilai awal.',
+    'settings.thresholdsDeviceNote':
+      'Ambang ini tidak dapat diubah dari aplikasi. Mengubahnya berarti mengubah kontrak klinis dan mem-flash ulang perangkat, karena alarm lokal memakai angka yang sama.',
     'settings.preview': 'Pratinjau klasifikasi',
     'settings.previewBody':
       'Contoh hasil perhitungan pada beberapa kombinasi tekanan dan durasi:',
@@ -383,6 +372,8 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'profile.save': 'Simpan profil',
     'profile.saving': 'Menyimpan',
     'profile.saved': 'Profil tersimpan.',
+    'profile.saveFailed':
+      'Nama belum tersimpan. Periksa koneksi lalu coba lagi.',
     'profile.language': 'Bahasa antarmuka',
     'profile.stats': 'Statistik pemantauan',
     'profile.memberSince': 'Terdaftar sejak',
@@ -390,6 +381,23 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'profile.emptyNext':
       'Pasang insole dan mulai sesi pemantauan; statistik terisi dari pembacaan nyata.',
     'profile.accountNext': 'Muat ulang halaman; jika masih belum tersedia, masuk kembali.',
+    'profile.deleteTitle': 'Hapus akun',
+    'profile.deleteBody':
+      'Akun, profil, dan pemasangan perangkat dihapus permanen. Riwayat pembacaan perangkat tetap tersimpan karena milik perangkat, bukan akun. Tindakan ini tidak dapat dibatalkan.',
+    'profile.deletePassword': 'Kata sandi untuk konfirmasi',
+    'profile.deleteAction': 'Hapus akun saya',
+    'profile.deleting': 'Menghapus…',
+    'profile.deleteConfirm':
+      'Hapus akun ini permanen? Anda akan keluar dan tidak bisa masuk lagi dengan akun ini.',
+    'profile.deleteWrongPassword': 'Kata sandi salah. Akun belum dihapus.',
+    'profile.deleteTooMany':
+      'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.',
+    'profile.deleteNetwork':
+      'Jaringan bermasalah. Akun belum dihapus; coba lagi.',
+    'profile.deleteAdmin':
+      'Akun admin tidak dapat menghapus dirinya sendiri. Turunkan peran lewat konsol admin, atau hubungi operator.',
+    'profile.deleteFailed':
+      'Akun belum terhapus. Coba lagi; bila pemasangan perangkat ikut hilang, minta admin memasangkannya kembali.',
 
     /* -------------------------- Notifications -------------------------- */
     'notifications.title': 'Notifikasi dan alarm',
@@ -564,7 +572,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'landing.hero.eyebrow': 'Insole pintar untuk kaki diabetes',
     'landing.hero.title': 'Jaga telapak kaki sebelum luka muncul',
     'landing.hero.subtitle':
-      'Untuk penderita diabetes dan keluarga yang merawatnya. Tiga sensor membaca tekanan sepuluh kali per detik, lalu Random Forest menandai titik yang perlu diistirahatkan sebelum nyeri terasa.',
+      'Untuk penderita diabetes dan keluarga yang merawatnya. Tiga sensor membaca tekanan sekali per detik, lalu Random Forest menandai titik yang perlu diistirahatkan sebelum nyeri terasa.',
     'landing.hero.ctaRegister': 'Buat akun gratis',
     'landing.hero.ctaLogin': 'Masuk',
     'landing.hero.demoNote':
@@ -580,7 +588,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Segera hubungi tenaga kesehatan bila ada luka terbuka atau perubahan warna yang menetap.',
     'landing.spec.sensor.title': '3',
     'landing.spec.sensor.body': 'Titik ukur: kaki depan, tengah, tumit',
-    'landing.spec.rate.title': '10x',
+    'landing.spec.rate.title': '1x',
     'landing.spec.rate.body': 'Pembacaan sensor per detik',
     'landing.spec.risk.title': '3',
     'landing.spec.risk.body': 'Tingkat risiko: aman, waspada, bahaya',
@@ -595,16 +603,16 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Random Forest memberi skor 0 sampai 100. Anda cukup memahami tiga tingkatnya, bukan cara model bekerja.',
     'landing.feature.3.title': 'Peringatan dini',
     'landing.feature.3.body':
-      'Saat tekanan tinggi bertahan, layar, suara, dan notifikasi meminta Anda mengubah posisi kaki.',
+      'Saat tekanan tinggi bertahan, layar dan suara alarm meminta Anda mengubah posisi kaki.',
     'landing.feature.4.title': 'Riwayat sesi',
     'landing.feature.4.body':
       'Setiap peringatan tersimpan. Bawa riwayat atau ekspor CSV saat kontrol ke tenaga kesehatan.',
     'landing.feature.5.title': 'Status perangkat',
     'landing.feature.5.body':
       'Baterai dan koneksi insole terlihat, sehingga pemantauan tidak berhenti tanpa kabar.',
-    'landing.feature.6.title': 'Batas yang bisa diatur',
+    'landing.feature.6.title': 'Ambang yang sama di mana pun',
     'landing.feature.6.body':
-      'Ambang tekanan dan durasi dapat disesuaikan bersama tenaga kesehatan.',
+      'Batas aman dan bahaya di dasbor sama dengan yang dipakai alarm di perangkat.',
     'landing.audience.eyebrow': 'Untuk siapa',
     'landing.audience.title': 'Satu alur, tiga peran',
     'landing.audience.1.title': 'Penderita diabetes',
@@ -615,14 +623,14 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Menerima peringatan yang sama dan membantu mengatur posisi kaki saat tekanan tinggi.',
     'landing.audience.3.title': 'Kader dan tenaga kesehatan',
     'landing.audience.3.body':
-      'Membuka riwayat sesi dan menyesuaikan ambang sesuai kondisi pasien.',
+      'Membuka riwayat sesi dan membaca ringkasan risiko pasien.',
     'landing.how.title': 'Dari langkah ke peringatan',
     'landing.step.sense.title': 'Ukur',
     'landing.step.sense.body':
-      'Tiga sensor di sol membaca kaki depan, tengah, dan tumit sepuluh kali per detik.',
+      'Tiga sensor di sol membaca kaki depan, tengah, dan tumit sekali per detik.',
     'landing.step.judge.title': 'Nilai',
     'landing.step.judge.body':
-      'Random Forest membaca tekanan puncak dan lama tumpuan, lalu memilih tingkat risiko. Aturan klinis menangani tekanan di atas 70 kPa.',
+      'Random Forest membaca tekanan puncak dan lama tumpuan, lalu memilih tingkat risiko. Aturan klinis menangani tekanan 200 kPa atau lebih pada satu pembacaan.',
     'landing.step.warn.title': 'Peringatkan',
     'landing.step.warn.body':
       'Saat waspada atau bahaya, layar menandai titik yang perlu diistirahatkan dan alarm berbunyi.',
@@ -636,7 +644,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Model yang sama berjalan di perangkat dan di dasbor. Bagian ini merangkum jalurnya dalam satu layar.',
     'landing.tech.pipeline.1.title': 'Sensor',
     'landing.tech.pipeline.1.body':
-      'Tiga titik tekanan dibaca 10 kali per detik oleh ESP32.',
+      'Tiga titik tekanan dibaca sekali per detik oleh ESP32.',
     'landing.tech.pipeline.2.title': 'Fitur',
     'landing.tech.pipeline.2.body':
       'Tekanan puncak (kPa) dan durasi tumpuan (detik) menjadi dua masukan model.',
@@ -666,7 +674,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'landing.tech.sim.whyWarning':
       'Tekanan mencapai 35 kPa atau tumpuan melewati 20 detik.',
     'landing.tech.sim.whyDanger':
-      'Tekanan mencapai 70 kPa dan bertahan setidaknya 0,1 detik.',
+      'Tekanan mencapai 200 kPa pada satu pembacaan.',
     'landing.tech.sim.preset': 'Contoh cepat',
     'landing.tech.sim.presetWalk': 'Berjalan',
     'landing.tech.sim.presetStand': 'Berdiri lama',
@@ -693,7 +701,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Ya. Sol dirancang untuk dipakai di dalam sepatu seperti insole biasa. Lepaskan dan periksa kulit setiap kali melepas sepatu.',
     'landing.faq.3.q': 'Bagaimana peringatan disampaikan?',
     'landing.faq.3.a':
-      'Layar menampilkan status dan titik tekanan. Anda juga dapat mengaktifkan suara, getaran, dan notifikasi peramban di pengaturan.',
+      'Layar menampilkan status dan titik tekanan, dan alarm suara berbunyi saat risiko naik. Suara dapat dimatikan di halaman Pengaturan.',
     'landing.faq.4.q': 'Siapa yang bisa melihat data saya?',
     'landing.faq.4.a':
       'Data tersimpan di akun Anda dan dikirim melalui koneksi terenkripsi. Anda dapat keluar dari perangkat kapan saja.',
@@ -766,18 +774,24 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'nav.profile': 'Profile',
     'nav.admin': 'Admin',
     'admin.title': 'Admin Console',
-    'admin.subtitle': 'Manage users, devices, and global configuration.',
+    'admin.subtitle': 'Manage users, devices, and activity.',
     'admin.accessDenied': 'Access denied',
     'admin.accessDeniedBody': 'This page is for administrators only.',
     'admin.accessDeniedNext': 'Contact an administrator if you need access.',
     'admin.retryNext': 'Reload the page to try again.',
     'admin.actionError': 'The action failed.',
+    'admin.error.permissionDenied':
+      'This account is not allowed to perform that action.',
+    'admin.error.permissionDeniedNext':
+      'Sign in with an admin account that has full console access.',
+    'admin.error.offline': 'The server could not be reached.',
+    'admin.error.tooMany': 'Too many requests in a short time.',
+    'admin.error.tooManyNext': 'Wait a minute, then try again.',
     'admin.brand': 'Admin console',
     'admin.nav.overview': 'Overview',
     'admin.nav.users': 'Users',
     'admin.nav.devices': 'Devices',
     'admin.nav.incidents': 'Incidents',
-    'admin.nav.config': 'Configuration',
     'admin.backToApp': 'Open app',
     'admin.accessLoading': 'Checking admin access',
     'admin.overview.users': 'Total users',
@@ -786,6 +800,8 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.overview.openIncidents': 'Open incidents',
     'admin.overview.audit': 'Latest admin activity',
     'admin.overview.emptyAudit': 'No activity recorded yet.',
+    'admin.overview.emptyAuditBody':
+      'Every account, device or incident change will be recorded here.',
     'admin.audit.time': 'Time',
     'admin.audit.actor': 'Actor',
     'admin.audit.action': 'Action',
@@ -798,6 +814,8 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.users.pairTaken': 'That device is already paired with another account.',
     'admin.users.invalidDevice': 'Device ID: 3-32 lowercase letters, digits, or hyphens.',
     'admin.users.role': 'Role',
+    'admin.role.admin': 'Admin',
+    'admin.role.user': 'User',
     'admin.users.makeAdmin': 'Make admin',
     'admin.users.makeUser': 'Make user',
     'admin.users.selfLocked': 'You cannot change your own account.',
@@ -809,6 +827,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.devices.retention': 'History retention',
     'admin.devices.retentionBody': 'Download an archive, then delete rows older than the limit.',
     'admin.devices.days': 'Older than (days)',
+    'admin.devices.one': 'Device {id}',
     'admin.devices.archive': 'Download archive and delete',
     'admin.devices.pruneResult': '{deleted} deleted, {failed} failed.',
     'admin.incidents.device': 'Device',
@@ -820,6 +839,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.incidents.subtitle':
       'Danger events across the fleet, with a done mark.',
     'admin.incidents.count': '{count} incidents',
+    'admin.incidents.actions': 'Action',
     'admin.incidents.open': 'Open',
     'admin.incidents.all': 'All',
     'admin.users.time': 'Time',
@@ -827,7 +847,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'deactivated.body': 'This account no longer has dashboard access. Ask an admin to reactivate it.',
     'deactivated.signOut': 'Sign out',
     'admin.mirrorError': 'Saved, but the Realtime Database mirror failed. Retry before relying on the new access rule.',
-    'admin.confirmRole': 'Change this account role?',
+    'admin.confirmRole': 'Change the role of {name} to {role}?',
     'admin.auditError': 'The action succeeded, but the audit entry could not be written.',
     'admin.users.title': 'Users',
     'admin.users.list': 'Registered accounts',
@@ -843,10 +863,9 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.users.actions': 'Actions',
     'admin.users.activate': 'Activate',
     'admin.users.deactivate': 'Deactivate',
-    'admin.users.delete': 'Delete',
-    'admin.confirmActivate': 'Activate this account?',
-    'admin.confirmDeactivate': 'Deactivate this account? The user cannot log in while deactivated.',
-    'admin.confirmDelete': 'Permanently delete this account? User data will be removed from Firestore.',
+    'admin.confirmActivate': 'Activate {name}?',
+    'admin.confirmDeactivate':
+      'Deactivate {name}? The account cannot sign in until it is reactivated.',
     'admin.devices.title': 'Devices',
     'admin.devices.error': 'Failed to read device status',
     'admin.devices.empty': 'No devices reporting yet.',
@@ -857,19 +876,6 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.devices.online': 'Online',
     'admin.devices.offline': 'Offline',
     'admin.devices.lastSeen': 'Last seen',
-    'admin.config.title': 'Global Configuration',
-    'admin.config.section': 'Fleet thresholds',
-    'admin.config.safe': 'Safe Threshold (kPa)',
-    'admin.config.danger': 'Danger Threshold (kPa)',
-    'admin.config.save': 'Save',
-    'admin.config.saving': 'Saving…',
-    'admin.config.saved': 'Saved',
-    'admin.config.hint':
-      'These values seed the default thresholds for every dashboard; preferences saved on the Settings page still override them.',
-    'admin.config.invalidOrder':
-      'The danger threshold must be higher than the safe threshold, and both must be greater than zero.',
-    'admin.config.forbidden':
-      'Your admin role is on file, but the admin mirror in the Realtime Database is missing. Write users/<uid>/role = "admin" in the Realtime Database, then try again.',
     'nav.main': 'Main navigation',
     'nav.openMenu': 'Open navigation menu',
     'nav.closeMenu': 'Close navigation menu',
@@ -1067,22 +1073,15 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     /* ---------------------------- Settings ----------------------------- */
     'settings.title': 'Thresholds and preferences',
     'settings.subtitle':
-      'The kPa limits feed the risk engine directly; the duration values drive the duration-limit display on the dashboard.',
+      'The risk thresholds are clinical constants, identical in the dashboard and the device.',
     'settings.thresholds': 'Risk thresholds',
     'settings.thresholdsBody':
-      'Adjust the kPa values that decide when status moves from safe to warning, and from warning to danger.',
+      'The values the risk engine uses, identical to the ones compiled into the firmware.',
     'settings.warningKpa': 'Safe limit (kPa)',
     'settings.dangerKpa': 'Danger limit (kPa)',
-    'settings.warningSeconds': 'Warning duration (seconds)',
-    'settings.dangerSeconds': 'Danger duration (seconds)',
-    'settings.invalidOrder': 'The danger limit must be higher than the safe limit.',
-    'settings.thresholdsReadOnlyBody':
-      'The values the risk engine is using right now.',
-    'settings.save': 'Save settings',
-    'settings.saving': 'Saving',
-    'settings.saved': 'Settings saved. Thresholds apply immediately.',
-    'settings.reset': 'Restore defaults',
-    'settings.resetDone': 'Thresholds restored to their default values.',
+    'settings.warningSeconds': 'Warning duration (s)',
+    'settings.thresholdsDeviceNote':
+      'These limits cannot be changed from the app. Changing one means changing the clinical contract and reflashing the device, because the local alarm uses the same numbers.',
     'settings.preview': 'Classification preview',
     'settings.previewBody':
       'Example results for a few pressure and duration combinations:',
@@ -1107,6 +1106,8 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'profile.save': 'Save profile',
     'profile.saving': 'Saving',
     'profile.saved': 'Profile saved.',
+    'profile.saveFailed':
+      'Name was not saved. Check your connection and try again.',
     'profile.language': 'Interface language',
     'profile.stats': 'Monitoring statistics',
     'profile.memberSince': 'Member since',
@@ -1115,6 +1116,22 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Wear the insole and start a monitoring session; these figures fill from real readings.',
     'profile.accountNext':
       'Reload the page; if it is still unavailable, sign in again.',
+    'profile.deleteTitle': 'Delete account',
+    'profile.deleteBody':
+      'The account, profile and device pairing are deleted permanently. Device readings stay because they belong to the device, not the account. This cannot be undone.',
+    'profile.deletePassword': 'Password to confirm',
+    'profile.deleteAction': 'Delete my account',
+    'profile.deleting': 'Deleting…',
+    'profile.deleteConfirm':
+      'Permanently delete this account? You will be signed out and cannot sign in with it again.',
+    'profile.deleteWrongPassword': 'Wrong password. The account was not deleted.',
+    'profile.deleteTooMany': 'Too many attempts. Wait a moment and try again.',
+    'profile.deleteNetwork':
+      'Network problem. The account was not deleted; try again.',
+    'profile.deleteAdmin':
+      'An admin account cannot delete itself. Demote it from the admin console, or ask the operator.',
+    'profile.deleteFailed':
+      'The account was not deleted. Try again; if the device pairing was lost, ask an admin to pair it again.',
 
     /* -------------------------- Notifications -------------------------- */
     'notifications.title': 'Notifications and alarms',
@@ -1287,7 +1304,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'landing.hero.eyebrow': 'A smart insole for diabetic feet',
     'landing.hero.title': 'Protect your soles before a wound starts',
     'landing.hero.subtitle':
-      'For people living with diabetes and the family who care for them. Three sensors read pressure ten times a second, and a Random Forest marks the points that need rest before pain sets in.',
+      'For people living with diabetes and the family who care for them. Three sensors read pressure once a second, and a Random Forest marks the points that need rest before pain sets in.',
     'landing.hero.ctaRegister': 'Create a free account',
     'landing.hero.ctaLogin': 'Sign in',
     'landing.hero.demoNote':
@@ -1303,7 +1320,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Contact a clinician promptly if there is an open wound or colour that does not fade.',
     'landing.spec.sensor.title': '3',
     'landing.spec.sensor.body': 'Measuring points: forefoot, midfoot, heel',
-    'landing.spec.rate.title': '10x',
+    'landing.spec.rate.title': '1x',
     'landing.spec.rate.body': 'Sensor readings per second',
     'landing.spec.risk.title': '3',
     'landing.spec.risk.body': 'Risk levels: safe, warning, danger',
@@ -1318,16 +1335,16 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'The Random Forest gives a score from 0 to 100. You only need the three levels, not how the model works.',
     'landing.feature.3.title': 'Early warning',
     'landing.feature.3.body':
-      'When high pressure lasts, the screen, a sound, and a notification ask you to shift your foot.',
+      'When high pressure lasts, the screen and the alarm sound ask you to shift your foot.',
     'landing.feature.4.title': 'Session history',
     'landing.feature.4.body':
       'Every alert is stored. Take the history or a CSV export to your next appointment.',
     'landing.feature.5.title': 'Device status',
     'landing.feature.5.body':
       'Battery and insole connection stay visible, so monitoring does not stop without word.',
-    'landing.feature.6.title': 'Limits you can adjust',
+    'landing.feature.6.title': 'The same limits everywhere',
     'landing.feature.6.body':
-      'Pressure and duration thresholds can be set together with your care team.',
+      'The safe and danger limits on the dashboard are the ones the device alarm uses.',
     'landing.audience.eyebrow': 'Who it is for',
     'landing.audience.title': 'One flow, three roles',
     'landing.audience.1.title': 'People with diabetes',
@@ -1338,14 +1355,14 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Receive the same warnings and help shift the foot when pressure is high.',
     'landing.audience.3.title': 'Community health workers',
     'landing.audience.3.body':
-      'Open the session history and adjust the limits to the patient condition.',
+      'Open the session history and read the patient risk summary.',
     'landing.how.title': 'From a step to a warning',
     'landing.step.sense.title': 'Measure',
     'landing.step.sense.body':
-      'Three sensors in the sole read the forefoot, midfoot, and heel ten times a second.',
+      'Three sensors in the sole read the forefoot, midfoot, and heel once a second.',
     'landing.step.judge.title': 'Judge',
     'landing.step.judge.body':
-      'A Random Forest reads peak pressure and load duration, then picks the risk level. Clinical rules handle pressure above 70 kPa.',
+      'A Random Forest reads peak pressure and load duration, then picks the risk level. Clinical rules handle 200 kPa or more on a single reading.',
     'landing.step.warn.title': 'Warn',
     'landing.step.warn.body':
       'At warning or danger, the screen marks the point to rest and the alarm sounds.',
@@ -1359,7 +1376,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'The same model runs on the device and in the dashboard. This section condenses the path into one screen.',
     'landing.tech.pipeline.1.title': 'Sensor',
     'landing.tech.pipeline.1.body':
-      'Three pressure points, read 10 times a second by the ESP32.',
+      'Three pressure points, read once a second by the ESP32.',
     'landing.tech.pipeline.2.title': 'Features',
     'landing.tech.pipeline.2.body':
       'Peak pressure (kPa) and load duration (seconds) are the two model inputs.',
@@ -1389,7 +1406,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'landing.tech.sim.whyWarning':
       'Pressure reaches 35 kPa or the load passes 20 seconds.',
     'landing.tech.sim.whyDanger':
-      'Pressure reaches 70 kPa and lasts at least 0.1 seconds.',
+      'Pressure reaches 200 kPa on a single reading.',
     'landing.tech.sim.preset': 'Quick examples',
     'landing.tech.sim.presetWalk': 'Walking',
     'landing.tech.sim.presetStand': 'Standing long',
@@ -1416,7 +1433,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Yes. The sole is made to sit inside a shoe like a regular insole. Take it out and check the skin each time you remove your shoes.',
     'landing.faq.3.q': 'How are warnings delivered?',
     'landing.faq.3.a':
-      'The screen shows the status and the pressure point. You can also turn on sound, vibration, and browser notifications in settings.',
+      'The screen shows the status and the pressure point, and the alarm sounds when risk rises. Sound can be muted in Settings.',
     'landing.faq.4.q': 'Who can see my data?',
     'landing.faq.4.a':
       'Data stays in your account and travels over an encrypted connection. You can sign out of a device at any time.',

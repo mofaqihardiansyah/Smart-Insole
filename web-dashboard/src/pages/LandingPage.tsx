@@ -1,29 +1,35 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowRight,
   Activity,
-  Footprints,
-  BellRing,
-  Radio,
-  Menu,
-  X,
-  BrainCircuit,
-  History,
+  ArrowRight,
   BatteryCharging,
-  SlidersHorizontal,
-  Cpu,
-  Users,
-  Stethoscope,
   CheckCircle2,
   ChevronDown,
+  Cpu,
+  Footprints,
+  Menu,
+  Radio,
+  X,
 } from "lucide-react";
 import { GlassButton } from "../components/ui/GlassButton";
 import { PanelHeader } from "../components/ui/GlassCard";
-import { Chip } from "../components/ui/Chip";
-import { StatusChip } from "../components/ui/StatusChip";
 import PlantarHeatmap from "../components/PlantarHeatmap";
 import RiskExplorer from "../components/landing/RiskExplorer";
+import { SectionIntro } from "../components/landing/SectionIntro";
+import { HowItWorks } from "../components/landing/HowItWorks";
+import {
+  AUDIENCE,
+  EXAMPLE_READINGS,
+  FACTS,
+  FAQ,
+  FEATURES,
+  FLOW,
+  PIPELINE,
+  SIGNS,
+  SPECS,
+} from "../components/landing/landingData";
+import { useLandingMotion } from "../hooks/useLandingMotion";
 import { useInsole } from "../context/InsoleContext";
 import { t } from "../utils/i18n";
 
@@ -31,109 +37,29 @@ import { t } from "../utils/i18n";
  * LandingPage — the public entry point.
  *
  * Visual language: the SprintForge landing page, section for section.
- * Same shell, same section order, same card grammar, same motion
- * budget (rise-in, scroll reveal, hover lift, drifting tiles). The
- * copy is this product's real content: no studio branding, no
- * fabricated testimonials, no sample pricing, no fake customer
- * logos. The hero shows the REAL heatmap component driven by fixed
- * example values, so a visitor sees the actual product.
+ * Same shell, same section order, same card grammar, same motion budget
+ * (rise-in, scroll reveal, hover lift, drifting tiles). The copy is this
+ * product's real content: no studio branding, no fabricated testimonials,
+ * no sample pricing, no fake customer logos. The hero shows the REAL
+ * heatmap component driven by fixed example values, so a visitor sees the
+ * actual product.
  *
- * Light-only by design. `.landing-scope` re-declares the light
- * semantic tokens so in-app components render in their measured
- * light form on the warm surface, whatever theme was picked
- * elsewhere. There is no theme switch here: on a light-only page
- * it would be a dead control.
+ * Light-only by design. `.landing-scope` re-declares the light semantic
+ * tokens so in-app components render in their measured light form on the
+ * warm surface, whatever theme was picked elsewhere. There is no theme
+ * switch here: on a light-only page it would be a dead control.
+ *
+ * The page owns composition only: the nav, the hero and the section order.
+ * Content lives in `landingData`, the repeated section opening in
+ * `SectionIntro`, the three steps and their vignettes in `HowItWorks`, and the
+ * three motion effects in `useLandingMotion`.
  */
-
-/** Fixed, clearly labelled example values: one per pressure zone. */
-const EXAMPLE_READINGS = { forefoot: 24, midfoot: 46, heel: 82 };
-
-const FEATURES = [
-  { icon: Activity, title: "landing.feature.1.title", body: "landing.feature.1.body" },
-  { icon: BrainCircuit, title: "landing.feature.2.title", body: "landing.feature.2.body" },
-  { icon: BellRing, title: "landing.feature.3.title", body: "landing.feature.3.body" },
-  { icon: History, title: "landing.feature.4.title", body: "landing.feature.4.body" },
-  { icon: BatteryCharging, title: "landing.feature.5.title", body: "landing.feature.5.body" },
-  { icon: SlidersHorizontal, title: "landing.feature.6.title", body: "landing.feature.6.body" },
-];
-
-const SPECS = [
-  { title: "landing.spec.sensor.title", body: "landing.spec.sensor.body" },
-  { title: "landing.spec.risk.title", body: "landing.spec.risk.body" },
-  { title: "landing.spec.rate.title", body: "landing.spec.rate.body" },
-];
-
-const AUDIENCE = [
-  { icon: Footprints, title: "landing.audience.1.title", body: "landing.audience.1.body" },
-  { icon: Users, title: "landing.audience.2.title", body: "landing.audience.2.body" },
-  { icon: Stethoscope, title: "landing.audience.3.title", body: "landing.audience.3.body" },
-];
-
-const SIGNS = [
-  "landing.problem.signs.1",
-  "landing.problem.signs.2",
-  "landing.problem.signs.3",
-];
-
-const STEPS = [
-  { icon: Footprints, title: "landing.step.sense.title", body: "landing.step.sense.body", vignette: "zones" },
-  { icon: Activity, title: "landing.step.judge.title", body: "landing.step.judge.body", vignette: "levels" },
-  { icon: BellRing, title: "landing.step.warn.title", body: "landing.step.warn.body", vignette: "alarm" },
-];
-
-/* The three sensor points of the example strip, in display order. The labels
-   reuse the app's own anatomy vocabulary; the SHORT labels are the ones the
-   dashboard's own tables use. */
-interface ZoneRow {
-  key: keyof typeof EXAMPLE_READINGS;
-  label: string;
-}
-
-const ZONE_ROWS: ZoneRow[] = [
-  { key: "forefoot", label: "anatomy.forefoot.short" },
-  { key: "midfoot", label: "anatomy.midfoot.short" },
-  { key: "heel", label: "anatomy.heel.short" },
-];
-
-const FLOW = [
-  { title: "landing.flow.1.title", body: "landing.flow.1.body" },
-  { title: "landing.flow.2.title", body: "landing.flow.2.body" },
-  { title: "landing.flow.3.title", body: "landing.flow.3.body" },
-];
-
-const PIPELINE = [
-  { title: "landing.tech.pipeline.1.title", body: "landing.tech.pipeline.1.body" },
-  { title: "landing.tech.pipeline.2.title", body: "landing.tech.pipeline.2.body" },
-  { title: "landing.tech.pipeline.3.title", body: "landing.tech.pipeline.3.body" },
-  { title: "landing.tech.pipeline.4.title", body: "landing.tech.pipeline.4.body" },
-];
-
-const FACTS = [
-  { label: "landing.tech.facts.1.label", value: "landing.tech.facts.1.value" },
-  { label: "landing.tech.facts.2.label", value: "landing.tech.facts.2.value" },
-  { label: "landing.tech.facts.3.label", value: "landing.tech.facts.3.value" },
-  { label: "landing.tech.facts.4.label", value: "landing.tech.facts.4.value" },
-];
-
-const FAQ = [
-  { q: "landing.faq.1.q", a: "landing.faq.1.a" },
-  { q: "landing.faq.2.q", a: "landing.faq.2.a" },
-  { q: "landing.faq.3.q", a: "landing.faq.3.a" },
-  { q: "landing.faq.4.q", a: "landing.faq.4.a" },
-];
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { language } = useInsole();
+  const { rootRef, navFloating } = useLandingMotion();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [navFloating, setNavFloating] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [reducedMotion] = useState(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return false;
-    }
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  });
 
   const navLinks = [
     { href: "#mengapa", label: t("landing.nav.why", language) },
@@ -141,65 +67,6 @@ const LandingPage = () => {
     { href: "#cara-kerja", label: t("landing.nav.how", language) },
     { href: "#alur", label: t("landing.nav.start", language) },
   ];
-
-  /* Scroll reveal: one IntersectionObserver, reveal once, unobserve.
-     Under reduced motion everything is visible immediately. */
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-    const els = root.querySelectorAll("[data-reveal]");
-    if (reducedMotion || !("IntersectionObserver" in window)) {
-      els.forEach((el) => el.classList.add("revealed"));
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("revealed");
-            io.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.15 }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, [reducedMotion]);
-
-  /* Drifting headline tiles: a single rAF loop, skipped entirely
-     when the visitor asked for reduced motion. */
-  useEffect(() => {
-    if (reducedMotion) return;
-    const tiles = rootRef.current?.querySelectorAll<HTMLElement>("[data-drift]");
-    if (!tiles || tiles.length === 0) return;
-    const bases = Array.from(tiles).map((el) =>
-      parseFloat(el.dataset.rot || "0")
-    );
-    let raf: number;
-    let t = 0;
-    const loop = () => {
-      t += 0.008;
-      tiles.forEach((el, i) => {
-        el.style.transform = `translateY(${Math.sin(t + i * 2) * 6}px) rotate(${
-          bases[i] + Math.sin(t * 0.7 + i) * 2
-        }deg)`;
-      });
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [reducedMotion]);
-
-  /* The nav bar sits flush on the page edge at the top and lifts into a
-     floating bar once the page scrolls. It is a state change, not a
-     transition: MOTION 1 keeps the movement budget for the content. */
-  useEffect(() => {
-    const onScroll = () => setNavFloating(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const go = (path: string) => {
     setMenuOpen(false);
@@ -308,6 +175,7 @@ const LandingPage = () => {
       {menuOpen && (
         <div
           id="landing-menu"
+          data-sheet
           className="relative z-40 mx-4 mt-3 rounded-panel border border-warm-line bg-warm-card p-4 shadow-lift md:hidden"
         >
           <div className="flex flex-col text-body font-medium">
@@ -468,17 +336,12 @@ const LandingPage = () => {
           className="scroll-mt-28 px-4 py-16 sm:px-10 sm:py-20 lg:px-16 lg:py-24"
         >
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-            <div className="max-w-2xl" data-reveal>
-              <p className="text-body-sm font-semibold text-warm-accent-deep">
-                {t("landing.nav.why", language)}
-              </p>
-              <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
-                {t("landing.problem.title", language)}
-              </h2>
-              <p className="mt-4 text-body-lg leading-relaxed text-warm-body">
-                {t("landing.problem.body", language)}
-              </p>
-            </div>
+            <SectionIntro
+              eyebrowKey="landing.nav.why"
+              titleKey="landing.problem.title"
+              bodyKey="landing.problem.body"
+              language={language}
+            />
 
             <div
               data-reveal
@@ -509,13 +372,15 @@ const LandingPage = () => {
           {/* One ruled strip, not three pill-shaped cards: three rounded-full
               stat capsules was the exact shape language the product drops.
               The numbers sit in one band, divided by hairlines. */}
-          <div
-            data-reveal
-            className="relative mt-10 rounded-section border border-warm-line bg-warm-raised shadow-card sm:px-12"
-          >
+          <div className="relative mt-10 rounded-section border border-warm-line bg-warm-raised shadow-card sm:px-12">
             <div className="grid gap-6 px-6 py-8 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-warm-line sm:px-0 sm:py-10">
-              {SPECS.map((spec) => (
-                <div key={spec.title} className="text-center sm:px-8">
+              {SPECS.map((spec, index) => (
+                <div
+                  key={spec.title}
+                  data-reveal="card"
+                  style={{ transitionDelay: `${index * 80}ms` }}
+                  className="text-center sm:px-8"
+                >
                   <p className="font-heading text-landing-h2 tabular-data text-warm-ink">
                     {t(spec.title, language)}
                   </p>
@@ -533,53 +398,49 @@ const LandingPage = () => {
           id="fitur"
           className="scroll-mt-28 px-4 py-16 sm:px-10 sm:py-20 lg:px-16 lg:py-24"
         >
-          <div className="max-w-2xl" data-reveal>
-            <p className="text-body-sm font-semibold text-warm-accent-deep">
-              {t("landing.nav.features", language)}
-            </p>
-            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
-              {t("landing.feature.title", language)}
-            </h2>
-            <p className="mt-4 text-body-lg leading-relaxed text-warm-body">
-              {t("landing.feature.body", language)}
-            </p>
-          </div>
+          <SectionIntro
+            eyebrowKey="landing.nav.features"
+            titleKey="landing.feature.title"
+            bodyKey="landing.feature.body"
+            language={language}
+          />
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map(({ icon: Icon, title, body }, index) => (
-              <article
+              /* The reveal lives on the wrapper, not the card: the wrapper's
+                 700ms transition would otherwise govern the card's hover lift
+                 and smear it. The card keeps the 150ms hover step. */
+              <div
                 key={title}
-                data-reveal
+                data-reveal="card"
                 style={{ transitionDelay: `${index * 80}ms` }}
-                className="group rounded-3xl border border-warm-line bg-warm-card p-7 shadow-card transition-all duration-150 hover:-translate-y-1 hover:shadow-lift"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-panel border border-warm-line bg-warm-raised text-warm-accent-deep">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <h3 className="mt-5 text-body-lg font-semibold text-warm-ink">
-                  {t(title, language)}
-                </h3>
-                <p className="mt-2 text-body leading-relaxed text-warm-body">
-                  {t(body, language)}
-                </p>
-              </article>
+                <article className="landing-card group h-full rounded-3xl border border-warm-line bg-warm-card p-7 shadow-card hover:-translate-y-1 hover:shadow-lift">
+                  <span className="landing-card-icon flex h-12 w-12 items-center justify-center rounded-panel border border-warm-line bg-warm-raised text-warm-accent-deep">
+                    <Icon className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <h3 className="mt-5 text-body-lg font-semibold text-warm-ink">
+                    {t(title, language)}
+                  </h3>
+                  <p className="mt-2 text-body leading-relaxed text-warm-body">
+                    {t(body, language)}
+                  </p>
+                </article>
+              </div>
             ))}
           </div>
         </section>
 
         {/* ================= KEMAMPUAN (dark panel) ================= */}
         <section className="px-4 pb-16 sm:px-10 lg:px-16 lg:pb-24">
-          <div className="max-w-2xl" data-reveal>
-            <p className="text-body-sm font-semibold text-warm-accent-deep">
-              {t("landing.audience.eyebrow", language)}
-            </p>
-            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
-              {t("landing.audience.title", language)}
-            </h2>
-          </div>
+          <SectionIntro
+            eyebrowKey="landing.audience.eyebrow"
+            titleKey="landing.audience.title"
+            language={language}
+          />
 
           <div
-            data-reveal
+            data-reveal="card"
             className="mt-10 rounded-section-lg bg-warm-dark p-4 shadow-glow sm:p-5"
           >
             <div className="grid gap-4 lg:grid-cols-3">
@@ -608,118 +469,13 @@ const LandingPage = () => {
           id="cara-kerja"
           className="scroll-mt-28 px-4 pb-16 sm:px-10 lg:px-16 lg:pb-24"
         >
-          <div className="max-w-2xl" data-reveal>
-            <p className="text-body-sm font-semibold text-warm-accent-deep">
-              {t("landing.nav.how", language)}
-            </p>
-            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
-              {t("landing.how.title", language)}
-            </h2>
-          </div>
+          <SectionIntro
+            eyebrowKey="landing.nav.how"
+            titleKey="landing.how.title"
+            language={language}
+          />
 
-          <div className="mt-10 space-y-6">
-            {STEPS.map(({ icon: Icon, title, body, vignette }, index) => (
-              <div
-                key={title}
-                data-reveal
-                className="grid overflow-hidden rounded-cell border border-warm-line bg-warm-card shadow-card lg:grid-cols-5"
-              >
-                <div className="p-6 sm:p-8 lg:col-span-3">
-                  <span className="inline-flex items-center gap-1.5 rounded-sm border border-warm-line bg-warm-raised px-3 py-1.5 text-caption text-warm-body">
-                    {t("landing.step.number", language)} {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="mt-4 text-h2 font-semibold text-warm-ink">
-                    {t(title, language)}
-                  </h3>
-                  <p className="mt-4 max-w-prose text-body leading-relaxed text-warm-body">
-                    {t(body, language)}
-                  </p>
-                </div>
-                {/* The band beside every step shows what the app actually
-                    renders at that step, in the app's own vocabulary - not a
-                    lone decorative icon adrift in an empty panel. */}
-                <div className="relative flex min-h-[220px] items-center justify-center bg-warm-raised p-6 sm:p-8 lg:col-span-2">
-                  {vignette === "zones" && (
-                    <div className="w-full max-w-xs text-left">
-                      <p className="text-caption text-warm-caption">
-                        {t("landing.sensors.title", language)}
-                      </p>
-                      <div className="mt-1 divide-y divide-warm-line border-y border-warm-line">
-                        {ZONE_ROWS.map(({ key, label }) => (
-                          <div
-                            key={key}
-                            className="flex items-baseline justify-between gap-3 py-3"
-                          >
-                            <span className="text-body text-warm-body">
-                              {t(label, language)}
-                            </span>
-                            <span className="font-heading text-stat tabular-data text-warm-ink">
-                              {EXAMPLE_READINGS[key]}
-                              <span className="ml-1 text-caption font-normal text-warm-caption">
-                                {t("metrics.unit.kpa", language)}
-                              </span>
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="mt-3 text-caption text-warm-caption">
-                        {t("landing.step.demoNote", language)}
-                      </p>
-                    </div>
-                  )}
-                  {vignette === "levels" && (
-                    <div className="flex flex-col items-center gap-4 text-center">
-                      <p className="text-caption text-warm-caption">
-                        {t("landing.risk.title", language)}
-                      </p>
-                      <div className="flex flex-wrap items-center justify-center gap-2">
-                        <StatusChip
-                          level="safe"
-                          label={t("risk.safe", language)}
-                          size="lg"
-                        />
-                        <StatusChip
-                          level="warning"
-                          label={t("risk.warning", language)}
-                          size="lg"
-                        />
-                        <StatusChip
-                          level="danger"
-                          label={t("risk.danger", language)}
-                          size="lg"
-                        />
-                      </div>
-                      <p className="text-caption text-warm-caption">
-                        {t("landing.step.demoNote", language)}
-                      </p>
-                    </div>
-                  )}
-                  {vignette === "alarm" && (
-                    <div className="flex flex-col items-center gap-4 text-center">
-                      <div className="flex flex-wrap items-center justify-center gap-2">
-                        <Chip tone="danger" aria-hidden="true" className="px-3 py-2">
-                          <Icon className="h-5 w-5" />
-                        </Chip>
-                        <StatusChip
-                          level="warning"
-                          label={t("risk.warning", language)}
-                          size="lg"
-                        />
-                        <StatusChip
-                          level="danger"
-                          label={t("risk.danger", language)}
-                          size="lg"
-                        />
-                      </div>
-                      <p className="text-caption text-warm-caption">
-                        {t("landing.step.demoNote", language)}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <HowItWorks language={language} />
 
           {/* The one dense technical block: the pipeline, the model facts, and
               a simulator that runs the real inference module. It sits inside
@@ -729,17 +485,13 @@ const LandingPage = () => {
             id="teknologi"
             className="mt-16 scroll-mt-28 border-t border-warm-line pt-12 sm:mt-20 sm:pt-16"
           >
-            <div className="max-w-2xl" data-reveal>
-              <p className="text-body-sm font-semibold text-warm-accent-deep">
-                {t("landing.tech.eyebrow", language)}
-              </p>
-              <h3 className="mt-3 font-heading text-h2 leading-tight text-warm-ink">
-                {t("landing.tech.title", language)}
-              </h3>
-              <p className="mt-3 text-body leading-relaxed text-warm-body">
-                {t("landing.tech.body", language)}
-              </p>
-            </div>
+            <SectionIntro
+              eyebrowKey="landing.tech.eyebrow"
+              titleKey="landing.tech.title"
+              bodyKey="landing.tech.body"
+              language={language}
+              level={3}
+            />
 
             <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
               <div data-reveal className="space-y-6">
@@ -779,7 +531,7 @@ const LandingPage = () => {
                 </dl>
               </div>
 
-              <div data-reveal>
+              <div data-reveal="card">
                 <RiskExplorer language={language} />
               </div>
             </div>
@@ -791,14 +543,11 @@ const LandingPage = () => {
           id="alur"
           className="scroll-mt-28 px-4 pb-16 sm:px-10 lg:px-16 lg:pb-24"
         >
-          <div className="max-w-2xl" data-reveal>
-            <p className="text-body-sm font-semibold text-warm-accent-deep">
-              {t("landing.nav.start", language)}
-            </p>
-            <h2 className="mt-3 font-heading text-landing-h2 leading-tight text-warm-ink">
-              {t("landing.flow.title", language)}
-            </h2>
-          </div>
+          <SectionIntro
+            eyebrowKey="landing.nav.start"
+            titleKey="landing.flow.title"
+            language={language}
+          />
 
           <div className="mt-10 grid gap-5 lg:grid-cols-3 lg:items-center">
             {FLOW.map((flow, index) => {
@@ -806,7 +555,7 @@ const LandingPage = () => {
               return (
                 <div
                   key={flow.title}
-                  data-reveal
+                  data-reveal="card"
                   style={{ transitionDelay: `${index * 80}ms` }}
                   className={`rounded-cell p-6 sm:p-7 shadow-card ${
                     featured
@@ -841,14 +590,12 @@ const LandingPage = () => {
           </div>
 
           <div className="mt-16 border-t border-warm-line pt-12 sm:mt-20">
-            <div className="max-w-2xl" data-reveal>
-              <p className="text-body-sm font-semibold text-warm-accent-deep">
-                {t("landing.faq.eyebrow", language)}
-              </p>
-              <h3 className="mt-3 font-heading text-h2 leading-tight text-warm-ink">
-                {t("landing.faq.title", language)}
-              </h3>
-            </div>
+            <SectionIntro
+              eyebrowKey="landing.faq.eyebrow"
+              titleKey="landing.faq.title"
+              language={language}
+              level={3}
+            />
 
             <div className="mt-6 divide-y divide-warm-line border-y border-warm-line">
               {FAQ.map((item) => (

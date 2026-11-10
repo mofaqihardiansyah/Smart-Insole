@@ -5,6 +5,9 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   signOut,
+  deleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
 } from "firebase/auth";
 import type { User } from "firebase/auth";
 import type { StringFormat } from "firebase/storage";
@@ -13,9 +16,11 @@ import {
   db,
   realtimeDb,
   createUserDoc,
+  deleteUserDoc,
   getUserDoc,
   getStorageInstance,
 } from "../services/firebaseConfig";
+import { removeUserMirror } from "../services/firebaseRealtime";
 import { sendVerificationEmail } from "../utils/authMail";
 
 // `firebase/storage` is loaded on demand inside uploadProfilePhoto instead of
@@ -217,6 +222,129 @@ export const useAuth = () => {
     [user]
   );
 
+  /**
+   * Delete this account for real.
+   *
+   * On Spark there is no server and no Admin SDK in the browser, so the only
+   * account an app can delete is the signed-in one: `deleteUser` is a client
+   * SDK call. The order is deliberate.
+   *
+   *   1. Re-authenticate. Firebase refuses to delete a session that is not
+   *      recent, and the password is the proof we ask for anyway.
+   *   2. Remove the RTDB mirror. It holds the device pairing, and a pairing
+   *      left behind under a dead uid would block the device from ever being
+   *      paired again, so a failure here aborts before anything is lost.
+   *   3. Remove the Firestore profile.
+   *   4. Delete the Auth user — the irreversible commit point.
+   *
+   * If step 4 fails, the profile is recreated so the account does not survive
+   * as a signed-in shell with no role and no record. The mirror is not
+   * recreated: the rules let the owner delete it but not write it back, so a
+   * failure after step 2 leaves a live account without its pairing. Retrying is
+   * safe (every step is idempotent), and an admin can pair the device again.
+   *
+   * Admins are excluded: the console would lose its only key, and the account
+   * that can erase others is the one that must not erase itself.
+   */
+  const doDeleteAccount = useCallback(
+    async (password: string): Promise<{ success: boolean; code?: string }> => {
+      const current = auth.currentUser;
+      if (!current || !current.email) {
+        return { success: false, code: "auth/no-current-user" };
+      }
+      // Read the role from the store, not from the hook's copy: this is the
+      // last moment the document exists, and the console must not lose its
+      // only key to a stale render.
+      const profile = await getUserDoc(current.uid).catch(() => null);
+      if (profile?.role === "admin") {
+        return { success: false, code: "auth/admin-account" };
+      }
+
+      try {
+        await reauthenticateWithCredential(
+          current,
+          EmailAuthProvider.credential(current.email, password)
+        );
+      } catch (err) {
+        return { success: false, code: (err as { code?: string })?.code };
+      }
+
+      const restoreProfile = async () => {
+        try {
+          await createUserDoc(current.uid, {
+            uid: current.uid,
+            email: current.email,
+            displayName: current.displayName,
+            role: "user",
+            active: true,
+            createdAt: new Date().toISOString(),
+          });
+        } catch (restoreError) {
+          console.error("Gagal memulihkan profil:", (restoreError as Error)?.message);
+        }
+      };
+
+      try {
+        await removeUserMirror(current.uid);
+      } catch (err) {
+        return { success: false, code: (err as { code?: string })?.code };
+      }
+
+      try {
+        await deleteUserDoc(current.uid);
+      } catch (err) {
+        return { success: false, code: (err as { code?: string })?.code };
+      }
+
+      try {
+        await deleteUser(current);
+      } catch (err) {
+        await restoreProfile();
+        return { success: false, code: (err as { code?: string })?.code };
+      }
+
+      setUser(null);
+      setDisplayName("");
+      setRole("");
+      setActive(null);
+      return { success: true };
+    },
+    []
+  );
+
+  /**
+   * Save the display name the profile page edits.
+   *
+   * The Firestore copy is written first because the auth listener reads
+   * `profile.displayName` before `currentUser.displayName`, and the admin
+   * console reads only the document. `createUserDoc` merges, so it updates the
+   * name without touching role or active. The Auth profile is best effort:
+   * registration already treats it that way, and a failure there must not throw
+   * away a write that succeeded.
+   */
+  const doUpdateDisplayName = useCallback(async (name: string) => {
+    const current = auth.currentUser;
+    if (!current) return { success: false, code: "auth/no-current-user" };
+
+    const trimmed = name.trim();
+    if (!trimmed) return { success: false, code: "profile/empty-name" };
+
+    try {
+      await createUserDoc(current.uid, { displayName: trimmed });
+    } catch (err) {
+      return { success: false, code: (err as { code?: string })?.code };
+    }
+
+    try {
+      await updateProfile(current, { displayName: trimmed });
+    } catch (err) {
+      console.warn("Gagal simpan nama (Auth):", (err as Error)?.message);
+    }
+
+    setDisplayName(trimmed);
+    return { success: true };
+  }, []);
+
   return {
     user,
     loading,
@@ -226,6 +354,8 @@ export const useAuth = () => {
     login: doLogin,
     register: doRegister,
     logout: doLogout,
+    deleteAccount: doDeleteAccount,
+    updateDisplayName: doUpdateDisplayName,
     uploadProfilePhoto,
   };
 };

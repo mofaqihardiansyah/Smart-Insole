@@ -363,10 +363,82 @@ body {
   transform: none;
 }
 
+/* Grid cards settle with a hair of scale as well as the lift, so a row arrives
+   instead of sliding. Only cards opt in: a scaling paragraph reads as a wobble. */
+.landing-scope [data-reveal="card"] {
+  transform: translateY(16px) scale(0.985);
+}
+
+/* The hairline that opens a section draws itself before the heading arrives.
+   It carries its own transform, so it has to beat the shared reveal lift. */
+.landing-scope [data-reveal].landing-rule {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 400ms ease-out;
+}
+
+.landing-scope [data-reveal].landing-rule.revealed {
+  transform: scaleX(1);
+}
+
+/* A card inside a reveal wrapper owns its own hover timing. Without this the
+   wrapper's 700ms reveal transition also governs the lift, and the shadow
+   (absent from that property list) snaps instead of easing. */
+.landing-scope .landing-card {
+  transition:
+    transform 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+/* The icon answers the card's lift, at the same 150ms step. */
+.landing-scope .landing-card .landing-card-icon {
+  transition: transform 150ms ease-out;
+}
+
+.landing-scope .landing-card:hover .landing-card-icon {
+  transform: translateY(-2px);
+}
+
+/* The two small entrances that are not scroll reveals: the risk level chip
+   fading in when it changes, and the mobile menu sheet opening. */
+@keyframes chip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-scope [data-chip-swap] {
+    animation: chip-in 180ms ease-out both;
+  }
+
+  .landing-scope [data-sheet] {
+    animation: sheet-in 160ms ease-out both;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .landing-scope [data-reveal] {
     opacity: 1;
     transform: none;
+    transition: none;
+  }
+
+  .landing-scope [data-reveal].landing-rule {
     transition: none;
   }
 }

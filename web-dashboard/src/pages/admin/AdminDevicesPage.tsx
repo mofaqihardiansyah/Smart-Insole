@@ -3,13 +3,13 @@ import { Activity, BatteryMedium, Download } from "lucide-react";
 import { useInsole } from "../../context/InsoleContext";
 import { useUser } from "../../context/UserContext";
 import { t } from "../../utils/i18n";
+import { adminErrorCopy, type AdminErrorCopy } from "../../utils/adminErrors";
 import { AdminEmpty, AdminPageHeader, AdminSection } from "./AdminPrimitives";
 import { logAdminAction } from "../../utils/adminAudit";
 import {
   GlassButton,
   GlassCard,
   GlassInput,
-  PageHeader,
   PanelHeader,
   StatePanel,
   StatusBanner,
@@ -28,7 +28,7 @@ interface DeviceCardProps {
   deviceId: string;
   owner: string | null;
   language: string;
-  onError: (message: string | null) => void;
+  onError: (copy: AdminErrorCopy | null) => void;
 }
 
 /** One device: live latest packet, online state, and retention controls. */
@@ -47,7 +47,7 @@ const DeviceCard = ({ deviceId, owner, language, onError }: DeviceCardProps) => 
           setLatest(reading);
           onError(null);
         },
-        (err) => onError(err?.message || t("admin.devices.error", language))
+        (err) => onError(adminErrorCopy(err))
       ),
     [deviceId, language, onError]
   );
@@ -100,7 +100,7 @@ const DeviceCard = ({ deviceId, owner, language, onError }: DeviceCardProps) => 
         /* the prune succeeded; the audit warning is not worth blocking on */
       }
     } catch (err) {
-      onError((err as { message?: string })?.message || t("admin.actionError", language));
+      onError(adminErrorCopy(err));
     } finally {
       setBusy(false);
     }
@@ -108,19 +108,19 @@ const DeviceCard = ({ deviceId, owner, language, onError }: DeviceCardProps) => 
 
   return (
     <AdminSection
-        title={deviceId}
-        action={
-          <StatusChip
-            level={online ? "safe" : "danger"}
-            label={
-              online
-                ? t("admin.devices.online", language)
-                : t("admin.devices.offline", language)
-            }
-            size="sm"
-          />
-        }
-      >
+      title={t("admin.devices.one", language, { id: deviceId })}
+      action={
+        <StatusChip
+          level={online ? "safe" : "danger"}
+          label={
+            online
+              ? t("admin.devices.online", language)
+              : t("admin.devices.offline", language)
+          }
+          size="sm"
+        />
+      }
+    >
       <div className="space-y-4 pb-2">
         <dl className="divide-y divide-border-strong">
           <div className="flex items-center justify-between gap-4 py-2">
@@ -201,15 +201,15 @@ const AdminDevicesPage = () => {
   const { language } = useInsole();
   const [deviceIds, setDeviceIds] = useState<string[]>([]);
   const [pairings, setPairings] = useState<Record<string, string[]>>({});
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AdminErrorCopy | null>(null);
 
   useEffect(
     () =>
       subscribeToDeviceIds(
         (ids) => setDeviceIds(ids.slice(0, 50)),
-        (err) => setError(err?.message || t("admin.devices.error", language))
+        (err) => setError(adminErrorCopy(err))
       ),
-    [language]
+    []
   );
 
   useEffect(() => subscribeToAllUserDevices(setPairings), []);
@@ -227,11 +227,9 @@ const AdminDevicesPage = () => {
       {error && (
         <StatusBanner
           tone="danger"
-          title={t("admin.devices.error", language)}
-          nextAction={t("common.nextStepCheckConnection", language)}
-        >
-          {error}
-        </StatusBanner>
+          title={t(error.message, language)}
+          nextAction={t(error.next, language)}
+        />
       )}
 
       {deviceIds.length === 0 ? (

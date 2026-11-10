@@ -2,7 +2,7 @@ import React from "react";
 import type { ReactNode } from "react";
 
 /**
- * The console's two structural pieces, so all five tabs share one rhythm.
+ * The console's two structural pieces, so all four tabs share one rhythm.
  *
  * A page opens with a large sentence-case title over a rule; sections follow
  * with a smaller heading over open canvas. No box wraps a section: on a work

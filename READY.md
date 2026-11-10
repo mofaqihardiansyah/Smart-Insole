@@ -1,7 +1,7 @@
 # READY.md
 
 Verified environment and repository state. Read this before exploring.
-Snapshot: **8 November 2026**. Update only when a fact changes.
+Snapshot: **10 November 2026**. Update only when a fact changes.
 
 ## Runtime
 
@@ -29,12 +29,12 @@ Snapshot: **8 November 2026**. Update only when a fact changes.
 
 | Path | Contents |
 | --- | --- |
-| `web-dashboard/src/pages/` | 11 route pages + `admin/` (5 konsol) |
+| `web-dashboard/src/pages/` | 13 route pages (`NotificationsPage` only redirects) + `admin/` (5 konsol) |
 | `web-dashboard/src/components/` | `layout/`, `dashboard/`, `monitoring/`, `ui/`, `auth/`, `landing/`, `PlantarHeatmap.tsx` |
 | `web-dashboard/src/context/` | `InsoleContext.tsx` (readings + risk + source), `UserContext.tsx` |
 | `web-dashboard/src/services/` | `firebaseConfig.ts`, `firebaseRealtime.ts` |
-| `web-dashboard/src/utils/` | `randomForestRisk.ts`, `incidents.ts`, `rf-model.json`, `i18n.ts`, `audioAlert.ts`, `exportCsv.ts` |
-| `web-dashboard/src/hooks/` | `useAuth.ts` |
+| `web-dashboard/src/utils/` | `randomForestRisk.ts`, `incidents.ts`, `rf-model.json`, `i18n.ts`, `audioAlert.ts`, `exportCsv.ts`, `authErrors.ts`, `adminErrors.ts` |
+| `web-dashboard/src/hooks/` | `useAuth.ts`, `useLandingMotion.ts` |
 | `web-dashboard/src/types/` | Shared TypeScript contracts |
 | `firmware/src/` | `main.cpp`, `RandomForest.cpp` |
 | `firmware/include/` | `config.h.example`, `RandomForest.h`, `rf-model-data.h` |
@@ -44,14 +44,22 @@ Snapshot: **8 November 2026**. Update only when a fact changes.
 | `datasets/` | `dfn-ds/` (273 MB), `optitrack/` (84 MB), `figshare-dfu/` (32 KB) |
 | `design/` | `smart-insole-dashboard.figcraft` (FigCraft: dashboard 1440 + 375) |
 
-## Current state (as of 8 Nov 2026)
+## Current state (as of 10 Nov 2026)
 
 - The admin console lives at `/admin/*` (`pages/admin/`) with its own
   `AdminLayout` and `RequireAdmin`; `/admin` is no longer part of the patient
   navigation or the patient shell.
 - TypeScript migration of the web app is complete for source files. There are
-  46 test files: 29 `.test.tsx`, 1 `.test.ts`, and 16 `.test.js` (the plain-JS
+  50 test files: 32 `.test.tsx`, 2 `.test.ts`, and 16 `.test.js` (the plain-JS
   ones are kept on purpose, see `375267a6`).
+- The landing's motion is CSS only, documented as a timing table in `DESIGN.md`
+  (ADR-016): `landing/` owns its content and sections, `useLandingMotion.ts`
+  owns the reveal observer, the drift loop and the nav state. `framer-motion`
+  is still in `package.json` but imported nowhere, and `shell.test.tsx` fails
+  any import of it, so app pages cannot regain entrance animation.
+- Console failures render as cause + next step from `utils/adminErrors.ts`, never
+  the SDK message; a write that landed but whose mirror or audit entry did not
+  is reported as a warning, not a failure.
 - `web-dashboard/dist/` is tracked in git (10 files). Do not rebuild or patch
   it unless the user asks.
 - Firebase project `sole-3b2e8`; rules live in `database.rules.json`,

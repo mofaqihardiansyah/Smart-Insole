@@ -40,7 +40,12 @@ service cloud.firestore {
         )
       );
 
-      allow delete: if isAdmin();
+      // Erasure: an admin may delete any profile; an account may delete its
+      // own. Self-delete is what makes account deletion possible without a
+      // server — the client removes its own document while the token is still
+      // valid, then deletes the Auth user. It cannot be used to escalate:
+      // deleting a document grants nothing.
+      allow delete: if isAdmin() || request.auth.uid == uid;
     }
 
     // Everything else in this project has no business existing.

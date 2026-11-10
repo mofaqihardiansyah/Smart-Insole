@@ -149,7 +149,7 @@ const AppSearch = ({ links = [] }: AppSearchProps) => {
   let runningIndex = -1;
 
   return (
-    <div ref={rootRef} className="relative w-full max-w-[420px]">
+    <div ref={rootRef} className="relative w-full">
       <div className="relative">
         <Search
           className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted"

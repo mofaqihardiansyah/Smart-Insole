@@ -10,7 +10,6 @@ import AdminUsersPage from "./AdminUsersPage";
 const mocks = vi.hoisted(() => ({
   listUsers: vi.fn(),
   updateUserDoc: vi.fn(),
-  deleteUserDoc: vi.fn(),
   pairDevice: vi.fn(),
   unpairDevice: vi.fn(),
   mirrorAccountFlag: vi.fn(),
@@ -22,7 +21,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../../services/firebaseConfig", () => ({
   listUsers: mocks.listUsers,
   updateUserDoc: mocks.updateUserDoc,
-  deleteUserDoc: mocks.deleteUserDoc,
 }));
 
 vi.mock("../../services/firebaseRealtime", () => ({

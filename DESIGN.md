@@ -621,14 +621,33 @@ one fluid step so no heading jumps size at a breakpoint), and the app-wide
 `body`, `body-lg`, `body-sm` and `caption` tokens; `text-sm`, `text-base`,
 `text-lg`, `text-xs` built-ins are deleted from the page.
 
-Motion budget: hero rise-in (420ms), scroll reveal via one IntersectionObserver
-(700ms, opacity and translate only), hover and focus transitions at 150ms, the
-nav's one state change from attached to floating (300ms, interpolating its own
-width, radius and shadow), drifting headline tiles (one rAF loop), smooth
-scrolling. All of it is disabled under `prefers-reduced-motion`. No WebGL, no
-parallax, no char-weight rAF: the reference export's continuous animations were
-removed because the audience includes elderly users on low-end devices, and the
-app pages stay at MOTION 1.
+Motion budget, in one place because the page spends it deliberately:
+
+| Move | Timing | Trigger |
+| --- | --- | --- |
+| Hero rise-in | 420ms, staggered 150–900ms down the column | Page mount |
+| Section reveal | 700ms, opacity and translate; cards add `scale(0.985)` | One IntersectionObserver, reveal once |
+| Section opening | hairline draws `scaleX` 400ms, then eyebrow/heading/lead at 80/160/240ms offsets | Section enters the viewport |
+| Grid stagger | 80ms per item | Section enters |
+| Card hover | 150ms lift and shadow; the icon answers at the same step | Pointer, focus |
+| Nav attached → floating | 300ms, interpolating its own width, radius, shadow and inset | Page scrolls past 24px |
+| Risk level cross-fade | 180ms opacity | The explorer's level changes |
+| Risk score count-up | 300ms | A preset click only; a slider drag follows the model directly |
+| Mobile menu sheet | 160ms, opacity and a 6px drop | Menu opened |
+
+Drifting headline tiles stay one rAF loop. Smooth scrolling stays. All of it
+is disabled under `prefers-reduced-motion`: the reveal, rule, chip and sheet
+moves through the stylesheet's reduce block, the nav swap through
+`motion-reduce:transition-none` (it still changes layout, it just stops
+interpolating), and the two JavaScript moves (the count-up and the drift loop)
+by reading the same query before they start. No WebGL, no parallax, no
+char-weight rAF: the reference export's continuous animations were removed
+because the audience includes elderly users on low-end devices, and the app
+pages stay at MOTION 1.
+
+The count-up is the one move with a rule attached: a preset is a jump, so
+showing the distance travelled helps; a drag fires a step per pixel, so counting
+there would read as lag. It therefore never runs while a slider is moving.
 
 Deliberately not adopted from the reference: fabricated testimonials, fake
 customer logos, sample pricing, external stock photos, and the placeholder
@@ -656,9 +675,18 @@ The console is a second surface, not a page inside the patient shell.
 - `AdminLayout` owns the chrome: brand, a "Konsol admin" badge, a horizontally
   scrollable tab row, "Buka aplikasi", and sign out. There is no patient nav
   pill, no alert bell, no user search, and no early-warning dialog.
-- Five tabs only: Ringkasan, Pengguna, Perangkat, Insiden, Konfigurasi.
+- Four tabs only: Ringkasan, Pengguna, Perangkat, Insiden.
 - The console shows the fleet, not one foot: devices come from `/devices`, and
   a device is read only by the account it is paired with.
 - Destructive actions confirm first, write an audit entry after success, and
   disable themselves against the acting account (no self-demote, no
   self-deactivate, no self-delete, no demoting the last active admin).
+- A failed read or write never prints the SDK's own message. The code maps to a
+  cause and a next step (`utils/adminErrors.ts`, the same cause/next shape the
+  auth pages use), so the console stays in Indonesian and the operator gets
+  something to do rather than a Firestore path.
+- Warning and failure are different claims. A write that landed but whose
+  Realtime mirror or audit entry did not is a warning: calling it a failure
+  sends the operator to repeat a write that already succeeded. The users tab
+  has one warning slot, so a form rejection and a stale mirror failure cannot
+  stack into two banners.

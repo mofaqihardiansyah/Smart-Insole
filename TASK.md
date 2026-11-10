@@ -7,6 +7,59 @@ summary line per month.
 
 ## Done
 
+- **2026-11-10 — Landing: motion dan struktur ulang; konsol admin: copy error.**
+  Landing pecah menjadi `components/landing/landingData.ts` (isi), `SectionIntro`
+  (pembuka bagian berulang), `HowItWorks` (tiga langkah + vignette), dan
+  `hooks/useLandingMotion.ts` (tiga efek); `LandingPage.tsx` tinggal komposisi.
+  Motion diperluas, mesinnya CSS saja karena `shell.test.tsx` melarang
+  `framer-motion` dan `index.css` sudah punya blok `prefers-reduced-motion`:
+  kartu ikut `scale(0.985)`, garis pembuka bagian menggambar `scaleX` 400 md,
+  eyebrow/judul/lead masuk berurutan 80/160/240 md, chip level risiko cross-fade
+  180 md, skor `RiskExplorer` menghitung naik 300 md hanya saat preset diklik
+  (drag slider langsung mengikuti model), sheet menu 160 md, ikon kartu ikut
+  terangkat 150 md. `pagesContract.test.js` sekarang memindai
+  `components/landing/*` juga, supaya ekstraksi tidak melemahkan gerbang token.
+  Konsol admin: `utils/adminErrors.ts` memetakan kode Firestore/RTDB ke
+  sebab + langkah berikutnya (tidak pernah mencetak pesan SDK berbahasa Inggris),
+  Ringkasan memakai skeleton alih-alih `0`/tanda pisah sebagai klaim, band audit
+  kosong membawa `body`, header aksi Insiden memakai kunci sendiri, role tampil
+  sebagai "Admin"/"Pengguna", judul perangkat "Perangkat {id}", konfirmasi
+  menyebut nama (dan role) akun yang disentuh, kegagalan mirror/audit menjadi
+  satu slot peringatan (bukan "tindakan gagal"), target sentuh AdminLayout 44 px.
+  Verifikasi: `npm test` 50 file / 430 tes, `tsc --noEmit`, build ke direktori
+  sementara. (working tree)
+
+- **2026-11-10 — Audit frontend: klaim landing, motion, dan konsistensi layout.**
+  Landing berhenti mengklaim 10 pembacaan/detik (firmware 1 Hz), ambang bahaya
+  70 kPa/0,1 dtk (mesin 200 kPa pada satu sampel), dan fitur yang sudah dihapus
+  (ambang yang bisa diatur, getaran, notifikasi peramban); tile laju sampel di
+  `docs/guidebook.html` ikut 1 Hz. Entrance animation di shell (250 md) dan
+  stagger Dasbor (80 md/kartu) dihapus karena `DESIGN.md` melarang entrance
+  animation di MOTION 1; kartu fitur landing memindahkan `data-reveal` ke
+  wrapper supaya hover kembali 150 md dan shadow tidak melompat. Tombol "Simpan
+  profil" kini menyimpan sungguhan: `users/<uid>.displayName` → `updateProfile`
+  → state, dengan banner gagal yang jujur, dikunci 3 tes baru di
+  `useAuth.test.tsx`. Label ambang Settings dipendekkan dan angka rata bawah,
+  tabel admin tidak lagi scroll ganda, sel aksi Dasbor `px-6`, aria durasi
+  slider membawa desimal, import `PageHeader` mati dihapus, panel statistik
+  Profile memakai "Belum ada insiden tercatat". Verifikasi: `npm test` 49 file /
+  426 tes, `tsc --noEmit`, build ke direktori sementara. (working tree)
+
+- **2026-11-10 — Ambang jadi konstanta + hapus akun sungguhan.** Ambang risiko
+  (35/200 kPa, 20 dtk) sekarang satu konstanta klinis di web dan firmware:
+  editor Settings, override `riskThresholds.v2`, node `config/global`,
+  `setGlobalConfig`/`subscribeToGlobalConfig`, halaman dan tab Konfigurasi admin
+  dihapus; Settings menampilkan tiga nilai sebagai fakta. Penghapusan akun
+  dipindah ke Profile (pemilik): re-auth kata sandi → hapus mirror RTDB
+  (termasuk pairing) → hapus dokumen Firestore → `deleteUser`, dengan pemulihan
+  profil bila langkah terakhir gagal; akun admin ditolak. Tombol Hapus di konsol
+  admin dihapus, Nonaktifkan tetap. Rules `database.rules.json` dan
+  `firestore.rules` di-deploy ke `sole-3b2e8`. `DESIGN.md`, `docs/AFD.md`, dan
+  `web-dashboard/README.md` diselaraskan (empat tab, Settings baca saja, hapus
+  akun); PRD lama `tasks/` dibiarkan sebagai riwayat. Verifikasi: `npm test` 49
+  file / 423 tes, `tsc --noEmit`, build ke direktori sementara, rules
+  syntax+compile lolos. (working tree)
+
 - **2026-11-08 — Firmware flashed, boot terverifikasi.** Board ESP32-D0WD-V3
   ter-flash dan boot bersih: WiFi tersambung, `Firebase configured`,
   `RandomForest model loaded (20 trees)`, sampel live dengan transisi
@@ -233,9 +286,9 @@ summary line per month.
 
 ## Next
 
-1. **Deploy rules** — `firebase deploy --only database`, lalu uji satu akun
-   non-admin dan satu admin. Rules kini menolak `active === false` dan memberi
-   admin baca `/devices`, `/audit`, `/triage`.
+1. **Uji hapus akun** — buat akun uji, hapus dari Profile dengan kata sandi,
+   lalu pastikan login gagal `auth/user-not-found`; dokumen Firestore dan mirror
+   `users/<uid>` harus hilang.
 2. **Pairing** — pasangkan device ke akun
    (`firebase database:set /users/<uid>/devices/insole-01 true`). Firmware
    sudah ter-flash dan menulis ke `devices/<DEVICE_ID>/readings`; tanpa

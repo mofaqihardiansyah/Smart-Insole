@@ -7,6 +7,30 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- `web-dashboard/src/utils/adminErrors.ts` maps a Firestore or Realtime Database
+  error code to a cause and a next step, the same shape the auth pages use. The
+  console no longer renders the SDK's English message, which named the failing
+  path and sometimes the project id. Its test pins that a rules rejection keeps
+  advice distinct from a connection failure and that every returned key exists
+  in both dictionaries.
+- The landing is split into `components/landing/landingData.ts` (content),
+  `SectionIntro` (the repeated section opening), `HowItWorks` (three steps and
+  their vignettes) and `hooks/useLandingMotion.ts` (the three effects);
+  `LandingPage.tsx` is composition only. `pagesContract.test.js` follows the
+  extracted files, so the warm-register gate still covers every landing source.
+- Landing motion: cards settle with `scale(0.985)`, each section's hairline
+  draws itself (`scaleX`, 400ms) before the eyebrow, heading and lead arrive at
+  80/160/240ms offsets, grid items stagger 80ms apart, the risk chip cross-fades
+  on a level change (180ms), the explorer's score counts up (300ms) on a preset
+  click only, the mobile menu sheet opens at 160ms, and a feature card's icon
+  answers its lift. All CSS, all inside the reduced-motion guard;
+  `DESIGN.md`'s landing motion budget now lists each move with its timing.
+- Real account deletion in Profile: password confirmation, then re-auth, RTDB
+  mirror removal, Firestore profile removal, and Firebase Authentication
+  `deleteUser`; the profile is recreated if the last step fails. Admin accounts
+  cannot self-delete.
+- `web-dashboard/src/hooks/useAuth.test.tsx` pins the deletion order, the admin
+  refusal, the wrong-password abort, and the profile restore.
 - History page draws 20 rows per page with a "load more" control, a "showing X
   of Y" line, and a note when the device snapshot itself is cut short. Summary
   counts and CSV export still cover the whole register.
@@ -49,25 +73,42 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- The admin console's failures read as a cause and a next step instead of the
+  SDK message, and a warning is no longer called a failure: when the Firestore
+  write landed but the Realtime mirror or the audit entry did not, the tab says
+  so in one warning slot. The users tab also explains the domain rejections
+  (a malformed device id, a device already paired elsewhere) in that slot.
+  Confirmation dialogs name the account they touch, roles render as
+  "Admin"/"Pengguna", and each device section is titled "Perangkat {id}".
+- The app shell no longer animates page changes: the router's 250ms fade/slide
+  and the dashboard's 80ms-per-card stagger are gone. `DESIGN.md` forbids
+  entrance animations at `MOTION 1`, because the numbers already move every
+  second. Route remount on pathname change is kept.
+- Saving the profile name now writes it: Firestore `users/<uid>.displayName`
+  first (the auth listener and the admin console both read that copy), then the
+  Firebase Auth profile, then the local state. The button reports a real
+  failure instead of raising a success banner over a write that never happened.
+- Risk thresholds are now clinical constants (35/200 kPa, 20 s), identical in
+  the web engine and the firmware. Settings shows them read-only, with no
+  editor, no local override, and no fleet configuration path.
 - The admin console got its own visual register: one divided status strip
   instead of three equal stat cards, underline navigation instead of the patient
   pill, human-readable audit verbs, filter names that describe the filter, and
   stacked user rows below `md` instead of a sideways-scrolling table.
-- The admin console is now a separate surface at `/admin/*` with its own shell,
-  guard, and five tabs; the patient navigation no longer links to it.
+- The admin console is a separate surface at `/admin/*` with its own shell,
+  guard, and four tabs (the Configuration tab is gone); the patient navigation
+  no longer links to it.
 - Deactivated accounts are actually blocked: the app shows a deactivated screen,
   and the database rules refuse reads when `users/<uid>/active` is false.
 - Admins can pair a device to an account, see the whole fleet, change a role,
   export the user list as CSV, prune old history with a JSON archive, and triage
   danger incidents. Every successful action is written to `/audit`.
-- A normal account no longer sees a threshold editor at all: the limits render
-  as two plain values, with no fields, buttons, or "admin only" notice, so the
-  editing capability is not advertised.
+- A threshold editor is no longer advertised or reachable by any role: the three
+  live values render as plain figures, so no account is shown a control that
+  cannot reach the device.
 - Telemetry is per device: firmware writes `devices/<id>/readings/...`, the web
   reads the device paired in `users/<uid>/devices`, and accounts without a
   pairing keep the legacy `/readings` feed until the new firmware is flashed.
-- The local threshold override moved to `riskThresholds.v2`; an old saved
-  70 kPa limit is discarded instead of silently surviving the 200 kPa change.
 - History summary reads "total in the device window" when the stored snapshot
   is capped, instead of implying an all-time count.
 - Browser notification permission card removed until delivery ships: nothing in
@@ -104,6 +145,39 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- The admin overview no longer states a count before it knows one. The status
+  strip started at `0` for every source, which is a claim, and a dash would have
+  been a second invented value; each cell now holds a skeleton and announces the
+  wait. The empty audit band also carries a next-step line, and the Incidents
+  action column stopped borrowing the users table's header.
+- The admin shell's tab, "Buka aplikasi" and sign-out links were 40px tall; they
+  are now 44px, the same target the app's own controls use.
+- The landing page no longer claims ten readings per second. The firmware samples
+  at 1 Hz (`SAMPLE_INTERVAL_MS 1000`), and the dashboard already said so, so the
+  hero, the spec tile, the "how it works" step and the technical pipeline were
+  contradicting the product. All four now say once a second.
+- The landing page no longer quotes a 70 kPa danger limit or a 0.1 s danger
+  duration. The engine uses 200 kPa on a single reading; the risk explorer and
+  the "Judge" step now say that.
+- The landing page no longer advertises features that were removed: adjustable
+  thresholds, vibration, and browser notifications. The feature card now states
+  that the dashboard and device share one threshold set, and the FAQ names the
+  alarm sound that actually exists.
+- Settings' three threshold values now sit on one line. The third label wrapped
+  to two lines at `sm`, so its number sat lower than the other two; the labels
+  are shorter and the figures bottom-align in equal-height cells.
+- Admin audit and incident tables no longer nest two horizontal scrollports.
+  `GlassTable` already scrolls, so the extra wrapper is gone.
+- The dashboard activity table's action cell matched the rest of the row
+  (`px-4` against `px-6`).
+- The landing feature cards lift at the 150ms hover step again. They were inside
+  a `[data-reveal]` wrapper whose 700ms transition also governed the hover, so
+  the lift was slow and the shadow snapped; the reveal moved to the wrapper.
+- The risk explorer's duration slider announces the same value it shows
+  (`12,5 detik`, not `13 detik`) to a screen reader.
+- The profile statistics panel no longer reuses "Belum tersedia" for an empty
+  incident list; it says no incidents are recorded.
+- Removed dead `PageHeader` imports from the four admin pages.
 - Every signed-in page now fills the shell's 1400px content column. Device,
   Settings, Profile, Notifications and Admin each capped and centred their own
   `<section>` (`max-w-3xl` / `max-w-5xl`), so their cards sat narrower than the
@@ -118,6 +192,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Removed
 
+- The threshold editor and its local override (`riskThresholds.v2`), the
+  `config/global` RTDB node and subscription, `setGlobalConfig`, the admin
+  Configuration page and tab, and their i18n keys and tests.
+- The admin console's "Hapus" action and its confirmation copy. The button
+  deleted only the Firestore document, leaving the account able to sign in;
+  "Nonaktifkan" is the admin's real lever and the owner erases their own account
+  from Profile.
 - Fuzzy logic inference (`src/utils/fuzzyRisk.ts` and its test) and the
   RF-vs-fuzzy agreement test. Random Forest is now the only risk algorithm.
 - Renamed the wire field `fuzzy_risk_score` to `risk_score` in the firmware,
