@@ -1,7 +1,7 @@
 insole-assembled|insole.scad|0,0,0,58,0,25,0|GHOST=true|
-insole-exploded|insole.scad|0,0,0,52,0,25,0|LIFT=35|
+insole-exploded|insole.scad|0,0,0,52,0,25,0|LIFT=48|
 insole-detail|insole.scad|0,0,0,50,0,25,0|DETAIL=true,NOCOVER=true|
-insole-top|insole.scad|0,0,0,0,0,0,0|NOCOVER=true|
+insole-top|insole.scad|0,0,0,0,0,0,0|NOCOVER=true,NOCABLE=true|
 pouch|pouch.scad|0,0,0,180,0,180,0||
 pouch-back|pouch.scad|0,0,0,0,0,0,0||
 pouch-contents|pouch-contents.scad|0,0,0,14,0,0,0||

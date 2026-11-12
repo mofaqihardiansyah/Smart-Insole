@@ -12,6 +12,7 @@
 //   LIFT     > 0  tampak ledak (cover dan kain diangkat)
 //   GHOST    true cover tembus pandang, sensor dan kabel terlihat
 //   DETAIL   true potongan detail midfoot (x 95..165), cover dibuka
+//   NOCABLE  true sembunyikan bundel kabel (tampak atas berskala)
 //   EXPORT   true hanya alas + cover, untuk STL (tanpa penanda)
 
 include <gen/insole-data.scad>
@@ -31,6 +32,7 @@ LIFT = 0;
 GHOST = false;
 NOCOVER = false;
 DETAIL = false;
+NOCABLE = false;
 EXPORT = false;
 
 module outline2d() {
@@ -100,11 +102,18 @@ module cable() {
         }
 }
 
+// Kotak potongan untuk tampak DETAIL. Dideklarasikan di level atas karena
+// OpenSCAD tidak mengizinkan deklarasi module di dalam blok if.
+module detail_box() {
+  translate([DETAIL_BOX[0], DETAIL_BOX[1], DETAIL_BOX[2]])
+    cube([DETAIL_BOX[3], DETAIL_BOX[4], DETAIL_BOX[5]]);
+}
+
 module insole(lift = 0, show_cover = true, show_fabric = false, ghost = false) {
   color(mat("base")) base();
   sensors();
   tails();
-  cable();
+  if (!NOCABLE) cable();
   if (show_cover) {
     c = mat("cover");
     color(ghost ? [c[0], c[1], c[2], 0.30] : c) cover(lift);
@@ -121,12 +130,23 @@ if (EXPORT) {
     cover();
   }
 } else if (DETAIL) {
-  // Detail midfoot: satu blok memanjang yang memuat pocket, ekor FSR,
-  // channel, dan kabel sekaligus. Dipotong supaya bisa dilihat dekat.
-  intersection() {
-    insole(0, !NOCOVER, false, GHOST);
-    translate([DETAIL_BOX[0], DETAIL_BOX[1], DETAIL_BOX[2]])
-      cube([DETAIL_BOX[3], DETAIL_BOX[4], DETAIL_BOX[5]]);
+  // Detail midfoot. color() HARUS di luar intersection(): bila di dalam,
+  // OpenSCAD mewarnai permukaan potongan dengan warna "back" colorscheme
+  // (biru pada tema Tomorrow), bukan dengan warna material.
+  color(mat("base")) intersection() {
+    base();
+    detail_box();
+  }
+  color(mat("sensor")) intersection() {
+    union() {
+      sensors();
+      tails();
+    }
+    detail_box();
+  }
+  color(mat("cable")) intersection() {
+    cable();
+    detail_box();
   }
   markers(CALLOUTS);
 } else {

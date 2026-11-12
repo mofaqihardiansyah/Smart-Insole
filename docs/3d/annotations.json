@@ -79,7 +79,7 @@
         0
       ],
       "defines": {
-        "LIFT": "35"
+        "LIFT": "48"
       },
       "style": "tech",
       "callouts": [
@@ -88,7 +88,7 @@
           "at": [
             205,
             0,
-            54.4
+            67.5
           ],
           "dir": "right"
         },
@@ -96,10 +96,10 @@
           "c": "cover",
           "at": [
             150,
-            -41,
-            41.0
+            -40.1,
+            54.0
           ],
-          "dir": "right"
+          "dir": "left"
         },
         {
           "c": "sensor",
@@ -223,7 +223,8 @@
         0
       ],
       "defines": {
-        "NOCOVER": "true"
+        "NOCOVER": "true",
+        "NOCABLE": "true"
       },
       "style": "tech",
       "dims": [

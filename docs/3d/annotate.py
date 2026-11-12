@@ -192,7 +192,10 @@ def hsv_arrays(arr):
 
 
 def find_markers(arr, n):
-    """Cari n bola penanda lewat warna; kembalikan [(x, y) di piksel render].
+    """Cari n bola penanda lewat warna; kembalikan [(x, y, radius)].
+
+    Radius (persentil 95 jarak piksel dari pusat) dipakai untuk menentukan
+    besar badge, supaya bola penanda selalu tertutup rapat oleh badge.
 
     Ambang bawah dibuat longgar: sisi bola yang membelakangi cahaya dapat
     menjadi sangat gelap (val ~ 0,08) atau tertutup sebagian, sedangkan warna
@@ -219,7 +222,9 @@ def find_markers(arr, n):
             raise SystemExit(
                 f"penanda ke-{i + 1} ({MARKER_HEX[i]}) tidak ditemukan di render")
         ys, xs = np.nonzero(sel)
-        out.append((float(np.median(xs)), float(np.median(ys))))
+        cx, cy = float(np.median(xs)), float(np.median(ys))
+        d = np.hypot(xs - cx, ys - cy)
+        out.append((cx, cy, float(np.percentile(d, 95))))
     return out
 
 
@@ -232,8 +237,22 @@ def object_bbox(arr, bg):
     return obj, (int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max()))
 
 
+def backdrop(w, h, style):
+    """Latar kanvas penuh: putih polos, atau gradien lembut untuk hq."""
+    canvas = Image.new("RGB", (w, h), (255, 255, 255))
+    if style != "hq":
+        return canvas
+    t = np.linspace(0, 1, h)[:, None, None] ** 1.5
+    top = np.array([255, 255, 255], "float32")
+    bot = np.array([222, 231, 239], "float32")
+    rows = (top + (bot - top) * t).astype("uint8")
+    canvas.paste(Image.fromarray(np.repeat(rows, w, axis=1)), (0, 0))
+    return canvas
+
+
 def compose():
     w, h = FIGS["output"]
+    bar = 76
     for f in FIGS["figures"]:
         fid = f["id"]
         src = RAW / f"{fid}.png"
@@ -245,54 +264,37 @@ def compose():
         marks = find_markers(arr, len(f["callouts"]))
         H, W = arr.shape[:2]
 
-        # --- potong ke objek + ruang untuk label/dimensi, lalu perbesar
-        pad = 0.10 * max(x1 - x0, y1 - y0) + 40
-        cx0 = max(0, int(x0 - pad))
-        cy0 = max(0, int(y0 - pad))
-        cx1 = min(W, int(x1 + pad))
-        cy1 = min(H, int(y1 + pad))
+        # potong ke objek + sedikit ruang, lalu skalakan ke kanvas
+        pad = 0.06 * max(x1 - x0, y1 - y0) + 24
+        cx0, cy0 = max(0, int(x0 - pad)), max(0, int(y0 - pad))
+        cx1, cy1 = min(W, int(x1 + pad)), min(H, int(y1 + pad))
+        layer = Image.fromarray(
+            np.dstack([arr, (obj * 255).astype("uint8")])[cy0:cy1, cx0:cx1], "RGBA")
+        cw, ch = layer.size
 
-        # lapisan objek (alpha = mask) pada latar baru
-        obj_rgba = np.dstack([arr, (obj * 255).astype("uint8")])
-        crop = Image.fromarray(obj_rgba[cy0:cy1, cx0:cx1], "RGBA")
-        cw, ch = crop.size
-
-        if f["style"] == "hq":
-            t = np.linspace(0, 1, ch)[:, None, None] ** 1.4
-            top = np.array([255, 255, 255], "float32")
-            bot = np.array([224, 232, 240], "float32")
-            backdrop = (top + (bot - top) * t).astype("uint8")
-            backdrop = np.repeat(backdrop, cw, axis=1)
-            back = Image.fromarray(backdrop)
-            shadow = Image.new("L", (cw, ch), 0)
-            sx0, sy0 = x0 - cx0, y0 - cy0
-            sx1, sy1 = x1 - cx0, y1 - cy0
-            ImageDraw.Draw(shadow).ellipse(
-                [sx0 - 70, sy1 - 110, sx1 + 70, sy1 + 90], fill=96)
-            shadow = shadow.filter(ImageFilter.GaussianBlur(60))
-            back.paste((148, 160, 176), (0, 0), shadow)
-        else:
-            back = Image.new("RGB", (cw, ch), (255, 255, 255))
-        back.paste(crop, (0, 0), crop)
-
-        # --- muat ke kanvas 1600x1200 dengan margin untuk judul & dimensi
-        bar = 76
-        ml, mr, mt, mb = 46, 46, bar + 34, 46
+        ml, mr, mt, mb = 48, 48, bar + 36, 48
         if f.get("dims"):
-            mb += 66
-            mr += 66
-        avail_w, avail_h = w - ml - mr, h - mt - mb
-        s = min(avail_w / cw, avail_h / ch)
+            mb += 70
+            mr += 70
+        s = min((w - ml - mr) / cw, (h - mt - mb) / ch)
         nw, nh = int(cw * s), int(ch * s)
-        ox = ml + (avail_w - nw) // 2
-        oy = mt + (avail_h - nh) // 2
+        ox = ml + (w - ml - mr - nw) // 2
+        oy = mt + (h - mt - mb - nh) // 2
 
-        canvas = Image.new("RGB", (w, h), (255, 255, 255))
-        canvas.paste(back.resize((nw, nh), Image.LANCZOS), (ox, oy))
-        draw = ImageDraw.Draw(canvas)
-        marks = [(ox + (x - cx0) * s, oy + (y - cy0) * s) for x, y in marks]
+        canvas = backdrop(w, h, f["style"])
         box = [ox + (x0 - cx0) * s, oy + (y0 - cy0) * s,
                ox + (x1 - cx0) * s, oy + (y1 - cy0) * s]
+        if f["style"] == "hq":
+            shadow = Image.new("L", (w, h), 0)
+            ImageDraw.Draw(shadow).ellipse(
+                [box[0] - 50, box[3] - 70, box[2] + 50, box[3] + 60], fill=110)
+            shadow = shadow.filter(ImageFilter.GaussianBlur(48))
+            canvas.paste((150, 162, 178), (0, 0), shadow)
+
+        canvas.paste(layer.resize((nw, nh), Image.LANCZOS), (ox, oy),
+                     layer.resize((nw, nh), Image.LANCZOS))
+        draw = ImageDraw.Draw(canvas)
+        marks = [(ox + (x - cx0) * s, oy + (y - cy0) * s, r * s) for x, y, r in marks]
         draw_figure(canvas, draw, f, marks, box)
         canvas.save(RENDER / f"{fid}.png")
         print(f"compose: render/{fid}.png  {w}×{h}  {len(marks)} penunjuk")
@@ -303,7 +305,6 @@ def draw_figure(canvas, draw, fig, marks, box):
     title_font = font(30, True)
     sub_font = font(19)
     label_font = font(19)
-    num_font = font(20, True)
 
     # ---- judul
     bar = 76
@@ -343,22 +344,27 @@ def draw_figure(canvas, draw, fig, marks, box):
                       fill=(140, 104, 40))
 
     # ---- label + badge
+    # radius badge mengikuti besar bola penanda di layar, supaya badannya
+    # selalu tertutup rapat (kalau tidak, bola warna menyembul di tepi badge)
+    badges = [max(16.0, min(34.0, r * 1.15 + 4)) for _, _, r in marks]
+
     labels = []
     for i, c in enumerate(fig["callouts"]):
         comp = BY_ID[c["c"]]
         text = f"{NUM[c['c']]}  {comp['name']}"
         tw = draw.textlength(text, font=label_font)
         bw, bh = tw + 30, 44
-        bx, by = marks[i]
+        bx, by, _ = marks[i]
+        gap = badges[i] + 34
         d = c.get("dir", "right")
         if d == "right":
-            r = [bx + 74, by - bh / 2, bx + 74 + bw, by + bh / 2]
+            r = [bx + gap, by - bh / 2, bx + gap + bw, by + bh / 2]
         elif d == "left":
-            r = [bx - 74 - bw, by - bh / 2, bx - 74, by + bh / 2]
+            r = [bx - gap - bw, by - bh / 2, bx - gap, by + bh / 2]
         elif d == "up":
-            r = [bx - bw / 2, by - 74 - bh, bx + bw / 2, by - 74]
+            r = [bx - bw / 2, by - gap - bh, bx + bw / 2, by - gap]
         else:
-            r = [bx - bw / 2, by + 74, bx + bw / 2, by + 74 + bh]
+            r = [bx - bw / 2, by + gap, bx + bw / 2, by + gap + bh]
         labels.append({"i": i, "rect": r, "dir": d, "text": text})
 
     for _ in range(240):
@@ -391,7 +397,7 @@ def draw_figure(canvas, draw, fig, marks, box):
             break
 
     for lb in labels:
-        bx, by = marks[lb["i"]]
+        bx, by, _ = marks[lb["i"]]
         r = lb["rect"]
         ax = min(max(bx, r[0]), r[2])
         ay = min(max(by, r[1]), r[3])
@@ -399,14 +405,15 @@ def draw_figure(canvas, draw, fig, marks, box):
         draw.rounded_rectangle(r, radius=9, fill=(255, 255, 255), outline=INK, width=2)
         draw.text((r[0] + 15, r[1] + 11), lb["text"], font=label_font, fill=INK)
 
-    for i, (bx, by) in enumerate(marks):
-        comp = BY_ID[fig["callouts"][i]["c"]]
-        r = 18
-        draw.ellipse([bx - r, by - r, bx + r, by + r], fill=BADGE_FILL,
+    for i, (bx, by, _) in enumerate(marks):
+        br = badges[i]
+        draw.ellipse([bx - br, by - br, bx + br, by + br], fill=BADGE_FILL,
                      outline=(255, 255, 255), width=3)
         txt = str(NUM[fig["callouts"][i]["c"]])
-        tw = draw.textlength(txt, font=num_font)
-        draw.text((bx - tw / 2, by - 13), txt, font=num_font, fill=(255, 255, 255))
+        nf = font(max(15, min(26, int(br * 1.02))), True)
+        tw = draw.textlength(txt, font=nf)
+        ah = nf.getbbox(txt)[3]
+        draw.text((bx - tw / 2, by - ah / 2 - 1), txt, font=nf, fill=(255, 255, 255))
 
     draw.rectangle([0, 0, w - 1, h - 1], outline=RULE, width=2)
 
