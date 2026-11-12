@@ -1,0 +1,20 @@
+flowchart TD
+  A([Mulai]) --> B["Inisialisasi ADC<br/>dan pin"]
+  B --> C["Koneksi Wi-Fi<br/>dan sinkron NTP"]
+  C --> D([Loop tiap 50 ms])
+  D --> E["Segarkan buzzer"]
+  E --> F{"1000 ms<br/>sejak sampel?"}
+  F -- ya --> G["Baca 3 FSR<br/>konversi ke kPa"]
+  G --> H["peak = maks 3 region<br/>perbarui durasi"]
+  H --> I["Inferensi<br/>level dan skor"]
+  I --> J{"Siap kirim?<br/>Wi-Fi dan waktu"}
+  J -- ya --> K["Tulis latest<br/>dan history"]
+  K --> L["delay 50 ms"]
+  F -- belum --> L
+  J -- belum --> L
+  L --> D
+
+  classDef step fill:#f8fafc,stroke:#475569,stroke-width:1px
+  classDef net fill:#eff6ff,stroke:#1d4ed8,stroke-width:1px
+  class B,G,H,I step
+  class C,K net

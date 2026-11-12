@@ -1,0 +1,22 @@
+flowchart TD
+  A([prediksi peak, durasi]) --> B["Bersihkan masukan<br/>NaN jadi 0"]
+  B --> C["sampel = durasi x 10"]
+  C --> D{"peak di atas<br/>200 kPa?"}
+  D -- ya --> E["Bahaya<br/>skor 75"]
+  D -- tidak --> F{"peak di bawah 35 kPa<br/>dan sampel<br/>di bawah 200?"}
+  F -- ya --> G["Aman<br/>skor 0"]
+  F -- tidak --> H["Telusuri 20 pohon<br/>jumlahkan suara"]
+  H --> I{"waspada<br/>lebih banyak?"}
+  I -- ya --> J["Waspada<br/>skor 48 sampai 74"]
+  I -- tidak --> K["Aman<br/>skor 0 sampai 47"]
+  E --> Z([Kembalikan<br/>level dan skor])
+  G --> Z
+  J --> Z
+  K --> Z
+
+  classDef rule fill:#fef2f2,stroke:#b91c1c,stroke-width:1px
+  classDef rf fill:#eff6ff,stroke:#1d4ed8,stroke-width:1px
+  classDef out fill:#f0fdf4,stroke:#15803d,stroke-width:1px
+  class D,E,F,G rule
+  class H,I,J,K rf
+  class Z out

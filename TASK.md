@@ -7,6 +7,23 @@ summary line per month.
 
 ## Done
 
+- **2026-11-12 — Bab III + 13 diagram Mermaid.**
+  `docs/bab-iii-kegiatan-pelaksanaan.md` (531 baris): 3.1 metode (Waterfall +
+  CRISP-DM), 3.2 kebutuhan (13 FR, 7 NFR), 3.3 perancangan (UML, arsitektur,
+  skema Firebase, flowchart, wiring, antarmuka), 3.4 model Random Forest,
+  3.5 rancangan pengujian, plus 16 tabel, Lampiran A–E. `docs/diagram/` kini
+  memuat 13 `.mmd` + `README.md`: nomor diurutkan ulang mengikuti urutan
+  kemunculan (3.9 diagram blok, 3.10 component, 3.11 deployment, 3.12 ERD,
+  3.13 flowchart sistem, 3.14 flowchart inferensi). Keputusan yang dikunci:
+  ambang firmware (200 kPa) sebagai acuan sehingga Tabel 2.4 Bab II tinggal
+  diubah 70 → 200 kPa (syarat 0,1 detik sudah sesuai `DANGER_SUSTAINED_RAW` = 1),
+  ALERT tetap turunan tanpa node baru, 16 halaman (12 publik+pengguna, 4 admin),
+  jenjang D3 dengan gelar Ahli Madya. Verifikasi: 13 berkas lolos render Kroki
+  (HTTP 200), rasio gambar diukur untuk saran lebar di README, `id_language_check.py`
+  bersih dari `kalimat_panjang` dan `konjungsi` (179 temuan sisa semuanya palsu:
+  171 nomor subbab, 6 baris lanjutan APA, 1 frekuensi kata "data", 1 peringatan
+  generik). Ekspor DOCX belum: `pandoc` tidak terpasang. (working tree)
+
 - **2026-11-12 — Model 3D insole & pouch: OpenSCAD + gambar kerja CADCraft.**
   Folder baru `docs/3d/`: `params.md` (satu sumber angka), `build-cad.py`
   (gambar kerja 2D lewat `cadcraft-cli`: denah insole, potongan, pola pouch,

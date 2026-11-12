@@ -20,6 +20,15 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- `docs/bab-iii-kegiatan-pelaksanaan.md`: draf Bab III lengkap (3.1–3.5) dengan
+  16 tabel, placeholder gambar, dan Lampiran A–E. Angka diambil dari kode, bukan
+  hasil pengukuran; ambang memakai versi firmware (Bahaya ≥ 200 kPa,
+  Waspada ≥ 35 kPa atau ≥ 20 detik).
+- `docs/diagram/`: tiga berkas Mermaid baru, yaitu diagram blok arsitektur tiga
+  lapis, flowchart sistem, dan flowchart inferensi Random Forest. Totalnya kini 13
+  berkas `.mmd`. Nomor gambar diurutkan ulang mengikuti urutan kemunculan pada
+  laporan: 3.9 diagram blok, 3.10 component, 3.11 deployment, 3.12 ERD,
+  3.13 flowchart sistem, 3.14 flowchart inferensi.
 - `docs/evidence/`: paket bukti model Random Forest, dihasilkan oleh
   `scripts/evidence.js` yang menghitung ulang semua angka dari
   `models/training-data.json` dan `models/session-dataset.json` (tidak ada angka
