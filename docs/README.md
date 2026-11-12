@@ -12,9 +12,15 @@ pelatihan.
 | [`ROADMAP-RF.md`](ROADMAP-RF.md) | Roadmap pelatihan model Random Forest: mulai dari persiapan data hingga integrasi firmware |
 | [`rf-model-report.md`](rf-model-report.md) | Laporan hasil pelatihan model: metrik evaluasi, clinical contract, dan rasional desain hybrid |
 | [`validation-report.md`](validation-report.md) | Laporan validasi Fase 3: pola region OptiTrack, ambang DFU, dan edge case |
+| [`evidence/hasil-pengujian-model.html`](evidence/hasil-pengujian-model.html) | Paket bukti model: audit data, dua skenario ambang bahaya (200 vs 70 kPa), validasi silang per pasien, uji ketahanan, uji DFN vs DM, dan seluruh grafik (dihasilkan `scripts/evidence.js`) |
+| [`evidence/konsultasi-1-halaman.html`](evidence/konsultasi-1-halaman.html) | Versi satu halaman untuk bimbingan: tiga temuan, dua pilihan bentuk model, dan pertanyaan untuk dosen pembimbing |
+| [`evidence/README.md`](evidence/README.md) | Ringkasan isi folder bukti, cara reproduksi, dan batasan |
 | [`thesis-methodology.md`](thesis-methodology.md) | Draf Bab III (metodologi): data, praproses, model, evaluasi, hasil, ancaman validitas |
 | [`thesis-defense.md`](thesis-defense.md) | Materi sidang: kerangka slide metode Random Forest dan skrip demo ujung-ke-ujung |
+| [`daftar-pustaka.md`](daftar-pustaka.md) | Daftar pustaka APA 7 terverifikasi: 23 entri, sumber ekspor Mendeley grup TA, plus catatan koreksi metadata |
 | [`guidebook.html`](guidebook.html) | Guidebook lengkap proyek: teori, metode, cara kerja firmware & web, tech stack, kontrak data, validasi, troubleshooting |
+| [`hardware-build-guide.html`](hardware-build-guide.html) | Panduan perakitan hardware langkah demi langkah, dengan lampiran model 3D (Gambar 5–9) |
+| [`3d/params.md`](3d/params.md) | Sumber angka model 3D insole & pouch: dimensi, posisi sensor, asumsi yang dipakai |
 | [`PRD.md`](PRD.md) | Product Requirement Documentation: masalah, pengguna, ruang lingkup, dan metrik keberhasilan |
 | [`TRD.md`](TRD.md) | Technical Requirement Documentation: stack, arsitektur, dan kebutuhan non-fungsional |
 | [`AFD.md`](AFD.md) | App Flow Documentation: peta navigasi dan alur pengguna tiap halaman |
@@ -30,6 +36,8 @@ pelatihan.
 | `diagrams/` | Diagram blok & flowchart sistem (saat ini placeholder) |
 | `schematics/` | Skematik rangkaian: FSR 402, ESP32, TP4056, pinout (saat ini placeholder) |
 | `reference-design/` | Referensi visual dashboard (ekspor Figma) yang menjadi acuan `DESIGN.md` |
+| `evidence/` | Keluaran `scripts/evidence.js`: laporan HTML, `metrics.json`, dan grafik SVG/PNG. Jangan diedit manual. |
+| `3d/` | Model 3D insole & pouch: sumber OpenSCAD, gambar kerja CADCraft, enam render, dan dua STL cek cetak. Bangun ulang dengan `./3d/build-3d.sh`; jangan mengedit berkas di `3d/gen/`, `3d/cadcraft/out/`, `3d/render/`, `3d/stl/`. |
 
 ## Daftar Paper Acuan
 

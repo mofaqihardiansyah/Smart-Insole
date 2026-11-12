@@ -5,8 +5,34 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- `docs/hardware-build-guide.html` diperbarui dengan bahasa tutorial praktis yang
+  ramah perakit pemula: memperjelas jenis kabel silikon lentur 30 AWG, fungsi
+  heat shrink, teknik solder FSR cepat (< 2 detik), tahapan cerukan (pocket) & parit
+  (channel) insole EVA, serta pembuatan dan pemasangan pouch neoprene/rubber sheet.
+- `AGENTS.md` diperbarui dengan aturan frekuensi commit: hindari commit berlebihan
+  untuk perubahan-perubahan kecil; kumpulkan ke dalam satu commit besar saat diminta.
+
 ### Added
 
+- `docs/3d/`: model 3D insole dan pouch. `params.md` menyimpan satu sumber
+  angka; `build-cad.py` menghasilkan empat gambar kerja 2D lewat `cadcraft-cli`
+  (denah insole, potongan, pola pouch, perakitan pouch) dalam DXF/SVG/PDF/PNG;
+  `insole.scad`, `pouch.scad`, `pouch-contents.scad`, dan `assembly.scad`
+  menghasilkan enam render dan dua STL cek cetak; `build-3d.sh` membangun ulang
+  semuanya dalam satu perintah. Penyimpangan yang dicatat: channel 3,5 × 1,5 mm
+  (panduan 3 × 1–2 mm) karena bundel 6 inti AWG 30 Ø ± 3,2 mm, dengan total
+  kedalaman tetap 3,0 mm lewat relief 1,5 mm di bawah cover.
+- `docs/daftar-pustaka.md`: 23 entri APA 7, setiap entri ber-DOI diverifikasi
+  ulang ke Crossref (kecuali satu DOI yang tidak terdaftar, diperiksa lewat
+  laman penerbitnya), plus tabel audit metadata dan kutipan penopang ambang
+  200 kPa. Sumber awalnya ekspor grup "TA" Mendeley Desktop
+  (`docs/refs/ta.ris`, 19 entri), yang kini ikut di-commit sebagai provenance.
+- `docs/thesis-methodology.md` mengisi kelima tanda `[sitasi]`: dataset DFN-DS
+  (Zhong dkk., 2025), dataset OptiTrack v2 (Chinarro dkk., 2026), dasar metode
+  Random Forest (Breiman, 2001), ambang 200 kPa (Castro-Martins dkk., 2024), dan
+  dataset DFU Figshare (Ngui dkk., 2025).
 - `web-dashboard/src/utils/adminErrors.ts` maps a Firestore or Realtime Database
   error code to a cause and a next step, the same shape the auth pages use. The
   console no longer renders the SDK's English message, which named the failing
@@ -145,6 +171,24 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- `datasets/README.md` mencatat sumber yang bisa dilacak untuk ketiga dataset:
+  MSSDA (AAAI 2025, `10.1609/aaai.v39i21.34451`), DFU *offloading* (Ngui dkk.
+  2025, Figshare University of Adelaide, `10.25954/e6yc-n159`), dan OptiTrack v2
+  (Zenodo, `10.5281/zenodo.22936249`), masing-masing dengan lisensi CC BY 4.0.
+  Sebelumnya dua dataset hanya menyebut "rujuk halaman Figshare dataset" tanpa
+  tautan, dan OptiTrack disebut berasal dari Figshare padahal terbit di Zenodo.
+- Metadata sitasi hasil ekspor Mendeley dikoreksi terhadap rekaman penerbit:
+  Najafi 2018 terbit di *Wound Care Management* 1(1), bukan *Journal of Diabetes
+  Science and Technology*; DOI Ramirez-Bautista (2022), Alali (2024), dan Veran
+  (2026) dilengkapi atau dibetulkan; field URI Ahsan (2021) yang rusak diganti
+  DOI-nya; nomor artikel Castro-Martins (2024) yang tercatat `e26161` di
+  `RENCANA-PERBAIKAN.md` dikoreksi menjadi `e29672`. Empat entri yang masih
+  menggantung dilengkapi: Ahmadinia (2026) menjadi tesis S2 Metropolia
+  University of Applied Sciences; Lapono dkk. (2024) masuk *Jurnal Fisika*
+  9(2), 6–9; Maharani dkk. (2026) masuk *Jurnal Ilmiah Kesehatan Rustida* 13(2),
+  168–185; dan Supriyatin dkk. (2023) memakai judul serta halaman yang benar
+  (SNPPKM 3(1), 20–26). DOI Supriyatin tidak terdaftar di doi.org (404), jadi
+  entri itu bertaut ke laman artikelnya dan koreksinya dicatat.
 - The admin overview no longer states a count before it knows one. The status
   strip started at `0` for every source, which is a claim, and a dash would have
   been a second invented value; each cell now holds a skeleton and announces the

@@ -934,6 +934,11 @@ smart-insole-ta/
 │   ├── validation-report.md
 │   ├── thesis-methodology.md
 │   ├── thesis-defense.md
+│   ├── daftar-pustaka.md     <span style="color:var(--muted)"># Daftar pustaka APA 7 (terverifikasi)</span>
+│   ├── refs/                 <span style="color:var(--muted)"># ta.ris, ekspor grup Mendeley</span>
+│   ├── evidence/             <span style="color:var(--muted)"># paket bukti model (dihasilkan scripts/evidence.js)</span>
+│   ├── 3d/                   <span style="color:var(--muted)"># model 3D OpenSCAD, STL, gambar kerja (dihasilkan docs/3d/build-3d.sh)</span>
+│   ├── hardware-build-guide.html  <span style="color:var(--muted)"># panduan perakitan, dengan lampiran model 3D</span>
 │   └── diagrams/ schematics/ reference-design/
 ├── models/                   <span style="color:var(--muted)">rf-model.json, training-data.json</span>
 ├── scripts/                  <span style="color:var(--muted)">prepare-dataset.py, train-model.js, export-model-cpp.js</span>
@@ -1307,10 +1312,14 @@ npx vitest run src/utils/randomForestRisk.test.js   <span class="c"># 11.3</span
             <thead><tr><th>Dokumen</th><th>Isi</th></tr></thead>
             <tbody>
               <tr><td><code>docs/HARDWARE-SPEC.md</code></td><td>Spesifikasi hardware, BOM, wiring, build guide</td></tr>
+              <tr><td><code>docs/hardware-build-guide.html</code></td><td>Panduan perakitan langkah demi langkah; lampiran model 3D insole &amp; pouch</td></tr>
+              <tr><td><code>docs/3d/</code></td><td>Model OpenSCAD, render, STL cek cetak, gambar kerja CADCraft (<code>build-3d.sh</code>)</td></tr>
               <tr><td><code>docs/rf-model-report.md</code></td><td>Laporan model, metrik, clinical contract</td></tr>
               <tr><td><code>docs/validation-report.md</code></td><td>Laporan validasi Fase 3</td></tr>
+              <tr><td><code>docs/evidence/hasil-pengujian-model.html</code></td><td>Paket bukti model: audit data, dua skenario ambang bahaya, validasi silang, uji ketahanan, DFN vs DM (dihasilkan <code>scripts/evidence.js</code>)</td></tr>
               <tr><td><code>docs/thesis-methodology.md</code></td><td>Draf Bab III metodologi</td></tr>
               <tr><td><code>docs/thesis-defense.md</code></td><td>Materi sidang dan skrip demo</td></tr>
+              <tr><td><code>docs/daftar-pustaka.md</code></td><td>Daftar pustaka APA 7 terverifikasi dan audit metadata sitasi</td></tr>
               <tr><td><code>docs/PRD.md</code></td><td>Product Requirement Documentation</td></tr>
               <tr><td><code>docs/TRD.md</code></td><td>Technical Requirement Documentation</td></tr>
               <tr><td><code>docs/AFD.md</code></td><td>App Flow Documentation</td></tr>

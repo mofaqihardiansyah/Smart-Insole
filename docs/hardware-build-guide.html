@@ -223,7 +223,9 @@
     border-radius: var(--radius-card); padding: 18px;
     box-shadow: var(--shadow-panel);
   }
-  .fig svg { display: block; width: 100%; height: auto; }
+  .fig svg, .fig img { display: block; width: 100%; height: auto; }
+  .fig img { border-radius: 6px; }
+  .fig img + img { margin-top: 14px; }
   figcaption { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
 
   /* ---------- Steps ---------- */
@@ -318,6 +320,7 @@
         <li><a href="#perawatan"><span class="num">13</span><span>Perawatan &amp; batas pakai</span></a></li>
         <li><a href="#biaya"><span class="num">14</span><span>Biaya &amp; jadwal</span></a></li>
         <li><a href="#referensi"><span class="num">15</span><span>Referensi &amp; berkas terkait</span></a></li>
+        <li><a href="#model3d"><span class="num">3D</span><span>Lampiran · model 3D</span></a></li>
       </ul>
     </nav>
 
@@ -414,19 +417,19 @@
         <h3>Elektronik</h3>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Komponen</th><th class="num">Qty</th><th>Catatan</th></tr></thead>
+            <thead><tr><th>Komponen</th><th class="num">Qty</th><th>Spesifikasi &amp; Penjelasan Praktis</th></tr></thead>
             <tbody>
-              <tr><td>FSR 402 (Interlink)</td><td class="num">6</td><td>3 per kaki. Area aktif 12,7 mm, tebal 0,5 mm, rentang 0,1–100 N.</td></tr>
-              <tr><td>Resistor 10 kΩ, 1/4 W</td><td class="num">6</td><td>Pembagi tegangan, satu per sensor. Beli 10 untuk cadangan.</td></tr>
-              <tr><td>ESP32-WROOM-32 DevKit</td><td class="num">2</td><td>Satu per kaki; unit ketiga untuk cadangan/debug.</td></tr>
-              <tr><td>Buzzer aktif 3,3–5 V</td><td class="num">2</td><td>Wajib: firmware memakai <code>GPIO 27</code>. Modul aktif, bukan piezo pasif.</td></tr>
-              <tr><td>LiPo 3,7 V 600 mAh, JST-PH</td><td class="num">2</td><td>Alternatif 1000 mAh (lebih tebal 6 mm).</td></tr>
-              <tr><td>TP4056 dengan proteksi</td><td class="num">2</td><td>Pilih board ber-chip DW01 + 8205A, bukan versi tanpa proteksi.</td></tr>
-              <tr><td>Konektor JST-PH 2-pin</td><td class="num">4</td><td>Dua pasang male-female: baterai ke TP4056 dan TP4056 ke beban.</td></tr>
-              <tr><td>Kabel silikon 30 AWG</td><td class="num">5 m</td><td>Fleksibel, tidak kaku saat insole ditekuk. 6 inti per kaki.</td></tr>
-              <tr><td>Heat shrink 2:1 (1,5 / 3 / 6 mm)</td><td class="num">1 set</td><td>Isolasi tiap sambungan, wajib.</td></tr>
-              <tr><td>Kapasitor 100 nF (opsional)</td><td class="num">6</td><td>Low-pass di pin ADC bila bacaan liar.</td></tr>
-              <tr><td>Header female 0,1" (opsional)</td><td class="num">2</td><td>Supaya ESP32 bisa dilepas dari pouch.</td></tr>
+              <tr><td>FSR 402 (Interlink)</td><td class="num">6</td><td>Sensor tekanan bulat tipis (3 per kaki). Area aktif bulat 12,7 mm, tebal 0,5 mm. Memiliki 2 pin/kaki logam di ekornya.</td></tr>
+              <tr><td>Resistor 10 kΩ, 1/4 W</td><td class="num">6</td><td>Resistor pembagi tegangan (3 per kaki), dipasang di pouch pergelangan dekat ESP32. Beli 10 untuk cadangan.</td></tr>
+              <tr><td>ESP32-WROOM-32 DevKit</td><td class="num">2</td><td>Mikrokontroler utama dengan modul Wi-Fi (1 unit per kaki).</td></tr>
+              <tr><td>Buzzer aktif 3,3–5 V</td><td class="num">2</td><td>Wajib: modul buzzer aktif (bunyi otomatis saat diberi tegangan HIGH di <code>GPIO 27</code>).</td></tr>
+              <tr><td>LiPo 3,7 V 600 mAh, JST-PH</td><td class="num">2</td><td>Baterai lithium polymer rechargeable 1 cell (1 per kaki). Dilengkapi soket JST-PH 2 pin. Alternatif: 1000 mAh.</td></tr>
+              <tr><td>TP4056 dengan proteksi</td><td class="num">2</td><td>Modul charger baterai micro USB / USB-C ber-chip DW01 + 8205A (ada pin B+, B-, OUT+, OUT-).</td></tr>
+              <tr><td>Konektor JST-PH 2-pin</td><td class="num">4</td><td>Dua pasang kabel soket male-female untuk jalur baterai ke charger dan ESP32 agar mudah dicopot.</td></tr>
+              <tr><td>Kabel silikon lentur 30 AWG</td><td class="num">5 m</td><td>Kabel serabut silikon fleksibel (lemas/tahan tekukan). Butuh 6 helai kabel per kaki (panjang ±35 cm per helai).</td></tr>
+              <tr><td>Heat shrink (pipa bakar) 1,5–2 mm</td><td class="num">1 set</td><td>Selongsong karet bakar untuk membungkus isolasi sambungan solder kaki FSR agar tidak korslet.</td></tr>
+              <tr><td>Kapasitor 100 nF (opsional)</td><td class="num">6</td><td>Kapasitor keramik untuk menyaring noise di pin ADC jika pembacaan sensor fluktuatif.</td></tr>
+              <tr><td>Header female 0,1" (opsional)</td><td class="num">2</td><td>Dudukan pin ESP32 agar modul ESP32 bisa dicopot-pasang dari pouch tanpa membongkar solderan.</td></tr>
             </tbody>
           </table>
         </div>
@@ -447,16 +450,16 @@
         <h3>Bahan insole &amp; pouch</h3>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Bahan</th><th class="num">Qty</th><th>Spesifikasi</th></tr></thead>
+            <thead><tr><th>Bahan</th><th class="num">Qty</th><th>Spesifikasi &amp; Fungsi</th></tr></thead>
             <tbody>
-              <tr><td>EVA foam 5 mm</td><td class="num">2 lembar</td><td>30 × 30 cm, densitas sedang (30–40 PPI), alas insole.</td></tr>
-              <tr><td>EVA foam 2 mm</td><td class="num">1 lembar</td><td>Cover di atas sensor.</td></tr>
-              <tr><td>Neoprene 3–5 mm</td><td class="num">1 lembar</td><td>30 × 30 cm, cukup untuk dua pouch.</td></tr>
-              <tr><td>Velcro dots</td><td class="num">1 pak</td><td>Perekat, 2–3 titik per pouch.</td></tr>
-              <tr><td>Kain nylon/polyester (opsional)</td><td class="num">0,5 m</td><td>Lapisan atas untuk kenyamanan.</td></tr>
-              <tr><td>Lem B-7000 atau contact adhesive</td><td class="num">1 tube</td><td>Untuk EVA dan neoprene. Hindari cyanoacrylate untuk sensor.</td></tr>
-              <tr><td>Hot glue</td><td class="num">1 batang set</td><td>Strain relief kabel, bukan untuk menempel sensor.</td></tr>
-              <tr><td>Double-sided tape 3M</td><td class="num">1 roll</td><td>Fiksasi kabel di channel sebelum cover.</td></tr>
+              <tr><td>EVA foam (busa ati) 5 mm</td><td class="num">2 lembar</td><td>Ukuran 30 × 30 cm, densitas sedang (30–40 PPI). Dipakai sebagai lapisan alas dasar insole yang dipotong sesuai bentuk sepatu.</td></tr>
+              <tr><td>EVA foam (busa ati) 2 mm</td><td class="num">1 lembar</td><td>Ukuran 30 × 30 cm. Dipakai sebagai penutup atas (cover) di atas sensor FSR dan jalur kabel.</td></tr>
+              <tr><td>Kain neoprene / rubber sheet 3–5 mm</td><td class="num">1 lembar</td><td>Ukuran 30 × 30 cm (bahan lentur seperti baju selam/tas laptop empuk). Dipotong dan dijahit/dilem menjadi kantong (pouch) di pergelangan kaki.</td></tr>
+              <tr><td>Velcro (perekat kretek-kretek)</td><td class="num">1 pak</td><td>Bisa berupa velcro dots atau pita velcro lebar 2–3 cm untuk memasang pouch ke kaus kaki atau strap pergelangan.</td></tr>
+              <tr><td>Kain pelapis atas (opsional)</td><td class="num">0,5 m</td><td>Kain breathable lembut (nylon/polyester/dry-fit) di bagian paling atas insole agar telapak kaki tidak berkeringat langsung menyentuh busa EVA.</td></tr>
+              <tr><td>Lem kuning kontak (Fox/Aica Aibon) atau B-7000</td><td class="num">1 tube</td><td>Untuk merekatkan lapisan EVA dan bahan pouch neoprene. Hindari lem alteco/cyanoacrylate langsung ke sensor.</td></tr>
+              <tr><td>Lem tembak (hot glue)</td><td class="num">1 set</td><td>Hanya untuk pengunci/penahan kabel (strain relief) di pangkal keluaran insole, bukan untuk menempel sensor FSR.</td></tr>
+              <tr><td>Double-sided tape tipis (3M)</td><td class="num">1 roll</td><td>Untuk menahan kabel silikon di parit alur (channel) sebelum ditutup busa cover.</td></tr>
             </tbody>
           </table>
         </div>
@@ -695,78 +698,71 @@
         <div class="section-head"><span class="idx">05</span><h2>Potong kabel &amp; soldering</h2></div>
 
         <p>
-          Tahap ini menentukan umur alat. Sambungan yang buruk akan gagal
-          setelah insole ditekuk beberapa ratus kali, dan saat itu cover sudah
-          terlem.
+          Tahap ini menentukan ketahanan alat. Di dalam sepatu, insole akan ditekuk
+          ribuan kali saat melangkah. Jika kabel salah potong atau solderan rapuh,
+          kabel bisa putus di dalam saat insole sudah terlanjur dilem rapat.
         </p>
 
-        <h3>Tentukan panjang kabel lebih dulu</h3>
+        <h3>1. Ukur dan potong kabel silikon 30 AWG</h3>
         <ol class="steps">
           <li>
-            <b>Ukur di kaki, bukan di meja</b>
-            Pakai kaus kaki dan sepatu yang akan dipakai. Ukur jalur dari tiap
-            posisi sensor, menyusuri sisi medial, keluar di tumit, lalu naik ke
-            pouch. Untuk orang dewasa biasanya 28–40 cm, bukan 10–15 cm seperti
-            angka kasar di spec: pouch baru benar-benar dekat bukaan sepatu.
+            <b>Ukur langsung di kaki &amp; sepatu</b>
+            Pakai kaus kaki dan sepatu yang akan kamu gunakan. Tarik tali ukur/benang mulai dari posisi sensor di telapak kaki, menyusuri sisi samping dalam kaki (medial), keluar lewat bagian tumit atas sepatu, lalu naik ke posisi kantong (pouch) di pergelangan kaki.
+            Biasanya panjang riil berkisar antara <b>28 sampai 40 cm</b>.
           </li>
           <li>
-            <b>Tambah service loop 5 cm</b>
-            Kabel tidak boleh tegang saat kaki menekuk. Loop kecil di dalam pouch
-            mencegah tarikan langsung ke pad sensor.
+            <b>Tambahkan cadangan panjang (service loop) 5 cm</b>
+            Jangan pas-pasan. Kabel butuh sedikit kelonggaran (loop) di dalam pouch agar kabel tidak tertarik kencang saat pergelangan kaki menekuk 90°.
           </li>
           <li>
-            <b>Potong 6 kabel sama panjang</b>
-            Tiga untuk sinyal, tiga untuk 3,3 V. GND disalurkan terpisah di
-            pouch, jadi 6 inti cukup untuk satu kaki.
+            <b>Potong 6 helai kabel per kaki</b>
+            Satu kaki memiliki 3 sensor FSR. Tiap FSR butuh 2 helai kabel (kabel 1 untuk jalur 3,3 V, kabel 2 untuk sinyal ke ADC/GPIO ESP32). Total potong 6 helai kabel silikon 30 AWG (masing-masing sepanjang ±35 cm).
+            <i>Tips praktis:</i> Pakai 2 warna berbeda (misal 3 helai kabel merah untuk 3,3 V dan 3 helai kabel warna lain untuk sinyal) agar tidak tertukar.
           </li>
           <li>
             <b>Beri label sebelum menyolder</b>
-            Tulis <code>L-F</code>, <code>L-M</code>, <code>L-H</code> (kiri) dan
-            <code>R-F</code>, <code>R-M</code>, <code>R-H</code> (kanan) di
-            selongsong heat shrink. Salah tukar sensor = data salah tanpa error.
+            Beri label selotip kertas atau tulis dengan spidol di selongsong heat shrink: <code>L-F</code> (Forefoot/Depan kiri), <code>L-M</code> (Midfoot/Tengah kiri), <code>L-H</code> (Heel/Tumit kiri) dan untuk kaki kanan (<code>R-F</code>, <code>R-M</code>, <code>R-H</code>).
           </li>
         </ol>
 
-        <h3>Menyolder pad FSR 402</h3>
+        <h3>2. Menyolder kaki sensor FSR 402</h3>
         <div class="callout warn">
           <div class="bar"></div>
           <div class="body">
-            <span class="label">FSR bukan komponen biasa</span>
+            <span class="label">Peringatan: FSR berbahan plastik polimer tipis</span>
             <p>
-              Pad-nya menempel pada film plastik tipis. Panas berlebih membuat
-              film melengkung dan area aktif retak. Solder satu pad per
-              kesempatan, maksimal 2 detik, lalu dinginkan.
+              Dua pin logam di ekor FSR 402 menempel langsung pada film plastik tipis. Jika mata solder menempel terlalu lama (&gt; 2 detik), lapisan plastiknya akan melepuh dan area sensor bisa rusak permanen.
             </p>
           </div>
         </div>
 
         <ol class="steps">
-          <li><b>Kupas 3 mm, jangan 5 mm</b> Kawat 30 AWG sangat halus; kupas pendek supaya tidak ada konduktor telanjang di luar heat shrink.</li>
-          <li><b>Tin kawat</b> Beri flux, tempel timah tipis. Hasil baik: mengkilap, tidak menggumpal.</li>
-          <li><b>Tin pad FSR dengan cepat</b> Sentuh pad + timah &lt; 2 detik. Jangan menekan dengan ujung besi.</li>
-          <li><b>Sambung dan tahan</b> Pegang kawat dengan pinset, sentuh keduanya sampai timah melebur, lepas besi, tahan 1 detik sampai beku.</li>
-          <li><b>Uji tarik ringan</b> Tarik pelan. Sambungan lepas berarti kurang panas atau kotor, ulangi setelah dibersihkan.</li>
-          <li><b>Isolasi dengan heat shrink</b> Potong 10 mm, geser menutupi sambungan, panaskan sampai menyusut. Jangan sampai heat shrink menutupi area aktif 12,7 mm.</li>
-          <li><b>Ukur kontinuitas</b> Dari ujung kabel ke pad: harus &lt; 1 Ω. Dari pad ke lapisan konduktif lain: tidak boleh 0 Ω.</li>
+          <li><b>Kupas kawat sedikit saja (±3 mm)</b> Pakai tang pengupas kawat halus AWG 30. Kupas pendek agar tidak ada kawat tembaga terbuka yang melebihi bungkus heat shrink.</li>
+          <li><b>Beri timah pada ujung kawat (tinning)</b> Celup kawat ke sedikit pasta flux, sentuh dengan timah solder tipis sampai ujung kawat terlapisi timah mengkilap.</li>
+          <li><b>Beri timah cepat pada pad FSR</b> Sentuh pin logam FSR dengan timah dan ujung solder secara kilat (&lt; 2 detik). Jangan ditekan kencang.</li>
+          <li><b>Satukan kawat ke pin FSR</b> Jepit kawat dengan pinset, tempelkan ke pin FSR, panaskan cepat 1 detik sampai timah melebur menyatu, lalu lepas solder dan tahan jangan goyang selama 1 detik sampai mengeras. (Catatan: Pin FSR tidak memiliki polaritas plus/minus, kabel boleh bolak-balik).</li>
+          <li><b>Uji tarik perlahan</b> Tarik kawat secara lembut. Jika lepas, berarti timah belum menempel sempurna (cold joint), ulangi lagi.</li>
+          <li><b>Pasang selongsong bakar (heat shrink)</b> Potong pipa bakar heat shrink sekitar 10–12 mm, masukkan menutupi sambungan solder, lalu panaskan (dengan korek gas berjarak 3 cm atau hembusan solder) sampai menciut rapat. Pastikan heat shrink hanya menutup bagian sambungan kabel, jangan sampai menutupi area bulat aktif sensor (12,7 mm).</li>
+          <li><b>Tes dengan multimeter</b> Ukur kontinuitas: dari ujung kabel ke pin harus tersambung (&lt; 1 Ω). Saat sensor tidak ditekan, kedua kabel tidak boleh saling korslet (resistansi tak terhingga). Saat area bulat FSR ditekan dengan jempol, nilai resistansi di multimeter harus langsung turun drastis.</li>
         </ol>
 
-        <h3>Menyolder sisi pouch</h3>
+        <h3>3. Menyolder komponen di sisi pouch (kantong elektronik)</h3>
         <ol class="steps">
-          <li><b>Siapkan board perantara kecil (opsional)</b> Potongan PCB berlubang 20 × 20 mm membuat titik sambung 3,3 V dan GND lebih rapi daripada menumpuk 6 kabel di satu pin.</li>
-          <li><b>Pasang resistor 10 kΩ</b> Satu per sensor: satu kaki ke jalur sinyal, satu kaki ke GND bersama.</li>
-          <li><b>Pasang header female</b> Untuk ESP32, supaya board bisa dilepas saat perlu di-flash ulang tanpa membongkar pouch.</li>
-          <li><b>Buzzer</b> Positif ke GPIO 27, negatif ke GND. Buzzer aktif akan langsung berbunyi saat pin HIGH.</li>
-          <li><b>TP4056</b> OUT+ ke VIN ESP32, OUT− ke GND. Baterai masuk ke B+/B− lewat JST. Periksa polaritas dua kali.</li>
+          <li><b>Gunakan board perantara kecil (PCB bolong ±2 × 2 cm)</b> Memasang resistor dan titik cabang di PCB bolong jauh lebih kokoh dan rapi daripada menyambung kabel melayang di udara.</li>
+          <li><b>Rangkaikan 3 resistor 10 kΩ sebagai pembagi tegangan</b>
+            Setiap kabel sinyal FSR disambungkan ke salah satu pin ADC ESP32 dan ke satu kaki resistor 10 kΩ. Kaki resistor yang satunya lagi disatukan ke jalur Ground (GND) bersama.
+          </li>
+          <li><b>Pasang header female untuk ESP32</b> ESP32 sebaiknya dicolok ke socket header female, bukan disolder mati ke kabel, sehingga ESP32 mudah dicopot jika sewaktu-waktu ingin diflash ulang lewat komputer.</li>
+          <li><b>Buzzer aktif</b> Sambungkan kaki positif (+) ke <code>GPIO 27</code> ESP32, dan kaki negatif (−) ke jalur GND bersama.</li>
+          <li><b>Modul charger TP4056 &amp; baterai LiPo</b> Sambungkan terminal <code>OUT+</code> TP4056 ke pin <code>VIN</code> (atau 5V) ESP32, dan <code>OUT-</code> TP4056 ke <code>GND</code> ESP32. Baterai LiPo 3.7V disambungkan ke terminal <code>B+</code> dan <code>B-</code> TP4056 lewat soket JST-PH. Pastikan jangan sampai terbalik kutub positif dan negatifnya!</li>
         </ol>
 
         <div class="callout tip">
           <div class="bar"></div>
           <div class="body">
-            <span class="label">Urutan yang menghemat waktu</span>
+            <span class="label">Urutan kerja yang paling efisien</span>
             <p>
-              Solder keenam sensor <em>sebelum</em> memotong EVA. Kalau satu
-              sensor rusak, kamu masih bisa menggantinya tanpa membuang insole
-              yang sudah dibentuk.
+              Selesaikan penyolderan dan uji coba sensor FSR <em>sebelum</em> menempelkannya ke busa EVA. Jika ada sensor yang bermasalah atau kabel yang putus, perbaikannya jauh lebih mudah dilakukan di meja kerja sebelum insole dirakit.
             </p>
           </div>
         </div>
@@ -905,30 +901,27 @@ void loop() {
           <figcaption>Gambar 3. Empat lapisan. Pocket dan channel hanya dibuat di alas, tidak menembus.</figcaption>
         </figure>
 
-        <h3>Langkah 1 · Cetak pola</h3>
+        <h3>Langkah 1 · Jiplak dan potong pola insole (EVA 5 mm)</h3>
         <ol class="steps">
           <li>
-            <b>Pakai insole bawaan sepatu sebagai pola</b>
-            Bukan telapak kaki. Yang menentukan kenyamanan adalah ruang dalam
-            sepatu. Lepas insole bawaan, jiplak di EVA 5 mm.
+            <b>Gunakan insole bawaan sepatu sebagai cetakan</b>
+            Jangan menjiplak bentuk kaki telanjang secara langsung, karena bentuk ruang dalam sepatu yang menentukan kenyamanan. Keluarkan insole bawaan dari sepatu yang biasa kamu pakai, taruh di atas lembaran busa EVA (busa ati) tebal 5 mm, lalu jiplak garis tepinya memakai spidol.
           </li>
           <li>
-            <b>Tambahkan 0 mm di sisi, 3 mm di ujung</b>
-            Margin berlebih membuat insole terjepit dan justru menambah tekanan.
-            Lebih baik pas lalu dirapikan dengan amplas.
+            <b>Beri toleransi ukuran</b>
+            Pada bagian samping kiri dan kanan buat pas sesuai garis insole bawaan. Pada bagian ujung depan (jari kaki) boleh dilebihkan 2–3 mm agar tidak terlalu pendek. Nanti saat sudah jadi bisa dirapikan menggunakan gunting atau amplas bila kepanjangan.
           </li>
           <li>
-            <b>Potong dengan cutter, bukan gunting</b>
-            Beberapa lintasan ringan menghasilkan tepi tegak. Gunting EVA
-            meninggalkan tepi miring dan pocket jadi tidak presisi.
+            <b>Potong memakai cutter tajam</b>
+            Gunakan pisau cutter tajam dengan tarikan perlahan beberapa kali lintasan agar hasil potongan tegak lurus dan rapi. Hindari menggunakan gunting tumpul karena akan membuat tepian busa EVA miring/penyok.
           </li>
           <li>
-            <b>Haluskan tepi</b>
-            Amplas 120 lalu 240 pada sisi luar supaya tidak menggesek kulit.
+            <b>Haluskan tepi luar</b>
+            Gosok tepi luar insole busa dengan amplas halus (nomor 240) agar pinggirannya tidak tajam atau mengganjal di dalam sepatu.
           </li>
         </ol>
 
-        <h3>Langkah 2 · Tandai posisi sensor</h3>
+        <h3>Langkah 2 · Tentukan posisi 3 titik sensor</h3>
         <figure>
           <div class="fig">
             <svg viewBox="-30 0 420 560" role="img" aria-labelledby="figInsoleTitle figInsoleDesc">
@@ -973,120 +966,110 @@ void loop() {
         </figure>
 
         <ul>
-          <li><strong>Forefoot:</strong> 20–25% dari ujung depan, tepat di bawah bantalan metatarsal (ball of foot).</li>
-          <li><strong>Midfoot:</strong> 50–55%, di tengah lengkung.</li>
-          <li><strong>Heel:</strong> 80–85%, di tengah calcaneus. Hanya sensor.</li>
+          <li><strong>Forefoot (Depan):</strong> Sekitar 20–25% panjang insole dari ujung depan sepatu (tepat di bawah tonjolan bantalan pangkal jari jempol / metatarsal).</li>
+          <li><strong>Midfoot (Tengah):</strong> Sekitar 50–55% panjang insole dari depan (di area tengah lengkungan kaki sisi luar).</li>
+          <li><strong>Heel (Tumit):</strong> Sekitar 80–85% panjang insole dari depan (tepat di tengah bantalan tumit kaki). Area tumit belakang hanya ditempati sensor, tanpa komponen keras lain.</li>
         </ul>
 
-        <h3>Langkah 3 · Buat pocket dan channel</h3>
+        <h3>Langkah 3 · Buat cerukan (pocket) dan parit kabel (channel)</h3>
         <ol class="steps">
-          <li><b>Pocket 14 × 14 mm</b> Untuk area aktif 12,7 mm plus margin. Kedalaman 2–3 mm, diukur dengan penggaris, jangan ditembus.</li>
-          <li><b>Dasar pocket rata</b> Ratakan dengan ujung cutter atau amplas. Permukaan bergelombang membuat sensor menumpuk tekanan di satu titik.</li>
-          <li><b>Channel 2 mm</b> Dari tiap pocket ke sisi medial, lalu menyatu menuju tumit. Lebar cukup untuk dua kabel 30 AWG, sekitar 3 mm.</li>
-          <li><b>Uji dengan sensor</b> Masukkan FSR ke pocket. Area aktif harus duduk di bawah permukaan EVA sedikit, bukan menonjol.</li>
+          <li><b>Buat cerukan kotak/bulat (14 × 14 mm)</b> Di setiap titik sensor yang sudah ditandai, buat cerukan dengan cutter sedalam 1–2 mm. Tujuannya agar saat sensor FSR ditaruh, permukaannya rata dengan busa insole dan tidak terasa mengganjal di telapak kaki. <i>Ingat: jangan sampai terpotong tembus ke bawah!</i></li>
+          <li><b>Ratakan dasar cerukan</b> Pastikan dasar cerukan rata agar tekanan telapak kaki terdistribusi merata ke seluruh permukaan sensor FSR.</li>
+          <li><b>Buat parit alur kabel (channel) lebar ±3 mm</b> Iris parit tipis sedalam 1–2 mm menyusuri sisi samping dalam (medial) insole menuju ke bagian tumit belakang, tempat kabel nanti akan diarahkan keluar menuju ke pouch atas mata kaki. Parit ini menampung kabel agar tidak bertumpuk di telapak.</li>
+          <li><b>Coba letakkan sensor FSR</b> Masukkan sensor ke dalam cerukan untuk memastikan posisinya pas dan tidak ada bagian yang menonjol melebihi permukaan busa EVA.</li>
         </ol>
 
         <div class="callout warn">
           <div class="bar"></div>
           <div class="body">
-            <span class="label">Jangan menebalkan tumit</span>
+            <span class="label">Peringatan: Jangan buat tumit terlalu tebal</span>
             <p>
-              Cover tambahan di tumit mengubah tinggi tumit relatif terhadap
-              forefoot dan bisa menggeser beban ke area lain. Biarkan tumit
-              setebal alas ditambah cover standar, tanpa pocket dan tanpa
-              channel lebar.
+              Jangan menambahkan lapisan busa ekstra di area tumit karena dapat mengubah postur alami kaki saat menapak. Cukup gunakan alas busa 5 mm yang sudah diceruk plus lapisan cover atas 2 mm.
             </p>
           </div>
         </div>
 
-        <h3>Langkah 4 · Tanam sensor dan lem</h3>
+        <h3>Langkah 4 · Tanam sensor FSR dan tata kabel</h3>
         <ol class="steps">
-          <li><b>Bersihkan</b> Debu EVA membuat lem tidak menempel. Sapu dengan kain kering.</li>
-          <li><b>Lem hanya di tepi</b> B-7000 tipis di sekeliling badan sensor, <strong>bukan</strong> di area aktif 12,7 mm. Area aktif harus tetap bebas bergerak.</li>
-          <li><b>Tempel dan tekan 30 detik</b> Jangan menggeser setelah menempel; lem kontak langsung mengikat.</li>
-          <li><b>Rekat kabel di channel</b> Double-sided tape 3M tiap 3 cm. Jangan menarik kabel saat menempel.</li>
-          <li><b>Tunggu 24 jam</b> Sebelum cover dilem. Lem yang belum kering akan terperangkap dan menggelembung.</li>
+          <li><b>Bersihkan sisa remahan busa</b> Bersihkan debu potongan busa EVA dengan kuas atau kain kering agar lem menempel kuat.</li>
+          <li><b>Beri sedikit lem hanya di tepian sensor</b> Gunakan lem B-7000 atau lem kuning sedikit saja di pinggiran luar sensor. <strong>Jangan beri lem pada lingkaran aktif tengah (area bulat 12,7 mm)</strong> agar sensor tetap bebas merespons tekanan mekanis.</li>
+          <li><b>Tekan lembut selama 30 detik</b> Posisikan sensor pada cerukannya dan tekan perlahan sampai lem mengikat.</li>
+          <li><b>Kunci kabel di dalam parit</b> Tempelkan potongan kecil double-sided tape (3M) atau solasi kertas di atas kabel silikon setiap beberapa sentimeter agar kabel tetap rapi berada di dalam parit dan tidak bergeser.</li>
+          <li><b>Biarkan lem mengering</b> Tunggu lem mengering sebelum menutup insole dengan busa cover, agar uap lem tidak terperangkap di dalam.</li>
         </ol>
 
-        <h3>Langkah 5 · Pasang cover</h3>
+        <h3>Langkah 5 · Pasang busa penutup atas (EVA 2 mm)</h3>
         <ol class="steps">
-          <li><b>Potong EVA 2 mm</b> Bentuk sama dengan alas, tanpa margin.</li>
-          <li><b>Lem tepi dan sekitar sensor</b> Pola lem: garis keliling 4 mm dari tepi, plus cincin di sekitar tiap pocket. Bagian tengah tidak perlu penuh.</li>
-          <li><b>Tekan dengan beban 2–3 kg</b> Selama 12–24 jam. Beban rata (buku tebal) mencegah cover bergelombang.</li>
-          <li><b>Periksa tepi</b> Tidak ada celah yang bisa dimasuki keringat. Rapikan kelebihan lem dengan cutter setelah kering.</li>
-          <li><b>Ulangi uji tekan</b> Sebelum lanjut, ulangi uji bangku: ketiga kanal masih merespons dan tidak ada yang mati.</li>
+          <li><b>Potong busa EVA tipis 2 mm</b> Potong busa EVA tebal 2 mm dengan bentuk yang persis sama dengan insole alas 5 mm tadi. Busa 2 mm ini berfungsi sebagai pelindung sensor dan perata bantalan kaki.</li>
+          <li><b>Oleskan lem tipis-tipis</b> Oleskan lem kontak (lem kuning / B-7000) tipis-tipis di sekeliling pinggiran insole dan di sekitar area luar cerukan sensor. Hindari mengoleskan lem tebal langsung di atas lingkaran sensor.</li>
+          <li><b>Rekatkan dan beri beban rata</b> Satukan busa cover 2 mm ke atas insole alas 5 mm. Timpa dengan permukaan rata (seperti buku tebal atau papan berbeban 2–3 kg) selama beberapa jam agar kedua lapisan busa menempel rata tanpa gelembung udara.</li>
+          <li><b>Rapikan pinggiran</b> Setelah lem kering kuat, potong atau amplas sisa-sisa lem dan pinggiran busa yang belum rata memakai cutter tajam atau gunting.</li>
+          <li><b>Uji tekan ulang dengan multimeter</b> Sebelum dipakai jalan, tes kembali kontinuitas dan respon ketiga sensor FSR untuk memastikan kabel di dalam tidak ada yang terputus atau tertekan permanen.</li>
         </ol>
 
-        <h3>Langkah 6 · Lapisan kain (opsional)</h3>
+        <h3>Langkah 6 · Lapisan kain atas (opsional tapi disarankan)</h3>
         <p>
-          Kain 0,5 mm menutupi seluruh permukaan dan dilipat ke bawah, dilem di
-          sisi bawah. Tujuannya kenyamanan dan mengurangi gesekan, bukan
-          waterproofing. Jangan menjahit menembus cover EVA: jarum bisa
-          mengenai kabel.
+          Kamu bisa menempelkan kain tipis breathable (kain jersey/dry-fit/nylon) di bagian paling atas insole menggunakan lem semprot atau lem kontak tipis, lalu lipat sedikit ke bawah tepian insole. Ini membuat insole terasa nyaman seperti insole pabrikan dan menyerap gesekan kaus kaki.
         </p>
       </section>
 
       <!-- ==================== 08 ==================== -->
       <section id="pouch">
-        <div class="section-head"><span class="idx">08</span><h2>Pouch pergelangan</h2></div>
+        <div class="section-head"><span class="idx">08</span><h2>Pouch pergelangan (kantong modul elektronik)</h2></div>
 
         <p>
-          Pouch menampung ESP32, TP4056, dan baterai. Ukuran internal
-          <strong>65 × 80 × 20 mm</strong>, eksternal 70 × 85 × 22 mm.
+          Pouch ini adalah kantong kecil empuk yang diikatkan di pergelangan kaki (di atas mata kaki) untuk menampung modul ESP32, charger TP4056, dan baterai LiPo. Dibuat menggunakan bahan kain lentur neoprene / rubber sheet tebal 3–5 mm.
+          Ukuran ruang dalam (internal) sekitar <b>65 × 80 × 20 mm</b>, cukup untuk menampung seluruh modul dengan aman.
         </p>
 
-        <h3>Pola</h3>
+        <h3>Pola &amp; cara membuat pouch</h3>
         <ol class="steps">
-          <li><b>Potong dua lembar 70 × 85 mm</b> Satu untuk kiri, satu untuk kanan. Neoprene 3–5 mm.</li>
-          <li><b>Lipat jadi 70 × 42,5 mm</b> atau jahit dua lembar dengan jarak jahit 5 mm dari tepi.</li>
-          <li><b>Tutup tiga sisi</b> Kiri, kanan, bawah. Sisakan sisi atas terbuka sebagai mulut slip-in.</li>
-          <li><b>Balik</b> Supaya jahitan di dalam dan tepi rapi.</li>
-          <li><b>Buat lubang USB</b> 12 × 8 mm di sisi luar, sejajar port TP4056. Perkuat tepi dengan jahitan festoon atau setitik lem tekstil.</li>
+          <li><b>Potong lembaran neoprene / rubber sheet</b> Potong 2 lembar bahan berukuran masing-masing <b>70 × 85 mm</b> (satu untuk kaki kiri, satu untuk kaki kanan). Alternatif lain: potong 1 lembar panjang <b>70 × 170 mm</b> lalu lipat menjadi dua.</li>
+          <li><b>Satukan tepi sisi kantong</b> Jahit atau lem kuat menggunakan lem kontak (B-7000/lem kuning) di tiga sisi: sisi kiri, sisi kanan, dan sisi bawah. Sisakan sisi atas terbuka sebagai pintu memasukkan modul ESP32 dan baterai. Beri jarak jahit/lem sekitar 5 mm dari tepi potongan.</li>
+          <li><b>Balik kantong</b> Balik kantong dari dalam ke luar agar sambungan jahitan/lem berada di sisi dalam dan kantong terlihat rapi di luar.</li>
+          <li><b>Buat lubang port charger USB</b> Buat lubang kecil berukuran sekitar 12 × 8 mm di sisi luar kantong, posisikan sejajar dengan lubang port charger pada modul TP4056. Dengan begitu, baterai bisa dicas langsung tanpa harus mengeluarkan rangkaian dari dalam pouch.</li>
         </ol>
 
         <div class="callout tip">
           <div class="bar"></div>
           <div class="body">
-            <span class="label">Jahit vs lem</span>
+            <span class="label">Pilihan: Dijahit atau Dilem?</span>
             <p>
-              Jahit lebih tahan terhadap keringat dan tarikan; lem lebih cepat
-              dan tidak butuh mesin jahit. Kalau menjahit dengan tangan, pakai
-              jahitan <em>backstitch</em> dan benang nylon, bukan benang katun.
+              Bahan neoprene / rubber sheet sangat awet jika dijahit menggunakan benang nylon (dengan teknik jahitan tangan tusuk tikam jejak / <em>backstitch</em>). Jika menggunakan lem, pastikan memakai lem kontak yang kuat dan rekatkan dengan ditekan rapat selama lem mengering.
             </p>
           </div>
         </div>
 
-        <h3>Pemasangan ke kaus kaki</h3>
+        <h3>Cara memasang pouch di kaki</h3>
         <div class="grid-3">
           <div class="card">
-            <h4>A · Velcro (disarankan)</h4>
-            <p class="small">Dua sampai tiga titik velcro di belakang pouch, pasangannya di kaus kaki. Bisa dilepas untuk mencuci kaus kaki dan mengisi baterai.</p>
+            <h4>A · Perekat Velcro (Sangat Disarankan)</h4>
+            <p class="small">Tempelkan 2–3 titik velcro (kretek-kretek) pada sisi belakang pouch, dan pasangannya dijahit/ditempel di bagian luar kaus kaki. Pouch sangat mudah dilepas saat kaus kaki hendak dicuci atau saat baterai diisi.</p>
           </div>
           <div class="card">
-            <h4>B · Jahit permanen</h4>
-            <p class="small">Mengikuti Billings et al. Paling rapi dan aman, tetapi kaus kaki tidak bisa dicuci tanpa melepas elektronik.</p>
+            <h4>B · Strap tali pergelangan</h4>
+            <p class="small">Pasang tali strap berbahan elastis dengan perekat velcro melingkar di sekeliling pouch, sehingga bisa dipakai di pergelangan kaki seperti memakai deker engkel.</p>
           </div>
           <div class="card">
-            <h4>C · Strap pergelangan</h4>
-            <p class="small">Pouch dengan tali velcro, dipakai di atas kaus kaki. Universal dan bisa dipindah, tapi kurang menyatu.</p>
+            <h4>C · Dijahit permanen di kaus kaki</h4>
+            <p class="small">Paling stabil dan tidak mudah bergeser, tetapi modul elektronik dan baterai wajib dilepas terlebih dahulu jika kaus kaki hendak dicuci.</p>
           </div>
         </div>
 
-        <h3>Posisi</h3>
+        <h3>Posisi pemakaian yang benar di kaki</h3>
         <ul>
-          <li><strong>Sisi lateral</strong> (luar) pergelangan, di atas mulut sepatu, supaya kabel tidak tertekuk oleh sepatu.</li>
-          <li>Hindari <em>medial malleolus</em> (tulang dalam pergelangan): tekanan pouch di sana tidak nyaman dan bisa menggeser saat berjalan.</li>
-          <li>Tinggi pouch harus di atas garis sepatu, minimal 2 cm, agar tidak bergesekan.</li>
-          <li>Port USB menghadap ke atas atau ke luar, jangan ke dalam sepatu.</li>
+          <li><strong>Posisikan di sisi luar (lateral) pergelangan kaki:</strong> Letakkan pouch di sisi samping luar kaki, sekitar 2–3 cm di atas bibir sepatu. Jangan dipasang di sisi dalam dekat mata kaki agar tidak bergesekan dengan kaki satunya saat melangkah.</li>
+          <li><strong>Hindari mata kaki (medial/lateral malleolus):</strong> Jangan menaruh modul keras tepat di atas tonjolan tulang mata kaki agar tidak menimbulkan luka lecet atau sakit akibat tekanan.</li>
+          <li><strong>Arah port USB:</strong> Pastikan lubang charger USB menghadap ke atas atau ke luar agar kabel charger mudah dicolok.</li>
         </ul>
 
-        <h3>Uji fit sebelum dipakai</h3>
+        <h3>Pemeriksaan kelayakan sebelum dipakai jalan</h3>
         <ul class="check">
-          <li>ESP32 + baterai masuk tanpa dipaksa</li>
-          <li>Baterai bisa dilepas dengan satu tangan</li>
-          <li>Port USB bisa dicolok tanpa melepas pouch</li>
-          <li>Pouch tidak menekan tulang pergelangan</li>
-          <li>Kabel tidak tertarik saat kaki menekuk 90°</li>
+          <li>Modul ESP32, TP4056, dan baterai LiPo bisa masuk pas ke dalam pouch tanpa perlu dipaksa.</li>
+          <li>Baterai mudah dicopot-pasang lewat soket JST.</li>
+          <li>Kabel charger USB bisa dicolok pas ke port modul TP4056 melalui lubang pouch.</li>
+          <li>Pouch terasa nyaman dan tidak menekan tulang pergelangan kaki.</li>
+          <li>Kabel dari insole menuju pouch memiliki kelonggaran (service loop) yang cukup sehingga tidak ketarik saat lutut atau pergelangan kaki ditekuk 90°.</li>
         </ul>
       </section>
 
@@ -1434,6 +1417,126 @@ ADC_OFFSET = ADC1 - (P1 / ADC_TO_KPA)</code></pre>
             terbukti.
           </p>
         </footer>
+      </section>
+
+      <!-- ==================== 3D ==================== -->
+      <section id="model3d">
+        <div class="section-head"><span class="idx">3D</span><h2>Lampiran · model 3D &amp; gambar kerja</h2></div>
+
+        <p>
+          Angka di §07 dan §08 juga dibuat sebagai model solid dan gambar kerja
+          berskala. Model ini bukan pengganti insole sepatu yang kamu punya,
+          melainkan alat cek: apakah sensor muat, apakah kabel masuk alur,
+          apakah isi pouch benar-benar 65 × 80 × 20. Semua ukuran berasal dari
+          <code>docs/3d/params.md</code>; gambar 2D memakai CADCraft, model 3D
+          memakai OpenSCAD.
+        </p>
+
+        <div class="callout info">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Asumsi ukuran</span>
+            <p>
+              Model memakai insole EU 42 dengan panjang 270 mm, lebar bola kaki
+              95 mm, dan lebar tumit 62 mm. Untuk ukuran lain, ubah <code>L</code>
+              di <code>insole.scad</code> lalu jalankan ulang skrip build;
+              posisi sensor dan jalur channel ikut diskalakan.
+            </p>
+          </div>
+        </div>
+
+        <h3>Insole</h3>
+        <figure>
+          <div class="fig">
+            <img src="3d/render/insole-assembled.png" alt="Render insole EVA terakit; cover tembus pandang sehingga tiga sensor dan alur kabel terlihat" loading="lazy">
+          </div>
+          <figcaption>Gambar 5. Insole terakit, cover dibuat tembus pandang. Tiga pocket sensor di garis tengah, channel berjalan ke tumit lalu keluar di sisi medial.</figcaption>
+        </figure>
+
+        <figure>
+          <div class="fig">
+            <img src="3d/render/insole-exploded.png" alt="Render ledak insole: alas, sensor, cover, dan kain terpisah" loading="lazy">
+          </div>
+          <figcaption>Gambar 6. Tampak ledak. Urutan dari bawah: alas 5 mm, FSR 0,5 mm di pocket 2 mm, alur kabel 3,5 × 1,5 mm, cover 2 mm, kain 0,5 mm.</figcaption>
+        </figure>
+
+        <h3>Pouch pergelangan</h3>
+        <figure>
+          <div class="fig">
+            <img src="3d/render/pouch.png" alt="Pouch 70 kali 85 mm tampak depan dengan lubang port USB 12 kali 8 mm" loading="lazy">
+            <img src="3d/render/pouch-back.png" alt="Pouch tampak belakang dengan tiga titik velcro" loading="lazy">
+          </div>
+          <figcaption>Gambar 7. Pouch 70 × 85 × 26 mm. Atas: tampak depan, lubang port USB 12 × 8 mm di tengah. Bawah: tampak belakang, tiga titik velcro Ø 20 mm yang menempel ke pergelangan. Bukaan atas selebar rongga berada di bibir atas.</figcaption>
+        </figure>
+
+        <figure>
+          <div class="fig">
+            <img src="3d/render/pouch-contents.png" alt="Tata letak lima komponen di dalam bingkai rongga 65 kali 80 milimeter" loading="lazy">
+          </div>
+          <figcaption>Gambar 8. Tata letak isi di dalam bingkai rongga 65 × 80 mm, tampak dari dinding depan.</figcaption>
+        </figure>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Komponen</th><th>Dimensi (mm)</th><th>Posisi di gambar</th></tr></thead>
+            <tbody>
+              <tr><td>LiPo 3,7 V 600 mAh</td><td>40 × 30 × 5</td><td>Kiri bawah</td></tr>
+              <tr><td>TP4056 berproteksi</td><td>25 × 19 × 2</td><td>Kanan bawah</td></tr>
+              <tr><td>PCB bolong pembagi</td><td>20 × 20 × 1,6</td><td>Kiri atas</td></tr>
+              <tr><td>ESP32-WROOM-32 DevKit</td><td>51,5 × 25,5 × 11</td><td>Kanan, berdiri mengikuti tinggi rongga</td></tr>
+              <tr><td>Buzzer aktif</td><td>Ø 9,5 × 6</td><td>Pojok kiri atas</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Posisi pakai</h3>
+        <figure>
+          <div class="fig">
+            <img src="3d/render/assembly.png" alt="Render insole, harness keluar dari tumit, pouch di pergelangan kaki dengan strap" loading="lazy">
+          </div>
+          <figcaption>Gambar 9. Posisi pakai: insole, harness keluar di tumit, pouch di sisi lateral pergelangan dengan strap. Silinder krem hanya penanda posisi pergelangan, bukan ukuran anatomis.</figcaption>
+        </figure>
+
+        <div class="callout warn">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Penyimpangan yang disengaja: channel 3,5 × 1,5 mm</span>
+            <p>
+              Panduan meminta channel selebar ± 3 mm sedalam 1–2 mm. Bundel
+              6 inti AWG 30 berukuran Ø ± 3,2 mm, jadi alur 3 mm tidak cukup.
+              Model memakai lebar 3,5 mm, kedalaman 1,5 mm di alas, ditambah
+              relief 1,5 mm di bawah cover, sehingga total ruang 3,0 mm. Kalau
+              kamu memakai kabel lebih tipis, kembalikan ke 3 mm.
+            </p>
+          </div>
+        </div>
+
+        <h3>Membangun ulang</h3>
+        <p>
+          Semua aset berada di <code>docs/3d/</code>. Satu perintah membangun
+          ulang gambar kerja 2D, keenam render, dan kedua STL:
+        </p>
+        <pre><code>./docs/3d/build-3d.sh</code></pre>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Berkas</th><th>Isi</th></tr></thead>
+            <tbody>
+              <tr><td><code>docs/3d/params.md</code></td><td>Sumber angka: dimensi, posisi sensor, asumsi</td></tr>
+              <tr><td><code>docs/3d/insole.scad</code></td><td>Model insole; <code>LIFT</code> untuk tampak ledak, <code>EXPORT</code> untuk STL</td></tr>
+              <tr><td><code>docs/3d/pouch.scad</code></td><td>Cangkang pouch, velcro, isi rongga; <code>EXPORT</code> untuk STL</td></tr>
+              <tr><td><code>docs/3d/assembly.scad</code></td><td>Posisi pakai: insole + harness + pouch</td></tr>
+              <tr><td><code>docs/3d/cadcraft/out/</code></td><td>Gambar kerja 2D: denah, potongan, pola pouch (DXF/SVG/PDF/PNG)</td></tr>
+              <tr><td><code>docs/3d/render/</code></td><td>Enam render di lampiran ini</td></tr>
+              <tr><td><code>docs/3d/stl/</code></td><td><code>insole.stl</code> dan <code>pouch-shell.stl</code> untuk cek cetak</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="small muted">
+          STL hanya untuk cek volume dan tata letak. Bahan aslinya EVA dan
+          neoprene yang lentur, jadi jangan mencetak insole kaku untuk dipakai.
+        </p>
       </section>
 
     </div>

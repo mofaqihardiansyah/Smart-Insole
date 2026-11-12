@@ -7,6 +7,76 @@ summary line per month.
 
 ## Done
 
+- **2026-11-12 — Model 3D insole & pouch: OpenSCAD + gambar kerja CADCraft.**
+  Folder baru `docs/3d/`: `params.md` (satu sumber angka), `build-cad.py`
+  (gambar kerja 2D lewat `cadcraft-cli`: denah insole, potongan, pola pouch,
+  perakitan pouch → DXF/SVG/PDF/PNG di `cadcraft/out/`), empat model OpenSCAD
+  (`insole.scad` dengan mode `LIFT` dan `GHOST`, `pouch.scad`, `pouch-contents.scad`,
+  `assembly.scad`), dan `build-3d.sh` yang membangun ulang semuanya: 4 gambar
+  kerja, 6 render (`render/`), 2 STL (`stl/insole.stl`, `stl/pouch-shell.stl`).
+  Panduan `docs/hardware-build-guide.html` mendapat lampiran `#model3d`
+  (Gambar 5–9) berisi keenam render, tabel letak isi pouch, penyimpangan
+  channel, dan cara membangun ulang; `docs/guidebook.html` mencatat folder
+  `docs/3d/`. Asumsi yang dipakai: insole EU 42 (L 270, lebar bola 95, tumit
+  62), sensor di garis tengah pada 22,5 / 52,5 / 82,5 % dari ujung depan,
+  rongga pouch 65 × 80 × 20 mm. Penyimpangan yang disengaja: channel 3,5 × 1,5
+  mm (panduan 3 × 1–2) karena bundel 6 inti AWG 30 berukuran Ø ± 3,2 mm;
+  kedalaman total tetap 3,0 mm dengan relief 1,5 mm di bawah cover.
+  Verifikasi: `./docs/3d/build-3d.sh` selesai tanpa galat, STL dilaporkan
+  `Simple: yes` oleh OpenSCAD, keempat DXF lolos `cadcraft-cli info`, dan
+  keenam render diperiksa satu per satu. (working tree)
+
+- **2026-11-12 — Paket bukti model RF (`scripts/evidence.js`).**
+  Generator baru menghitung ulang semua angka dari `models/training-data.json`
+  dan `models/session-dataset.json`, lalu menulis `docs/evidence/` (laporan
+  HTML A4, halaman konsultasi satu halaman, `metrics.json`, 12 grafik SVG +
+  PNG). Model produksi tidak disentuh. Temuan yang sekarang terbukti dengan
+  angka: 0/81.000 sampel mencapai 200 kPa (puncak 87,06 kPa), 31 sampel ≥70 kPa
+  hanya di 3 pasien dan semuanya data latih, 0 sampel validasi ≥70 kPa
+  (puncak 62,99 kPa), sehingga kelas Bahaya tidak bisa dilatih maupun
+  divalidasi. Model 20 pohon ternyata 20 tunggul kedalaman 1 (60 simpul, 19
+  split pada `sustained`, 1 pada `peak` 34,97 kPa) — bukti bahwa RF hanya
+  menyalin aturan ambang. Uji tambahan: aturan vs pohon tunggal vs RF identik
+  (macro-F1 100%), CV 5 lipatan per pasien 100% ± 0, uji ketahanan (gain ×1,2
+  mengubah 22,4% keputusan, sensor midfoot mati 0,02%), dan DFN vs DM
+  out-of-fold AUC 0,503 (tidak lulus gerbang 0,650; demografi 0,525).
+  Dua skenario ambang (200 dan 70 kPa) dilaporkan berdampingan, termasuk
+  kontrak klinis `[70 kPa, 1 s]` → Waspada (200) / Bahaya (70).
+  Verifikasi: `node scripts/evidence.js` selesai tanpa galat, 12 SVG lolos
+  parser XML, 12 PNG tertulis, `undefined`/`NaN` nol di kedua halaman HTML.
+  (working tree)
+
+- **2026-11-11 — Sitasi: daftar pustaka terverifikasi, 5 slot `[sitasi]` diisi.**
+  Ekspor Mendeley grup TA (`docs/refs/ta.ris`, 19 entri) diurai, lalu setiap
+  entri ber-DOI diperiksa ulang ke Crossref/OpenAlex. Hasilnya
+  `docs/daftar-pustaka.md`: 23 entri APA 7 + audit metadata. Enam kesalahan
+  ekspor dikoreksi (Najafi 2018 sebenarnya *Wound Care Management* 1(1), bukan
+  JDST; DOI Ramirez-Bautista, Alali, dan Veran dilengkapi; URI Ahsan rusak;
+  `e26161` di `RENCANA-PERBAIKAN.md` keliru, yang benar `10(9), e29672`). Empat
+  entri yang sebelumnya belum lengkap dilengkapi: Ahmadinia 2026 (Master's
+  thesis, Metropolia University of Applied Sciences, Theseus), Lapono 2024
+  (*Jurnal Fisika* 9(2), 6–9), Maharani 2026 (*Jurnal Ilmiah Kesehatan Rustida*
+  13(2), 168–185), Supriyatin 2023 (SNPPKM 3(1), 20–26; DOI penerbit 404 di
+  doi.org, jadi dipakai URL laman artikel). Empat referensi ditambahkan di luar
+  grup: Zhong dkk. 2025 (MSSDA/DFN-DS), Chinarro dkk. 2026 (dataset OptiTrack v2
+  di Zenodo, DOI 10.5281/zenodo.22936249), Ngui dkk. 2025 (dataset DFU, DOI
+  `10.25954/e6yc-n159`), dan Breiman 2001. `docs/thesis-methodology.md`:
+  §3.2.1 → Zhong dkk. 2025, §3.2.2 → Chinarro dkk. 2026, §3.2.3 → Ngui dkk.
+  2025, §3.4 → Breiman 2001, §3.9.1 → Castro-Martins dkk. 2024 (kutipan
+  verbatim "below 200 kPa" diverifikasi di PMC11064085). `datasets/README.md`
+  juga mengoreksi OptiTrack menjadi Zenodo (`10.5281/zenodo.22936249`) dan
+  mencatat lisensi ketiga dataset.
+  Verifikasi: 19 DOI resolve, `docs/README.md` diberi indeks, code fence
+  seimbang, tanpa baris >90 di `thesis-methodology.md`. (working tree)
+
+- **2026-11-11 — Panduan hardware: penyederhanaan bahasa & aturan commit besar.**
+  Menulis ulang langkah-langkah di `docs/hardware-build-guide.html` (bahan/elektronik,
+  potong kabel silikon 30 AWG & soldering FSR, fabrikasi insole EVA 5 mm & cover 2 mm,
+  serta pouch neoprene/rubber sheet) dengan istilah praktis ramah perakit/pemula.
+  Menambahkan aturan di `AGENTS.md` agar commit tidak dilakukan terlalu sering untuk
+  perubahan kecil, melainkan dikumpulkan menjadi commit bermakna besar saat diminta.
+  (working tree)
+
 - **2026-11-10 — Landing: motion dan struktur ulang; konsol admin: copy error.**
   Landing pecah menjadi `components/landing/landingData.ts` (isi), `SectionIntro`
   (pembuka bagian berulang), `HowItWorks` (tiga langkah + vignette), dan
@@ -296,11 +366,12 @@ summary line per month.
 3. **Kalibrasi sensor** — `ADC_OFFSET`/`ADC_TO_KPA` di `config.h` masih nilai
    template, jadi bacaan tanpa beban melompat 0–125 kPa. Ikuti prosedur di
    `docs/HARDWARE-SPEC.md`, lalu catat konstanta hasil kalibrasi.
-4. **Thesis docs** — klaim metodologi sudah dikoreksi 2026-11-08. Sisa: subbab
-   hasil negatif model sesi (OOF AUC 0,503, kontrol demografi 0,525) sebagai
-   alasan memilih Bentuk 1, isi semua `[sitasi]` (§3.9.1 ambang 200 kPa belum
-   punya rujukan), render slide, dan angkat `docs/HARDWARE-SPEC.md` dari Draft
-   setelah perangkat divalidasi.
+4. **Thesis docs** — klaim metodologi sudah dikoreksi 2026-11-08 dan sitasi
+   2026-11-11. Sisa: subbab hasil negatif model sesi (OOF AUC 0,503, kontrol
+   demografi 0,525) sebagai alasan memilih Bentuk 1 — angkanya sudah tersedia
+   di `docs/evidence/metrics.json` dan narasinya di
+   `docs/evidence/hasil-pengujian-model.html`; lalu render slide, dan angkat
+   `docs/HARDWARE-SPEC.md` dari Draft setelah perangkat divalidasi.
 5. **Riwayat RTDB tumbuh tanpa batas** — firmware push 1 Hz, node
    `readings/history` tak pernah dibersihkan; putuskan retensi/arsip.
 

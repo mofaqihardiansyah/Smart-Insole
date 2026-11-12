@@ -361,3 +361,60 @@ effect. Motion cannot express anything CSS cannot (no spring physics, no
 orchestration beyond transition delays), which is the trade accepted here. The
 dependency itself is left in `package.json` until removing it is decided
 separately; no shipped source imports it.
+
+## ADR-017: Citation style is APA 7, verified against Crossref
+
+- **Date:** 2026-11-11
+- **Status:** Accepted
+
+**Context.** The thesis needs a bibliography before the defense. Citations were
+collected in Mendeley Desktop 1.19 (legacy) under the "TA" group, whose local
+database is encrypted, so the only machine-readable path is an export. That
+export carried publisher errors: one entry named the wrong journal, three had
+missing or malformed DOIs, one had a broken URI field, and one article number
+disagreed with both the publisher record and the project's own note. Meanwhile
+`docs/HARDWARE-SPEC.md` already lists its references in APA.
+
+**Decision.** Bibliographies live in `docs/daftar-pustaka.md` in APA 7, the
+style the repository already uses. Every entry that has a DOI is checked against
+the Crossref record, and the publisher record wins over the export. The export
+itself (`docs/refs/ta.ris`) is committed so the path from Mendeley to the list
+stays reproducible. A slot with no verifiable source stays marked
+`[sitasi: …]` rather than being filled with a plausible-looking reference.
+
+**Consequences.** Switching to another style (IEEE, Vancouver) is mechanical
+from the same entries, so a campus requirement changes one file, not the
+evidence. Every future export must be re-verified: the audit table in
+`daftar-pustaka.md` records which field was corrected and why, so the same error
+is not silently re-imported. A new citation now has to be added in both Mendeley
+and the list, or the two drift apart.
+
+## ADR-018: Hardware geometry lives in `docs/3d/`, 2D in CADCraft and 3D in OpenSCAD
+
+- **Date:** 2026-11-12
+- **Status:** Accepted
+
+**Context.** The hardware build guide carries the insole and pouch dimensions in
+prose. Checking them (does a 3-core bundle sink into the channel, does the ESP32
+fit the 65 × 80 × 20 mm pouch cavity, does the pouch clear the shoe) needed
+something a reader can measure. Two tools were available: CADCraft 0.20.0, a 2D
+drafter with an AutoCAD-style command line and a CLI that writes DXF/SVG/PDF/PNG,
+and OpenSCAD, which does real solids and STL. CADCraft 0.20.0 has no 3D mode.
+
+**Decision.** `docs/3d/` is the single home for hardware geometry, and
+`docs/3d/params.md` is the single source of the numbers. CADCraft owns the 2D
+working drawings (`build-cad.py` drives the CLI and writes `cadcraft/out/`).
+OpenSCAD owns the solids, the renders, and the STLs. Both read the same numbers:
+`build-cad.py` also emits `gen/insole-data.scad`, so the 3D outline and channel
+paths cannot drift from the 2D drawing. `build-3d.sh` rebuilds everything in one
+command.
+
+**Consequences.** Changing a dimension is a `params.md` edit plus one script run,
+not a re-trace. The 2D drawings and the 3D model agree by construction because
+they share generated geometry. The STLs are shape checks only: real insole is
+flexible EVA and real pouch is neoprene, so nothing here is a print-ready part.
+A CADCraft or OpenSCAD upgrade can alter the generated files, so they are
+rebuilt, never hand-edited. The channel is 3,5 × 1,5 mm instead of the guide's
+3 × 1–2 mm, because a 6-core AWG 30 bundle is Ø ± 3,2 mm; total depth stays
+3,0 mm with the 1,5 mm relief under the cover. That deviation is stated in the
+guide's 3D appendix so the model and the prose do not disagree.
