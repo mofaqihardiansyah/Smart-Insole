@@ -354,4 +354,23 @@ function main() {
   console.log('  Catatan: artefak ini untuk skrining per sesi, bukan verdict per sampel.');
 }
 
-main();
+module.exports = {
+  auc,
+  binaryMetrics,
+  classWeightsFor,
+  stratifiedFolds,
+  crossValidate,
+  configuration: {
+    positiveLabel: POSITIVE,
+    negativeLabel: NEGATIVE,
+    labels: LABELS,
+    folds: FOLDS,
+    seed: SEED,
+    combo: COMBO,
+    aucFloor: AUC_FLOOR,
+    aucMargin: AUC_MARGIN_OVER_BASELINE,
+    demographicFeatures: DEMOGRAPHIC_FEATURES,
+  },
+};
+
+if (require.main === module) main();

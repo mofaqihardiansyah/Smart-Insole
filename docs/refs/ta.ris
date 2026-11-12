@@ -1,0 +1,400 @@
+TY  - THES
+T1  - Design and Implementation of a Smart Insole for the Prevention of Diabetic Foot Ulcers
+A1  - Ahmadinia, Arash
+Y1  - 2026/05//
+KW  - Configurable Modular Architecture
+KW  - Diabetic Foot Ulcers
+KW  - Load Offloading Mechanism
+KW  - Smart Insoles
+KW  - Wearable Medical Device
+N2  - Diabetic foot ulcers are still a major medical problem, and most current solutions cannot monitor foot pressure in real time and reduce pressure together in one device. This study aimed to solve this problem by developing a smart insole that continuously measures plantar pressure and adjusts pressure distribution while walking. Using design science and a mixed-methods approach, the researcher combined expert feedback with practical testing during the development process. The final prototype included built-in pressure sensors and a manually adaptive pressure offloading for real-time pressure relief. Expert evaluations showed that the device is practical, clinically useful, and has strong potential for early intervention and more personalized diabetic foot care. This study suggests that a user-centered and cost-effective smart insole can help prevent and manage diabetic foot complications in the long term.
+ER  - 
+TY  - JOUR
+T1  - Plantar Pressure Distribution Among Diabetes and Healthy Participants: A Cross-sectional Study
+A1  - Ahsan, Mohammad
+A1  - Shanab, Alsayed A.
+A1  - Nuhmani, Shibili
+Y1  - 2021///
+KW  - Diabetes
+KW  - healthy subject
+KW  - peak pressure
+KW  - plantar pressure
+KW  - pressure time integral volunteers
+PB  - Wolters Kluwer Medknow Publications
+JF  - International Journal of Preventive Medicine
+VL  - 12
+IS  - 1
+SP  - 88
+EP  - 88
+DO  - 10.4103/ijpvm.IJPVM_257_20
+UR  - 10.4103/ijpvm.IJPVM%5C_257%5C_20
+N2  - Background: Plantar Pressure distribution refers to the distribution of force over the sole of the foot. Recently many studies indicate plantar pressure distribution assisted in determining and managing the impairment related to musculoskeletal disorders. Methods: This cross-sectional study was conducted with forty participants (20 diabetes type 2 patients +20 healthy) from Imam Abdulrahman bin Faisal University. All the measurements were taken in the morning session. To measure height and weight, participants took off their shoes and stood on the stadiometer. The body mass index determined with the help of a bioelectric impedance device to get the health level of the participants—Proclaimed diabetes type 2 patients selected for the data collection. Tekscan's Mobile Mat was used to determine the plantar pressure of healthy and diabetes participants. Results: The finding revealed that diabetes participants have more pressure in the mid-foot section, whereas healthy participants showed more pressure on the heel section. The metatarsal section showed similar types of pressure distribution in both participants. The result also revealed that diabetes participants have more peak pressures, time integral, and gradient than healthy participants. Significant differences between diabetes and healthy participants were existing. Conclusions: The findings highlight the importance of measuring plantar pressure distribution since these are known to incorporate in the main parts of the foot and thus provide a shred of constructive evidence for the total load exposer of a single leg static task.
+ER  - 
+TY  - JOUR
+T1  - Stepping Forward: A Scoping Systematic Literature Review on the Health Outcomes of Smart Sensor Technologies for Diabetic Foot Ulcers
+A1  - Lazarou, Ioulietta
+A1  - Fiska, Vasiliki
+A1  - Mpaltadoros, Lampros
+A1  - Tsaopoulos, Dimitris
+A1  - Stavropoulos, Thanos G.
+A1  - Nikolopoulos, Spiros
+A1  - Dafoulas, George E.
+A1  - Dailiana, Zoe
+A1  - Bargiota, Alexandra
+A1  - Kompatsiaris, Ioannis
+Y1  - 2024/03//
+KW  - actuators
+KW  - diabetic foot
+KW  - diabetic foot ulcers
+KW  - diabetic patients
+KW  - digital health technologies
+KW  - scoping review
+KW  - sensors
+KW  - smart insoles
+KW  - systematic literature review
+PB  - Multidisciplinary Digital Publishing Institute (MDPI)
+JF  - Sensors
+VL  - 24
+IS  - 6
+SP  - 2009
+EP  - 2009
+DO  - 10.3390/s24062009
+UR  - 10.3390/s24062009
+N2  - Diabetic foot ulcers (DFUs) pose a significant challenge in diabetes care, demanding advanced approaches for effective prevention and management. Smart insoles using sensor technology have emerged as promising tools to address the challenges associated with DFU and neuropathy. By recognizing the pivotal role of smart insoles in successful prevention and healthcare management, this scoping review aims to present a comprehensive overview of the existing evidence regarding DFU studies related to smart insoles, offloading sensors, and actuator technologies. This systematic review identified and critically evaluated 11 key studies exploring both sensor technologies and offloading devices in the context of DFU care through searches in CINAHL, MEDLINE, and ScienceDirect databases. Predominantly, smart insoles, mobile applications, and wearable technologies were frequently utilized for interventions and patient monitoring in diabetic foot care. Patients emphasized the importance of these technologies in facilitating care management. The pivotal role of offloading devices is underscored by the majority of the studies exhibiting increased efficient monitoring, prevention, prognosis, healing rate, and patient adherence. The findings indicate that, overall, smart insoles and digital technologies are perceived as acceptable, feasible, and beneficial in meeting the specific needs of DFU patients. By acknowledging the promising outcomes, the present scoping review suggests smart technologies can potentially redefine DFU management by emphasizing accessibility, efficacy, and patient centricity.
+ER  - 
+TY  - JOUR
+T1  - Prototype SEPATU PINTAR BERBASIS IoT UNTUK Foot Health Monitoring
+A1  - Supriyatin
+A1  - Purwono
+A1  - Wirasto, Anggit
+Y1  - 2023///
+KW  - IoT
+KW  - diabetes
+KW  - health monitoring
+KW  - smart shoe
+JF  - Seminar Nasional Penelitian dan Pengabdian Kepada Masyarakat (SNPPKM) Purwokerto
+SP  - 26
+EP  - 33
+N2  - Diabetes Mellitus (DM) is a global health issue that continues to increase, including in Indonesia. One serious complication of DM is Diabetic Foot Ulcer (DFU), which requires specialized monitoring. This study develops a prototype IoT-based smart shoe to monitor foot health, especially in diabetic patients. The prototype is equipped with Force Sensing Resistor (FSR) sensors to measure foot pressure and thermistor sensors to measure the temperature around the foot. Data generated by these sensors are processed by the NodeMCU ESP32 microcontroller and sent to a local database server. Users can access this data through a web dashboard that displays patient information and visual graphs for easier monitoring. This research aims to monitor the foot health of DM patients. Test results show that the prototype successfully monitors foot pressure and temperature with reasonable accuracy. FSR sensor accuracy testing resulted in an average relative error of 1.91%, while thermistor sensor accuracy testing yielded an average relative error of 1.37%. System testing on the monitoring dashboard using black box testing also produced valid results.
+ER  - 
+TY  - JOUR
+T1  - Smart Insole-Based Plantar Pressure Analysis for Healthy and Diabetic Feet Classification: Statistical vs. Machine Learning Approaches
+A1  - Agrawal, Dipak Kumar
+A1  - Jongpinit, Watcharin
+A1  - Pojprapai, Soodkhet
+A1  - Usaha, Wipawee
+A1  - Wattanapan, Pattra
+A1  - Tangkanjanavelukul, Pornthep
+A1  - Vitoonpong, Timporn
+Y1  - 2024/11//
+KW  - diabetic foot
+KW  - machine learning algorithms
+KW  - plantar pressure
+KW  - pressure sensor
+KW  - smart insole
+KW  - statistical analysis
+PB  - Multidisciplinary Digital Publishing Institute (MDPI)
+JF  - Technologies
+VL  - 12
+IS  - 11
+SP  - 231
+EP  - 231
+DO  - 10.3390/technologies12110231
+UR  - 10.3390/technologies12110231
+N2  - Diabetes is a significant global health issue impacting millions. Approximately 26 million diabetics experience foot ulcers, with 20% ending up with amputations, resulting in high morbidity, mortality, and costs. Plantar pressure screening shows potential for early detection of Diabetic Foot Ulcers (DFUs). Although foot ulcers often occur due to excessive pressure on the soles during dynamic activities, most studies focus on static pressure measurements. This study’s primary objective is to apply wireless plantar pressure sensor-embedded insoles to classify and detect diabetic feet from healthy ones based on dynamic plantar pressure. The secondary objective is to compare statistical-based and Machine Learning (ML) classification methods. Data from 150 subjects were collected from the insoles during walking, revealing that diabetic feet have higher plantar pressure than healthy feet, which is consistent with prior research. The Adaptive Boosting (AdaBoost) ML model achieved the highest accuracy of 0.85, outperforming the statistical method, which had an accuracy of 0.67. These findings suggest that ML models, combined with pressure sensor-embedded insoles, can effectively classify healthy and diabetic feet using plantar pressure features. Future research will focus on using these insoles with ML to classify various stages of diabetic neuropathy, aiming for early prediction of foot ulcers in home settings.
+ER  - 
+TY  - JOUR
+T1  - Smart Compression Sock for Early Detection of Diabetic Foot Ulcers
+A1  - Billings, Julia
+A1  - Gee, Julia
+A1  - Ghulam, Zinah
+A1  - Abdullah, Hussein A.
+Y1  - 2024/11//
+KW  - blood oxygen
+KW  - diabetic foot ulcers
+KW  - diabetic neuropathy
+KW  - medical device
+KW  - plantar pressure
+KW  - temperature
+PB  - Multidisciplinary Digital Publishing Institute (MDPI)
+JF  - Sensors
+VL  - 24
+IS  - 21
+SP  - 6928
+EP  - 6928
+DO  - 10.3390/s24216928
+UR  - 10.3390/s24216928
+N2  - The prevention of diabetic foot ulcers remains a critical challenge. This study evaluates a smart compression sock designed to address this issue by integrating temperature, plantar pressure, and blood oxygen sensors and monitoring data recorded by these sensors. The smart sock, developed with input from a certified Pedorthist, was tested on 20 healthy adult participants aged 16 to 53. It includes four temperature sensors and pressure sensors at common ulcer sites (first and fifth metatarsal heads, calcaneus, and hallux), and a blood oxygen sensor on the hallux. The sensors are monitored, and their transduced data are collected and stored through an app installed on a personal cell phone. The mobile app interface is user-friendly, providing intuitive navigation and easy access to the sensors’ data. Using repeated measures ANOVA and post hoc tests, we analyzed the impact of various physical activities on physiological changes in the foot. The device effectively detected significant variations in blood oxygen, temperature, and pressure across six activities. Statistical analyses revealed significant differences based on activity type and sensor location. These results highlight the smart sock’s sensitivity and accuracy, suggesting its potential to prevent diabetic foot ulcers. Further clinical trials are needed to evaluate its efficacy in a larger, more diverse population.
+ER  - 
+TY  - JOUR
+T1  - STUDI AWAL PEMANFAATAN SENSOR FORCE SENSING RESISTOR UNTUK MENGETAHUI DISTRIBUSI TEKANAN TELAPAK KAKI
+A1  - Lapono, Laura Anastasi Seseragi
+A1  - Ngana, Frederika Rambu
+A1  - Louk, Andreas Ch.
+Y1  - 2024///
+VL  - 9
+IS  - 2
+SP  - 6
+EP  - 9
+UR  - 10.35508/fisa.v9i2.19341
+ER  - 
+TY  - JOUR
+T1  - Smart Insole with Deep Learning for Real-Time Classification of Gait Abnormalities
+A1  - Veran, Nur Rabiatul Adawiyah
+A1  - Jamri, Ainnur Natasha
+A1  - Noor, Anas Mohd
+Y1  - 2026///
+KW  - Deep learning
+KW  - Gait analysis
+KW  - Real-time classification
+KW  - Wearable sensor
+JF  - Journal of Engineering Technology and Applied Physics
+VL  - 8
+IS  - 2
+SP  - 9
+EP  - 15
+DO  - 10.33093/jetap.2026.8.2
+UR  - 10.33093/jetap.2026.8.2.2
+N2  - This study introduces a novel, real-time gait abnormality detection system that leverages deep learning and an intelligent wearable insole to overcome limitations associated with conventional gait assessment methods. Gait abnormalities are prevalent among older adults and individuals with neurological or musculoskeletal conditions, yet existing diagnostic tools are often costly, non-portable, and confined to clinical settings. To address these challenges, we developed a compact, wireless insole system integrating force-sensitive resistors (FSRs), an inertial measurement unit (IMU), and an ESP32 microcontroller for continuous acquisition of plantar pressure and motion data. The acquired sensor data is wirelessly transmitted via Wi-Fi and analyzed by a ResNet-18 deep learning model to distinguish between normal and abnormal gait patterns with high accuracy. Real-time visualization and interactive feedback are provided through a Streamlit-based dashboard, while remote monitoring capabilities are enabled via the Blynk mobile application. Experimental results demonstrate a classification accuracy of 97.56%, with high precision and recall, validating the system's robustness and effectiveness. The proposed solution offers a cost-effective, scalable, and clinically relevant platform for early detection of gait impairments and continuous home-based rehabilitation monitoring.
+ER  - 
+TY  - JOUR
+T1  - Characteristics of Plantar Pressure Distribution in Diabetes with or without Diabetic Peripheral Neuropathy and Peripheral Arterial Disease
+A1  - Cao, Zijun
+A1  - Wang, Fang
+A1  - Li, Xuemei
+A1  - Hu, Jun
+A1  - He, Yaoguang
+A1  - Zhang, Jianguo
+Y1  - 2022///
+PB  - Hindawi Limited
+JF  - Journal of Healthcare Engineering
+VL  - 2022
+DO  - 10.1155/2022/2437831
+N2  - Background. Excessive plantar pressure leads to increased risk of diabetic foot ulcers. Diabetic peripheral neuropathy (DPN) and peripheral arterial disease (PAD) have been considered to be associated with alterations in gait and plantar pressure in diabetic patients. However, few studies have differentiated the effects with each of them. Objective. To investigate the plantar pressure distribution in diabetic patients, with DPN and PAD as independent or combined factors. Methods. 112 subjects were recruited: 24 diabetic patients with both DPN and PAD (DPN-PAD group), 12 diabetic patients with DPN without PAD (DPN group), 10 diabetic patients with PAD without DPN (PAD group), 23 diabetic patients without DPN or PAD, and 43 nondiabetic healthy controls (HC group). The in-shoe plantar pressure during natural walking was measured. Differences in peak pressure, contact area, proportion of high pressure area (%HP), and anterior/posterior position of centre of pressure (COP) were analysed. Results. Compared with HC group, in DPN-PAD group and DPN group, the peak pressures in all three forefoot regions increased significantly; in PAD group, the peak pressure in lateral forefoot increased significantly. The contact area of midfoot in the DPN-PAD group decreased significantly. PAD group had larger HP% of lateral forefoot, DPN group had larger HP% of inner forefoot, and DPN-PAD group had larger HP% of total plantar area. There was a significant tendency of the anterior displacement of COP in the DPN-PAD group and DPN group. No significant differences were observed between the D group and HC group. Conclusion. DPN or PAD could affect the plantar pressure distribution in diabetic patients independently or synergistically, resulting in increased forefoot pressure and the area at risk of ulcers. DPN has a more pronounced effect on peak pressure than PAD. The synergistic effect of them could significantly reduce the plantar contact area of midfoot.
+ER  - 
+TY  - JOUR
+T1  - EFEKTIVITAS OFF-LOADING FOOTWEAR TERHADAP PENURUNAN TEKANAN PLANTAR PADA PASIEN DIABETES MELITUS: LITERATURE REVIEW Ni Made Sinta Maharani 1CA
+A1  - Maharani, Ni Made Sinta
+A1  - Putri, Ni Putu Hemalina Cahyarani
+A1  - Widyanata, Komang Agus Jerry
+A1  - Noviantari, Komang
+Y1  - 2026///
+JF  - Jurnal Ilmiah Kesehatan Rustida
+VL  - 13
+IS  - 2
+SP  - 168
+EP  - 185
+N2  - ABSTRAK Diabetes melitus merupakan penyakit kronis yang dapat menimbulkan berbagai komplikasi, salah satunya ulkus kaki diabetik yang dipengaruhi oleh tingginya tekanan plantar. Penelitian ini bertujuan untuk mengetahui efektivitas penggunaan off-loading footwear dalam menurunkan tekanan plantar pada pasien diabetes melitus. Metode yang digunakan adalah literature review dengan mengkaji artikel penelitian yang relevan melalui pencarian pada beberapa database ilmiah menggunakan kata kunci terkait diabetes, tekanan plantar, dan off-loading footwear. Artikel yang memenuhi kriteria inklusi berupa studi intervensi dengan desain randomized controlled trial, quasi-experimental, dan pre-post test pada pasien dewasa dengan diabetes melitus tipe 1 atau tipe 2, dengan atau tanpa neuropati perifer, yang berisiko atau memiliki riwayat diabetic foot ulcer, serta mengevaluasi penggunaan off-loading footwear terhadap tekanan plantar atau risiko ulkus kaki diabetik dianalisis dan disintesis untuk mengevaluasi efektivitas intervensi. Hasil kajian menunjukkan bahwa berbagai jenis off-loading footwear, seperti therapeutic footwear, rocker sole shoes, insole terapeutik, dan removable cast walker efektif dalam menurunkan tekanan plantar. Efektivitas tersebut dipengaruhi oleh jenis perangkat, desain alas kaki, serta kepatuhan pasien dalam penggunaan sehari-hari. Kesimpulan penelitian ini adalah penggunaan off-loading footwear terbukti efektif dalam menurunkan tekanan plantar pada pasien diabetes melitus, sehingga berpotensi mengurangi risiko ulkus kaki diabetik. Peran perawat penting dalam edukasi perawatan kaki, skrining risiko, dan meningkatkan kepatuhan penggunaan alas kaki terapeutik sebagai upaya pencegahan komplikasi. Kata kunci: diabetes melitus; kaki diabetic; off-loading footwear; tekanan plantar; therapeutic footwear
+ER  - 
+TY  - JOUR
+T1  - Design and Implementation of a Smart Insole System to Measure Plantar Pressure and Temperature
+A1  - Khandakar, Amith
+A1  - Mahmud, Sakib
+A1  - Chowdhury, Muhammad E.H.
+A1  - Reaz, Mamun Bin Ibne
+A1  - Kiranyaz, Serkan
+A1  - Mahbub, Zaid Bin
+A1  - Md Ali, Sawal Hamid
+A1  - Bakar, Ahmad Ashrif A.
+A1  - Ayari, Mohamed Arselene
+A1  - Alhatou, Mohammed
+A1  - Abdul-Moniem, Mohammed
+A1  - Faisal, Md Ahasan Atick
+Y1  - 2022/10//
+KW  - bluetooth communication
+KW  - plantar pressure
+KW  - plantar temperature
+KW  - remote health monitoring
+KW  - smart insole
+PB  - MDPI
+JF  - Sensors
+VL  - 22
+IS  - 19
+SP  - 7599
+EP  - 7599
+DO  - 10.3390/s22197599
+UR  - 10.3390/s22197599
+N2  - An intelligent insole system may monitor the individual’s foot pressure and temperature in real-time from the comfort of their home, which can help capture foot problems in their earliest stages. Constant monitoring for foot complications is essential to avoid potentially devastating outcomes from common diseases such as diabetes mellitus. Inspired by those goals, the authors of this work propose a full design for a wearable insole that can detect both plantar pressure and temperature using off-the-shelf sensors. The design provides details of specific temperature and pressure sensors, circuit configuration for characterizing the sensors, and design considerations for creating a small system with suitable electronics. The procedure also details how, using a low-power communication protocol, data about the individuals’ foot pressure and temperatures may be sent wirelessly to a centralized device for storage. This research may aid in the creation of an affordable, practical, and portable foot monitoring system for patients. The solution can be used for continuous, at-home monitoring of foot problems through pressure patterns and temperature differences between the two feet. The generated maps can be used for early detection of diabetic foot complication with the help of artificial intelligence.
+ER  - 
+TY  - JOUR
+T1  - Potential predictive effect of mechanical properties of the plantar skin and superficial soft tissue, and vibration perception on plantar loading during gait in individuals with diabetes
+A1  - Monteiro, Renan L.
+A1  - Drechsel, Tina J.
+A1  - Ferreira, Jane Suelen S.P.
+A1  - Zippenfennig, Claudio
+A1  - Sacco, Isabel C.N.
+Y1  - 2023/12//
+KW  - Diabetic neuropathies
+KW  - Gait
+KW  - Plantar pressure
+KW  - Sensory perception
+KW  - Skin hardness
+KW  - Skin stiffness
+KW  - Skin thickness
+KW  - Vibration perception threshold
+PB  - BioMed Central Ltd
+JF  - BMC Musculoskeletal Disorders
+VL  - 24
+IS  - 1
+DO  - 10.1186/s12891-023-06851-7
+UR  - 10.1186/s12891-023-06851-7
+N2  - Background: This exploratory study aimed to investigate the extent to which mechanical properties of the plantar skin and superficial soft tissue (hardness, stiffness, and thickness) and vibration perception thresholds (VPTs) predict plantar pressure loading during gait in people with diabetes compared to healthy controls. Methods: Mechanical properties, VPTs, and plantar loadings during gait at the heel and first metatarsal head (MTH) of 20 subjects with diabetes, 13 with DPN, and 33 healthy controls were acquired. Multiple regression analyses were used to predict plantar pressure peaks and pressure-time integrals at both locations based on the mechanical properties of the skin and superficial soft tissues and VPTs. Results: In the diabetes group at the MTH, skin hardness associated with 30-Hz (R2 = 0.343) and 200-Hz (R2 = 0.314) VPTs predicted peak pressure at the forefoot. In the controls at the heel, peak pressure was predicted by the skin thickness, hardness, and stiffness associated with 30-Hz (R2 = 0.269, 0.268, and 0.267, respectively) and 200-Hz (R2 = 0.214, 0.247, and 0.265, respectively) VPTs. Conclusion: The forefoot loading of people with diabetes can be predicted by the hardness of the skin when combined with loss of vibration perception at low (30-Hz) and high (200-Hz) frequencies. Further data from larger sample sizes are needed to confirm the current findings.
+ER  - 
+TY  - JOUR
+T1  - Fuzzy Cognitive Map to Classify Plantar Foot Alterations
+A1  - Ramirez-Bautista, Julian Andres
+A1  - Chaparro-Cárdenas, Silvia L.
+A1  - Hernández-Zavala, Antonio
+A1  - Gallegos-Torres, Ruth Magdalena
+A1  - Zequera, Martha
+A1  - Tovar-Barrera, Yosabad
+A1  - Pradilla-Gómez, Juan M.
+A1  - Huerta-Ruelas, Jorge Adalberto
+Y1  - 2022/07//
+JF  - Fuzzy Cognitive Map to Classify Plantar Foot Alterations
+VL  - 20
+IS  - 7
+SP  - 1992
+EP  - 2001
+N2  - The function of the back, hip, knee, ankle and other orthopedic alterations of the human body can be analyzed through plantar pressure distribution. The development of Clinical Decision Support Systems (CDSS) can handle the uncertainties present in biological data using different Artificial Intelligence techniques to obtain accurate and easy to use systems. This paper presents the application of a Fuzzy Cognitive Map (FCM) formulation, for knowledge extraction in the classification of human plantar foot alterations, with a relatively small and transparent model.
+ER  - 
+TY  - JOUR
+T1  - In-shoe plantar pressure measurement technologies for the diabetic foot: A systematic review
+A1  - Castro-Martins, Pedro
+A1  - Marques, Arcelina
+A1  - Coelho, Luís
+A1  - Vaz, Mário
+A1  - Baptista, João Santos
+Y1  - 2024/05//
+KW  - Diabetic foot
+KW  - In-shoe systems
+KW  - Instrumented insoles
+KW  - Plantar pressure
+KW  - Systematic review
+PB  - Elsevier Ltd
+JF  - Heliyon
+VL  - 10
+IS  - 9
+SP  - e29672
+EP  - e29672
+DO  - 10.1016/j.heliyon.2024.e29672
+UR  - 10.1016/j.heliyon.2024.e29672
+N2  - Introduction: Loss of cutaneous protective sensation and high plantar pressures increase the risk for diabetic foot patients. Trauma and ulceration are imminent threats, making assessment and monitoring essential. This systematic review aims to identify systems and technologies for measuring in-shoe plantar pressures, focusing on the at-risk diabetic foot population. Methods: A systematic search was conducted across four electronic databases (Scopus, Web of Science, PubMed, Oxford Journals) using PRISMA methodology, covering articles published in English from 1979 to 2024. Only studies addressing systems or sensors exclusively measuring plantar pressures inside the shoe were included. Results: A total of 87 studies using commercially available devices and 45 articles proposing new systems or sensors were reviewed. The prevailing market offerings consist mainly of instrumented insoles. Emerging technologies under development often feature configurations with four, six or eight resistive sensors strategically placed within removable insoles. Despite some variability due to the inherent heterogeneity of human gait, these devices assess plantar pressure, although they present significant differences between them in measurement results. Individuals with diabetic foot conditions appears exhibit elevated plantar pressures, with reported peak pressures reaching approximately 1000 kPa. The results also showed significant differences between the diabetic and non-diabetic groups. Conclusion: Instrumented insoles, particularly those incorporating resistive sensor technology, dominate the field. Systems employing eight sensors at critical locations represent a pragmatic approach, although market options extend to systems with up to 960 sensors. Differences between devices can be a critical factor in measurement and highlights the importance of individualized patient assessment using consistent measurement devices.
+ER  - 
+TY  - JOUR
+T1  - Cost effectiveness of smart insoles in preventing ulcer recurrence for people in diabetic foot remission
+A1  - Najafi, Bijan
+A1  - B Chalifoux, Courtney
+A1  - Everett, J Breanne
+A1  - Razjouyan, Javad
+A1  - A Brooks, Elizabeth
+A1  - G Armstrong, David
+Y1  - 2018///
+PB  - Open Access Text Pvt, Ltd.
+JF  - `Journal of Diabetes Science and Technology`
+VL  - 1
+IS  - 1
+SP  - 702
+EP  - 713
+DO  - 10.15761/wcm.1000102
+UR  - 10.1177/1932296816689105
+N2  - Aims: To show that a device designed to prevent diabetic foot ulcers (DFUs) may help to cost-effectively manage patients at a high-risk of recidivism. Methods: Decision tree models were used to estimate clinical outcome probabilities and associated costs at three- and 18-months post-DFU closure, comparing standard of care (SOC), or SurroSense Rx® as an adjunct to SOC. Inputs were derived from a prospective cohort study (n=15) involving patients with a recent (<12 months) history of DFU. This analysis was conducted from the third-party payer perspective with costs presented in 2017 USD. Results: Short-term (three month) results show that care involving the adjunctive use of SurroSense Rx saves approximately US$978·02 per event avoided (excluding device costs) compared to SOC. Long-term (18-month) results suggest lower event occurrence rates (0·14 versus 0·62), with a cost per ulcer avoided of US$6,702·54 (versus US$53,134·94 with SOC alone); this indicates the SurroSense Rx + SOC as the dominant strategy. Conclusions: The results support the cost-effectiveness of smart insoles as an adjunct to diabetic foot care—this could result in substantial savings for the US Health System. More robust studies are required to verify these results, and determine population-level cost savings.
+ER  - 
+TY  - JOUR
+T1  - Analysis of Diabetic Foot Deformation and Plantar Pressure Distribution of Women at Different Walking Speeds
+A1  - Zhang, Li Ying
+A1  - Liu, Qi Long
+A1  - Yick, Kit Lun
+A1  - Yip, Joanne
+A1  - Ng, Sun Pui
+Y1  - 2023/02//
+KW  - 4D foot scanning
+KW  - diabetes
+KW  - foot deformation
+KW  - plantar pressure
+KW  - walking speed
+PB  - MDPI
+JF  - International Journal of Environmental Research and Public Health
+VL  - 20
+IS  - 4
+SP  - 3688
+EP  - 3688
+DO  - 10.3390/ijerph20043688
+UR  - 10.3390/ijerph20043688
+N2  - Highlights: Foot measurements show an insignificant increase at a more rapid walking speed. Faster walking speed results in higher mean peak plantar pressure in the forefoot and heel areas, along with a lower pressure time integral in all foot regions. Suitable offloading devices are recommended for people with diabetes during exercise at higher walking speeds. An insole with a different structure and material for each specific area contributes to plantar pressure offloading. Official guidelines state that suitable physical activity is recommended for patients with diabetes mellitus. However, since walking at a rapid pace could be associated with increased plantar pressure and potential foot pain, the footwear condition is particularly important for optimal foot protection in order to reduce the risk of tissue injury and ulceration of diabetic patients. This study aims to analyze foot deformation and plantar pressure distribution at three different walking speeds (slow, normal, and fast walking) in dynamic situations. The dynamic foot shape of 19 female diabetic patients at three walking speeds is obtained by using a novel 4D foot scanning system. Their plantar pressure distributions at the three walking speeds are also measured by using the Pedar in-shoe system. The pressure changes in the toes, metatarsal heads, medial and lateral midfoot, and heel areas are systematically investigated. Although a faster walking speed shows slightly larger foot measurements than the two other walking speeds, the difference is insignificant. The foot measurement changes at the forefoot and heel areas, such as the toe angles and heel width, are found to increase more readily than the measurements at the midfoot. The mean peak plantar pressure shows a significant increase at a faster walking speed with the exception of the midfoot, especially at the forefoot and heel areas. However, the pressure time integral decreases for all of the foot regions with an increase in walking speed. Suitable offloading devices are essential for diabetic patients, particularly during brisk walking. Design features such as medial arch support, wide toe box, and suitable insole material for specific area of the foot (such as polyurethane for forefoot area and ethylene-vinyl acetate for heel area) are essential for diabetic insole/footwear to provide optimal fit and offloading. The findings contribute to enhancing the understanding of foot shape deformation and plantar pressure changes during dynamic situations, thus facilitating the design of footwear/insoles with optimal fit, wear comfort, and foot protection for diabetic patients.
+ER  - 
+TY  - JOUR
+T1  - SoleMate: The Design and Development of a Smart Insole System
+A1  - Alali, Obadah
+A1  - Samir, Ohoud
+A1  - Mohamed, Basir
+A1  - Kie, Sin Bie
+A1  - Ke Xin, Ong
+A1  - Wong, Yvonne
+A1  - Liang, Liang
+A1  - Marathandi, Ravathi
+A1  - Sugumaran, Shatiskumar
+A1  - Sathiaseelan, Sathiamoorthi
+A1  - Mualif, Siti Aisyah
+Y1  - 2024///
+JF  - Journal of Medical Devices Technology
+VL  - 3
+IS  - 1
+SP  - 34
+EP  - 39
+ER  - 
+TY  - JOUR
+T1  - Smarter Sole Survival: Will Neuropathic Patients at High Risk for Ulceration Use a Smart Insole-Based Foot Protection System?
+A1  - Najafi, Bijan
+A1  - Ron, Eyal
+A1  - Enriquez, Ana
+A1  - Marin, Ivan
+A1  - Razjouyan, Javad
+A1  - Armstrong, David G.
+Y1  - 2017/07//
+KW  - Orpyx
+KW  - SurroSense Rx
+KW  - adherence
+KW  - diabetic foot ulcer
+KW  - offloading
+KW  - physical activity monitoring
+KW  - wearable sensors
+KW  - wound healing
+PB  - SAGE Publications Inc.
+JF  - Journal of Diabetes Science and Technology
+VL  - 11
+IS  - 4
+SP  - 702
+EP  - 713
+DO  - 10.1177/1932296816689105
+UR  - %6010.1177/1932296816689105%60
+N2  - Objective: This study examined adherence to alert-based cues for plantar pressure offloading in patients with diabetic foot disease. Method and Design: Participants (n = 17) with in diabetic foot remission (history of neuropathic ulceration) were instructed to wear a smart insole system (the SurroSense Rx, Orpyx Medical Technologies Inc, Calgary, Canada) over a three-month period. This device is designed to cue offloading to manage unprotected sustained plantar pressures in an effort to prevent foot ulceration. A successful response to an alert was defined as pressure offloading, which occurred within 20 minutes of the alert onset. Patient adherence, defined as daily hours of device wear, was determined using sensor data and patient questionnaires. Changes in these parameters were assessed monthly. Results: Patients demonstrating increased adherence over the course of the study received more alerts (0.82 ± 0.31 alerts/hour) than patients whose adherence did not improve (0.36 ± 0.46 alerts/hour, P =.156). By the final stages of the study, participants who had received at least one alert every two hours were more adherent with offloading than participants who received fewer alerts (52.5 ± 4.1% vs 24.7 ± 22.4%, P =.043). Furthermore, duration of time from alert generation to successful offloading was significantly greater in the group receiving fewer alerts. This was measured in the third month with an effect size Cohen's d = 1.739, P =.043. Conclusion: The results suggest a minimum number of alerts (one every two hours) is required for patients with diabetic neuropathy to optimally respond to offloading cues from a smart insole system.
+ER  - 
+TY  - JOUR
+T1  - A systematic approach to the design and characterization of a smart insole for detecting vertical ground reaction force (vGRF) in gait analysis
+A1  - Tahir, Anas M.
+A1  - Chowdhury, Muhammad E.H.
+A1  - Khandakar, Amith
+A1  - Al-Hamouz, Sara
+A1  - Abdalla, Merna
+A1  - Awadallah, Sara
+A1  - Reaz, Mamun Bin Ibne
+A1  - Al-Emadi, Nasser
+Y1  - 2020/02//
+KW  - Characterization
+KW  - Force sensitive resistors
+KW  - Gait analysis
+KW  - Piezoelectric sensors
+KW  - Sensor calibration
+KW  - Smart insole
+KW  - Vertical ground reaction forces
+PB  - MDPI AG
+JF  - Sensors (Switzerland)
+VL  - 20
+IS  - 4
+SP  - 957
+EP  - 957
+DO  - 10.3390/s20040957
+UR  - 10.3390/s20040957
+N2  - Gait analysis is a systematic study of human locomotion, which can be utilized in various applications, such as rehabilitation, clinical diagnostics and sports activities. The various limitations such as cost, non-portability, long setup time, post-processing time etc., of the current gait analysis techniques have made them unfeasible for individual use. This led to an increase in research interest in developing smart insoles where wearable sensors can be employed to detect vertical ground reaction forces (vGRF) and other gait variables. Smart insoles are flexible, portable and comfortable for gait analysis, and can monitor plantar pressure frequently through embedded sensors that convert the applied pressure to an electrical signal that can be displayed and analyzed further. Several research teams are still working to improve the insoles’ features such as size, sensitivity of insoles sensors, durability, and the intelligence of insoles to monitor and control subjects’ gait by detecting various complications providing recommendation to enhance walking performance. Even though systematic sensor calibration approaches have been followed by different teams to calibrate insoles’ sensor, expensive calibration devices were used for calibration such as universal testing machines or infrared motion capture cameras equipped in motion analysis labs. This paper provides a systematic design and characterization procedure for three different pressure sensors: force-sensitive resistors (FSRs), ceramic piezoelectric sensors, and flexible piezoelectric sensors that can be used for detecting vGRF using a smart insole. A simple calibration method based on a load cell is presented as an alternative to the expensive calibration techniques. In addition, to evaluate the performance of the different sensors as a component for the smart insole, the acquired vGRF from different insoles were used to compare them. The results showed that the FSR is the most effective sensor among the three sensors for smart insole applications, whereas the piezoelectric sensors can be utilized in detecting the start and end of the gait cycle. This study will be useful for any research group in replicating the design of a customized smart insole for gait analysis.
+ER  - 

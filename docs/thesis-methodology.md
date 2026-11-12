@@ -1,8 +1,9 @@
 # Draf Bab Metodologi (Fase 6.2)
 
 > Draf untuk Bab III tesis. Angka diambil dari `docs/rf-model-report.md` dan
-> `docs/validation-report.md`. Tanda `[sitasi]` harus diisi daftar pustaka
-> sebelum sidang.
+> `docs/validation-report.md`. Daftar pustaka lengkap ada di
+> [`daftar-pustaka.md`](daftar-pustaka.md); tidak ada lagi tanda `[sitasi]`
+> yang belum terisi.
 
 ## 3.1 Gambaran sistem
 
@@ -21,24 +22,27 @@ keduanya tidak dapat memberi kesimpulan berbeda atas pembacaan yang sama.
 
 ### 3.2.1 Dataset utama: DFN-DS
 
-DFN-DS `[sitasi]` memuat rekaman tekanan plantar dari 135 pasien, masing-masing
-600 sampel, sehingga total 81.000 sampel. Tiap rekaman mencatat 8 sensor per
+Dataset DFN-DS (Zhong dkk., 2025) memuat rekaman tekanan plantar dari 135
+pasien, masing-masing 600 sampel, sehingga total 81.000 sampel. Tiap rekaman
+mencatat 8 sensor per
 kaki pada 6.001 baris waktu. Pasien terbagi menjadi kelompok diabetes tanpa
 neuropati (DM) dan diabetes dengan neuropati (DFN).
 
 ### 3.2.2 Dataset validasi silang: OptiTrack v2
 
-Dataset insole OptiTrack v2 `[sitasi]` menyediakan tekanan plantar dan gerak
-tubuh yang tersinkronisasi dari 15 partisipan, 155 take, 32 sensor per insole.
+Dataset insole OptiTrack v2 (Chinarro dkk., 2026) menyediakan tekanan plantar
+dan gerak tubuh yang tersinkronisasi dari 15 partisipan, 155 take, 32 sensor
+per insole.
 Data ini dipakai untuk memeriksa pola tiga region saat gait, bukan untuk
 melatih model.
 
 ### 3.2.3 Dataset validasi ambang: Figshare DFU
 
-Data Figshare DFU `[sitasi]` memuat *peak plantar pressure* dan *pressure-time
-integral* dari 22 pasien ulkus kaki diabetik pada 12 region dan 5 kondisi
-*offloading*. Dataset ini dipakai untuk memeriksa apakah ambang klinis model
-berada di dalam rentang tekanan yang nyata.
+Data Figshare DFU (Ngui dkk., 2025) memuat *peak
+plantar pressure* dan *pressure-time integral* dari 22 pasien ulkus kaki
+diabetik pada 12 region dan 5 kondisi *offloading*. Dataset ini dipakai untuk
+memeriksa apakah ambang klinis model berada di dalam rentang tekanan yang
+nyata.
 
 ## 3.3 Praproses
 
@@ -68,9 +72,10 @@ validasi terlalu optimistis.
 
 Model yang dipakai adalah **hybrid Random Forest dan aturan klinis**.
 
-Random Forest `[sitasi]` menangani batas `safe` dan `warning`. Alasan pemilihan
-Random Forest: batas keputusan dipelajari dari data sehingga tidak bergantung
-pada fungsi keanggotaan yang ditentukan manual, model tidak memerlukan asumsi
+Random Forest (Breiman, 2001) menangani batas `safe` dan `warning`. Alasan
+pemilihan Random Forest: batas keputusan dipelajari dari data sehingga tidak
+bergantung pada fungsi keanggotaan yang ditentukan manual, model tidak
+memerlukan asumsi
 distribusi, dan hasilnya dapat diekspor ke C++ agar berjalan di ESP32 tanpa
 pustaka tambahan. Pada dataset ini batas yang dipelajari ternyata berimpit
 dengan ambang label di 3.3, sehingga pohon mereproduksi aturan; implikasinya
@@ -169,9 +174,9 @@ tingkat risiko dan alarm lokal, dan tidak menggantikan pemeriksaan klinis.
 
 Alat ditujukan untuk **pasien diabetes**, idealnya dengan neuropati perifer
 atau riwayat ulkus kaki. Ambang 200 kPa adalah ambang *in-shoe* dengan
-konsensus terluas untuk populasi itu `[sitasi]`, dan seluruh data latih DFN-DS
-berasal dari pasien diabetes. Tidak ada subjek non-diabetes dalam data latih
-maupun validasi.
+konsensus terluas untuk populasi itu (Castro-Martins dkk., 2024), dan seluruh
+data latih DFN-DS berasal dari pasien diabetes. Tidak ada subjek non-diabetes
+dalam data latih maupun validasi.
 
 ### 3.9.2 Arti ambang di luar populasi itu
 

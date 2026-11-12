@@ -9,9 +9,9 @@ dipakai untuk apa" tanpa membuka arsip 360 MB.
 
 | Folder | Asal | Dipakai untuk | Ukuran |
 |---|---|---|---|
-| `dfn-ds/` | Zenodo — MSSDA, AAAI 2025 | Latih model RF (`models/training-data.json`) | 273 MB |
-| `figshare-dfu/` | Figshare — DFU plantar pressure | Validasi ambang klinis (3.2) | 32 KB |
-| `optitrack/` | Figshare — Insoles OptiTrack v2 | Validasi fase gait (3.1) | 84 MB |
+| `dfn-ds/` | Zenodo — MSSDA, AAAI 2025 (DOI `10.1609/aaai.v39i21.34451`) | Latih model RF (`models/training-data.json`) | 273 MB |
+| `figshare-dfu/` | Figshare Univ. Adelaide — Ngui dkk. 2025 (DOI `10.25954/e6yc-n159`) | Validasi ambang klinis (3.2) | 32 KB |
+| `optitrack/` | Zenodo — Insoles OptiTrack v2 (DOI `10.5281/zenodo.22936249`) | Validasi fase gait (3.1) | 84 MB |
 
 ---
 
@@ -28,9 +28,9 @@ Diabetes foot neuropathy + diabetes mellitus, 8 FSR per kaki, 100 Hz.
 **Lisensi:** MIT, © 2024 Guilliman (`LICENSE` di dalam `MSSDA-master.zip`).
 
 **Sitasi:** MSSDA — *Multi-Sub-Source Domain Adaptation for Diabetic Foot
-Neuropathy Recognition*, AAAI 2025. Teks sitasi lengkap ada di `README.md`
-dalam arsip upstream; repo-nya masih berstatus "coming soon", jadi rujuk
-paper-nya untuk sitasi formal.
+Neuropathy Recognition*, AAAI 2025 (Zhong dkk., DOI `10.1609/aaai.v39i21.34451`;
+Prosiding AAAI 39(21), 22893–22901). Repo upstream masih berstatus "coming
+soon", jadi sitasi formal merujuk ke paper-nya.
 
 **Dipakai oleh:** `scripts/prepare-dataset.py` → `models/training-data.json`
 (135 pasien × 600 sampel = 81.000 sampel).
@@ -66,8 +66,19 @@ melewati ambang 35 kPa, 70 kPa, dan 200 kPa (hasil: 19,3%, 1,4%, dan 0%; lihat
 memvalidasi **tekanan**. Puncaknya 123,8 kPa, di bawah ambang danger 200 kPa,
 sehingga jalur danger tidak dapat diuji di sini.
 
-**Lisensi:** tidak disertakan dalam file yang diunduh. Rujuk halaman Figshare
-dataset sebelum mempublikasikan turunannya.
+**Sumber:** Ngui, I. R. Y., Causby, R., Jones, S., Bowden, J., & Daebeler, R.
+(2025). *Measurement of plantar pressure differences in the contralateral limb
+when using offloading modalities for diabetic foot ulcerations* [Data set].
+University of Adelaide (Figshare). DOI `10.25954/e6yc-n159`,
+<https://adelaide.figshare.com/articles/dataset/30930809>. Berkas yang diunduh
+adalah `Data Sheets.xlsx` (lembar "Sheet 1", "Table 1"): 22 partisipan × 12
+region = 264 baris data, cocok dengan isi berkas.
+
+**Lisensi:** CC BY 4.0 (tercantum di halaman Figshare).
+
+**Artikel pendamping:** Ngui dkk. (2025), *Journal of Foot and Ankle Research*
+18(1), e70028, DOI `10.1002/jfa2.70028` — studi yang menerbitkan tabel ini.
+Belum dibaca; sitasi 3.2 memakai entri dataset-nya.
 
 ---
 
@@ -84,7 +95,14 @@ sebelum forefoot pada 99,9% fase tumpu).
 1–32 dibaca manual dari `insoles-number.jpeg` di dalam arsip, jadi pemetaan
 tersebut adalah asumsi yang didokumentasikan, bukan data resmi vendor.
 
-**Lisensi:** tidak disertakan dalam arsip. Rujuk halaman Figshare dataset.
+**Sumber:** Chinarro, M., Redondo-Madruga, M., Dobrescu, C. C., &
+Carneros-Prado, D. (2026). *Multimodal gait dataset: Synchronized
+sensorized-insole (pressure + IMU) and OptiTrack motion capture recordings*
+[Data set]. Zenodo. DOI `10.5281/zenodo.22936249`,
+<https://zenodo.org/records/22936249>. Arsipnya berisi
+`InsolesOpitrackDataset_v2.zip` dengan `info.txt` dan `CHANGELOG.md`.
+
+**Lisensi:** CC BY 4.0 (tercantum di catatan Zenodo).
 
 ---
 
