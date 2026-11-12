@@ -1,0 +1,33 @@
+%% Gambar 3.10 Deployment Diagram — Topologi Penyebaran Sistem
+%% Bagian: 3.3.2
+flowchart TB
+    subgraph USERDEV[device - Smartphone atau Laptop Pengguna]
+        BR1[Built-in Browser]
+    end
+    subgraph ADMDEV[device - PC Admin]
+        BR2[Built-in Browser]
+    end
+    subgraph INSOLE[device - Smart Insole Node]
+        direction TB
+        ESP[artifact - firmware ESP32-WROOM-32]
+        FSR[Sensor FSR 402 x3]
+        BUZ[Buzzer Aktif]
+        BAT[Baterai LiPo dan TP4056]
+        FSR --> ESP
+        ESP --> BUZ
+        BAT --> ESP
+    end
+    subgraph GCP[cloud - Google Cloud Firebase]
+        direction TB
+        AUTHS[service - Authentication]
+        RTDBS[service - Realtime Database]
+        FSS[service - Cloud Firestore]
+    end
+    NTPS[service - NTP Server]
+
+    ESP -->|Wi-Fi 2.4 GHz HTTPS| RTDBS
+    ESP -->|SNTP| NTPS
+    BR1 -->|HTTPS WSS| RTDBS
+    BR1 -->|HTTPS| AUTHS
+    BR2 -->|HTTPS| FSS
+    BR2 -->|HTTPS| RTDBS

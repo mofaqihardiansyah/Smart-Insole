@@ -1,0 +1,49 @@
+%% Gambar 3.9 Component Diagram — Arsitektur Komponen Sistem
+%% Bagian: 3.3.2
+flowchart TB
+    subgraph EDGE[Perangkat Smart Insole - Edge]
+        direction TB
+        SENS[Sensor FSR 402 x3]
+        ADC[ADC 12-bit ESP32]
+        KAL[Kalibrasi dan Konversi kPa]
+        DUR[Penghitung Durasi Tumpuan]
+        RF[Modul Inferensi Random Forest]
+        BUZ[Driver Buzzer]
+        WIFI[WiFi Client dan Firebase SDK]
+        NTP[NTP Client]
+        SENS --> ADC --> KAL --> DUR --> RF
+        RF --> BUZ
+        RF --> WIFI
+        NTP --> WIFI
+    end
+
+    subgraph CLOUD[Firebase - Google Cloud]
+        direction TB
+        AUTH[Firebase Authentication]
+        RTDB[(Realtime Database)]
+        FSTORE[(Cloud Firestore)]
+        RULES[Security Rules]
+        RULES --- RTDB
+        RULES --- FSTORE
+    end
+
+    subgraph WEBAPP[Dashboard Web - React SPA]
+        direction TB
+        AUTHC[Auth Module]
+        RTSVC[Realtime Data Service]
+        UI1[Dashboard dan Heatmap UI]
+        UI2[Riwayat dan Grafik UI]
+        UI3[Admin Console]
+        I18N[i18n dan Tema]
+        AUTHC --> UI1
+        RTSVC --> UI1
+        RTSVC --> UI2
+        UI3 --> RTSVC
+        I18N --> UI1
+    end
+
+    WIFI -->|HTTPS JSON| RTDB
+    AUTHC -->|HTTPS| AUTH
+    UI3 -->|HTTPS| FSTORE
+    RTSVC -->|WebSocket listener| RTDB
+    RTDB -.->|push update| RTSVC

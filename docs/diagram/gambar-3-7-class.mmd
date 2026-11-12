@@ -1,0 +1,101 @@
+%% Gambar 3.7 Class Diagram — Model Domain Sistem
+%% Bagian: 3.3.1.4
+classDiagram
+    class User {
+        +String uid
+        +String email
+        +String displayName
+        +String photoURL
+        +String role
+        +Boolean active
+        +DateTime createdAt
+        +register()
+        +login()
+        +updateProfile()
+        +deactivate()
+    }
+    class Device {
+        +String deviceId
+        +String ownerUid
+        +String firmwareVersion
+        +DateTime pairedAt
+        +pair()
+        +unpair()
+    }
+    class Reading {
+        +String readingId
+        +String deviceId
+        +DateTime timestamp
+        +Float forefoot_kpa
+        +Float midfoot_kpa
+        +Float heel_kpa
+        +Float sustained_duration_sec
+        +Int risk_score
+        +RiskLevel risk_status
+        +Int battery_percent
+        +validate()
+        +toMappedReading()
+    }
+    class HistoryEntry {
+        +String id
+    }
+    class RiskThresholds {
+        +Float warningKpa
+        +Float dangerKpa
+        +Int warningSeconds
+        +Int dangerSeconds
+        +classify(peak, sustained) RiskLevel
+    }
+    class RandomForestModel {
+        +Int nTrees
+        +Int maxDepth
+        +List nodes
+        +predict(peak, sustained) RiskLevel
+        +toCpp()
+    }
+    class Alert {
+        +String alertId
+        +String readingId
+        +RiskLevel level
+        +String message
+        +DateTime createdAt
+        +Boolean acknowledged
+    }
+    class AuditEntry {
+        +String actorUid
+        +String action
+        +String target
+        +String detail
+        +DateTime at
+    }
+    class TriageIncident {
+        +String triageId
+        +String deviceId
+        +String adminUid
+        +String status
+        +String notes
+        +DateTime createdAt
+    }
+    class FirebaseRealtimeService {
+        +subscribeToDeviceReadings(deviceId, onData, onError)
+        +subscribeToDeviceHistory(deviceId, onData, limit)
+        +mapReadingPacket(packet) MappedReading
+        +pushReading(deviceId, reading)
+    }
+    class RiskLevel {
+        <<enumeration>>
+        SAFE
+        WARNING
+        DANGER
+    }
+
+    User "1" --> "0..*" Device : memiliki
+    Device "1" --> "0..*" Reading : merekam
+    Reading "1" --> "0..*" Alert : memicu
+    Reading ..> RiskThresholds : diklasifikasi
+    RandomForestModel ..> RiskLevel : menghasilkan
+    Reading --> RiskLevel : risk_status
+    User "1" --> "0..*" AuditEntry : melakukan
+    Device "1" --> "0..*" TriageIncident : terkait
+    FirebaseRealtimeService ..> Reading : memetakan
+    HistoryEntry --|> Reading : extends

@@ -1,0 +1,64 @@
+%% Gambar 3.11 Entity Relationship Diagram — Model Data Konseptual
+%% Bagian: 3.3.3
+%% Catatan: ERD ini adalah model konseptual. Implementasi fisik memakai
+%% Firebase Realtime Database (pohon JSON) dan Cloud Firestore (koleksi
+%% dokumen). Pemetaan dijelaskan pada tabel 3.3.3.
+erDiagram
+    USER ||--o{ DEVICE : memiliki
+    DEVICE ||--o{ READING : merekam
+    READING ||--o| ALERT : memicu
+    USER ||--o{ AUDIT_LOG : melakukan
+    USER ||--o{ TRIAGE : menangani
+    DEVICE ||--o{ TRIAGE : terkait
+
+    USER {
+        string uid PK
+        string email
+        string display_name
+        string role
+        boolean active
+        string photo_url
+        datetime created_at
+    }
+    DEVICE {
+        string device_id PK
+        string owner_uid FK
+        string firmware_version
+        datetime paired_at
+    }
+    READING {
+        string reading_id PK
+        string device_id FK
+        datetime timestamp
+        float forefoot_kpa
+        float midfoot_kpa
+        float heel_kpa
+        float sustained_duration_sec
+        int risk_score
+        string risk_status
+        int battery_percent
+    }
+    ALERT {
+        string alert_id PK
+        string reading_id FK
+        string level
+        string message
+        boolean acknowledged
+        datetime created_at
+    }
+    AUDIT_LOG {
+        string audit_id PK
+        string actor_uid FK
+        string action
+        string target
+        string detail
+        datetime at
+    }
+    TRIAGE {
+        string triage_id PK
+        string device_id FK
+        string admin_uid FK
+        string status
+        string notes
+        datetime created_at
+    }

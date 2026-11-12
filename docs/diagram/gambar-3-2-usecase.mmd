@@ -1,0 +1,78 @@
+%% Gambar 3.2 Use Case Diagram — Sistem Monitoring Smart Insole
+%% Bagian: 3.3.1.1
+%% Catatan: Mermaid tidak punya notasi use case native; dipakai flowchart
+%% dengan aktor = node bulat, use case = stadium. Use case dikelompokkan
+%% menurut aktor agar garis asosiasi tidak saling menyilang.
+flowchart LR
+    U((Pengguna))
+    A((Admin))
+    D((Perangkat<br/>Smart Insole))
+
+    subgraph SIS[Sistem Monitoring Smart Insole]
+        direction TB
+        subgraph GU[Use case Pengguna]
+            direction TB
+            UC01([Registrasi Akun])
+            UC04([Lupa Kata Sandi])
+            UC05([Melihat Dashboard Real-time])
+            UC06([Melihat Heatmap Tekanan])
+            UC07([Melihat Grafik Tren Tekanan])
+            UC09([Ekspor Riwayat CSV])
+            UC10([Menerima Notifikasi Peringatan])
+            UC11([Mengelola Profil])
+            UC12([Mengatur Preferensi])
+        end
+        subgraph GS[Use case bersama]
+            direction TB
+            UC02([Verifikasi Email])
+            UC03([Login])
+            UC08([Melihat Riwayat Data])
+            UC13([Logout])
+        end
+        subgraph GA[Use case Admin]
+            direction TB
+            UC14([Melihat Ringkasan Sistem])
+            UC15([Mengelola Pengguna])
+            UC16([Mengelola Perangkat])
+            UC17([Menangani Insiden])
+            UC18([Melihat Audit Log])
+        end
+        subgraph GD[Use case Perangkat]
+            direction TB
+            UC19([Memantau Tekanan Plantar])
+            UC20([Membaca Sensor FSR])
+            UC21([Klasifikasi Risiko Random Forest])
+            UC22([Mengaktifkan Alarm Buzzer])
+            UC23([Mengirim Data ke Firebase])
+        end
+    end
+
+    U --- UC01
+    U --- UC03
+    U --- UC05
+    U --- UC07
+    U --- UC08
+    U --- UC09
+    U --- UC10
+    U --- UC11
+    U --- UC12
+    U --- UC13
+    A --- UC03
+    A --- UC08
+    A --- UC13
+    A --- UC14
+    A --- UC15
+    A --- UC16
+    A --- UC17
+    A --- UC18
+    D --- UC19
+
+    UC01 -.->|include| UC02
+    UC03 -.->|include| UC02
+    UC04 -.->|extend| UC03
+    UC05 -.->|include| UC06
+    UC10 -.->|extend| UC05
+    UC19 -.->|include| UC20
+    UC19 -.->|include| UC21
+    UC19 -.->|include| UC22
+    UC19 -.->|include| UC23

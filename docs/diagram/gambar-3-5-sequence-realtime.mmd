@@ -1,0 +1,32 @@
+%% Gambar 3.5 Sequence Diagram — Pengiriman Data Real-time
+%% Bagian: 3.3.1.3
+sequenceDiagram
+    autonumber
+    participant FSR as Sensor FSR (3x)
+    participant ESP as ESP32 (RF on-device)
+    participant RTDB as Firebase RTDB
+    participant WEB as Dashboard Web
+    participant USR as Pengguna
+
+    loop Setiap 1 detik
+        ESP->>FSR: analogRead(GPIO34/35/32)
+        FSR-->>ESP: nilai ADC mentah
+        ESP->>ESP: median 3 sampel, konversi ke kPa
+        ESP->>ESP: update durasi tumpuan
+        ESP->>ESP: inferensi Random Forest (20 pohon)
+        alt Bahaya
+            ESP->>ESP: buzzer pulsa cepat
+        else Waspada
+            ESP->>ESP: buzzer beep berkala
+        else Aman
+            ESP->>ESP: buzzer mati
+        end
+        ESP->>RTDB: set devices/{id}/readings/latest
+        ESP->>RTDB: push devices/{id}/readings/history
+        RTDB-->>WEB: onValue (push update)
+        WEB->>WEB: mapReadingPacket() dan validasi
+        WEB-->>USR: render heatmap, grafik, status risiko
+        opt Status Bahaya
+            WEB-->>USR: notifikasi peringatan
+        end
+    end

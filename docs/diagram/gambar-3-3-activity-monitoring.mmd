@@ -1,0 +1,32 @@
+%% Gambar 3.3 Activity Diagram — Alur Monitoring Tekanan Plantar End-to-End
+%% Bagian: 3.3.1.2
+flowchart TD
+    subgraph DEV[Perangkat Smart Insole - ESP32]
+        S1([Mulai]) --> S2[Baca 3 sensor FSR<br/>forefoot, midfoot, heel]
+        S2 --> S3[Konversi ADC ke kPa]
+        S3 --> S4[Akumulasi durasi tumpuan<br/>tekanan di atas ambang]
+        S4 --> S5[Inferensi Random Forest<br/>20 pohon, kedalaman 8]
+        S5 --> S6{Level risiko?}
+        S6 -->|Bahaya| S7[Buzzer pulsa cepat]
+        S6 -->|Waspada| S8[Buzzer beep berkala]
+        S6 -->|Aman| S9[Buzzer mati]
+        S7 --> S10[Kirim paket JSON]
+        S8 --> S10
+        S9 --> S10
+    end
+
+    subgraph CLD[Firebase Realtime Database]
+        S10 --> F1[(Simpan readings/latest<br/>dan readings/history)]
+    end
+
+    subgraph WEB[Dashboard Web]
+        F1 --> W1[Listener onValue menerima data]
+        W1 --> W2[Validasi dan mapping paket]
+        W2 --> W3[Perbarui heatmap, grafik, status]
+        W3 --> W4{Status Bahaya?}
+        W4 -->|Ya| W5[Tampilkan notifikasi peringatan]
+        W4 -->|Tidak| W6[Tampilkan status normal]
+    end
+
+    W5 --> E([Selesai])
+    W6 --> E

@@ -1,0 +1,15 @@
+%% Gambar 3.8 State Machine Diagram — Status Risiko pada Firmware
+%% Bagian: 3.3.1.5
+%% Ambang mengikuti firmware/src/RandomForest.cpp + models/rf-model.json:
+%%   danger : peak >= 200 kPa (satu sampel)
+%%   safe   : peak < 35 kPa dan sustained < 20 detik (200 sampel @10 Hz)
+%%   selain itu warning
+stateDiagram-v2
+    [*] --> AMAN
+    AMAN --> WASPADA : peak >= 35 kPa
+    WASPADA --> BAHAYA : peak >= 200 kPa
+    BAHAYA --> WASPADA : peak < 200 kPa
+    WASPADA --> AMAN : peak < 35 kPa<br/>dan durasi tumpuan < 20 detik
+    AMAN : Buzzer mati
+    WASPADA : Beep berkala 100 ms / 3 s
+    BAHAYA : Pulsa cepat 300 ms / 200 ms

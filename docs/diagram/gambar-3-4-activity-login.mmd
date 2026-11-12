@@ -1,0 +1,20 @@
+%% Gambar 3.4 Activity Diagram — Login dan Otorisasi
+%% Bagian: 3.3.1.2
+flowchart TD
+    A([Mulai]) --> B[Buka halaman Login]
+    B --> C[Input email dan kata sandi]
+    C --> D{Format valid?}
+    D -->|Tidak| C
+    D -->|Ya| E[Kirim ke Firebase Authentication]
+    E --> F{Kredensial benar?}
+    F -->|Tidak| G[Tampilkan pesan galat] --> C
+    F -->|Ya| H{Email terverifikasi?}
+    H -->|Tidak| I[Arahkan ke halaman verifikasi email]
+    H -->|Ya| J{Cek role dan status akun}
+    J -->|Admin| K[Dashboard Admin]
+    J -->|User aktif| L[Dashboard Pengguna]
+    J -->|Nonaktif| M[Layar akun dinonaktifkan]
+    K --> N([Selesai])
+    L --> N
+    I --> N
+    M --> N

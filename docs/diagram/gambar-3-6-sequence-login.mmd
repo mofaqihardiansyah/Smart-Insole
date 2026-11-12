@@ -1,0 +1,31 @@
+%% Gambar 3.6 Sequence Diagram — Login dan Pemeriksaan Peran
+%% Bagian: 3.3.1.3
+sequenceDiagram
+    autonumber
+    actor U as Pengguna
+    participant W as Dashboard React
+    participant FA as Firebase Auth
+    participant FS as Firestore users
+
+    U->>W: input email dan password
+    W->>FA: signInWithEmailAndPassword()
+    alt Kredensial salah
+        FA-->>W: error auth/invalid-credential
+        W-->>U: tampilkan pesan galat
+    else Kredensial benar
+        FA-->>W: ID token dan uid
+        W->>FA: cek emailVerified
+        alt Belum verifikasi
+            W-->>U: arahkan ke VerifyEmailPage
+        else Sudah verifikasi
+            W->>FS: get users/{uid} role dan active
+            FS-->>W: role, active
+            alt active = false
+                W-->>U: tampilkan DeactivatedScreen
+            else role = admin
+                W-->>U: redirect ke /admin
+            else role = user
+                W-->>U: redirect ke /dashboard
+            end
+        end
+    end
