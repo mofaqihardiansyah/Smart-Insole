@@ -31,6 +31,8 @@ file that owns it.
 ## Hard rules
 
 - Do not commit unless the user asks. When asked, use Conventional Commits.
+  Hindari commit berlebihan untuk perubahan-perubahan kecil; kumpulkan ke dalam
+  satu commit bermakna besar saat satu rangkaian pekerjaan selesai atau saat diminta.
 - Do not edit or delete `AGENTS.md`. Propose changes to the user instead.
 - Do not install tools or packages silently. `pio` is absent on this machine;
   report that and continue with what exists.
