@@ -22,13 +22,16 @@ GEN = ROOT / "gen"
 # ---------------------------------------------------------------- parameter
 # Lihat params.md. x = 0 di tumit, y positif ke lateral.
 L = 270.0
+# (x, y pusat, radius) — rantai lingkaran; union-nya membentuk tapak.
+# Lingkaran ujung dibuat tangent pada x = 0 (tumit) dan x = 270 (ujung jari),
+# sehingga panjang tapak tepat 270 mm. Pusat digeser sedikit ke lateral pada
+# daerah midfoot supaya sisi medial punya lengkungan (arch), bukan simetris.
 PROFILE = [
-    # (x, y pusat, radius) — rantai lingkaran; union-nya membentuk tapak
-    (2, 0, 20), (10, 0, 28), (20, 0, 31), (35, 0.5, 30.5),
-    (55, 0, 31), (75, 0, 33), (95, 0, 35), (115, 0, 37),
-    (135, 0, 40), (155, 0, 42), (175, 0, 44), (192, 0.5, 46.5),
-    (203, 0, 47.5), (215, 0, 46), (230, 0, 42), (243, 0, 35),
-    (254, 0, 27), (263, 0, 17), (269, 0, 8), (270, 0, 3),
+    (20, 0, 20), (30, 0, 26), (42, 0, 30), (55, 0, 31),
+    (70, 0, 31.5), (85, 0, 32), (100, 2, 33.5), (115, 2.5, 36),
+    (130, 3, 39), (145, 2.5, 41), (160, 1.5, 42.5), (175, 0.5, 43.5),
+    (190, 0, 45), (200, 0, 46.5), (210, 0, 47.5), (220, 0, 46),
+    (230, 0, 40), (240, 0, 30), (248, 0, 22), (256, 0, 14), (260, 0, 10),
 ]
 SENSOR_R = 6.35
 POCKET = 14.0
@@ -62,19 +65,61 @@ def boundary(x):
     return top, bot
 
 
-def outline(step=1.25):
-    lo = min(c[0] - c[2] for c in PROFILE)
-    hi = max(c[0] + c[2] for c in PROFILE)
-    xs = []
-    x = lo
-    while x <= hi:
-        t, b = boundary(x)
+def control_points():
+    """Titik kendali tepi tapak: ujung tumit, sisi lateral, ujung jari, sisi medial.
+
+    Union lingkaran PROFILE punya lekukan kecil di setiap titik potong dua
+    lingkaran. Titik kendali diambil dari tepi union itu, lalu dihaluskan
+    dengan spline supaya garis tepi tidak bergerigi.
+    """
+    top, bot = [], []
+    for x in range(5, 266, 10):
+        t, b = boundary(float(x))
         if t > -1e8:
-            xs.append((x, t, b))
-        x += step
-    poly = [(round(x, 3), round(t, 3)) for x, t, _ in xs]
-    poly += [(round(x, 3), round(b, 3)) for x, _, b in reversed(xs)]
-    return poly
+            top.append((float(x), t))
+            bot.append((float(x), b))
+    return [(0.0, 0.0)] + top + [(L, 0.0)] + list(reversed(bot))
+
+
+def smooth_outline(step=0.4):
+    """Tepi tapak sebagai satu kurva tertutup Catmull-Rom, tanpa lekuk.
+
+    Hasilnya dipakai untuk gambar kerja 2D dan untuk extruded 3D, jadi kedua
+    keluaran memakai garis tepi yang sama persis. Skala akhir dinormalkan agar
+    panjang tepat L dan lebar bola kaki tepat 95 mm.
+    """
+    pts = control_points()
+    n = len(pts)
+    poly = []
+    for i in range(n):
+        p0 = pts[(i - 1) % n]
+        p1 = pts[i]
+        p2 = pts[(i + 1) % n]
+        p3 = pts[(i + 2) % n]
+        seg = math.dist(p1, p2)
+        k = max(2, int(seg / step))
+        for j in range(k):
+            t = j / k
+            t2, t3 = t * t, t * t * t
+            def cr(a0, a1, a2, a3):
+                return 0.5 * (2 * a1 + (-a0 + a2) * t
+                              + (2 * a0 - 5 * a1 + 4 * a2 - a3) * t2
+                              + (-a0 + 3 * a1 - 3 * a2 + a3) * t3)
+            poly.append((cr(p0[0], p1[0], p2[0], p3[0]),
+                         cr(p0[1], p1[1], p2[1], p3[1])))
+
+    xs = [p[0] for p in poly]
+    ys = [p[1] for p in poly]
+    sx = L / (max(xs) - min(xs))
+    sy = 95.0 / (max(ys) - min(ys))
+    sy0 = (max(ys) + min(ys)) / 2
+    return [(round((x - min(xs)) * sx, 3), round((y - sy0) * sy, 3))
+            for x, y in poly]
+
+
+def outline(step=0.4):
+    """Poligon tepi tapak yang sudah dihaluskan."""
+    return smooth_outline(step)
 
 
 def spine():
@@ -204,8 +249,8 @@ def insole_plan():
 
     d.layer("DIM")
     d.dim((0, 0), (L, 0), (135, -74))
-    d.dim((203, -47.5), (203, 47.5), (300, 0))
-    d.dim((20, -31), (20, 31), (-20, 0))
+    d.dim((210, -47.5), (210, 47.5), (300, 0))
+    d.dim((55, -31), (55, 31), (-20, 0))
     d.dimd((SENSOR_X["F"], 0), (SENSOR_X["F"] + SENSOR_R * 0.7, -SENSOR_R * 0.7),
            (SENSOR_X["F"] + 30, -32))
     d.save()
@@ -333,7 +378,7 @@ def write_scad_data():
         "[" + ", ".join(f"[{x}, {y}]" for x, y in p) + "]" for p in paths)
     sensor = ",\n  ".join(f'["{n}", {x}]' for n, x in SENSOR_X.items())
     (GEN / "insole-data.scad").write_text(f"""// Dibuat oleh build-cad.py — jangan diedit tangan.
-// Outline, jalur channel, dan angka yang sama dengan gambar kerja 2D.
+// Garis tepi tapak, jalur channel, dan angka yang sama dengan gambar kerja 2D.
 OUTLINE = [
   {pts}
 ];
@@ -352,7 +397,7 @@ POCKET = {POCKET};
 CH_W = {CHANNEL_W};
 CH_D = {CHANNEL_D};
 """)
-    print("gen/insole-data.scad: outline + channel ditulis")
+    print(f"gen/insole-data.scad: tepi tapak ({len(outline())} titik) + channel")
 
 
 def main():

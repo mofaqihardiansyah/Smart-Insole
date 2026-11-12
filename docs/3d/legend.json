@@ -1,0 +1,26 @@
+{
+  "_catatan": "Sumber tunggal nomor, nama, warna, bahan untuk semua gambar 3D. Nomor = urutan di array + 1, dan nomor itu sama di seluruh gambar serta di tabel legenda guidebook. Dibaca oleh annotate.py; jangan menomori ulang tanpa membangun ulang.",
+  "components": [
+    {"id": "base",     "name": "Alas EVA",              "spec": "5 mm",                  "color": "#C6CAD1", "material": "EVA busa ati",  "note": "Lapisan dasar; menampung pocket sensor dan channel kabel"},
+    {"id": "cover",    "name": "Cover EVA",             "spec": "2 mm",                  "color": "#E9EBEE", "material": "EVA busa ati",  "note": "Penutup sensor; relief 1,5 mm di sisi bawah untuk bundel kabel"},
+    {"id": "fabric",   "name": "Kain atas",             "spec": "0,5 mm",                "color": "#A9BCCC", "material": "nylon / dry-fit", "note": "Lapisan sentuh, opsional"},
+    {"id": "sensor",   "name": "Sensor FSR 402",        "spec": "Ø 12,7 mm",             "color": "#C98F52", "material": "film polimer",  "note": "Tiga titik: F 22,5 %, M 52,5 %, H 82,5 % diukur dari ujung depan"},
+    {"id": "pocket",   "name": "Pocket sensor",         "spec": "14 × 14 × 2 mm",        "color": "#8E94A0", "material": "cerukan pada EVA", "note": "FSR ditanam sehingga permukaannya rata dengan alas"},
+    {"id": "channel",  "name": "Channel kabel",         "spec": "3,5 × 1,5 + relief 1,5", "color": "#6E7681", "material": "alur pada EVA", "note": "Kedalaman total 3,0 mm setelah cover terpasang"},
+    {"id": "cable",    "name": "Bundel kabel",          "spec": "6 × AWG 30, Ø ± 3,2",   "color": "#4A4F57", "material": "kabel silikon",  "note": "Dari ekor FSR menyusuri channel, keluar di tumit, naik ke pouch"},
+    {"id": "heelzone", "name": "Zona tumit",            "spec": "x < 30 mm",             "color": "#DDE2E8", "material": "—",              "note": "Bebas elektronik keras; hanya foam dan sensor"},
+    {"id": "shell",    "name": "Cangkang pouch",        "spec": "70 × 85 × 26 mm",       "color": "#38414D", "material": "neoprene 3 mm",  "note": "Badan pouch di pergelangan; rongga dalam 65 × 80 × 20"},
+    {"id": "cavity",   "name": "Rongga pouch",          "spec": "65 × 80 × 20 mm",       "color": "#9AA4B2", "material": "—",              "note": "Batas dalam yang harus dipatuhi semua isi"},
+    {"id": "port",     "name": "Lubang port USB",       "spec": "12 × 8 mm",             "color": "#E9C46A", "material": "lubang",         "note": "Akses TP4056 saat mengisi daya tanpa membuka pouch"},
+    {"id": "lining",   "name": "Lantai rongga",         "spec": "1 mm",                  "color": "#CFD4DA", "material": "penanda render", "note": "Bukan bagian yang dicetak; hanya penanda batas bawah rongga"},
+    {"id": "velcro",   "name": "Velcro",                "spec": "3 × Ø 20 mm",           "color": "#D8D8D2", "material": "velcro",         "note": "Menempel ke strap pergelangan, di dinding belakang"},
+    {"id": "strap",    "name": "Strap pergelangan",     "spec": "tinggi 20 mm",          "color": "#4C525B", "material": "—",              "note": "Menahan pouch 2–3 cm di atas bibir sepatu"},
+    {"id": "ankle",    "name": "Pergelangan (penanda)",  "spec": "Ø 35 mm",               "color": "#B9BDC4", "material": "penanda render", "note": "Bukan model anatomis; hanya penanda posisi pouch"},
+    {"id": "harness",  "name": "Harness kabel",         "spec": "Ø ± 3,2 mm",            "color": "#4A4F57", "material": "kabel silikon",  "note": "Jalur dari tumit insole ke dasar pouch"},
+    {"id": "esp32",    "name": "ESP32-WROOM-32 DevKit", "spec": "25,5 × 51,5 × 11 mm",   "color": "#3D5A8A", "material": "modul",          "note": "Baca ADC, inferensi Random Forest, kirim ke Firebase"},
+    {"id": "tp4056",   "name": "Modul TP4056",          "spec": "25 × 19 × 2 mm",        "color": "#7D8A5E", "material": "modul",          "note": "Pengisi daya LiPo lewat port USB"},
+    {"id": "lipo",     "name": "LiPo 3,7 V 600 mAh",    "spec": "30 × 40 × 5 mm",        "color": "#B8AE86", "material": "sel lithium",    "note": "Catu daya; diisi lewat TP4056"},
+    {"id": "pcb",      "name": "PCB bolong",            "spec": "20 × 20 × 1,6 mm",      "color": "#3E7A62", "material": "PCB",            "note": "Dudukan resistor pembagi tegangan FSR"},
+    {"id": "buzzer",   "name": "Buzzer aktif",          "spec": "Ø 9,5 × 6 mm",          "color": "#2E3238", "material": "buzzer",         "note": "Alarm lokal; berbunyi tanpa menunggu jaringan"}
+  ]
+}

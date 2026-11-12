@@ -1,0 +1,77 @@
+{
+  "_catatan": "Tata letak isi pouch dalam satu lapisan. x = lebar (65), y = tinggi (80), z = tebal (20). pos adalah titik tengah di bidang x-y; z dihitung dari lantai rongga. Dibaca annotate.py untuk membuat gen/pouch-contents.scad sekaligus memeriksa apakah semua komponen muat.",
+  "cavity": [
+    65,
+    80,
+    20
+  ],
+  "margin": 2.0,
+  "floor": 0.5,
+  "parts": [
+    {
+      "id": "lipo",
+      "size": [
+        30,
+        40,
+        5
+      ],
+      "pos": [
+        -15,
+        -18
+      ],
+      "shape": "box"
+    },
+    {
+      "id": "esp32",
+      "size": [
+        25.5,
+        51.5,
+        11
+      ],
+      "pos": [
+        17.5,
+        8
+      ],
+      "shape": "box"
+    },
+    {
+      "id": "tp4056",
+      "size": [
+        25,
+        19,
+        2
+      ],
+      "pos": [
+        17.5,
+        -28.5
+      ],
+      "shape": "box"
+    },
+    {
+      "id": "pcb",
+      "size": [
+        20,
+        20,
+        1.6
+      ],
+      "pos": [
+        -20.5,
+        14
+      ],
+      "shape": "box"
+    },
+    {
+      "id": "buzzer",
+      "size": [
+        9.5,
+        9.5,
+        6
+      ],
+      "pos": [
+        -22,
+        32
+      ],
+      "shape": "cyl"
+    }
+  ]
+}

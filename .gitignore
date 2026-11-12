@@ -28,3 +28,9 @@ firmware/.vscode/
 
 # Real device credentials (only the .example template is committed)
 firmware/include/config.h
+
+# Python bytecode
+__pycache__/
+
+# Intermediate 3D renders (sumber anotasi, dibangun ulang oleh build-3d.sh)
+docs/3d/render/raw/
