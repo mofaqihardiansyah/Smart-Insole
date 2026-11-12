@@ -11,10 +11,32 @@ All notable changes to this project are documented here. The format follows
   ramah perakit pemula: memperjelas jenis kabel silikon lentur 30 AWG, fungsi
   heat shrink, teknik solder FSR cepat (< 2 detik), tahapan cerukan (pocket) & parit
   (channel) insole EVA, serta pembuatan dan pemasangan pouch neoprene/rubber sheet.
+- `scripts/train-session-model.js` mengekspor helper validasi silangnya
+  (`auc`, `binaryMetrics`, `stratifiedFolds`, `crossValidate`) dan hanya
+  menjalankan `main()` saat dipanggil langsung, supaya `scripts/evidence.js`
+  memakai jalur DFN/DM yang sama alih-alih salinannya. Hasilnya tidak berubah.
 - `AGENTS.md` diperbarui dengan aturan frekuensi commit: hindari commit berlebihan
   untuk perubahan-perubahan kecil; kumpulkan ke dalam satu commit besar saat diminta.
 
 ### Added
+
+- `docs/evidence/`: paket bukti model Random Forest, dihasilkan oleh
+  `scripts/evidence.js` yang menghitung ulang semua angka dari
+  `models/training-data.json` dan `models/session-dataset.json` (tidak ada angka
+  yang diketik manual). Isinya satu laporan A4 (`hasil-pengujian-model.html`),
+  satu halaman bimbingan (`konsultasi-1-halaman.html`), `metrics.json`, dan 12
+  grafik SVG + PNG. Temuan utamanya: dua skenario ambang bahaya dilaporkan
+  berdampingan (200 kPa yang sekarang dan 70 kPa usulan Bab II); 0 dari 81.000
+  sampel mencapai 200 kPa dan 0 sampel validasi mencapai 70 kPa, jadi kelas
+  Bahaya tidak bisa dilatih maupun divalidasi; model 20 pohon ternyata 20
+  tunggul kedalaman 1 (60 simpul, 19 split pada `sustained`, 1 pada `peak`
+  34,97 kPa), bukti bahwa Random Forest hanya menyalin aturan ambang; uji
+  DFN vs DM memberi AUC out-of-fold 0,503 sehingga tidak lulus gerbang 0,650
+  dan dilaporkan sebagai hasil negatif. Model produksi, header firmware, dan
+  web tidak berubah.
+- `scripts/lib/charts.js`: grafik SVG tanpa dependensi (histogram, batang, dot
+  plot, matriks konfusi, garis, heatmap, rentang sensor, ROC, dan strip), lalu
+  dikonversi ke PNG dengan `rsvg-convert`.
 
 - `docs/3d/`: model 3D insole dan pouch. `params.md` menyimpan satu sumber
   angka; `build-cad.py` menghasilkan empat gambar kerja 2D lewat `cadcraft-cli`
