@@ -7,6 +7,23 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- `docs/hardware-build-guide.html` lampiran `#model3d` ditulis ulang: kesepuluh
+  gambar berlabel (Gambar 5–14) menggantikan enam render sebelumnya, ditambah
+  tabel legenda 21 komponen, bagian "cara membaca gambar", dan tabel berkas.
+  Tabel legenda dihasilkan ulang dari `docs/3d/legend.json` oleh `annotate.py`,
+  jadi nomor badge dan nomor tabel selalu sama.
+- `docs/3d/insole.scad`: cover diberi jarak 0,02 mm di atas alas dan film FSR
+  dinaikkan 0,05 mm dari dasar cerukan supaya tidak ada bidang berimpit (garis
+  z-fighting pada cover tembus pandang); `ribbon()` memakai satu `offset()`
+  polygon, bukan rantai `hull()`; potongan DETAIL menghormati `NOCABLE` dan
+  mewarnai dinding potongan dengan warna alas.
+- `docs/3d/annotate.py`: alpha bertahap di tepi siluet (tidak lagi ada garis
+  pucat mengikuti tepi objek pada latar gradien), penata letak label berbasis
+  biaya yang menghindari label lain, badge, dan siluet, kanvas/margin per gambar,
+  serta pemotongan bingkai untuk gambar posisi pakai.
+- `docs/3d/params.md` bertambah bagian nilai khusus render 3D, sumber legenda,
+  dan nomor gambar lampiran; dimensi isi pouch disamakan urutannya
+  (lebar × tinggi × tebal) dengan `legend.json`.
 - `docs/hardware-build-guide.html` diperbarui dengan bahasa tutorial praktis yang
   ramah perakit pemula: memperjelas jenis kabel silikon lentur 30 AWG, fungsi
   heat shrink, teknik solder FSR cepat (< 2 detik), tahapan cerukan (pocket) & parit

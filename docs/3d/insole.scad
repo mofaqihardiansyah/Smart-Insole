@@ -25,6 +25,8 @@ RELIEF = 1.5;          // relief channel di bawah cover: 1,5 + 1,5 = 3,0 mm
 CABLE_R = 1.6;         // radius bundel 6 inti AWG 30
 TAIL_W = 5;            // lebar ekor FSR
 FABRIC_LIFT = 12;      // jarak kain di atas cover pada tampak ledak
+SLIDE_DY = 0;          // geser lapisan ke samping pada tampak ledak
+GHOST_A = 0.30;        // kepekatan cover tembus pandang
 DETAIL_BOX = [95, -60, -4, 70, 120, 18];   // x, y, z, dx, dy, dz
 FN = 28;
 
@@ -46,12 +48,11 @@ module pocket2d() {
 }
 
 module ribbon(paths, w) {
-  for (p = paths)
-    for (i = [0 : len(p) - 2])
-      hull() {
-        translate(p[i]) circle(w / 2, $fn = FN);
-        translate(p[i + 1]) circle(w / 2, $fn = FN);
-      }
+  // Satu poligon hasil offset, bukan rantai hull(): hull per segmen
+  // meninggalkan bidang dalam yang bertumpuk, dan di preview OpenSCAD
+  // bidang itu muncul sebagai garis-garis z-fighting di dasar channel.
+  offset(r = w / 2, $fn = FN)
+    for (p = paths) polygon(p);
 }
 
 module base() {
@@ -63,23 +64,33 @@ module base() {
   }
 }
 
-module cover(lift = 0) {
-  difference() {
-    translate([0, 0, BASE_T + lift]) linear_extrude(COVER_T) outline2d();
-    translate([0, 0, BASE_T + lift]) linear_extrude(RELIEF + 0.02)
+// Cover mulai 0,02 mm di atas alas: dua bidang yang berimpit (permukaan atas
+// alas dan permukaan bawah cover) saling berebut kedalaman, dan pada cover
+// tembus pandang itu muncul sebagai garis putus-putus di tepi siluet.
+COVER_GAP = 0.02;
+
+module cover(lift = 0, dy = 0) {
+  translate([0, dy, 0]) difference() {
+    translate([0, 0, BASE_T + lift + COVER_GAP]) linear_extrude(COVER_T) outline2d();
+    translate([0, 0, BASE_T + lift + COVER_GAP]) linear_extrude(RELIEF + 0.02)
       ribbon(CHANNEL_PATHS, CH_W);
   }
 }
 
-module fabric(lift = 0) {
-  translate([0, 0, BASE_T + COVER_T + lift]) linear_extrude(FABRIC_T)
+module fabric(lift = 0, dy = 0) {
+  translate([0, dy, BASE_T + COVER_T + lift]) linear_extrude(FABRIC_T)
     outline2d();
 }
+
+// Bidang bawah sensor dan ekor dinaikkan 0,05 mm dari dasar pocket. Kalau
+// tepat menempel, dua bidang yang berimpit (dasar pocket dan bidang bawah
+// film) saling berebut kedalaman dan muncul sebagai garis-garis abu-abu.
+FILM_Z = BASE_T - POCKET_D + 0.05;
 
 module sensors() {
   color(mat("sensor"))
     for (s = SENSORS)
-      translate([s[1], 0, BASE_T - POCKET_D])
+      translate([s[1], 0, FILM_Z])
         cylinder(r = SENSOR_R, h = SENSOR_T, $fn = 64);
 }
 
@@ -87,7 +98,7 @@ module sensors() {
 module tails() {
   color(mat("sensor"))
     for (i = [0 : len(SENSORS) - 1])
-      translate([0, 0, BASE_T - POCKET_D])
+      translate([0, 0, FILM_Z])
         linear_extrude(SENSOR_T) ribbon([CHANNEL_PATHS[i + 1]], TAIL_W);
 }
 
@@ -114,13 +125,17 @@ module insole(lift = 0, show_cover = true, show_fabric = false, ghost = false) {
   sensors();
   tails();
   if (!NOCABLE) cable();
+  // Pada tampak ledak lapisan digeser ke samping juga: kalau hanya diangkat,
+  // lapisan di atasnya selalu menutupi tepi lapisan di bawahnya.
+  spread = lift > 0 ? SLIDE_DY : 0;
   if (show_cover) {
     c = mat("cover");
-    color(ghost ? [c[0], c[1], c[2], 0.30] : c) cover(lift);
+    color(ghost ? [c[0], c[1], c[2], GHOST_A] : c) cover(lift, spread);
   }
   if (show_fabric) {
     f = mat("fabric");
-    color(ghost ? [f[0], f[1], f[2], 0.40] : f) fabric(lift + FABRIC_LIFT);
+    color(ghost ? [f[0], f[1], f[2], GHOST_A + 0.10] : f)
+      fabric(lift + FABRIC_LIFT, 2 * spread);
   }
 }
 
@@ -133,10 +148,9 @@ if (EXPORT) {
   // Detail midfoot. color() HARUS di luar intersection(): bila di dalam,
   // OpenSCAD mewarnai permukaan potongan dengan warna "back" colorscheme
   // (biru pada tema Tomorrow), bukan dengan warna material.
-  color(mat("base")) intersection() {
-    base();
-    detail_box();
-  }
+  // Urutan penting: di preview, bidang potongan memakai warna blok
+  // intersection() terakhir. Alas digambar terakhir supaya dinding
+  // potongannya berwarna alas, bukan warna sensor.
   color(mat("sensor")) intersection() {
     union() {
       sensors();
@@ -144,7 +158,11 @@ if (EXPORT) {
     }
     detail_box();
   }
-  color(mat("cable")) intersection() {
+  color(mat("base")) intersection() {
+    base();
+    detail_box();
+  }
+  if (!NOCABLE) color(mat("cable")) intersection() {
     cable();
     detail_box();
   }

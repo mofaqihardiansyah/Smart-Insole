@@ -4,6 +4,11 @@ Satu sumber angka untuk gambar kerja (`docs/3d/cadcraft/`) dan model solid
 (`docs/3d/*.scad`). Semua nilai dalam milimeter. Sumber utama:
 `docs/hardware-build-guide.html` §04, §07, dan §08.
 
+Berkas lain yang melengkapi: `legend.json` (nomor, nama, warna, bahan);
+`annotations.json` (kamera, judul, titik penunjuk tiap render);
+`contents.json` (tata letak isi pouch); `gen/` (berkas turunan — jangan diedit
+tangan).
+
 ## Insole
 
 | Parameter | Nilai | Sumber / catatan |
@@ -27,6 +32,33 @@ Satu sumber angka untuk gambar kerja (`docs/3d/cadcraft/`) dan model solid
 
 Sistem koordinat: `x` = 0 di tumit, naik ke ujung jari; `y` = 0 di garis
 tengah, positif ke sisi **lateral** (luar), negatif ke **medial** (dalam).
+
+## Nilai khusus render 3D
+
+Angka yang hanya dipakai model 3D (tidak ada di gambar kerja 2D), semuanya di
+`insole.scad`.
+
+| Parameter | Nilai | Alasan |
+| --- | --- | --- |
+| `POCKET_D` | 2 | Kedalaman cerukan sensor; FSR 0,5 mm ditanam rata dengan alas |
+| `SENSOR_T` | 0,5 | Tebal film FSR 402 |
+| `FILM_Z` | `ALAS − POCKET_D + 0,05` | Film dinaikkan 0,05 mm; kalau menempel tepat, bidang bawah film dan dasar cerukan berebut kedalaman |
+| `RELIEF` | 1,5 | Relief channel di sisi bawah cover; 1,5 + 1,5 = 3,0 mm total |
+| `COVER_GAP` | 0,02 | Jarak cover di atas alas untuk alasan yang sama: dua bidang berimpit menimbulkan garis z-fighting |
+| `CABLE_R` | 1,6 | Radius bundel 6 inti AWG 30 |
+| `TAIL_W` | 5 | Lebar ekor FSR |
+| `FABRIC_LIFT` | 12 | Jarak kain di atas cover pada tampak ledak |
+| `SLIDE_DY` | 78 | Geser lapisan ke samping pada tampak ledak; hanya mengangkat selalu menyisakan tepi lapisan atas menutupi lapisan bawah |
+| `GHOST_A` | 0,30 | Kepekatan cover tembus pandang; gambar 5 memakai 0,55 supaya lebih terbaca sebagai permukaan |
+| `DETAIL_BOX` | `[95, −60, −4, 70, 120, 18]` | Kotak potong detail midfoot: x 95…165, y −60…60, z −4…14 |
+| `ANKLE_H` | 190 | Tinggi silinder penanda pergelangan di `assembly.scad`; dipotong bingkai gambar, bukan bagian dari model |
+
+## Legenda dan warna
+
+Nomor badge, nama, warna, dan bahan ada di `legend.json` — satu sumber untuk
+render, tabel legenda di guidebook (ditulis ulang `annotate.py`), dan palet
+OpenSCAD (`gen/palette.scad`). Nomor = urutan di array + 1, jadi komponen tidak
+boleh disisipkan di tengah tanpa membangun ulang semua gambar.
 
 ## Pouch pergelangan
 
@@ -66,7 +98,10 @@ tengah, positif ke sisi **lateral** (luar), negatif ke **medial** (dalam).
    AWG 30 berukuran Ø ± 3,2 mm, jadi alur 3 mm tidak cukup. Kedalaman total
    tetap 3,0 mm: 1,5 mm di alas ditambah relief 1,5 mm di sisi bawah cover.
    Kembalikan ke 3 mm bila kabel yang dipakai lebih tipis.
-6. **Tata letak isi pouch satu lapisan** (Gambar 8): LiPo kiri-bawah, TP4056
+6. **Tata letak isi pouch satu lapisan** (Gambar 12): LiPo kiri-bawah, TP4056
    kanan-bawah, PCB kiri-atas, ESP32 berdiri di kanan, buzzer di pojok kiri
    atas. Semuanya masuk rongga 65 × 80 tanpa bertumpuk; ini usulan, bukan
    aturan, dan susunan sebenarnya ditentukan panjang kabel di dalam pouch.
+7. **Nomor gambar di lampiran 3D**: Gambar 5 tampilan bahan, 6 terakit, 7
+   ledak, 8 detail midfoot, 9 tampak atas, 10–11 pouch depan-belakang, 12 isi
+   pouch, 13–14 posisi pakai.

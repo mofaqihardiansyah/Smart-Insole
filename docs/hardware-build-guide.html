@@ -226,6 +226,12 @@
   .fig svg, .fig img { display: block; width: 100%; height: auto; }
   .fig img { border-radius: 6px; }
   .fig img + img { margin-top: 14px; }
+  /* Dua render berdampingan: tampak depan dan belakang objek yang sama. */
+  .fig.pair {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px; align-items: start;
+  }
+  .fig.pair img + img { margin-top: 0; }
   figcaption { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
 
   /* ---------- Steps ---------- */
@@ -1424,12 +1430,13 @@ ADC_OFFSET = ADC1 - (P1 / ADC_TO_KPA)</code></pre>
         <div class="section-head"><span class="idx">3D</span><h2>Lampiran · model 3D &amp; gambar kerja</h2></div>
 
         <p>
-          Angka di §07 dan §08 juga dibuat sebagai model solid dan gambar kerja
-          berskala. Model ini bukan pengganti insole sepatu yang kamu punya,
-          melainkan alat cek: apakah sensor muat, apakah kabel masuk alur,
-          apakah isi pouch benar-benar 65 × 80 × 20. Semua ukuran berasal dari
-          <code>docs/3d/params.md</code>; gambar 2D memakai CADCraft, model 3D
-          memakai OpenSCAD.
+          Angka di §07 dan §08 juga dibuat sebagai model solid, render berlabel,
+          dan gambar kerja berskala. Model ini bukan pengganti insole sepatu
+          yang kamu punya, melainkan alat cek: apakah sensor muat, apakah kabel
+          masuk alur, apakah isi pouch benar-benar 65 × 80 × 20. Semua ukuran
+          berasal dari <code>docs/3d/params.md</code>, warna dan nama komponen
+          dari <code>docs/3d/legend.json</code>; gambar 2D memakai CADCraft,
+          model 3D memakai OpenSCAD.
         </p>
 
         <div class="callout info">
@@ -1445,45 +1452,118 @@ ADC_OFFSET = ADC1 - (P1 / ADC_TO_KPA)</code></pre>
           </div>
         </div>
 
+        <h3>Cara membaca gambar</h3>
+        <p>
+          Setiap komponen punya satu nomor tetap. Badge hitam bernomor di dalam
+          render menempel pada titik komponen itu, dan namanya ditulis di ujung
+          garis penunjuk — jadi gambar bisa dibaca tanpa membuka tabel. Nomor,
+          nama, warna, dan bahan semuanya diambil dari <code>legend.json</code>,
+          dan tabel di bawah ditulis ulang oleh skrip build dari berkas yang
+          sama, sehingga nomor di gambar dan nomor di tabel tidak bisa
+          melenceng.
+        </p>
+        <p>
+          Dua hal yang perlu diketahui sebelum membaca: <em>permukaan tembus
+          pandang</em> berarti lapisan itu dibuat transparan supaya isi di
+          bawahnya terlihat, bukan bahan yang benar-benar bening; dan komponen
+          bertanda <em>penanda render</em> (pergelangan, lantai rongga) hanya
+          ada di model untuk menjelaskan posisi, bukan bagian yang dibuat.
+        </p>
+
+        <h3>Legenda komponen</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>No</th><th>Komponen</th><th>Ukuran</th><th>Bahan</th><th>Keterangan</th></tr>
+            </thead>
+            <tbody>
+                <!-- legend:start -->
+                <tr><td>1</td><td>Alas EVA</td><td>5 mm</td><td>EVA busa ati</td><td>Lapisan dasar; menampung pocket sensor dan channel kabel</td></tr>
+                <tr><td>2</td><td>Cover EVA</td><td>2 mm</td><td>EVA busa ati</td><td>Penutup sensor; relief 1,5 mm di sisi bawah untuk bundel kabel</td></tr>
+                <tr><td>3</td><td>Kain atas</td><td>0,5 mm</td><td>nylon / dry-fit</td><td>Lapisan sentuh, opsional</td></tr>
+                <tr><td>4</td><td>Sensor FSR 402</td><td>Ø 12,7 mm</td><td>film polimer</td><td>Tiga titik: F 22,5 %, M 52,5 %, H 82,5 % diukur dari ujung depan</td></tr>
+                <tr><td>5</td><td>Pocket sensor</td><td>14 × 14 × 2 mm</td><td>cerukan pada EVA</td><td>FSR ditanam sehingga permukaannya rata dengan alas</td></tr>
+                <tr><td>6</td><td>Channel kabel</td><td>3,5 × 1,5 + relief 1,5</td><td>alur pada EVA</td><td>Kedalaman total 3,0 mm setelah cover terpasang</td></tr>
+                <tr><td>7</td><td>Bundel kabel</td><td>6 × AWG 30, Ø ± 3,2</td><td>kabel silikon</td><td>Dari ekor FSR menyusuri channel, keluar di tumit, naik ke pouch</td></tr>
+                <tr><td>8</td><td>Zona tumit</td><td>x &lt; 30 mm</td><td>—</td><td>Bebas elektronik keras; hanya foam dan sensor</td></tr>
+                <tr><td>9</td><td>Cangkang pouch</td><td>70 × 85 × 26 mm</td><td>neoprene 3 mm</td><td>Badan pouch di pergelangan; rongga dalam 65 × 80 × 20</td></tr>
+                <tr><td>10</td><td>Rongga pouch</td><td>65 × 80 × 20 mm</td><td>—</td><td>Batas dalam yang harus dipatuhi semua isi</td></tr>
+                <tr><td>11</td><td>Lubang port USB</td><td>12 × 8 mm</td><td>lubang</td><td>Akses TP4056 saat mengisi daya tanpa membuka pouch</td></tr>
+                <tr><td>12</td><td>Lantai rongga</td><td>1 mm</td><td>penanda render</td><td>Bukan bagian yang dicetak; hanya penanda batas bawah rongga</td></tr>
+                <tr><td>13</td><td>Velcro</td><td>3 × Ø 20 mm</td><td>velcro</td><td>Menempel ke strap pergelangan, di dinding belakang</td></tr>
+                <tr><td>14</td><td>Strap pergelangan</td><td>tinggi 20 mm</td><td>—</td><td>Menahan pouch 2–3 cm di atas bibir sepatu</td></tr>
+                <tr><td>15</td><td>Pergelangan (penanda)</td><td>Ø 35 mm</td><td>penanda render</td><td>Bukan model anatomis; hanya penanda posisi pouch</td></tr>
+                <tr><td>16</td><td>Harness kabel</td><td>Ø ± 3,2 mm</td><td>kabel silikon</td><td>Jalur dari tumit insole ke dasar pouch</td></tr>
+                <tr><td>17</td><td>ESP32-WROOM-32 DevKit</td><td>25,5 × 51,5 × 11 mm</td><td>modul</td><td>Baca ADC, inferensi Random Forest, kirim ke Firebase</td></tr>
+                <tr><td>18</td><td>Modul TP4056</td><td>25 × 19 × 2 mm</td><td>modul</td><td>Pengisi daya LiPo lewat port USB</td></tr>
+                <tr><td>19</td><td>LiPo 3,7 V 600 mAh</td><td>30 × 40 × 5 mm</td><td>sel lithium</td><td>Catu daya; diisi lewat TP4056</td></tr>
+                <tr><td>20</td><td>PCB bolong</td><td>20 × 20 × 1,6 mm</td><td>PCB</td><td>Dudukan resistor pembagi tegangan FSR</td></tr>
+                <tr><td>21</td><td>Buzzer aktif</td><td>Ø 9,5 × 6 mm</td><td>buzzer</td><td>Alarm lokal; berbunyi tanpa menunggu jaringan</td></tr>
+                <!-- legend:end -->
+            </tbody>
+          </table>
+        </div>
+
         <h3>Insole</h3>
         <figure>
           <div class="fig">
-            <img src="3d/render/insole-assembled.png" alt="Render insole EVA terakit; cover tembus pandang sehingga tiga sensor dan alur kabel terlihat" loading="lazy">
+            <img src="3d/render/insole-hq.png" alt="Render insole dengan bayangan lembut: alas dan cover EVA, cover tembus pandang sehingga channel kabel terlihat" loading="lazy">
           </div>
-          <figcaption>Gambar 5. Insole terakit, cover dibuat tembus pandang. Tiga pocket sensor di garis tengah, channel berjalan ke tumit lalu keluar di sisi medial.</figcaption>
+          <figcaption>Gambar 5. Tampilan bahan. Alas dan cover EVA dengan bayangan lembut; cover dibuat tembus pandang supaya channel di sisi bawahnya tetap terbaca.</figcaption>
+        </figure>
+
+        <figure>
+          <div class="fig">
+            <img src="3d/render/insole-assembled.png" alt="Render insole terakit; cover tembus pandang sehingga tiga sensor, pocket, dan alur kabel terlihat" loading="lazy">
+          </div>
+          <figcaption>Gambar 6. Insole terakit, cover terpasang. Tiga pocket sensor di garis tengah, channel berjalan ke tumit lalu keluar di sisi medial, zona tumit bebas elektronik keras.</figcaption>
         </figure>
 
         <figure>
           <div class="fig">
             <img src="3d/render/insole-exploded.png" alt="Render ledak insole: alas, sensor, cover, dan kain terpisah" loading="lazy">
           </div>
-          <figcaption>Gambar 6. Tampak ledak. Urutan dari bawah: alas 5 mm, FSR 0,5 mm di pocket 2 mm, alur kabel 3,5 × 1,5 mm, cover 2 mm, kain 0,5 mm.</figcaption>
+          <figcaption>Gambar 7. Tampak ledak. Urutan dari bawah: alas 5 mm, FSR 0,5 mm di pocket 2 mm, alur kabel 3,5 × 1,5 + relief 1,5 mm, cover 2 mm, kain 0,5 mm. Lapisan digeser ke samping supaya tepi tiap lapisan terlihat.</figcaption>
+        </figure>
+
+        <figure>
+          <div class="fig">
+            <img src="3d/render/insole-detail.png" alt="Potongan detail midfoot: sensor FSR di cerukan, channel, dan tebal alas" loading="lazy">
+          </div>
+          <figcaption>Gambar 8. Detail midfoot: cover dan bundel dibuka, potongan pada irisan x = 95…165 mm. Terlihat sensor FSR duduk di cerukan 2 mm, ekornya masuk channel, dan tebal alas 5 mm.</figcaption>
+        </figure>
+
+        <figure>
+          <div class="fig">
+            <img src="3d/render/insole-top.png" alt="Tampak atas berskala insole dengan garis dimensi panjang" loading="lazy">
+          </div>
+          <figcaption>Gambar 9. Tampak atas berskala, cover dibuka. Garis putus-putus membagi panjang jadi zona depan, tengah, dan tumit; posisi sensor ditulis dalam persen panjang.</figcaption>
         </figure>
 
         <h3>Pouch pergelangan</h3>
         <figure>
-          <div class="fig">
+          <div class="fig pair">
             <img src="3d/render/pouch.png" alt="Pouch 70 kali 85 mm tampak depan dengan lubang port USB 12 kali 8 mm" loading="lazy">
             <img src="3d/render/pouch-back.png" alt="Pouch tampak belakang dengan tiga titik velcro" loading="lazy">
           </div>
-          <figcaption>Gambar 7. Pouch 70 × 85 × 26 mm. Atas: tampak depan, lubang port USB 12 × 8 mm di tengah. Bawah: tampak belakang, tiga titik velcro Ø 20 mm yang menempel ke pergelangan. Bukaan atas selebar rongga berada di bibir atas.</figcaption>
+          <figcaption>Gambar 10 dan 11. Pouch 70 × 85 × 26 mm. Kiri: tampak depan, lubang port USB 12 × 8 mm di tengah supaya TP4056 bisa diisi tanpa membuka pouch. Kanan: tampak belakang, tiga titik velcro Ø 20 mm yang menempel ke strap pergelangan. Bukaan atas selebar rongga berada di bibir atas.</figcaption>
         </figure>
 
         <figure>
           <div class="fig">
             <img src="3d/render/pouch-contents.png" alt="Tata letak lima komponen di dalam bingkai rongga 65 kali 80 milimeter" loading="lazy">
           </div>
-          <figcaption>Gambar 8. Tata letak isi di dalam bingkai rongga 65 × 80 mm, tampak dari dinding depan.</figcaption>
+          <figcaption>Gambar 12. Tata letak isi di dalam rongga 65 × 80 mm, tampak atas. Satu lapisan tanpa tumpukan; susunan ini usulan, bukan aturan, dan kenyataannya ditentukan panjang kabel di dalam pouch.</figcaption>
         </figure>
 
         <div class="table-wrap">
           <table>
             <thead><tr><th>Komponen</th><th>Dimensi (mm)</th><th>Posisi di gambar</th></tr></thead>
             <tbody>
-              <tr><td>LiPo 3,7 V 600 mAh</td><td>40 × 30 × 5</td><td>Kiri bawah</td></tr>
+              <tr><td>LiPo 3,7 V 600 mAh</td><td>30 × 40 × 5</td><td>Kiri bawah</td></tr>
               <tr><td>TP4056 berproteksi</td><td>25 × 19 × 2</td><td>Kanan bawah</td></tr>
               <tr><td>PCB bolong pembagi</td><td>20 × 20 × 1,6</td><td>Kiri atas</td></tr>
-              <tr><td>ESP32-WROOM-32 DevKit</td><td>51,5 × 25,5 × 11</td><td>Kanan, berdiri mengikuti tinggi rongga</td></tr>
+              <tr><td>ESP32-WROOM-32 DevKit</td><td>25,5 × 51,5 × 11</td><td>Kanan, berdiri mengikuti tinggi rongga</td></tr>
               <tr><td>Buzzer aktif</td><td>Ø 9,5 × 6</td><td>Pojok kiri atas</td></tr>
             </tbody>
           </table>
@@ -1494,7 +1574,14 @@ ADC_OFFSET = ADC1 - (P1 / ADC_TO_KPA)</code></pre>
           <div class="fig">
             <img src="3d/render/assembly.png" alt="Render insole, harness keluar dari tumit, pouch di pergelangan kaki dengan strap" loading="lazy">
           </div>
-          <figcaption>Gambar 9. Posisi pakai: insole, harness keluar di tumit, pouch di sisi lateral pergelangan dengan strap. Silinder krem hanya penanda posisi pergelangan, bukan ukuran anatomis.</figcaption>
+          <figcaption>Gambar 13. Posisi pakai: insole, harness keluar di tumit, pouch di sisi lateral pergelangan dengan strap. Silinder abu-abu hanya penanda posisi pergelangan, bukan ukuran anatomis.</figcaption>
+        </figure>
+
+        <figure>
+          <div class="fig">
+            <img src="3d/render/assembly-hq.png" alt="Posisi pakai dengan bayangan lembut dan latar gradien" loading="lazy">
+          </div>
+          <figcaption>Gambar 14. Posisi pakai, tampilan bahan. Render yang sama dengan bayangan lembut; dipakai sebagai gambar pembuka bagian hardware di laporan.</figcaption>
         </figure>
 
         <div class="callout warn">
@@ -1514,7 +1601,8 @@ ADC_OFFSET = ADC1 - (P1 / ADC_TO_KPA)</code></pre>
         <h3>Membangun ulang</h3>
         <p>
           Semua aset berada di <code>docs/3d/</code>. Satu perintah membangun
-          ulang gambar kerja 2D, keenam render, dan kedua STL:
+          ulang gambar kerja 2D, kesepuluh render berlabel, kedua STL, dan tabel
+          legenda di halaman ini:
         </p>
         <pre><code>./docs/3d/build-3d.sh</code></pre>
 
@@ -1523,19 +1611,27 @@ ADC_OFFSET = ADC1 - (P1 / ADC_TO_KPA)</code></pre>
             <thead><tr><th>Berkas</th><th>Isi</th></tr></thead>
             <tbody>
               <tr><td><code>docs/3d/params.md</code></td><td>Sumber angka: dimensi, posisi sensor, asumsi</td></tr>
-              <tr><td><code>docs/3d/insole.scad</code></td><td>Model insole; <code>LIFT</code> untuk tampak ledak, <code>EXPORT</code> untuk STL</td></tr>
+              <tr><td><code>docs/3d/legend.json</code></td><td>Nomor, nama, warna, bahan tiap komponen; sumber tabel legenda</td></tr>
+              <tr><td><code>docs/3d/annotations.json</code></td><td>Kamera, judul, dan titik penunjuk tiap gambar</td></tr>
+              <tr><td><code>docs/3d/contents.json</code></td><td>Tata letak isi pouch; diperiksa agar tidak keluar rongga</td></tr>
+              <tr><td><code>docs/3d/annotate.py</code></td><td>Membuat aset turunan, memeriksa, lalu menggambar badge dan label</td></tr>
+              <tr><td><code>docs/3d/insole.scad</code></td><td>Model insole; <code>LIFT</code> untuk tampak ledak, <code>DETAIL</code> untuk potongan, <code>EXPORT</code> untuk STL</td></tr>
               <tr><td><code>docs/3d/pouch.scad</code></td><td>Cangkang pouch, velcro, isi rongga; <code>EXPORT</code> untuk STL</td></tr>
               <tr><td><code>docs/3d/assembly.scad</code></td><td>Posisi pakai: insole + harness + pouch</td></tr>
+              <tr><td><code>docs/3d/figure-kit.scad</code></td><td>Palet material hasil generate dan bola penanda</td></tr>
               <tr><td><code>docs/3d/cadcraft/out/</code></td><td>Gambar kerja 2D: denah, potongan, pola pouch (DXF/SVG/PDF/PNG)</td></tr>
-              <tr><td><code>docs/3d/render/</code></td><td>Enam render di lampiran ini</td></tr>
+              <tr><td><code>docs/3d/render/</code></td><td>Kesepuluh render berlabel di lampiran ini</td></tr>
               <tr><td><code>docs/3d/stl/</code></td><td><code>insole.stl</code> dan <code>pouch-shell.stl</code> untuk cek cetak</td></tr>
             </tbody>
           </table>
         </div>
 
         <p class="small muted">
-          STL hanya untuk cek volume dan tata letak. Bahan aslinya EVA dan
-          neoprene yang lentur, jadi jangan mencetak insole kaku untuk dipakai.
+          Bola warna kecil di render adalah penanda yang dipakai skrip untuk
+          menempatkan badge; compose mencari bolanya lewat warna, jadi badge
+          ikut bergerak kalau geometri berubah. STL hanya untuk cek volume dan
+          tata letak. Bahan aslinya EVA dan neoprene yang lentur, jadi jangan
+          mencetak insole kaku untuk dipakai.
         </p>
       </section>
 

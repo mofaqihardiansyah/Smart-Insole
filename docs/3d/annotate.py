@@ -5,8 +5,9 @@ Tiga tugas, semuanya dijalankan oleh build-3d.sh:
 
   emit     menulis gen/palette.scad (warna material dari legend.json),
            gen/anchors-<gambar>.scad (titik penunjuk), gen/render-plan.tsv
-           (daftar render untuk build-3d.sh), dan gen/pouch-contents.scad
-           (tata letak isi pouch dari contents.json).
+           (daftar render untuk build-3d.sh), gen/pouch-contents.scad (tata
+           letak isi pouch dari contents.json), dan tabel legenda di
+           docs/hardware-build-guide.html di antara penanda legend:*.
   check    memastikan nomor legenda cocok dengan badge, dan memastikan tidak
            ada komponen pouch yang keluar dari rongga. Gagal = build gagal.
   compose  mencari bola penanda berwarna di render mentah, lalu menggambar
@@ -20,7 +21,9 @@ tidak perlu dikalibrasi tangan: kalau geometri bergerak, badge ikut bergerak.
 Pakai: python3 docs/3d/annotate.py [emit|check|compose|all]
 """
 
+import html
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -28,6 +31,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parent
+GUIDE = ROOT.parent / "hardware-build-guide.html"
 GEN = ROOT / "gen"
 RAW = ROOT / "render" / "raw"
 RENDER = ROOT / "render"
@@ -41,6 +45,7 @@ MAX_CALLOUTS = len(MARKER_HEX)
 FONT_REG = "/usr/share/fonts/TTF/DejaVuSans.ttf"
 FONT_BOLD = "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf"
 
+DEBUG = bool(os.environ.get("ANNOTATE_DEBUG"))
 INK = (24, 32, 44)
 RULE = (206, 214, 224)
 BADGE_FILL = (24, 32, 44)
@@ -109,8 +114,37 @@ def emit():
         "// Dibuat oleh annotate.py dari contents.json — jangan diedit tangan.\n"
         f"CAVITY = [{cav[0]}, {cav[1]}, {cav[2]}];\n"
         "PARTS = [\n" + ",\n".join(parts) + "\n];\n")
+    write_legend_table()
     print(f"emit: palet {len(LEGEND['components'])} material, "
           f"{len(FIGS['figures'])} gambar, {len(CONTENTS['parts'])} komponen pouch")
+
+
+LEGEND_A = "<!-- legend:start -->"
+LEGEND_B = "<!-- legend:end -->"
+
+
+def write_legend_table():
+    """Salin legend.json ke tabel guidebook di antara penanda legend:*.
+
+    Nomor badge di render dan nomor di tabel harus sama; menulis tabel dari
+    sumber yang sama menghapus kemungkinan keduanya melenceng. Kalau penanda
+    tidak ada, lewati saja — annotate.py tetap bisa dipakai sendiri.
+    """
+    if not GUIDE.exists():
+        return
+    doc = GUIDE.read_text()
+    if LEGEND_A not in doc or LEGEND_B not in doc:
+        return
+    rows = []
+    for i, c in enumerate(LEGEND["components"], 1):
+        cells = [str(i), c["name"], c["spec"], c["material"], c["note"]]
+        rows.append("                <tr>" + "".join(
+            f"<td>{html.escape(v)}</td>" for v in cells) + "</tr>")
+    head, _, rest = doc.partition(LEGEND_A)
+    _, _, tail = rest.partition(LEGEND_B)
+    out = head + LEGEND_A + "\n" + "\n".join(rows) + "\n                " + LEGEND_B + tail
+    if out != doc:
+        GUIDE.write_text(out)
 
 
 # ------------------------------------------------------------------ check
@@ -228,13 +262,20 @@ def find_markers(arr, n):
     return out
 
 
+# Ambang alpha. Latar render preview rata (248,248,248), jadi ambang rendah
+# aman. Ambang lama 24 membuang permukaan tembus pandang yang hampir seputih
+# latar, dan lubang-lubang itu tampak sebagai bintik di atas gradien hq.
+ALPHA_LO = 6
+ALPHA_HI = 22
+
+
 def object_bbox(arr, bg):
     diff = np.abs(arr.astype("int16") - np.array(bg, dtype="int16")).sum(axis=2)
-    obj = diff > 24
+    obj = diff > ALPHA_LO
     ys, xs = np.nonzero(obj)
     if len(xs) == 0:
         raise SystemExit("render kosong: tidak ada objek terdeteksi")
-    return obj, (int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max()))
+    return obj, (int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max())), diff
 
 
 def backdrop(w, h, style):
@@ -244,23 +285,35 @@ def backdrop(w, h, style):
         return canvas
     t = np.linspace(0, 1, h)[:, None, None] ** 1.5
     top = np.array([255, 255, 255], "float32")
-    bot = np.array([222, 231, 239], "float32")
+    bot = np.array([208, 221, 233], "float32")
     rows = (top + (bot - top) * t).astype("uint8")
     canvas.paste(Image.fromarray(np.repeat(rows, w, axis=1)), (0, 0))
     return canvas
 
 
+def rect_overlap(a, b):
+    """Luas irisan dua kotak [x0, y0, x1, y1]."""
+    ox = min(a[2], b[2]) - max(a[0], b[0])
+    oy = min(a[3], b[3]) - max(a[1], b[1])
+    return ox * oy if ox > 0 and oy > 0 else 0.0
+
+
 def compose():
-    w, h = FIGS["output"]
     bar = 76
     for f in FIGS["figures"]:
+        w, h = f.get("output", FIGS["output"])   # gambar berskala butuh kanvas lebar
         fid = f["id"]
         src = RAW / f"{fid}.png"
         if not src.exists():
             raise SystemExit(f"{src} belum ada; jalankan render dulu")
         arr = np.array(Image.open(src).convert("RGB"))
         bg = tuple(int(v) for v in arr[2, 2])
-        obj, (x0, y0, x1, y1) = object_bbox(arr, bg)
+        obj, (x0, y0, x1, y1), diff = object_bbox(arr, bg)
+        # trim: fraksi bbox yang dibuang dari atas. Dipakai gambar posisi
+        # pakai: ujung silinder penanda pergelangan dipotong di garis judul,
+        # jadi terbaca sebagai kaki yang keluar bingkai, bukan tabung pendek.
+        if f.get("trim"):
+            y0 += int((y1 - y0) * f["trim"])
         marks = find_markers(arr, len(f["callouts"]))
         H, W = arr.shape[:2]
 
@@ -268,11 +321,19 @@ def compose():
         pad = 0.06 * max(x1 - x0, y1 - y0) + 24
         cx0, cy0 = max(0, int(x0 - pad)), max(0, int(y0 - pad))
         cx1, cy1 = min(W, int(x1 + pad)), min(H, int(y1 + pad))
+        # alpha bertahap di tepi: tepi antialias menyatu dengan latar gradien
+        # hq, tidak lagi tampak sebagai garis pucat mengikuti siluet.
+        ramp = np.clip((diff[cy0:cy1, cx0:cx1] - ALPHA_LO) / (ALPHA_HI - ALPHA_LO), 0, 1)
         layer = Image.fromarray(
-            np.dstack([arr, (obj * 255).astype("uint8")])[cy0:cy1, cx0:cx1], "RGBA")
+            np.dstack([arr[cy0:cy1, cx0:cx1], (ramp * 255).astype("uint8")]), "RGBA")
         cw, ch = layer.size
 
-        ml, mr, mt, mb = 48, 48, bar + 36, 48
+        # margin samping cukup lebar untuk pita label: label diletakkan di
+        # luar siluet objek, jadi ruang itu harus disediakan sejak penskalaan.
+        # Margin bisa ditimpa per gambar: tampak ledak butuh pita label yang
+        # lebih dalam di bawah objek karena semua penunjuknya menumpuk di
+        # lapisan alas.
+        ml, mr, mt, mb = f.get("margin", (104, 104, bar + 40, 96))
         if f.get("dims"):
             mb += 70
             mr += 70
@@ -293,14 +354,21 @@ def compose():
 
         canvas.paste(layer.resize((nw, nh), Image.LANCZOS), (ox, oy),
                      layer.resize((nw, nh), Image.LANCZOS))
+
+        # siluet objek pada kanvas, dipakai penata letak label
+        silhouette = Image.new("L", (w, h), 0)
+        silhouette.paste(layer.getchannel("A").resize((nw, nh), Image.NEAREST),
+                         (ox, oy))
+        objmask = np.array(silhouette) > 128
+
         draw = ImageDraw.Draw(canvas)
         marks = [(ox + (x - cx0) * s, oy + (y - cy0) * s, r * s) for x, y, r in marks]
-        draw_figure(canvas, draw, f, marks, box)
+        draw_figure(canvas, draw, f, marks, box, objmask)
         canvas.save(RENDER / f"{fid}.png")
         print(f"compose: render/{fid}.png  {w}×{h}  {len(marks)} penunjuk")
 
 
-def draw_figure(canvas, draw, fig, marks, box):
+def draw_figure(canvas, draw, fig, marks, box, objmask):
     w, h = canvas.size
     title_font = font(30, True)
     sub_font = font(19)
@@ -313,12 +381,17 @@ def draw_figure(canvas, draw, fig, marks, box):
     head = f"Gambar {fig['gambar']} · {fig['title']}"
     draw.text((34, 22), head, font=title_font, fill=INK)
     sw = draw.textlength(head, font=title_font)
+    sub_end = 34 + sw + 22 + draw.textlength(fig["sub"], font=sub_font)
     draw.text((34 + sw + 22, 30), fig["sub"], font=sub_font, fill=(110, 122, 138))
+    # catatan kanan hanya kalau masih ada ruang: pada kanvas sempit (gambar
+    # pouch yang tinggi) judul sudah memakai hampir seluruh lebar.
     right = "Smart Insole · satuan mm"
-    draw.text((w - 34 - draw.textlength(right, font=sub_font), 30),
-              right, font=sub_font, fill=(110, 122, 138))
+    rx = w - 34 - draw.textlength(right, font=sub_font)
+    if rx > sub_end + 26:
+        draw.text((rx, 30), right, font=sub_font, fill=(110, 122, 138))
 
     # ---- garis dimensi (tampak atas)
+    obstacles = []          # kotak yang tidak boleh ditimpa label
     if fig.get("dims"):
         pxmm = (box[2] - box[0]) / fig["dims"][0]["mm"]
         for d in fig["dims"]:
@@ -327,12 +400,14 @@ def draw_figure(canvas, draw, fig, marks, box):
                 draw.line([(box[0], box[3] + 12), (box[0], y + 12)], fill=(120, 132, 148))
                 draw.line([(box[2], box[3] + 12), (box[2], y + 12)], fill=(120, 132, 148))
                 arrow_dim(draw, (box[0], y), (box[2], y), d["label"], label_font)
+                obstacles.append([box[0] - 20, y - 30, box[2] + 20, y + 30])
             else:
                 x = min(box[2] + 74, w - 60)
                 draw.line([(box[2] + 12, box[1]), (x + 12, box[1])], fill=(120, 132, 148))
                 draw.line([(box[2] + 12, box[3]), (x + 12, box[3])], fill=(120, 132, 148))
                 arrow_dim(draw, (x, box[1]), (x, box[3]), d["label"], label_font,
                           vertical=True)
+                obstacles.append([x - 42, box[1], x + 42, box[3]])
         for z in fig.get("zones", []):
             zx = box[0] + z["frac"] * (box[2] - box[0])
             for yy in range(int(box[1]) + 20, int(box[3]) - 4, 18):
@@ -342,59 +417,99 @@ def draw_figure(canvas, draw, fig, marks, box):
                            fill=(255, 249, 235), outline=(226, 200, 150))
             draw.text((zx - tw / 2, box[1] - 27), z["label"], font=sub_font,
                       fill=(140, 104, 40))
+            obstacles.append([zx - tw / 2 - 8, box[1] - 34, zx + tw / 2 + 8, box[1]])
 
     # ---- label + badge
     # radius badge mengikuti besar bola penanda di layar, supaya badannya
     # selalu tertutup rapat (kalau tidak, bola warna menyembul di tepi badge)
-    badges = [max(16.0, min(34.0, r * 1.15 + 4)) for _, _, r in marks]
+    badges = [max(16.0, min(56.0, r * 1.15 + 4)) for _, _, r in marks]
+
+    # penata letak label: coba 8 arah x 5 jarak, pilih biaya terendah.
+    # Biaya dihitung dalam satuan luas label, jadi label tidak menimpa label
+    # lain, tidak menutupi badge, dan sedapat mungkin tidak menutupi objek.
+    ii = np.pad(np.cumsum(np.cumsum(objmask.astype("int32"), 0), 1),
+                ((1, 0), (1, 0)))
+
+    def obj_area(r):
+        x0, y0 = max(0, int(round(r[0]))), max(0, int(round(r[1])))
+        x1, y1 = min(w, int(round(r[2]))), min(h, int(round(r[3])))
+        if x1 <= x0 or y1 <= y0:
+            return 0
+        return int(ii[y1, x1] - ii[y0, x1] - ii[y1, x0] + ii[y0, x0])
+
+    def candidate(d, bx, by, bw, bh, gap):
+        if d == "right":
+            x0 = bx + gap
+            return [x0, by - bh / 2, x0 + bw, by + bh / 2]
+        if d == "left":
+            x0 = bx - gap - bw
+            return [x0, by - bh / 2, x0 + bw, by + bh / 2]
+        if d == "up":
+            y0 = by - gap - bh
+            return [bx - bw / 2, y0, bx + bw / 2, y0 + bh]
+        if d == "down":
+            y0 = by + gap
+            return [bx - bw / 2, y0, bx + bw / 2, y0 + bh]
+        dx = 1 if d.endswith("right") else -1
+        dy = -1 if d.startswith("up") else 1
+        x0 = bx + dx * gap * 0.72 if dx > 0 else bx - gap * 0.72 - bw
+        y0 = by - gap * 0.72 - bh if dy < 0 else by + gap * 0.72
+        return [x0, y0, x0 + bw, y0 + bh]
+
+    ORDER = ["right", "left", "up", "down",
+             "up-right", "up-left", "down-right", "down-left"]
+    badge_boxes = [[bx - br, by - br, bx + br, by + br]
+                   for (bx, by, _), br in zip(marks, badges)]
 
     labels = []
+    taken = list(obstacles)
     for i, c in enumerate(fig["callouts"]):
         comp = BY_ID[c["c"]]
         text = f"{NUM[c['c']]}  {comp['name']}"
-        tw = draw.textlength(text, font=label_font)
-        bw, bh = tw + 30, 44
+        bw = draw.textlength(text, font=label_font) + 30
+        bh = 44.0
+        area = bw * bh
         bx, by, _ = marks[i]
-        gap = badges[i] + 34
-        d = c.get("dir", "right")
-        if d == "right":
-            r = [bx + gap, by - bh / 2, bx + gap + bw, by + bh / 2]
-        elif d == "left":
-            r = [bx - gap - bw, by - bh / 2, bx - gap, by + bh / 2]
-        elif d == "up":
-            r = [bx - bw / 2, by - gap - bh, bx + bw / 2, by - gap]
-        else:
-            r = [bx - bw / 2, by + gap, bx + bw / 2, by + gap + bh]
-        labels.append({"i": i, "rect": r, "dir": d, "text": text})
+        pref = c.get("dir", "right")
+        order = [pref] + [d for d in ORDER if d != pref]
 
-    for _ in range(240):
-        moved = False
-        for a in labels:
-            a["rect"][0] = max(20, min(a["rect"][0], w - 20 - (a["rect"][2] - a["rect"][0])))
-            a["rect"][1] = max(bar + 10, min(a["rect"][1], h - 16 - (a["rect"][3] - a["rect"][1])))
-            a["rect"][2] = a["rect"][0] + (a["rect"][2] - a["rect"][0])
-            a["rect"][3] = a["rect"][1] + (a["rect"][3] - a["rect"][1])
-        for ai in range(len(labels)):
-            for bi in range(ai + 1, len(labels)):
-                a, b = labels[ai]["rect"], labels[bi]["rect"]
-                ox = min(a[2], b[2]) - max(a[0], b[0])
-                oy = min(a[3], b[3]) - max(a[1], b[1])
-                if ox > 0 and oy > 0:
-                    moved = True
-                    if oy <= ox:
-                        push = (oy / 2) + 3
-                        if a[1] < b[1]:
-                            a[1] -= push; b[1] += push
-                        else:
-                            a[1] += push; b[1] -= push
-                    else:
-                        push = (ox / 2) + 3
-                        if a[0] < b[0]:
-                            a[0] -= push; b[0] += push
-                        else:
-                            a[0] += push; b[0] -= push
-        if not moved:
-            break
+        best = None
+        if c.get("label"):
+            # posisi label eksplisit (fraksi kanvas) untuk gambar yang
+            # tata letaknya ditentukan tangan, mis. tampak ledak
+            fx, fy = c["label"]
+            cx, cy = fx * w, fy * h
+            r = [cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2]
+            r[0] = max(18, min(r[0], w - 18 - bw))
+            r[1] = max(bar + 12, min(r[1], h - 18 - bh))
+            best = (0.0, [r[0], r[1], r[0] + bw, r[1] + bh], c.get("dir", "right"))
+        for rank, d in enumerate(order if best is None else []):
+            for k in (1.0, 1.22, 1.5, 1.85, 2.3, 2.9, 3.6):
+                gap = badges[i] + 34 * k
+                r = candidate(d, bx, by, bw, bh, gap)
+                if r[0] < 18 or r[1] < bar + 12 or r[2] > w - 18 or r[3] > h - 18:
+                    continue
+                # tumpang tindih antar label/badge jauh lebih buruk daripada
+                # label yang menempel di siluet objek, jadi bobotnya dominan
+                cost = rank * 0.45 + 0.004 * gap
+                cost += 40.0 * sum(rect_overlap(r, o) for o in taken) / area
+                cost += 60.0 * sum(rect_overlap(r, b) for b in badge_boxes) / area
+                cost += 2.0 * obj_area(r) / area
+                if best is None or cost < best[0]:
+                    best = (cost, r, d)
+
+        if best is None:            # tidak muat di mana pun: jepit ke kanvas
+            r = candidate(pref, bx, by, bw, bh, badges[i] + 34)
+            r[0] = max(18, min(r[0], w - 18 - bw))
+            r[1] = max(bar + 12, min(r[1], h - 18 - bh))
+            r = [r[0], r[1], r[0] + bw, r[1] + bh]
+            best = (0.0, r, pref)
+        labels.append({"i": i, "rect": best[1], "dir": best[2], "text": text})
+        taken.append(best[1])
+        if DEBUG:
+            print(f"  {fig['id']} [{i}] {comp['id']:<9} {best[2]:<11} cost={best[0]:5.2f} "
+                  f"obj={obj_area(best[1]) / area:4.2f} "
+                  f"rect={[round(v) for v in best[1]]}")
 
     for lb in labels:
         bx, by, _ = marks[lb["i"]]
@@ -410,7 +525,7 @@ def draw_figure(canvas, draw, fig, marks, box):
         draw.ellipse([bx - br, by - br, bx + br, by + br], fill=BADGE_FILL,
                      outline=(255, 255, 255), width=3)
         txt = str(NUM[fig["callouts"][i]["c"]])
-        nf = font(max(15, min(26, int(br * 1.02))), True)
+        nf = font(max(15, min(34, int(br * 1.02))), True)
         tw = draw.textlength(txt, font=nf)
         ah = nf.getbbox(txt)[3]
         draw.text((bx - tw / 2, by - ah / 2 - 1), txt, font=nf, fill=(255, 255, 255))

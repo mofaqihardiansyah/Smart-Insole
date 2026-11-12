@@ -7,6 +7,25 @@ summary line per month.
 
 ## Done
 
+- **2026-11-13 — Lampiran 3D: 10 gambar berlabel + legenda bernomor.**
+  `docs/3d/legend.json` (21 komponen, nomor = urutan array + 1) dan
+  `annotations.json` (kamera, judul, titik penunjuk tiap gambar) menjadi satu
+  sumber untuk semua render. `annotate.py`: badge mengikuti ukuran bola penanda,
+  penata letak label berbasis biaya (8 arah × 7 jarak, menghindari label lain,
+  badge, dan siluet objek), kanvas/margin per gambar, penempatan label eksplisit,
+  alpha bertahap di tepi siluet, dan pemotongan bingkai (silinder penanda
+  pergelangan dipotong di garis judul). Tabel legenda di
+  `docs/hardware-build-guide.html` ditulis ulang `emit` dari `legend.json` di
+  antara penanda `legend:*`, jadi nomor gambar dan nomor tabel tidak bisa
+  melenceng. Geometri: `COVER_GAP` 0,02 mm dan `FILM_Z` +0,05 mm menghapus garis
+  z-fighting pada cover tembus pandang, `ribbon()` memakai satu `offset()`
+  polygon, dan potongan DETAIL mewarnai dinding potongan dengan warna alas.
+  Lampiran `#model3d` ditulis ulang: Gambar 5–14 (bahan, terakit, ledak, detail
+  midfoot, tampak atas berskala, pouch depan–belakang, isi pouch, posisi pakai ×2),
+  tabel legenda 21 baris, bagian "cara membaca gambar", tabel berkas.
+  Verifikasi: `build-3d.sh` hijau (emit → check → 10 render → 2 STL), `check`
+  melaporkan 10 gambar dan semua penunjuk cocok dengan legenda. (working tree)
+
 - **2026-11-12 — Bab III + 13 diagram Mermaid.**
   `docs/bab-iii-kegiatan-pelaksanaan.md` (531 baris): 3.1 metode (Waterfall +
   CRISP-DM), 3.2 kebutuhan (13 FR, 7 NFR), 3.3 perancangan (UML, arsitektur,
