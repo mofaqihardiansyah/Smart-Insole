@@ -41,9 +41,6 @@ classDiagram
     }
     class RiskThresholds {
         +Float warningKpa
-        +Float dangerKpa
-        +Int warningSeconds
-        +Int dangerSeconds
         +classify(peak, sustained) RiskLevel
     }
     class RandomForestModel {

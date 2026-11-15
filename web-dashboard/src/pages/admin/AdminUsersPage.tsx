@@ -403,7 +403,7 @@ const AdminUsersPage = () => {
                           </GlassTableCell>
                           <GlassTableCell>
                             <StatusChip
-                              level={row.active === false ? "danger" : "safe"}
+                              level={row.active === false ? "warning" : "safe"}
                               label={
                                 row.active === false
                                   ? t("admin.users.inactive", language)
@@ -521,7 +521,7 @@ const AdminUsersPage = () => {
                           {row.displayName || unavailable}
                         </span>
                         <StatusChip
-                          level={row.active === false ? "danger" : "safe"}
+                          level={row.active === false ? "warning" : "safe"}
                           label={
                             row.active === false
                               ? t("admin.users.inactive", language)

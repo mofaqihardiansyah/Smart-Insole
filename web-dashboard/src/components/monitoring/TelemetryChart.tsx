@@ -35,7 +35,7 @@ const niceCeil = (value: number) => {
 
 interface TelemetryChartProps {
   history?: HistoryRecord[];
-  dangerKpa?: number;
+  thresholdKpa?: number;
   /** Chart copy: title, axis and threshold names, plus series labels. */
   labels?: Record<string, string>;
   className?: string;
@@ -43,7 +43,7 @@ interface TelemetryChartProps {
 
 const TelemetryChart = ({
   history = [],
-  dangerKpa = 70,
+  thresholdKpa = 45,
   labels = {},
   className = "",
 }: TelemetryChartProps) => {
@@ -61,7 +61,7 @@ const TelemetryChart = ({
         ),
       0
     );
-    const yMax = niceCeil(Math.max(maxObserved, dangerKpa + 10));
+    const yMax = niceCeil(Math.max(maxObserved, thresholdKpa + 10));
 
     const count = history.length;
     const x = (index: number) =>
@@ -89,14 +89,14 @@ const TelemetryChart = ({
     }));
 
     return { paths, yMax, y, ticks, plotWidth, plotHeight, count };
-  }, [history, dangerKpa]);
+  }, [history, thresholdKpa]);
 
   const latest = history.length ? history[history.length - 1] : null;
   const labelFor = (key: string) => labels[key] || key;
 
   if (!history.length) return null;
 
-  const thresholdY = series.y(dangerKpa);
+  const thresholdY = series.y(thresholdKpa);
 
   return (
     <figure className={`m-0 ${className}`.trim()}>
@@ -108,7 +108,7 @@ const TelemetryChart = ({
           labels.chartTitle,
           `${labels.axisTime}: ${series.count} ${labels.samples || "samples"}`,
           labels.axisPressure,
-          `${labels.threshold}: ${dangerKpa} kPa`,
+          `${labels.threshold}: ${thresholdKpa} kPa`,
         ]
           .filter(Boolean)
           .join(". ")}
@@ -171,7 +171,7 @@ const TelemetryChart = ({
           fontSize="11"
           fill="rgb(var(--muted))"
         >
-          {dangerKpa} kPa
+          {thresholdKpa} kPa
         </text>
 
         {/* Axis rules use the control edge token, so they are actually visible

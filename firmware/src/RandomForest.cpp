@@ -1,10 +1,14 @@
 /**
  * RandomForest.cpp — On-device Random Forest inference for ESP32.
  *
- * Hybrid approach:
- *   1. Danger rule: peak >= 200 kPa on one sample     → danger
- *   2. Safe rule:   peak < 35 kPa AND sustained < 20s    → safe
- *   3. RF classifier: majority vote across 20 trees       → safe/warning
+ * Satu lapisan, dua kelas:
+ *   1. Kontrak level                       -> peak >= WARNING_PEAK_KPA
+ *                                             berarti warning, di bawahnya safe
+ *   2. Suara 20 pohon                      -> menentukan skor dalam pita level
+ *
+ * Tidak ada aturan bahaya dan tidak ada lantai durasi. Durasi tetap
+ * dihitung di main.cpp, tetapi hanya untuk memberi tahu berapa lama
+ * tekanan sudah tinggi, bukan untuk memutuskan level.
  *
  * Mirrors web-dashboard src/utils/randomForestRisk.ts exactly.
  */
@@ -38,10 +42,6 @@ uint16_t RandomForest::traverseTree(uint16_t treeOffset, float peak, float susta
 static int computeScore(int safeVotes, int warningVotes, RiskLevel level) {
   int total = safeVotes + warningVotes;
 
-  if (level == RISK_DANGER) {
-    return 75;
-  }
-
   if (level == RISK_WARNING) {
     if (total == 0) return 48;
     float proportion = (float)warningVotes / total;
@@ -60,7 +60,7 @@ static int computeScore(int safeVotes, int warningVotes, RiskLevel level) {
 }
 
 // ---------------------------------------------------------------------------
-// Main prediction: hybrid RF + rule-based.
+// Main prediction: contract level, forest votes for the score.
 // ---------------------------------------------------------------------------
 RiskResult RandomForest::predict(float peakPressure, float sustainedDuration) const {
   // Sanitize input: NaN or negative → 0
@@ -70,27 +70,6 @@ RiskResult RandomForest::predict(float peakPressure, float sustainedDuration) co
   // Convert duration (seconds) → samples at 10Hz
   int sustainedSamples = (int)(duration * 10 + 0.5f);
 
-  RiskResult result = {RISK_SAFE, 0, 0, 0, 0};
-
-  // --- Rule 1: Danger override ---
-  // peak >= 200 kPa on one sample (1 sample at 10 Hz)
-  if (pressure >= (float)DANGER_PEAK_KPA && sustainedSamples >= DANGER_SUSTAINED_RAW) {
-    result.level = RISK_DANGER;
-    result.score = 75;
-    result.dangerVotes = RF_NUM_TREES;
-    return result;
-  }
-
-  // --- Rule 2: Safe override ---
-  // peak < 35 kPa AND sustained < 200 samples (20s)
-  if (pressure < (float)WARNING_PEAK_KPA && sustainedSamples < WARNING_SUSTAINED_RAW) {
-    result.level = RISK_SAFE;
-    result.score = 0;
-    result.safeVotes = RF_NUM_TREES;
-    return result;
-  }
-
-  // --- RF classifier: majority vote across all trees ---
   int totalSafe = 0;
   int totalWarning = 0;
 
@@ -101,13 +80,15 @@ RiskResult RandomForest::predict(float peakPressure, float sustainedDuration) co
     totalWarning += leaf.warningCount;
   }
 
-  result.safeVotes = totalSafe;
-  result.warningVotes = totalWarning;
+  RiskResult result = {RISK_SAFE, 0, totalSafe, totalWarning};
 
-  if (totalWarning > totalSafe) {
+  // Label latih adalah aturan itu sendiri (peak >= WARNING_PEAK_KPA), jadi
+  // hutan mereproduksinya; suara pohon menentukan skor di dalam pita level,
+  // bukan levelnya. Kontrak dipasang dua arah supaya pasangan fitur yang tidak
+  // pernah ada di data latih (peak rendah, durasi panjang) tidak bisa tampil
+  // "Waspada" di bawah ambang. Web memakai kontrak yang sama persis.
+  if (pressure >= (float)WARNING_PEAK_KPA) {
     result.level = RISK_WARNING;
-  } else {
-    result.level = RISK_SAFE;
   }
 
   result.score = computeScore(totalSafe, totalWarning, result.level);
@@ -122,7 +103,6 @@ const char* RandomForest::levelToString(RiskLevel level) {
   switch (level) {
     case RISK_SAFE:    return "safe";
     case RISK_WARNING: return "warning";
-    case RISK_DANGER:  return "danger";
     default:           return "unknown";
   }
 }

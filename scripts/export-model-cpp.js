@@ -89,13 +89,9 @@ lines.push('// Feature indices');
 lines.push('#define FEATURE_PEAK     0');
 lines.push('#define FEATURE_SUSTAINED 1');
 lines.push('');
-lines.push('// Danger rule (from model)');
-lines.push(`#define DANGER_PEAK_KPA      ${model.dangerRule.peakThreshold}`);
-lines.push(`#define DANGER_SUSTAINED_RAW ${model.dangerRule.sustainedThreshold}`);
-lines.push('');
-lines.push('// Safe rule (clinical contract)');
-lines.push('#define WARNING_PEAK_KPA    35');
-lines.push('#define WARNING_SUSTAINED_RAW 200  // 20s at 10Hz');
+lines.push('// Batas Aman/Waspada. Satu angka, diekspor dari models/rf-model.json');
+lines.push('// supaya firmware tidak bisa menyimpang dari model dan web.');
+lines.push(`#define WARNING_PEAK_KPA    ${model.rule.warningKpa}`);
 lines.push('');
 lines.push('// Model metadata');
 lines.push(`#define RF_NUM_TREES    ${model.trees.length}`);
@@ -108,8 +104,11 @@ lines.push('  int8_t   feature;      // 0=peak, 1=sustained, -1=N/A (leaf)');
 lines.push('  float    threshold;    // split threshold');
 lines.push('  uint16_t leftIdx;      // child index (internal only)');
 lines.push('  uint16_t rightIdx;     // child index (internal only)');
-lines.push('  uint16_t safeCount;    // vote count (leaf only)');
-lines.push('  uint16_t warningCount; // vote count (leaf only)');
+// Votes are raw leaf counts. SMOTE balances the training set to ~77k per
+// class, which overflows a uint16_t leaf; the count is exact and small enough
+// that 32 bits costs nothing at 20 stumps.
+lines.push('  uint32_t safeCount;    // vote count (leaf only)');
+lines.push('  uint32_t warningCount; // vote count (leaf only)');
 lines.push('} RfNode;');
 lines.push('');
 lines.push('// Tree offsets into the flat node array');

@@ -32,7 +32,11 @@ memakai ponsel.
 ## 3. Tujuan
 
 - Mengukur tekanan plantar pada tiga titik kritis secara berkelanjutan.
-- Menilai risiko ke dalam tiga tingkat: **Aman**, **Waspada**, **Bahaya**.
+- Menilai risiko ke dalam dua tingkat: **Aman** dan **Waspada**, dengan ambang
+  label **45 kPa** pada tekanan puncak. Tidak ada tingkat ketiga: data acuan
+  berhenti di 87,1 kPa, FSR 402 hanya menjangkau ≈79 kPa, dan pasien neuropati
+  yang melewati ambang sudah kehilangan sensasi pelindung sehingga tindakannya
+  sama.
 - Memberi peringatan dini lokal (buzzer) dan di web (notifikasi).
 - Menyimpan riwayat kuantitatif dan menyediakan ekspor CSV.
 
@@ -42,7 +46,8 @@ memakai ponsel.
   diagnosis medis.
 - Bukan pengganti pemeriksaan klinis.
 - Tidak menargetkan populasi non-diabetes sebagai pengguna tervalidasi.
-- Tidak memakai model yang dipelajari dari data `danger` (tidak tersedia).
+- Tidak memodelkan tingkat di atas Waspada: tidak ada data acuan maupun
+  jangkauan sensor untuk melatih atau mengukurnya.
 
 ## 4. Ruang lingkup
 
@@ -51,7 +56,7 @@ memakai ponsel.
 | Hardware | Insole EVA + 3 FSR 402 per kaki, ESP32-WROOM-32, pouch pergelangan, LiPo + TP4056 |
 | Firmware | Baca sensor 10 Hz, inferensi RF di perangkat, buzzer lokal, upload ke Firebase |
 | Web | 12 halaman: dashboard, monitoring, riwayat, perangkat, pengaturan, profil, admin, landing, autentikasi |
-| Model | Hybrid Random Forest + aturan klinis, dilatih dari DFN-DS |
+| Model | Random Forest dua kelas + kontrak ambang 45 kPa; dilatih dari DFN-DS, diuji pada subjek diabetes baru |
 
 ## 5. Kebutuhan fungsional
 
@@ -68,7 +73,7 @@ memakai ponsel.
 | FR-09 | Mengekspor riwayat ke CSV | Selesai |
 | FR-10 | Early warning: notifikasi web dan alarm audio | Selesai |
 | FR-11 | Panel admin: pengguna, perangkat, insiden, konfigurasi | Selesai |
-| FR-12 | Ambang risiko dapat dikonfigurasi admin | Selesai |
+| FR-12 | Ambang risiko terkunci di model dan kontrak klien (45 kPa), tidak dapat diubah dari konsol | Selesai |
 | FR-13 | Uji firmware pada insole fisik | Belum |
 
 ## 6. Kebutuhan non-fungsional (ringkas, rujuk TRD)
@@ -84,18 +89,23 @@ memakai ponsel.
 
 | Metrik | Target / hasil |
 | --- | --- |
-| Clinical contract lulus | 100% kasus acuan (40/20/30/210 kPa) |
-| Akurasi `safe` vs `warning` | 100,0% pada 28 pasien uji |
-| Edge case tanpa galat | Semua input degenerat aman, skor 0-100 |
-| Uji native firmware | 13/13 lolos |
+| Clinical contract lulus | 100% kasus acuan (20 / 40 / 44,9 / 45 / 60 / 80 / 210 / 500 kPa) |
+| Macro-F1 `safe` vs `warning` | 100,0% out-of-fold, 5 lipatan berkelompok per pasien (135 pasien) |
+| Sapuan gain sensor ×0,9–×1,3 | 78,4% / 100,0% / 82,4% / 69,7% / 60,9% macro-F1 |
+| Edge case tanpa galat | Semua input degenerat aman, skor 0–100 |
+| Uji native firmware | 10/10 lolos |
 | Waktu tanggap alarm lokal | Tidak menunggu jaringan |
 
-Catatan kejujuran: akurasi 100% hanya berlaku untuk dua kelas pada populasi
-diabetes, dengan batas yang ditentukan durasi tumpu. Bukan bukti generalisasi.
+Catatan kejujuran: akurasi 100% berasal dari label yang dibuat oleh aturan
+`peak >= 45 kPa` itu sendiri, jadi ia mengukur kesesuaian dengan aturan, bukan
+generalisasi. Uji subjek baru diperlakukan sebagai studi kasus.
 
 ## 8. Risiko dan asumsi
 
-- Kelas `danger` hanya 0,05% data, sehingga diserahkan ke aturan klinis.
+- Tidak ada kelas ketiga: 0 sampel ≥ 200 kPa, hanya 31 sampel (3 pasien)
+  ≥ 70 kPa, dan FSR 402 berhenti di ≈79 kPa.
+- Ambang 45 kPa hanya berarti bila FSR dikalibrasi; macro-F1 turun ke 78,4%
+  pada gain ×0,9 dan 69,7% pada ×1,2.
 - Dataset hanya populasi diabetes; model belum divalidasi untuk populasi umum.
 - Resolusi midfoot pada perangkat hanya tiga titik ukur.
 - Uji pada perangkat fisik belum dijalankan.

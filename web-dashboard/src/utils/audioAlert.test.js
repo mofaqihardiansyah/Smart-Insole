@@ -51,29 +51,21 @@ describe('audioAlert', () => {
   });
 
   it('does not create AudioContext or play audio when isMuted is true', () => {
-    playAlertBeep('WARNING', true);
+    playAlertBeep(true);
     expect(AudioContextMock).not.toHaveBeenCalled();
     expect(mockAudioContextInstance.createOscillator).not.toHaveBeenCalled();
   });
 
-  it('plays WARNING beep (440Hz tone) when not muted', () => {
-    playAlertBeep('WARNING', false);
+  it('plays the warning beep (440Hz tone) when not muted', () => {
+    playAlertBeep(false);
     expect(AudioContextMock).toHaveBeenCalled();
     expect(mockAudioContextInstance.createOscillator).toHaveBeenCalled();
     expect(mockOscillator.frequency.value).toBe(440);
     expect(mockOscillator.start).toHaveBeenCalled();
   });
 
-  it('plays DANGER beep (880Hz tone) when not muted', () => {
-    playAlertBeep('DANGER', false);
-    expect(AudioContextMock).toHaveBeenCalled();
-    expect(mockAudioContextInstance.createOscillator).toHaveBeenCalled();
-    expect(mockOscillator.frequency.value).toBe(880);
-    expect(mockOscillator.start).toHaveBeenCalled();
-  });
-
   it('stops active alert beeps correctly', () => {
-    playAlertBeep('WARNING', false);
+    playAlertBeep(false);
     expect(mockOscillator.start).toHaveBeenCalled();
     
     stopAlertBeep();

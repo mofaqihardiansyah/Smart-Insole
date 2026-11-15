@@ -3,7 +3,8 @@
 > Dihasilkan otomatis oleh `scripts/evidence.js`. Jangan diedit manual.
 
 Folder ini memuat pengukuran mandiri atas model klasifikasi risiko tekanan
-plantar: kondisi dataset, hasil pengujian, dan bukti untuk tiap temuan.
+plantar dua kelas (45 kPa): kondisi dataset, hasil pengujian, dan bukti
+untuk tiap temuan.
 
 ## Berkas
 
@@ -22,21 +23,20 @@ node scripts/evidence.js
 ```
 
 Skrip menghitung ulang semua angka dari `models/training-data.json` dan
-`models/session-dataset.json`. Model produksi tidak diubah.
+`models/session-dataset.json`, serta memanggil protokol validasi silang dari
+`scripts/train-model.js`. Model produksi tidak diubah.
 
 ## Ringkasan temuan
 
-- Kelas Bahaya tidak punya contoh: 0 dari 81.000 sampel mencapai 200 kPa; puncak dataset 87,06 kPa.
-- Tidak ada sampel validasi di atas 70 kPa, sehingga kelayakan ambang 70 kPa
-  belum bisa diuji pada data uji.
-- Random Forest dan aturan ambang memberi keputusan identik pada
-  100,0% sampel validasi, karena labelnya berasal dari aturan itu sendiri (label melingkar).
-- Ambang 200 kPa di luar jangkauan FSR 402 (200 kPa ≈ 25,4 N, sensor 0,1–10 N).
-- DFN vs DM, validasi silang 5 lipatan: AUC 0,503 (tidak lulus ambang 0,650).
+- 4.347 dari 81.000 sampel (5,4%) mencapai ambang label 45 kPa, dari 93 pasien; rasio kelas 17,6:1.
+- Ketiga skema (aturan murni, RF berbobot kelas, RF + SMOTE) memberi macro-F1 100,0% pada 5 lipatan berkelompok per pasien, karena labelnya berasal dari aturan itu sendiri (label melingkar).
+- Galat penguatan paling menentukan: macro-F1 turun ke 78,4% pada ×0,9 dan 69,7% pada ×1,2.
+- Tidak ada level di atas Waspada: 31 sampel mencapai 70 kPa dan 0 mencapai 200 kPa; FSR 402 berhenti di ≈79 kPa.
+- DFN vs DM, validasi silang 5 lipatan: AUC 0,536 (tidak lulus ambang 0,650).
 
 ## Batasan
 
 - Waktu inferensi di laptop, bukan ESP32.
-- Tidak ada data pasien nyata dan tidak ada validasi klinis.
+- Belum ada data subjek baru; uji eksternal dilakukan terpisah sebagai studi kasus.
 - Label sampel berasal dari aturan, sehingga metrik klasifikasi mengukur
   kesesuaian terhadap aturan, bukan generalisasi.

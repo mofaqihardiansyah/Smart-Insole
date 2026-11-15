@@ -19,7 +19,6 @@ import { t } from "../../utils/i18n";
 const LEVEL_COPY = {
   safe: "landing.tech.sim.whySafe",
   warning: "landing.tech.sim.whyWarning",
-  danger: "landing.tech.sim.whyDanger",
 };
 
 const PRESETS = [
@@ -38,7 +37,7 @@ const PRESETS = [
   {
     key: "high",
     label: "landing.tech.sim.presetHigh",
-    pressure: 210,
+    pressure: 75,
     duration: 2,
   },
 ];

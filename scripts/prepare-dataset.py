@@ -4,15 +4,28 @@ prepare-dataset.py — DFN-DS -> training-data.json
 
 Fase 1 dari roadmap: parse 135 file .xls pasien diabetes, agregasi
 8 sensor/kaki -> 3 region (forefoot/midfoot/heel), ekstrak fitur
-(peakPressure + sustainedDuration) per timestep, label per grup
-(DFN/DM hanya sebagai konteks grup), split 80/20 per patient per grup
-(hasil saat ini: 107 train / 28 validasi).
+(peakPressure + sustainedDuration) per timestep, lalu beri label dua kelas.
 
-Kalibrasi kuantil (data-driven, bukan asumsi manual):
-    - p75 dari semua peak values -> dipetakan ke 35 kPa (warning threshold)
-    - p90 dari semua peak values -> dipetakan ke 70 kPa (danger threshold)
-    - Semua peak values diskalakan linear agar threshold kuantil
-      cocok dengan threshold klinis existing di app.
+Dua konstanta yang berbeda dan tidak boleh dicampur:
+
+    CALIBRATION_ANCHOR_KPA — jangkar skala. p75 dari seluruh peak mentah
+        dipetakan ke 35 kPa. Ini hanya mendefinisikan arti "kPa" pada data,
+        bukan keputusan klinis; mengubahnya menggeser seluruh dataset.
+    WARNING_KPA — batas operasional Aman/Waspada. Sampel berlabel `warning`
+        bila peak >= 45 kPa.
+
+Aturan label (satu baris, dipakai semua lapisan):
+
+    warning  <=>  peak >= 45 kPa
+    safe     <=>  peak <  45 kPa
+
+Durasi TIDAK masuk aturan label. DFN-DS adalah rekaman berjalan: run
+terpanjang di atas 45 kPa hanya 13 sampel (1,3 detik), jadi syarat
+"sustained >= 5 detik" akan menghasilkan nol sampel positif. `sustained`
+tetap dihitung dan disimpan sebagai fitur, bukan sebagai penentu label.
+
+Split latih/validasi per patient dihapus: seluruh 135 pasien menjadi data
+latih, dan satu-satunya data uji adalah subjek baru yang diukur sendiri.
 
 Mapping sensor (8 FSR per kaki, urutan anatomis):
     L1-L3 / R1-R3 -> forefoot (hallux + metatarsal)
@@ -39,10 +52,8 @@ META_FILE = DATASET_DIR / "final_135_5_total_info.xlsx"
 OUTPUT = Path(__file__).resolve().parents[1] / "models" / "training-data.json"
 
 SAMPLE_EVERY = 10          # 100Hz -> 10Hz
-WARNING_KPA = 35.0         # sesuai RISK_THRESHOLDS
-DANGER_KPA = 200.0         # konsensus in-shoe (Castro-Martins dkk. 2024)
-WARNING_SECONDS = 20       # sama dengan RISK_THRESHOLDS web; aturan label latih
-                           # memakai 200 sampel = 20 s pada 10 Hz (lihat label_samples)
+CALIBRATION_ANCHOR_KPA = 35.0  # p75 mentah -> 35 kPa; jangkar skala, tetap
+WARNING_KPA = 45.0         # batas Aman/Waspada; label = peak >= nilai ini
 
 # ------------------------------------------------------------- metadata ------
 def load_metadata():
@@ -98,23 +109,17 @@ def parse_xls(path):
     return samples
 
 # ----------------------------------------------------------------- label ----
-def label_samples(samples, group):
+def label_samples(samples):
     """
     Label per-sample: safe atau warning saja.
 
-    Aturan: peak >= 35 kPa ATAU sustained >= 200 sampel (20 s pada 10 Hz) ->
-    warning, selain itu safe. Grup DFN/DM tidak dipakai di sini.
-
-    Danger tidak pernah muncul sebagai label: puncak tertinggi di DFN-DS
-    adalah 87,06 kPa, jadi 0 dari 81.000 sampel mencapai ambang 200 kPa.
-    Danger ditangani aturan klinis terpisah, bukan oleh RF.
+    Aturan: peak >= WARNING_KPA (45 kPa) -> warning, selain itu safe.
+    Grup DFN/DM tidak dipakai, dan durasi tidak dipakai (lihat docstring
+    modul: run terpanjang di DFN-DS 1,3 detik).
     """
     labeled = []
     for s in samples:
-        if s["peak"] >= 35 or s["sustained"] >= 200:
-            level = "warning"
-        else:
-            level = "safe"
+        level = "warning" if s["peak"] >= WARNING_KPA else "safe"
         labeled.append({**s, "level": level})
     return labeled
 
@@ -145,57 +150,83 @@ def main():
     n_dfn = sum(1 for d in all_data if d["group"] == "DFN")
     print(f"  {len(all_data)} parsed ({n_dfn} DFN), {total} samples")
 
-    # ---- kalibrasi kuantil ----
+    # ---- kalibrasi kuantil (jangkar tetap: p75 mentah -> 35 kPa) ----
     all_peaks.sort()
     n = len(all_peaks)
     p75_raw = all_peaks[int(n * 0.75)]
     p90_raw = all_peaks[int(n * 0.90)]
-    scale = WARNING_KPA / p75_raw  # p75 -> 35 kPa
-    print(f"  p75 raw = {p75_raw:.2f} -> {WARNING_KPA} kPa (scale {scale:.2f}x)")
+    scale = CALIBRATION_ANCHOR_KPA / p75_raw  # p75 mentah -> 35 kPa
+    print(f"  p75 raw = {p75_raw:.2f} -> {CALIBRATION_ANCHOR_KPA} kPa (scale {scale:.2f}x)")
     print(f"  p90 raw = {p90_raw:.2f} -> {p90_raw * scale:.1f} kPa")
 
-    # ---- pass 2: hitung sustained dengan threshold kuantil, scale, label ----
+    # ---- pass 2: skala ke kPa, hitung sustained di atas WARNING_KPA, label ----
     for d in all_data:
-        sustained = 0
         for s in d["samples"]:
-            sustained = sustained + 1 if s["peak"] >= p75_raw else 0
-            s["sustained"] = sustained
             s["peak"] = round(s["peak"] * scale, 2)
             s["forefoot"] = round(s["forefoot"] * scale, 2)
             s["midfoot"] = round(s["midfoot"] * scale, 2)
             s["heel"] = round(s["heel"] * scale, 2)
-        d["samples"] = label_samples(d["samples"], d["group"])
+        sustained = 0
+        for s in d["samples"]:
+            sustained = sustained + 1 if s["peak"] >= WARNING_KPA else 0
+            s["sustained"] = sustained
+        d["samples"] = label_samples(d["samples"])
 
-    # ---- split per patient: 80% train, 20% validation ----
-    dfn = sorted([d for d in all_data if d["group"] == "DFN"], key=lambda d: int(d["patient"]))
-    dm = sorted([d for d in all_data if d["group"] == "DM"], key=lambda d: int(d["patient"]))
-    split_at = lambda lst: int(len(lst) * 0.8)
-    train_patients = dfn[:split_at(dfn)] + dm[:split_at(dm)]
-    val_patients = dfn[split_at(dfn):] + dm[split_at(dm):]
+    patients = sorted(all_data, key=lambda d: int(d["patient"]))
+
+    # ---- laporan distribusi ----
+    counts = {"safe": 0, "warning": 0}
+    patients_with_warning = 0
+    longest_run = 0
+    stale = 0
+    for d in patients:
+        has_warning = False
+        for s in d["samples"]:
+            counts[s["level"]] += 1
+            has_warning = has_warning or s["level"] == "warning"
+            longest_run = max(longest_run, s["sustained"])
+            # label harus konsisten dengan aturan, bukan sisa aturan lama
+            expected = "warning" if s["peak"] >= WARNING_KPA else "safe"
+            stale += 1 if s["level"] != expected else 0
+        patients_with_warning += 1 if has_warning else 0
+    n_samples = counts["safe"] + counts["warning"]
+    print(f"  label warning : {counts['warning']} / {n_samples} "
+          f"({100 * counts['warning'] / n_samples:.1f}%), "
+          f"{patients_with_warning}/{len(patients)} pasien")
+    print(f"  label safe    : {counts['safe']} / {n_samples} "
+          f"({100 * counts['safe'] / n_samples:.1f}%)")
+    print(f"  rasio         : {counts['safe'] / counts['warning']:.1f} : 1")
+    print(f"  run >={WARNING_KPA:.0f} kPa terpanjang: {longest_run} sampel "
+          f"({longest_run / 10:.1f} s pada 10 Hz)")
+    print(f"  label tidak konsisten dengan aturan: {stale}")
+    if stale:
+        raise SystemExit("label lama masih tersisa; perbaiki aturan sebelum menulis")
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT, "w") as f:
         json.dump({
-            "version": "1.1",
+            "version": "2.0",
             "source": "DFN-DS (Zenodo MSSDA)",
             "calibration": {
                 "method": "quantile",
+                "anchorKpa": CALIBRATION_ANCHOR_KPA,
                 "p75_raw": round(p75_raw, 2),
                 "p90_raw": round(p90_raw, 2),
                 "scale_factor": round(scale, 4),
-                "warning_kpa": WARNING_KPA,
-                "danger_kpa": DANGER_KPA,
+            },
+            "labelRule": {
+                "warningKpa": WARNING_KPA,
+                "expression": "peak >= warningKpa",
+                "durationUsed": False,
             },
             "features": ["peak", "sustained", "forefoot", "midfoot", "heel"],
-            "levels": ["safe", "warning", "danger"],
-            "thresholds": {"warningKpa": WARNING_KPA, "warningSeconds": WARNING_SECONDS},
-            "train": train_patients,
-            "validation": val_patients,
+            "levels": ["safe", "warning"],
+            "patients": patients,
         }, f)
 
     size_mb = OUTPUT.stat().st_size / 1e6
     print(f"  -> {OUTPUT}")
-    print(f"  train: {len(train_patients)} patients, val: {len(val_patients)} patients")
+    print(f"  {len(patients)} patients, tanpa split validasi (uji = subjek baru)")
     print(f"  size: {size_mb:.1f} MB")
 
 if __name__ == "__main__":

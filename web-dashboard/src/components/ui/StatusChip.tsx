@@ -1,6 +1,6 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
-import { CheckCircle2, AlertTriangle, AlertOctagon } from "lucide-react";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { devWarn } from "../../utils/devWarn";
 import type { RiskLevel } from "../../types/insole";
 
@@ -10,8 +10,8 @@ import type { RiskLevel } from "../../types/insole";
  * A product requirement is that risk is never signalled by colour alone, so
  * this always renders three redundant channels:
  *
- *   1. an icon with a distinct SHAPE per level (circle, triangle, octagon),
- *      which survives both colour blindness and forced-colors mode;
+ *   1. an icon with a distinct SHAPE per level (circle, triangle), which
+ *      survives both colour blindness and forced-colors mode;
  *   2. a text label in the current language, in uppercase micro type;
  *   3. the colour.
  *
@@ -28,10 +28,6 @@ const LEVELS = {
   warning: {
     Icon: AlertTriangle,
     tone: "bg-warning/15 text-warning-ink",
-  },
-  danger: {
-    Icon: AlertOctagon,
-    tone: "bg-danger/15 text-danger-ink",
   },
 };
 

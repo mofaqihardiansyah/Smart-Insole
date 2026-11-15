@@ -52,7 +52,7 @@ const formatClock = (timestamp: number, language: string) =>
 
 interface TrendChartProps {
   history?: HistoryRecord[];
-  dangerKpa?: number;
+  thresholdKpa?: number;
   language?: string;
   /** Chart copy: title, axis and threshold names. */
   labels?: Record<string, string>;
@@ -61,7 +61,7 @@ interface TrendChartProps {
 
 const TrendChart = ({
   history = [],
-  dangerKpa = 70,
+  thresholdKpa = 45,
   language = "id",
   labels = {},
   className = "",
@@ -72,7 +72,7 @@ const TrendChart = ({
 
     const peaks = history.map((record) => Number(record.peakPressure || 0));
     const maxObserved = peaks.reduce((max, value) => Math.max(max, value), 0);
-    const yMax = niceCeil(Math.max(maxObserved, dangerKpa + 10));
+    const yMax = niceCeil(Math.max(maxObserved, thresholdKpa + 10));
 
     const count = peaks.length;
     const x = (index: number) =>
@@ -112,13 +112,13 @@ const TrendChart = ({
     const last = count ? { x: x(count - 1), y: y(peaks[count - 1]) } : null;
 
     return { peaks, yMax, y, ticks, points, area, labelIndices, last, plotWidth, plotHeight, count };
-  }, [history, dangerKpa]);
+  }, [history, thresholdKpa]);
 
   const labelFor = (key: string) => labels[key] || key;
 
   if (!history.length) return null;
 
-  const thresholdY = model.y(dangerKpa);
+  const thresholdY = model.y(thresholdKpa);
   const peak = model.peaks[model.peaks.length - 1];
 
   return (
@@ -130,7 +130,7 @@ const TrendChart = ({
         aria-label={[
           labels.chartTitle,
           `${labels.axisTime}: ${model.count} ${labels.samples || "samples"}`,
-          `${labels.threshold}: ${dangerKpa} kPa`,
+          `${labels.threshold}: ${thresholdKpa} kPa`,
           `${labels.axisPressure}: ${peak.toFixed(1)} kPa`,
         ]
           .filter(Boolean)
@@ -185,7 +185,7 @@ const TrendChart = ({
           fontWeight="600"
           fill="rgb(var(--danger))"
         >
-          {`${labels.threshold || "Threshold"} ${dangerKpa} kPa`}
+          {`${labels.threshold || "Threshold"} ${thresholdKpa} kPa`}
         </text>
 
         {model.area && <polygon points={model.area} fill="url(#trend-area)" />}

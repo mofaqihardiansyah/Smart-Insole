@@ -18,7 +18,6 @@ describe('i18n dictionary', () => {
       'nav.notifications',
       'risk.safe',
       'risk.warning',
-      'risk.danger',
       'risk.score',
       'risk.status',
       'anatomy.forefoot',
@@ -40,7 +39,6 @@ describe('i18n dictionary', () => {
       'device.firmware',
       'settings.title',
       'settings.warningKpa',
-      'settings.dangerKpa',
       'profile.title',
       'profile.language',
       'notifications.title',
@@ -97,7 +95,6 @@ describe('i18n dictionary', () => {
       'nav.settings',
       'risk.safe',
       'risk.warning',
-      'risk.danger',
       'risk.status',
       'metrics.peakPressure',
       'metrics.sustainedDuration',
@@ -128,14 +125,14 @@ describe('t(key, lang)', () => {
   it('translates to Indonesian', () => {
     expect(t('nav.dashboard', 'id')).toBe('Dasbor');
     expect(t('risk.safe', 'id')).toBe('Aman');
-    expect(t('risk.danger', 'id')).toBe('Bahaya');
+    expect(t('risk.warning', 'id')).toBe('Waspada');
     expect(t('anatomy.heel', 'id')).toBe('Tumit (Heel)');
   });
 
   it('translates to English', () => {
     expect(t('nav.dashboard', 'en')).toBe('Dashboard');
     expect(t('risk.safe', 'en')).toBe('Safe');
-    expect(t('risk.danger', 'en')).toBe('Danger');
+    expect(t('risk.warning', 'en')).toBe('Warning');
     expect(t('anatomy.heel', 'en')).toBe('Heel (Calcaneus)');
   });
 

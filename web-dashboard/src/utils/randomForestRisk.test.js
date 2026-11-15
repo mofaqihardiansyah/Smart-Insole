@@ -8,46 +8,42 @@ import {
 } from './randomForestRisk';
 
 /**
- * These tests encode the clinical contract the Random Forest has to honour.
- * The system uses a hybrid approach:
- *   - Random Forest (data-driven) for safe vs warning
- *   - Rule-based override for danger (peak >= 200 kPa on one sample)
+ * These tests encode the clinical contract the model has to honour.
  *
- * The danger rule is clinically well-defined and overrides RF prediction.
+ * Two classes, `safe` and `warning`, and one boundary: peak pressure at or
+ * above the warning limit. The training label is that same rule, so the forest
+ * reproduces it; the contract is applied on both sides so an out-of-distribution
+ * pair (low peak, long duration) cannot read as a warning either.
+ *
+ * There is no danger level, and duration never promotes a level.
  */
 describe('clinical classification', () => {
   const cases = [
     // [peakPressure, sustainedDuration, expected level]
     [0, 0, 'safe'],
     [12, 0, 'safe'],
-    // Safe: peak < 35, so sustained = 0 in DFN-DS (never crosses threshold)
     [25, 0, 'safe'],
-    [31, 0, 'safe'],
-    // A reading at or above the safe limit is a warning immediately
-    [35, 1, 'warning'],
-    [40, 1, 'warning'],
-    [48, 2, 'warning'],
+    [44, 0, 'safe'],
+    // Duration does not lift a sub-limit peak: 30 kPa held for 45 s is safe.
+    [30, 25, 'safe'],
+    [30, 45, 'safe'],
+    // At or above the limit is a warning immediately.
+    [45, 1, 'warning'],
+    [50, 1, 'warning'],
     [60, 5, 'warning'],
-    // High pressure at or above 200 kPa triggers danger (rule-based)
-    [200, 1, 'danger'],
-    [205, 15, 'danger'],
-    [210, 15, 'danger'],
-    [210, 30, 'danger'],
-    [210, 31, 'danger'],
-    [220, 45, 'danger'],
-    // Just below the limit stays a warning, however long it is held.
-    [199, 45, 'warning'],
-    // Prolonged load below the pressure limit is still a warning.
-    [30, 25, 'warning'],
-    [30, 45, 'warning'],
-    [55, 45, 'warning'],
+    [80, 2, 'warning'],
+    // No level above warning exists, however high the pressure.
+    [200, 1, 'warning'],
+    [205, 15, 'warning'],
+    [220, 45, 'warning'],
+    [500, 60, 'warning'],
   ];
 
   it.each(cases)('peak %i kPa for %i s is %s', (pressure, duration, expected) => {
     expect(classifyRisk(pressure, duration)).toBe(expected);
   });
 
-  it('crosses from safe to warning at the configured safe limit', () => {
+  it('crosses from safe to warning at the warning limit', () => {
     let crossover = null;
     for (let p = 0; p <= 60; p += 0.5) {
       if (classifyRisk(p, 1) === 'warning') {
@@ -56,31 +52,12 @@ describe('clinical classification', () => {
       }
     }
     expect(crossover).not.toBeNull();
-    // Safe-to-warning crossover at exactly 35 kPa (clinical contract)
-    expect(crossover).toBeLessThanOrEqual(RISK_THRESHOLDS.warningKpa);
-    expect(crossover).toBeGreaterThanOrEqual(RISK_THRESHOLDS.warningKpa - 1);
+    // The contract is exact: the limit itself is already a warning.
+    expect(crossover).toBe(RISK_THRESHOLDS.warningKpa);
   });
 
-  it('crosses from warning to danger at or before the danger duration', () => {
-    let crossover = null;
-    for (let d = 0; d <= 40; d += 0.1) {
-      if (classifyRisk(210, d) === 'danger') {
-        crossover = d;
-        break;
-      }
-    }
-    expect(crossover).not.toBeNull();
-    // Danger triggers on the first sample (1 sample at 10 Hz)
-    expect(crossover).toBeLessThanOrEqual(0.2);
-    expect(crossover).toBeGreaterThanOrEqual(0.05);
-  });
-
-  it('reports danger from high pressure alone', () => {
-    // With rule-based danger: peak >= 200 kPa triggers on this sample.
-    expect(classifyRisk(500, 1)).toBe('danger');
-    expect(classifyRisk(200, 1)).toBe('danger');
-    // Called with no duration there is no sample carrying the peak, so the
-    // reading stays a warning; the live path always passes one sample.
+  it('reports no level above warning', () => {
+    expect(classifyRisk(500, 1)).toBe('warning');
     expect(classifyRisk(200, 0)).toBe('warning');
   });
 
@@ -102,11 +79,9 @@ describe('severity score', () => {
         });
         if (level === 'safe') {
           expect(score).toBeLessThanOrEqual(SCORE_BANDS.safeMax);
-        } else if (level === 'warning') {
+        } else {
           expect(score).toBeGreaterThanOrEqual(SCORE_BANDS.safeMax + 1);
           expect(score).toBeLessThanOrEqual(SCORE_BANDS.warningMax);
-        } else {
-          expect(score).toBeGreaterThanOrEqual(SCORE_BANDS.warningMax + 1);
         }
         expect(score).toBeGreaterThanOrEqual(0);
         expect(score).toBeLessThanOrEqual(100);
@@ -117,22 +92,21 @@ describe('severity score', () => {
   it('scores representative states in a sensible order', () => {
     const safe = inferRisk({ peakPressure: 15, sustainedDuration: 2 }).score;
     const warning = inferRisk({ peakPressure: 50, sustainedDuration: 5 }).score;
-    const danger = inferRisk({ peakPressure: 215, sustainedDuration: 35 }).score;
+    const high = inferRisk({ peakPressure: 215, sustainedDuration: 35 }).score;
 
     expect(safe).toBeLessThan(warning);
-    expect(warning).toBeLessThan(danger);
-    expect(danger).toBeGreaterThanOrEqual(75);
+    // And the top of the warning band is reachable at extreme pressure.
+    expect(high).toBeLessThanOrEqual(SCORE_BANDS.warningMax);
   });
 });
 
 describe('random forest internals', () => {
   it('returns vote counts that sum to the forest size', () => {
     const { votes } = inferRisk({ peakPressure: 50, sustainedDuration: 10 });
-    const total = votes.safe + votes.warning + votes.danger;
+    const total = votes.safe + votes.warning;
     expect(total).toBeGreaterThan(0);
     expect(votes.safe).toBeGreaterThanOrEqual(0);
     expect(votes.warning).toBeGreaterThanOrEqual(0);
-    expect(votes.danger).toBeGreaterThanOrEqual(0);
   });
 
   it('is deterministic: the same input always produces the same output', () => {
@@ -142,33 +116,31 @@ describe('random forest internals', () => {
   });
 });
 
-describe('configurable peak thresholds', () => {
+describe('configurable peak threshold', () => {
   const custom = {
     ...RISK_THRESHOLDS,
     warningKpa: 30,
-    dangerKpa: 60,
   };
 
-  it('moves the safe-to-warning crossover to the configured safe limit', () => {
-    expect(classifyRisk(29, 1, custom)).toBe('safe');
+  it('moves the crossover to the configured limit', () => {
+    expect(classifyRisk(29.9, 1, custom)).toBe('safe');
     expect(classifyRisk(30, 1, custom)).toBe('warning');
-    // At the default limits the same reading is still safely below 35 kPa.
+    // At the default limit the same reading is still safely below 45 kPa.
     expect(classifyRisk(30, 1)).toBe('safe');
   });
 
-  it('moves the danger override to the configured danger limit', () => {
-    expect(classifyRisk(60, 1, custom)).toBe('danger'); // default 200 would warn
-    expect(inferRisk({ peakPressure: 65, sustainedDuration: 1, thresholds: custom }).level).toBe(
-      'danger'
-    );
+  it('still never exceeds warning', () => {
+    expect(classifyRisk(500, 1, custom)).toBe('warning');
+    expect(
+      inferRisk({ peakPressure: 65, sustainedDuration: 1, thresholds: custom }).level
+    ).toBe('warning');
   });
 
-  it('leaves the model duration windows alone: one-sample danger, 20 s safe floor', () => {
-    // Duration is NOT client-configurable; a 60 kPa spike for a fraction of a
-    // sample still does not earn danger, and a sub-limit peak sustained past
-    // the floor is still at least a warning.
-    expect(classifyRisk(60, 0, custom)).not.toBe('danger');
+  it('keeps duration out of the decision', () => {
+    // Duration is a model feature, not a rule: no length of hold below the
+    // limit promotes the level.
     expect(classifyRisk(45, 21, custom)).toBe('warning');
+    expect(classifyRisk(20, 60, custom)).toBe('safe');
   });
 });
 
@@ -178,7 +150,8 @@ describe('levelFromScore', () => {
     expect(levelFromScore(SCORE_BANDS.safeMax)).toBe('safe');
     expect(levelFromScore(SCORE_BANDS.safeMax + 1)).toBe('warning');
     expect(levelFromScore(SCORE_BANDS.warningMax)).toBe('warning');
-    expect(levelFromScore(SCORE_BANDS.warningMax + 1)).toBe('danger');
-    expect(levelFromScore(100)).toBe('danger');
+    // A legacy score above the warning band still resolves to the top level.
+    expect(levelFromScore(SCORE_BANDS.warningMax + 1)).toBe('warning');
+    expect(levelFromScore(100)).toBe('warning');
   });
 });

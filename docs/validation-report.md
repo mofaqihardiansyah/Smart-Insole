@@ -1,9 +1,9 @@
 # Laporan Validasi Fase 3
 
-> Terakhir diperbarui: 2 November 2026.
+> Terakhir diperbarui: 13 November 2026.
 
-Validasi model risiko (Random Forest + aturan klinis) terhadap data nyata.
-Semua angka di bawah dapat direproduksi dengan perintah pada bagian
+Validasi model risiko dua kelas (Random Forest + kontrak ambang 45 kPa) terhadap
+data nyata. Semua angka di bawah dapat direproduksi dengan perintah pada bagian
 **Reproduksi**.
 
 Ringkasan:
@@ -11,7 +11,7 @@ Ringkasan:
 | Butir | Hasil | Status |
 | --- | --- | --- |
 | 3.1 Pola 3 region saat gait (OptiTrack v2) | 902 fase tumpu, tumit memuncak sebelum forefoot pada 99,9% | Lolos |
-| 3.2 Ambang klinis vs peak pressure DFU (Figshare) | 1.296 pengukuran, 19,3% >= 35 kPa, 1,4% >= 70 kPa | Lolos |
+| 3.2 Ambang klinis vs peak pressure DFU (Figshare) | 1.296 pengukuran, 9,8% >= 45 kPa, 1,4% >= 70 kPa | Lolos |
 | 3.3 Edge case (kosong, NaN, 500 kPa) | Semua input degenerat -> `safe`, tidak pernah melempar galat | Lolos |
 
 ## 3.1 Validasi silang OptiTrack v2
@@ -64,16 +64,16 @@ plantar pressure*; buku kerja tidak memuat durasi.
 | Pengukuran peak pressure | 1.296 |
 | Median | 18,1 kPa |
 | Puncak tertinggi | 123,8 kPa |
-| >= ambang warning (35 kPa) | 19,3% |
-| >= ambang danger lama (70 kPa) | 1,4% |
-| >= ambang danger sekarang (200 kPa) | 0,0% |
+| >= ambang label (45 kPa) | 9,8% |
+| >= 70 kPa (acuan keparahan) | 1,4% |
+| >= 200 kPa | 0,0% |
 
-**Tafsir.** Ambang warning 35 kPa berada di dalam rentang terukur: 19,3%
-pengukuran DFU melewatinya. Ambang danger yang dipakai sekarang (200 kPa,
-konsensus in-shoe) tidak pernah tercapai di dataset ini; puncaknya 123,8 kPa.
-Jadi 3.2 memvalidasi arah ambang, bukan ambang danger 200 kPa. Catatan penting:
-validasi ini hanya untuk tekanan — dataset tidak menyediakan durasi, dan durasi
-memang bukan kriteria danger pada model ini.
+**Tafsir.** Ambang label 45 kPa berada di dalam rentang terukur: 9,8%
+pengukuran DFU melewatinya, dan 1,4% melewati 70 kPa. Tidak ada satu pun
+pengukuran mencapai 200 kPa; puncaknya 123,8 kPa. Karena itu dataset ini
+memvalidasi arah ambang dua kelas, bukan tingkat di atas Waspada. Catatan
+penting: validasi ini hanya untuk tekanan — dataset tidak menyediakan durasi,
+dan durasi memang tidak menentukan label pada model ini.
 
 ## 3.3 Edge case
 
@@ -84,9 +84,11 @@ Diuji di `web-dashboard/src/utils/randomForestRisk.test.js`:
 | Tanpa argumen / `peakPressure` kosong | `safe` |
 | `NaN` atau `Infinity` pada tekanan atau durasi | `safe` |
 | Tekanan negatif, durasi negatif | `safe` |
-| 500 kPa sesaat | `warning` |
-| 500 kPa selama 1 s | `danger` |
-| Ambang admin diubah (warning 25, danger 50) | Level dan skor tetap konsisten |
+| 30 kPa ditahan 45 s | `safe` (durasi tidak menaikkan tingkat) |
+| 44,9 kPa ditahan 12 s | `safe` |
+| 45 kPa sesaat | `warning` |
+| 500 kPa selama 60 s | `warning` (tidak ada tingkat di atas Waspada) |
+| Ambang diubah lewat opsi `thresholds` | Level dan skor tetap konsisten |
 
 Tidak ada input yang melempar galat atau menghasilkan skor di luar 0-100.
 Paket sensor yang hilang dibaca sebagai nol, bukan sebagai peringatan palsu.
@@ -97,10 +99,10 @@ Paket sensor yang hilang dibaca sebagai nol, bukan sebagai peringatan palsu.
   mesin; kesalahan pemetaan satu sensor akan menggeser porsi beban, tidak
   mengubah kesimpulan urutan.
 - Figshare DFU tidak memuat durasi, jadi 3.2 memvalidasi tekanan saja.
-- Ambang danger 200 kPa tidak dapat divalidasi pada Figshare DFU: puncak
-  dataset 123,8 kPa. Klaim validasi danger harus memakai dataset lain.
-- Durasi bukan kriteria danger; `sustained` hanya memengaruhi fitur RF dan
-  batas `safe` 20 detik.
+- Tidak ada tingkat di atas Waspada yang dapat divalidasi: puncak Figshare DFU
+  123,8 kPa, puncak DFN-DS 87,06 kPa, dan FSR 402 berhenti di ≈79 kPa.
+- Durasi tetap menjadi fitur model dan tetap ditampilkan, tetapi tidak menaikkan
+  tingkat.
 
 ## Reproduksi
 

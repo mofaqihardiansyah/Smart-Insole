@@ -25,7 +25,6 @@ import type { HistoryRecord } from "../../context/InsoleContext";
 const RISK_DOT = {
   safe: "bg-safe",
   warning: "bg-warning",
-  danger: "bg-danger",
 };
 
 interface HeroTimelineProps {
@@ -64,7 +63,7 @@ const HeroTimeline = ({
       if (key) memo[key] += 1;
       return memo;
     },
-    { safe: 0, warning: 0, danger: 0 }
+    { safe: 0, warning: 0 }
   );
 
   return (
@@ -73,7 +72,7 @@ const HeroTimeline = ({
       role="img"
       /* A summary built from real counts, not from the shape: the number of
          buffered readings, spoken once, then the reader moves on. */
-      aria-label={`${counts.safe + counts.warning + counts.danger} ${t(
+      aria-label={`${counts.safe + counts.warning} ${t(
         "dashboard.timeline.notes",
         lang
       )}`}

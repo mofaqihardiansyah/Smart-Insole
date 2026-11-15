@@ -10,7 +10,7 @@
  */
 
 /** The three clinical risk categories, worst last. */
-export type RiskLevel = 'safe' | 'warning' | 'danger';
+export type RiskLevel = 'safe' | 'warning';
 
 /**
  * The raw packet as it arrives from `readings/latest` or one push under
@@ -72,9 +72,6 @@ export interface HistoryEntry extends MappedReading {
  */
 export interface RiskThresholds {
   warningKpa: number;
-  dangerKpa: number;
-  warningSeconds: number;
-  dangerSeconds: number;
 }
 
 /**

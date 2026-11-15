@@ -11,7 +11,7 @@
 ```
 
 - Klasifikasi risiko dihitung di ESP32 (alarm lokal) dan di web (tampilan),
-  memakai bobot model dan aturan klinis yang identik.
+  memakai bobot model dan kontrak ambang yang identik.
 - Tidak ada server aplikasi: ESP32 menulis langsung ke Firebase, web membaca.
 
 ## 2. Hardware
@@ -31,9 +31,12 @@ Pin: forefoot GPIO 34 (ADC1_CH6), midfoot GPIO 35 (ADC1_CH7), heel GPIO 32
 
 - Bahasa C++17, PlatformIO, dependensi `WiFi.h` dan `Firebase_ESP_Client`.
 - Laju sampel 10 Hz; filter median-of-3 pada pembacaan ADC.
-- Akumulasi durasi tumpuan di atas ambang peringatan, dibatasi 60 detik.
-- Inferensi `RandomForest` (majority vote + aturan danger), tanpa dependensi.
-- Buzzer: danger 300/200 ms, warning 100/2900 ms, safe senyap.
+- Durasi tumpuan di atas ambang dilaporkan sebagai fitur model, bukan penentu
+  tingkat.
+- Inferensi `RandomForest` dua kelas tanpa dependensi: tingkat ditentukan
+  kontrak `peak >= 45 kPa`, suara pohon hanya menempatkan skor di dalam pita
+  tingkat itu.
+- Buzzer: warning satu beep 100 ms tiap 3 s, safe senyap.
 - Push Firebase tiap detik, hanya bila terkonfigurasi, Wi-Fi tersambung, dan
   jam NTP masuk akal.
 - Model ter-ekspor dari `models/rf-model.json` ke
@@ -61,18 +64,30 @@ Pin: forefoot GPIO 34 (ADC1_CH6), midfoot GPIO 35 (ADC1_CH7), heel GPIO 32
 
 Paket JSON per sampel dengan field: `deviceId`, `timestamp`,
 `forefoot_kpa`, `midfoot_kpa`, `heel_kpa`, `sustained_duration_sec`,
-`risk_score`, `risk_status`, `battery_percent` (opsional). Setiap field
-bertipe `unknown` di web dan di-koersi defensif. Rincian di
+`risk_score`, `risk_status` (`safe` atau `warning`), `battery_percent`
+(opsional). Setiap field bertipe `unknown` di web dan di-koersi defensif. Nilai
+`risk_status` lama `danger` dipetakan ke `warning` saat dibaca. Rincian di
 [`BSD.md`](BSD.md) dan `web-dashboard/src/types/insole.ts`.
 
 ## 7. Deployment model Random Forest
 
 - Pelatihan: `scripts/prepare-dataset.py` lalu `scripts/train-model.js`.
+- Data: 135 pasien DFN-DS, 81.000 sampel; seluruhnya data latih. Data uji
+  eksternal adalah subjek diabetes baru yang direkam sendiri.
+- Label: `warning` bila tekanan puncak ≥ 45 kPa (persentil ke-95 DFN-DS),
+  `safe` bila di bawahnya. Durasi tidak mengubah label.
+- Validasi: 5 lipatan berkelompok per pasien; tiga skema (aturan murni, RF
+  berbobot kelas, RF + SMOTE) dijalankan pada lipatan identik; SMOTE hanya di
+  sisi latih.
+- Model: 20 pohon, kedalaman maksimum 8, minSamples 4, Gini impurity.
 - Ekspor: `scripts/export-model-cpp.js` menghasilkan header C++ dan salinan
-  JSON web.
-- Model: 20 pohon, kedalaman maksimum 8, Gini impurity, bootstrap berbobot.
-- Ambang: warning 35 kPa, danger 200 kPa; jendela durasi tidak dapat
-  dikonfigurasi klien.
+  JSON web; daun menyimpan hitungan `uint32_t` karena SMOTE melampaui
+  `uint16_t`.
+- Kontrak: `peak >= 45 kPa → warning`, diterapkan dua arah di web
+  (`randomForestRisk.ts`) dan firmware (`RandomForest.cpp`); pita skor aman
+  0–47, waspada 48–74. Ambang tidak dapat dikonfigurasi klien.
+- Paket bukti: `node scripts/evidence.js` menulis
+  `docs/evidence/metrics.json` dan laporan HTML dari protokol yang sama.
 - Sinkronisasi model web dan repo dijaga oleh `rf-modelSync.test.js`.
 
 ## 8. Kebutuhan non-fungsional

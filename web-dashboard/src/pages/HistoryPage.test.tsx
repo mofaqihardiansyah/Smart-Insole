@@ -28,14 +28,14 @@ const rowsFor = (incidents: number): HistoryEntry[] => {
 
 const row = (
   timestamp: number,
-  level: 'safe' | 'warning' | 'danger',
+  level: 'safe' | 'warning',
   peak: number
 ): HistoryEntry => ({
   id: `row-${timestamp}`,
   readings: { forefoot: peak, midfoot: 10, heel: 8, sustainedDuration: 1 },
   peakPressure: peak,
   riskLevel: level,
-  riskScore: level === 'warning' ? 60 : level === 'danger' ? 90 : 10,
+  riskScore: level === 'warning' ? 60 : 10,
   batteryPercent: null,
   deviceId: 'insole-01',
   timestamp,
@@ -135,20 +135,21 @@ describe('HistoryPage filter and sort', () => {
   beforeEach(() => localStorage.clear());
 
   // Stored incidents are transitions: `safe` rows never become one, and two
-  // equal levels in a row collapse. So the fixture alternates danger/warning.
+  // equal levels in a row collapse. So the fixture alternates warning/safe.
   const mixedRows = () => [
-    row(1_700_000_000_000, 'danger', 210),
-    row(1_700_000_002_000, 'warning', 80),
-    row(1_700_000_004_000, 'danger', 220),
-    row(1_700_000_006_000, 'warning', 85),
+    row(1_700_000_000_000, 'warning', 80),
+    row(1_700_000_002_000, 'safe', 20),
+    row(1_700_000_004_000, 'warning', 85),
+    row(1_700_000_006_000, 'safe', 25),
   ];
 
-  it('filters to one level and reports the filtered set', async () => {
+  it('filters to the warning level and reports the filtered set', async () => {
     const user = userEvent.setup();
     const { rows } = renderWithRows(mixedRows());
 
-    await user.click(screen.getByRole('button', { name: 'Bahaya' }));
+    await user.click(screen.getByRole('button', { name: 'Waspada' }));
 
+    // Both incidents are warning rows, so the filtered set is the register.
     expect(rows()).toHaveLength(2);
     expect(screen.getByText('Menampilkan 2 dari 2 insiden')).toBeTruthy();
   });
@@ -157,23 +158,12 @@ describe('HistoryPage filter and sort', () => {
     const user = userEvent.setup();
     renderWithRows(mixedRows());
 
-    await user.click(screen.getByRole('button', { name: 'Bahaya' }));
+    await user.click(screen.getByRole('button', { name: 'Waspada' }));
 
     const totalCard = screen.getByText('Total insiden').closest('div');
-    expect(totalCard?.textContent).toContain('4');
-    const dangerCard = screen.getByText('Insiden bahaya').closest('div');
-    expect(dangerCard?.textContent).toContain('2');
-  });
-
-  it('shows the empty state, not an empty table, when the filter matches nothing', async () => {
-    const user = userEvent.setup();
-    // rowsFor only emits warning incidents, so "Bahaya" matches nothing.
-    const { rows } = renderWithRows(rowsFor(2));
-
-    await user.click(screen.getByRole('button', { name: 'Bahaya' }));
-
-    expect(screen.getByText('Tidak ada insiden pada filter ini')).toBeTruthy();
-    expect(rows()).toHaveLength(0);
+    expect(totalCard?.textContent).toContain('2');
+    const warningCard = screen.getByText('Insiden waspada').closest('div');
+    expect(warningCard?.textContent).toContain('2');
   });
 
   it('restarts the render cap when the filter changes', async () => {
@@ -203,7 +193,7 @@ describe('HistoryPage filter and sort', () => {
 
     expect(timeHead.getAttribute('aria-sort')).toBe('descending');
     const last = rows()[0].querySelector('td')?.textContent;
-    expect(last).toBe(new Date(1_700_000_006_000).toLocaleString('id-ID'));
+    expect(last).toBe(new Date(1_700_000_004_000).toLocaleString('id-ID'));
   });
 
   it('freezes the time column and the header row', () => {

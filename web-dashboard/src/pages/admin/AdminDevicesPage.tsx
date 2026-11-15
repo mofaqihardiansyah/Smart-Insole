@@ -111,7 +111,7 @@ const DeviceCard = ({ deviceId, owner, language, onError }: DeviceCardProps) => 
       title={t("admin.devices.one", language, { id: deviceId })}
       action={
         <StatusChip
-          level={online ? "safe" : "danger"}
+          level={online ? "safe" : "warning"}
           label={
             online
               ? t("admin.devices.online", language)

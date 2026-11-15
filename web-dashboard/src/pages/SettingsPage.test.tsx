@@ -34,9 +34,7 @@ describe('SettingsPage thresholds', () => {
       screen.queryByRole('button', { name: 'Kembalikan ke nilai awal' })
     ).toBeNull();
 
-    expect(screen.getByText('Batas aman (kPa)')).toBeTruthy();
-    expect(screen.getByText('Batas bahaya (kPa)')).toBeTruthy();
-    expect(screen.getByText('Durasi waspada (detik)')).toBeTruthy();
+    expect(screen.getByText('Batas waspada (kPa)')).toBeTruthy();
   });
 
   it('reports the values the engine actually runs on', () => {
@@ -45,8 +43,6 @@ describe('SettingsPage thresholds', () => {
     const valueOf = (label: string) =>
       screen.getByText(label).closest('div')?.querySelector('dd')?.textContent;
 
-    expect(valueOf('Batas aman (kPa)')).toBe('35');
-    expect(valueOf('Batas bahaya (kPa)')).toBe('200');
-    expect(valueOf('Durasi waspada (detik)')).toBe('20');
+    expect(valueOf('Batas waspada (kPa)')).toBe('45');
   });
 });

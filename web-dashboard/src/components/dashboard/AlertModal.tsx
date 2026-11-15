@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
-import { AlertTriangle, AlertOctagon, Volume2, VolumeX } from "lucide-react";
+import { AlertTriangle, Volume2, VolumeX } from "lucide-react";
 import { GlassButton } from "../ui/GlassButton";
-import type { RiskLevel } from "../../types/insole";
 
 /**
  * AlertModal — the early warning dialog.
@@ -23,7 +22,6 @@ import type { RiskLevel } from "../../types/insole";
  */
 interface AlertModalProps {
   open?: boolean;
-  level?: RiskLevel;
   title?: ReactNode;
   body?: ReactNode;
   advice?: ReactNode;
@@ -37,7 +35,6 @@ interface AlertModalProps {
 
 const AlertModal = ({
   open = false,
-  level = "warning",
   title,
   body,
   advice,
@@ -100,9 +97,6 @@ const AlertModal = ({
 
   if (!open) return null;
 
-  const isDanger = level === "danger";
-  const Icon = isDanger ? AlertOctagon : AlertTriangle;
-
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-scrim/80 p-4 sm:items-center">
       <div
@@ -111,22 +105,16 @@ const AlertModal = ({
         aria-modal="true"
         aria-labelledby="alert-modal-title"
         aria-describedby="alert-modal-body"
-        className={`w-full max-w-md rounded-card border-2 bg-surface shadow-overlay ${
-          isDanger ? "border-danger" : "border-warning"
-        }`}
+        className="w-full max-w-md rounded-card border-2 border-warning bg-surface shadow-overlay"
       >
         <div className="flex items-start gap-3 p-5">
           {/* Risk is carried by the icon shape and the title text, so no
               separate colour-only badge is needed. */}
           <span
-            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${
-              isDanger
-                ? "bg-danger/15 text-danger-ink"
-                : "bg-warning/15 text-warning-ink"
-            }`}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-warning/15 text-warning-ink"
             aria-hidden="true"
           >
-            <Icon className="h-6 w-6" />
+            <AlertTriangle className="h-6 w-6" />
           </span>
 
           <div className="min-w-0 flex-1">
@@ -163,7 +151,7 @@ const AlertModal = ({
 
           <GlassButton
             ref={dismissRef}
-            variant={isDanger ? "danger" : "filled"}
+            variant="filled"
             onClick={onDismiss}
           >
             {dismissLabel}

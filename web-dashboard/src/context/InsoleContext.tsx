@@ -170,28 +170,30 @@ export const peakOf = (readings: RegionReadings): number =>
   Math.max(readings.forefoot, readings.midfoot, readings.heel);
 
 /**
- * Sustained durations are counted in consecutive samples, walking backwards
+ * Sustained duration is counted in consecutive samples, walking backwards
  * from the newest sample. One buffered sample is one real second because the
  * firmware pushes at the same cadence it samples (FIREBASE_PUSH_MS =
- * SAMPLE_INTERVAL_MS = 1000 ms). A sample below the threshold resets the
- * corresponding duration to zero, and so does a packet gap longer than
- * MAX_PACKET_GAP_MS: offline minutes are not sustained pressure.
+ * SAMPLE_INTERVAL_MS = 1000 ms). A sample below the threshold resets it to
+ * zero, and so does a packet gap longer than MAX_PACKET_GAP_MS: offline
+ * minutes are not sustained pressure.
+ *
+ * Durasi tidak menaikkan level; ia dilaporkan sebagai lama tekanan sudah
+ * tinggi, dan menjadi fitur `sustained` saat inferensi.
  *
  * @param {Array<{ readings: object, timestamp?: number|null }>} previousHistory
  * @param {number} currentMax peak pressure of the incoming sample
  * @param {object} [thresholds]
  * @param {number|null} [currentTimestamp] wall-clock ms of the incoming sample
- * @returns {{ warningDuration: number, dangerDuration: number }}
+ * @returns {{ warningDuration: number }}
  */
 export const measureSustainedDurations = (
   previousHistory: Array<Pick<HistoryRecord, 'readings' | 'timestamp'>>,
   currentMax: number,
   thresholds: RiskThresholds = RISK_THRESHOLDS,
   currentTimestamp: number | null = null
-): { warningDuration: number; dangerDuration: number } => {
-  const { warningKpa, dangerKpa } = thresholds;
+): { warningDuration: number } => {
+  const { warningKpa } = thresholds;
   let warningDuration = 0;
-  let dangerDuration = 0;
 
   // The firmware pushes once per second, so two packets further apart than
   // this did not form a run — a WiFi drop, a reboot, or a page reload sat in
@@ -220,23 +222,7 @@ export const measureSustainedDurations = (
     }
   }
 
-  if (currentMax > dangerKpa) {
-    dangerDuration = 1;
-    const newest = previousHistory[previousHistory.length - 1];
-    if (!breaksRun(currentTimestamp, newest?.timestamp)) {
-      for (let i = previousHistory.length - 1; i >= 0; i -= 1) {
-        const newerTimestamp =
-          i === previousHistory.length - 1
-            ? currentTimestamp
-            : previousHistory[i + 1].timestamp;
-        if (breaksRun(newerTimestamp, previousHistory[i].timestamp)) break;
-        if (peakOf(previousHistory[i].readings) <= dangerKpa) break;
-        dangerDuration += 1;
-      }
-    }
-  }
-
-  return { warningDuration, dangerDuration };
+  return { warningDuration };
 };
 
 const readStoredLanguage = () => {
@@ -338,6 +324,31 @@ export const InsoleProvider = ({
     }
   }, [language]);
 
+  /* ---------------------------- device switch ------------------------------ */
+
+  /**
+   * Switching feet must not leave the previous foot's numbers on screen while
+   * the new subscription opens (up to FIREBASE_GRACE_MS). Keyed on `deviceId`
+   * alone: `reconnect` keeps the last reading on purpose, so a retry does not
+   * blank a live dashboard.
+   */
+  useEffect(() => {
+    setSample(INITIAL_SAMPLE);
+    lastProcessedRef.current = INITIAL_SAMPLE;
+    setSustainedDuration(0);
+    setRisk('safe');
+    setRiskScore(0);
+    setSeverity(0);
+    setBatteryPercent(null);
+    historyRef.current = [];
+    setHistory([]);
+    setIncidentLogs([]);
+    setStoredHistory([]);
+    previousRiskRef.current = 'safe';
+    setSourceReason(null);
+    setConnectionState(autoConnect ? 'connecting' : 'idle');
+  }, [deviceId, autoConnect]);
+
   /* -------------------------------- firebase ------------------------------- */
 
   useEffect(() => {
@@ -431,46 +442,34 @@ export const InsoleProvider = ({
 
     const readings = sample.readings;
     const currentMax = peakOf(readings);
-    const { warningDuration, dangerDuration } = measureSustainedDurations(
+    const { warningDuration } = measureSustainedDurations(
       historyRef.current,
       currentMax,
       thresholds,
       sample.timestamp ?? null
     );
 
-    // Which run length matters depends on how high the pressure actually is.
-    //
-    // Feeding the "above the safe limit" run into a high-pressure sample would
-    // let one 75 kPa spike after 29 seconds at 40 kPa report danger, because the
-    // safe-limit run is already 30. That is not what the rule means: danger is
-    // sustained HIGH pressure. So the danger run (consecutive samples above the
-    // danger limit) is used once the peak itself is in the danger band, and the
-    // safe-limit run is used below it. A brief high spike therefore reads as a
-    // warning, which is the correct and cautious answer.
-    const sustainedForInference =
-      currentMax > thresholds.dangerKpa ? dangerDuration : warningDuration;
-
     const inference = inferRisk({
       peakPressure: currentMax,
-      sustainedDuration: sustainedForInference,
+      sustainedDuration: warningDuration,
       thresholds,
     });
 
-    // Device verdict wins when present — as a PAIR. A packet may carry a level
-    // without a score (or the reverse); the missing half is derived from the
-    // present one, so the status chip and the score can never contradict each
-    // other on screen (a "Waspada" chip beside a 0 score was possible when the
-    // two fallbacks ran independently).
+    // Device verdict wins when present — as a PAIR, always inside one band. A
+    // packet may carry a level without a score (or the reverse); the missing
+    // half is derived from the present one. The score is then clamped into its
+    // level's band, because a legacy device can still send 90 (the old danger
+    // band) and the chip may only show two levels now: a "Waspada" chip beside
+    // a 90 would claim more urgency than the product has.
     const level =
       sample.deviceRiskLevel ??
       (sample.deviceRiskScore != null
         ? levelFromScore(sample.deviceRiskScore)
         : inference.level);
-    const score =
-      sample.deviceRiskScore ??
-      (sample.deviceRiskLevel
-        ? alignScoreToLevel(inference.score, sample.deviceRiskLevel)
-        : inference.score);
+    const score = alignScoreToLevel(
+      sample.deviceRiskScore ?? inference.score,
+      level
+    );
 
     setSustainedDuration(warningDuration);
     setRisk(level);
@@ -514,7 +513,7 @@ export const InsoleProvider = ({
         stopAlertBeep();
         return;
       }
-      playAlertBeep(risk === 'danger' ? 'DANGER' : 'WARNING', isMuted);
+      playAlertBeep(isMuted);
     } catch {
       /* audio is a nicety; never let it break the dashboard */
     }

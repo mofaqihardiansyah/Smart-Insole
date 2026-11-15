@@ -39,7 +39,7 @@ import { t } from "../utils/i18n";
  * as stacked labelled rows, because a table cannot reflow.
  */
 
-const RISK_LEVELS = ["safe", "warning", "danger"];
+const RISK_LEVELS = ["safe", "warning"];
 
 /**
  * How many register rows are rendered before the "load more" control appears.
@@ -53,13 +53,18 @@ const PAGE_SIZE = 20;
 /** Rows added by one press of "load more". */
 const PAGE_STEP = 20;
 
-/** Which incidents the register shows. `all` is the unfiltered register. */
-type LevelFilter = "all" | "danger" | "warning";
+/**
+ * Which incidents the register shows. `all` is the unfiltered register.
+ *
+ * There is one severity now, so a "bahaya" filter would always be empty. The
+ * filter is kept for the `all` / `warning` distinction, which still matters
+ * when a register mixes rows the device pushed and rows inferred client-side.
+ */
+type LevelFilter = "all" | "warning";
 
 /** Filter buttons, in render order. Labels reuse the risk keys. */
 const LEVEL_FILTERS: ReadonlyArray<{ value: LevelFilter; labelKey: string }> = [
   { value: "all", labelKey: "history.filter.all" },
-  { value: "danger", labelKey: "risk.danger" },
   { value: "warning", labelKey: "risk.warning" },
 ];
 
@@ -87,9 +92,9 @@ interface SummaryCellProps {
 /** One count in the summary strip, as a Cadra stat card.
  *
  * The strip keeps its `dl` semantics; only the paint changes. The total is
- * informational and earns the blue tint, but the two risk counts stay on the
- * plain white fill: pastel-cream for a danger count would read as decoration
- * over a vital sign, and colour stays a verdict on this product.
+ * informational and earns the blue tint, but the risk count stays on the plain
+ * white fill: pastel-cream for a warning count would read as decoration over a
+ * vital sign, and colour stays a verdict on this product.
  */
 const SummaryCell = ({ label, value, chip, tint = false }: SummaryCellProps) => (
   <div
@@ -169,7 +174,6 @@ const HistoryPage = () => {
   );
 
   // Summary counts always describe the whole register, never the filter.
-  const dangerCount = rows.filter((row) => row.level === "danger").length;
   const warningCount = rows.filter((row) => row.level === "warning").length;
 
   const filteredRows = useMemo(
@@ -369,7 +373,7 @@ const HistoryPage = () => {
               icon={<ClipboardList className="h-4 w-4" />}
             />
 
-            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <SummaryCell
                 tint
                 label={t(
@@ -379,17 +383,6 @@ const HistoryPage = () => {
                   language
                 )}
                 value={rows.length}
-              />
-              <SummaryCell
-                label={t("history.dangerCount", language)}
-                value={dangerCount}
-                chip={
-                  <StatusChip
-                    level="danger"
-                    label={t("risk.danger", language)}
-                    size="sm"
-                  />
-                }
               />
               <SummaryCell
                 label={t("history.warningCount", language)}

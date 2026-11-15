@@ -42,7 +42,7 @@ Catatan migrasi: akun tanpa pemasangan perangkat tetap memakai jalur legacy
 | `heel_kpa` | number | Tekanan heel (kPa) |
 | `sustained_duration_sec` | number | Durasi tumpuan (detik) |
 | `risk_score` | number | Skor 0-100 |
-| `risk_status` | string | `safe` / `warning` / `danger` |
+| `risk_status` | string | `safe` / `warning` (`danger` lama dipetakan ke `warning`) |
 | `battery_percent` | number? | Baterai (opsional) |
 
 Setiap field bertipe `unknown` di web dengan sengaja: perangkat adalah batas
@@ -87,7 +87,7 @@ yang tetap bisa masuk.
 
 `web-dashboard/src/types/insole.ts` mendefinisikan:
 
-- `RiskLevel = 'safe' | 'warning' | 'danger'`
+- `RiskLevel = 'safe' | 'warning'`
 - `WireReadingPacket` (semua field `unknown`)
 - `SensorReadings`, `MappedReading`, `HistoryEntry`
 - `RiskThresholds`

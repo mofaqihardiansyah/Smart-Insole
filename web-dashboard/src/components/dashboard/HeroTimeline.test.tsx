@@ -30,7 +30,6 @@ const SOURCE = fs.readFileSync(
 const RISK_DOT: Record<string, string> = {
   safe: "bg-safe",
   warning: "bg-warning",
-  danger: "bg-danger",
 };
 
 const T0 = 1_700_000_000_000;
@@ -52,7 +51,7 @@ describe("HeroTimeline", () => {
     const records = [
       record(0, "safe"),
       record(1, "warning"),
-      record(2, "danger"),
+      record(2, "warning"),
       record(3, "safe"),
     ];
     const { container } = render(<HeroTimeline records={records} language="id" />);
@@ -64,7 +63,7 @@ describe("HeroTimeline", () => {
   });
 
   it("lays the dots out along elapsed time, oldest at the left", () => {
-    const records = [record(0, "safe"), record(60, "warning"), record(180, "danger")];
+    const records = [record(0, "safe"), record(60, "warning"), record(180, "warning")];
     const { container } = render(<HeroTimeline records={records} language="id" />);
 
     const leftPct = (dot: HTMLElement) => Number(dot.style.left.replace("%", ""));
@@ -76,7 +75,7 @@ describe("HeroTimeline", () => {
 
   it("marks the fresh end of the window with a time marker, in words", () => {
     const { container } = render(
-      <HeroTimeline records={[record(0, "safe"), record(1, "danger")]} language="id" />
+      <HeroTimeline records={[record(0, "safe"), record(1, "warning")]} language="id" />
     );
     const marker = container.querySelector('[data-timeline="now"]') as HTMLElement;
     expect(marker).not.toBeNull();
@@ -95,7 +94,7 @@ describe("HeroTimeline", () => {
   });
 
   it("summarises itself for the accessibility tree from real counts", () => {
-    const records = [record(0, "safe"), record(1, "danger"), record(2, "danger")];
+    const records = [record(0, "safe"), record(1, "warning"), record(2, "warning")];
     const { container } = render(<HeroTimeline records={records} language="id" />);
 
     const strip = screen.getByRole("img");

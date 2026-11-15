@@ -15,7 +15,11 @@
  *    firmware pushed without a verdict.
  */
 
-import { RISK_THRESHOLDS, inferRisk } from './randomForestRisk';
+import {
+  RISK_THRESHOLDS,
+  inferRisk,
+  normaliseRiskLevel,
+} from './randomForestRisk';
 import type { HistoryEntry, RiskLevel, RiskThresholds } from '../types/insole';
 import type { IncidentLog } from '../context/InsoleContext';
 
@@ -28,17 +32,24 @@ export interface StoredIncident extends IncidentLog {
   peakPressure: number;
 }
 
-/** The level a stored row carries, from the device or from client inference. */
+/**
+ * The level a stored row carries, from the device or from client inference.
+ *
+ * A row written by the three-level firmware (or by any build before this one)
+ * can still say 'danger'. The type no longer has that value, so it is folded
+ * to 'warning' here rather than trusted.
+ */
 const levelOfRow = (
   row: HistoryEntry,
   thresholds: RiskThresholds
 ): RiskLevel =>
-  row.riskLevel ??
-  inferRisk({
-    peakPressure: row.peakPressure,
-    sustainedDuration: row.readings.sustainedDuration,
-    thresholds,
-  }).level;
+  row.riskLevel
+    ? normaliseRiskLevel(row.riskLevel)
+    : inferRisk({
+        peakPressure: row.peakPressure,
+        sustainedDuration: row.readings.sustainedDuration,
+        thresholds,
+      }).level;
 
 /**
  * Rebuild the incident register from stored rows, oldest first.

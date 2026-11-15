@@ -7,8 +7,8 @@ import type { InsoleContextValue } from '../context/InsoleContext';
 
 /**
  * readingsOverride lets the heatmap be driven deterministically without a
- * provider: 15 kPa (safe green), 45 kPa (warning amber), 210 kPa (danger red and
- * pulsing) cover all three pressure zones defined by the risk tokens.
+ * provider: 15 kPa (safe green) and 45/210 kPa (warning amber, the top level,
+ * pulsing) cover both pressure zones the risk tokens define.
  */
 const OVERRIDE = { forefoot: 15, midfoot: 45, heel: 210 };
 
@@ -84,7 +84,7 @@ describe('PlantarHeatmap', () => {
     const midfootStops = gradientStops(container, 'midfoot');
     const heelStops = gradientStops(container, 'heel');
 
-    // 15 kPa (< 35) -> safe, transparent at the edge
+    // 15 kPa (< 45) -> safe, transparent at the edge
     expect(forefootStops).toHaveLength(3);
     expect(forefootStops.every((c) => c === 'rgb(var(--safe))')).toBe(true);
     expect(
@@ -93,29 +93,29 @@ describe('PlantarHeatmap', () => {
       ) as Element).getAttribute('stop-opacity')
     ).toBe('0');
 
-    // 45 kPa (35-200) -> warning
+    // 45 kPa (at the limit) -> warning
     expect(midfootStops.every((c) => c === 'rgb(var(--warning))')).toBe(true);
 
-    // 210 kPa (>= 200) -> danger
-    expect(heelStops.every((c) => c === 'rgb(var(--danger))')).toBe(true);
+    // 210 kPa -> still warning: there is no danger zone any more
+    expect(heelStops.every((c) => c === 'rgb(var(--warning))')).toBe(true);
   });
 
-  it('uses the engine boundaries: at exactly the limit is already that zone', () => {
+  it('uses the engine boundary: at exactly the limit is already warning', () => {
     // The map and the risk chip must agree at the boundary. The engine calls
-    // 35 kPa a warning and 200 kPa danger (>= on both), so the map paints the
-    // same — no more strict `>` amber just below the limit.
+    // 45 kPa a warning (>=), so the map paints the same — no strict `>` amber
+    // just below the limit.
     const { container } = render(
-      <PlantarHeatmap readingsOverride={{ forefoot: 35, midfoot: 200, heel: 199.9 }} />
+      <PlantarHeatmap readingsOverride={{ forefoot: 44.9, midfoot: 45, heel: 44.9 }} />
     );
 
     expect(
-      gradientStops(container, 'forefoot').every((c) => c === 'rgb(var(--warning))')
+      gradientStops(container, 'forefoot').every((c) => c === 'rgb(var(--safe))')
     ).toBe(true);
     expect(
-      gradientStops(container, 'midfoot').every((c) => c === 'rgb(var(--danger))')
+      gradientStops(container, 'midfoot').every((c) => c === 'rgb(var(--warning))')
     ).toBe(true);
     expect(
-      gradientStops(container, 'heel').every((c) => c === 'rgb(var(--warning))')
+      gradientStops(container, 'heel').every((c) => c === 'rgb(var(--safe))')
     ).toBe(true);
     expect(nodeCircle('node-midfoot').getAttribute('class')).toContain(
       'plantar-node-pulse'
@@ -150,14 +150,14 @@ describe('PlantarHeatmap', () => {
     );
   });
 
-  it('pulses the node at or above the 200 kPa danger threshold', () => {
+  it('pulses every node at or above the warning limit', () => {
     renderOverride();
 
     const pulseClass = (nodeId: string) =>
       nodeCircle(nodeId).getAttribute('class') || '';
 
     expect(pulseClass('node-heel')).toContain('plantar-node-pulse');
-    expect(pulseClass('node-midfoot')).not.toContain('plantar-node-pulse');
+    expect(pulseClass('node-midfoot')).toContain('plantar-node-pulse');
     expect(pulseClass('node-forefoot')).not.toContain('plantar-node-pulse');
   });
 

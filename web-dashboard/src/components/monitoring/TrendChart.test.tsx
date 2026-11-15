@@ -33,7 +33,7 @@ const SOURCE = fs.readFileSync(path.join(here, "TrendChart.tsx"), "utf8");
 
 const LABELS = {
   chartTitle: "Tren puncak tekanan",
-  threshold: "Ambang bahaya",
+  threshold: "Ambang waspada",
   axisTime: "Waktu",
   axisPressure: "Tekanan",
   samples: "sampel",
@@ -51,7 +51,7 @@ const bufferOf = (count: number): HistoryRecord[] =>
   })) as unknown as HistoryRecord[];
 
 const renderChart = (history: HistoryRecord[]) =>
-  render(<TrendChart history={history} labels={LABELS} dangerKpa={70} />);
+  render(<TrendChart history={history} labels={LABELS} thresholdKpa={45} />);
 
 const tracesOf = (container: HTMLElement): SVGElement[] =>
   Array.from(container.querySelectorAll("polyline"));
@@ -147,7 +147,7 @@ describe("TrendChart", () => {
     expect(SOURCE).toContain("NON_IDENTITY_TRACE");
   });
 
-  it("draws the danger threshold and labels it with its value", () => {
+  it("draws the warning threshold and labels it with its value", () => {
     const { container } = renderChart(bufferOf(6));
 
     const dashed = Array.from(container.querySelectorAll("line")).filter(
@@ -159,7 +159,7 @@ describe("TrendChart", () => {
       node.textContent
     );
     // Drawn AND labelled: a dashed line with no label is decoration.
-    expect(texts).toContain(`Ambang bahaya 70 kPa`);
+    expect(texts).toContain(`Ambang waspada 45 kPa`);
   });
 
   it("scales with its container and carries a real accessible name", () => {
@@ -181,7 +181,7 @@ describe("TrendChart", () => {
     );
     // The graphic states the threshold and the peak as well, so the name is
     // information rather than the word "chart".
-    expect(accessibleName).toContain("70 kPa");
+    expect(accessibleName).toContain("45 kPa");
     expect(accessibleName).toContain(
       `${LABELS.axisPressure}: ${history[history.length - 1].peakPressure.toFixed(1)} kPa`
     );

@@ -104,8 +104,8 @@ const MonitoringPage = () => {
           title={t("monitoring.chartTitle", language)}
           icon={<Activity className="h-4 w-4" />}
           action={
-            <Chip tone="danger">
-              {`${t("monitoring.threshold", language)}: ${thresholds.dangerKpa} ${t(
+            <Chip tone="warning">
+              {`${t("monitoring.threshold", language)}: ${thresholds.warningKpa} ${t(
                 "metrics.unit.kpa",
                 language
               )}`}
@@ -143,7 +143,7 @@ const MonitoringPage = () => {
           ) : (
             <TelemetryChart
               history={visible}
-              dangerKpa={thresholds.dangerKpa}
+              thresholdKpa={thresholds.warningKpa}
               labels={{
                 chartTitle: t("monitoring.chartTitle", language),
                 threshold: t("monitoring.threshold", language),

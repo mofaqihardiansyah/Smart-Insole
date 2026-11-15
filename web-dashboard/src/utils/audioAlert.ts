@@ -1,6 +1,3 @@
-/** The two alert tones the app can request. */
-export type AlertLevel = 'WARNING' | 'DANGER';
-
 let audioCtx: AudioContext | null = null;
 let activeOscillator: OscillatorNode | null = null;
 
@@ -27,7 +24,7 @@ function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
-export function playAlertBeep(level: AlertLevel = 'WARNING', isMuted = false): void {
+export function playAlertBeep(isMuted = false): void {
   if (isMuted) {
     return;
   }
@@ -41,7 +38,9 @@ export function playAlertBeep(level: AlertLevel = 'WARNING', isMuted = false): v
   const gainNode = ctx.createGain();
 
   oscillator.type = 'sine';
-  oscillator.frequency.value = level === 'DANGER' ? 880 : 440;
+  // One tone: the product has one alert level, so a higher "danger" pitch
+  // would announce a state that no longer exists.
+  oscillator.frequency.value = 440;
 
   // Simple envelope to avoid clicking
   const now = ctx.currentTime;

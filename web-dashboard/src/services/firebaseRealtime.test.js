@@ -30,7 +30,7 @@ describe('mapReadingPacket', () => {
       sustainedDuration: 35,
     });
     expect(mapped.peakPressure).toBe(84.1);
-    expect(mapped.riskLevel).toBe('danger');
+    expect(mapped.riskLevel).toBe('warning');
     expect(mapped.riskScore).toBe(82);
     expect(mapped.batteryPercent).toBe(94);
     expect(mapped.deviceId).toBe('insole-01');
@@ -71,7 +71,8 @@ describe('mapReadingPacket', () => {
   });
 
   it('normalises the risk level and rejects unknown values', () => {
-    expect(mapReadingPacket({ risk_status: 'DANGER' }).riskLevel).toBe('danger');
+    // Legacy packets still say DANGER; the two-level contract folds it up.
+    expect(mapReadingPacket({ risk_status: 'DANGER' }).riskLevel).toBe('warning');
     expect(mapReadingPacket({ risk_status: ' warning ' }).riskLevel).toBe(
       'warning'
     );

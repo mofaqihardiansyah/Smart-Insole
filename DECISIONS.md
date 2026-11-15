@@ -109,7 +109,7 @@ content out in columns rather than let a single field or line span the card.
 ## ADR-008: Danger starts at 200 kPa, not 70
 
 - **Date:** 2026-11-05
-- **Status:** Accepted
+- **Status:** Superseded by ADR-021 (the danger level is removed)
 
 **Context.** The danger rule shipped at 70 kPa with a 0.1 s window. A review of
 the project's own library (Castro-Martins et al., Heliyon 2024, e26161) found
@@ -422,7 +422,7 @@ guide's 3D appendix so the model and the prose do not disagree.
 ## ADR-019: The danger threshold stays 200 kPa in production; the evidence pack reports 70 kPa as a proposal
 
 - **Date:** 2026-11-12
-- **Status:** Accepted
+- **Status:** Superseded by ADR-021
 
 **Context.** ADR-008 set the danger rule to `peak >= 200 kPa` from the
 literature. The evidence pack then measured the consequence: no sample in the
@@ -464,3 +464,81 @@ script never writes to `models/` or `firmware/`.
 script and re-run (about 4-5 minutes, dominated by the 300-tree session
 cross-validation). Any data or model change must regenerate the pack, which is
 the point. A chart change is a `charts.js` edit, not a new library.
+
+## ADR-021: Two classes at 45 kPa, and the level is a contract rather than a forest vote
+
+- **Date:** 2026-11-13
+- **Status:** Accepted
+- **Supersedes:** ADR-008 (200 kPa danger), ADR-019 (danger stays 200 kPa)
+
+**Context.** The supervisor set the scope: two classes only, the public dataset
+(DFN-DS) is training data only, and the test data must be a new diabetic subject
+recorded for this thesis. ADR-019 had already shown the danger class could
+neither be trained (0 of 81.000 samples reach 200 kPa; peak 87,06 kPa) nor be
+measured (FSR 402 saturates near 79 kPa, so 200 kPa needs ~25,4 N against a
+0,1-10 N rating). Clinically the third level also adds nothing: past the warning
+limit a neuropathic patient has already lost protective sensation, so there is
+no more urgent action than "shift the load now".
+
+**Decision.**
+
+- Levels are `safe` and `warning` only, in the model artifact, the web, and the
+  firmware. Legacy stored `danger` values are read as `warning`.
+- The label rule everywhere is `warning <=> peak >= 45 kPa`, taken from the
+  DFN-DS p95 (45,4 kPa ≈ 5,7 N on FSR 402); it flags 93 of 135 patients and
+  5,4% of samples (4.347 / 81.000, ratio 17,6:1). The 35 kPa calibration anchor
+  stays a separate constant; the label threshold is not the calibration anchor.
+- Duration is not part of the label. The longest run above 45 kPa in DFN-DS is
+  13 samples (1,3 s), so any sustained-duration branch would never fire.
+- All 135 patients are training data with 5-fold grouped CV (manual
+  StratifiedGroupKFold). SMOTE (k=5, seed 42) runs inside the training folds
+  only; the reported metrics are cross-validated, never resubstituted.
+- Because the label *is* the rule, trees split on `sustained > 0` (a proxy for
+  "above the threshold"), so the level is applied two-sided from the contract in
+  both `randomForestRisk.ts` and `RandomForest.cpp`; forest votes only set the
+  score inside the band. Reachable device inputs are identical either way, but
+  Risk Explorer can be typed with 40 kPa / 12 s, which on-device cannot occur.
+- The exported model is the RF + SMOTE scheme. All three schemes (rule, RF
+  class-weight, RF + SMOTE) score identically, because the rule is the label; the
+  comparison is reported rather than used to claim superiority.
+
+**Consequences.** Reported 100% macro-F1 means "agrees with the rule", not
+clinical accuracy, and the thesis says so. The gain-error sweep is the honest
+performance signal: macro-F1 falls to 78,4% at ×0,9, 82,4% at ×1,1, 69,7% at
+×1,2 and 60,9% at ×1,3, so FSR calibration is a precondition for the 45 kPa
+contract to mean anything. The external check is a single self-recorded diabetic
+subject (a case study, not a generalisation estimate). Evidence data in
+`docs/evidence/` must be regenerated from the new protocol before it is cited.
+
+## ADR-022: One active insole at a time, chosen in the shell
+
+- **Date:** 2026-11-15
+- **Status:** Accepted
+
+**Context.** A patient wears two boards, `insole-01` (left) and `insole-02`
+(right), and both are paired to the same account because the rules allow it and
+the admin console writes one entry per device. The dashboard's shell was built
+around one device: `usePairedDevice` returned `ids[0]`, and every page reads a
+single `deviceId` from `InsoleContext`. Showing both feet at once would change
+the layout of the dashboard, monitoring, history, and the incident register at
+the same time, and the clinical contract is per reading, not per pair.
+
+**Decision.**
+
+- The patient shell reads **one device at a time**. The header offers a device
+  switcher only when two or more devices are paired; with one device the UI is
+  unchanged.
+- The choice is persisted per account (`pairedDeviceId:<uid>`) and dropped when
+  that device is no longer paired, so a stale id can never point the dashboard
+  at a path the rules deny.
+- Switching clears the live sample, the in-memory history, and the incident
+  register before the new subscription opens. A retry (`reconnect`) does not
+  clear anything: it reopens the same device.
+- The wire contract, the RTDB paths, and the rules are untouched; only the id
+  segment differs between the two boards.
+
+**Consequences.** The web has no side-by-side comparison and no combined risk
+level; that is a separate feature with its own PRD. `insole-01`/`insole-02` are
+rendered as "Kaki kiri"/"Kaki kanan", so the naming convention becomes a UI
+contract: renaming a device id changes the label to the raw id. Any future page
+that needs both feet must fan out per device rather than extend this switcher.

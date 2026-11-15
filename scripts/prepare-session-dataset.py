@@ -40,13 +40,13 @@ FEATURES = [
     "ff_mean", "mf_mean", "hf_mean",
     "ff_max", "mf_max", "hf_max",
     "ff_std", "mf_std", "hf_std",
-    "ff_hi35", "mf_hi35", "hf_hi35",
+    "ff_hi45", "mf_hi45", "hf_hi45",
     "peak_mean", "peak_std",
     "contact_frac",
     "ff_hf_ratio", "mf_peak_ratio",
 ]
 
-HIGH_KPA = 35.0   # ambang waspada yang dipakai sistem
+HIGH_KPA = 45.0   # ambang waspada yang dipakai sistem
 CONTACT_KPA = 5.0  # di atas ini kaki dianggap menyentuh alas
 
 
@@ -77,7 +77,7 @@ def session_features(samples):
         out[f"{prefix}_mean"] = statistics.fmean(values)
         out[f"{prefix}_max"] = max(values)
         out[f"{prefix}_std"] = statistics.pstdev(values)
-        out[f"{prefix}_hi35"] = sum(1 for v in values if v >= HIGH_KPA) / len(values)
+        out[f"{prefix}_hi45"] = sum(1 for v in values if v >= HIGH_KPA) / len(values)
 
     peaks = [s["peak"] for s in samples]
     out["peak_mean"] = statistics.fmean(peaks)
@@ -91,36 +91,32 @@ def session_features(samples):
 
 def main():
     data = json.loads(DATA_FILE.read_text())
-    print(f"Loading {DATA_FILE.name}: {len(data['train'])} train, {len(data['validation'])} validation patients")
+    print(f"Loading {DATA_FILE.name}: {len(data['patients'])} patients")
 
     sessions = []
     seen = set()
-    for split in ("train", "validation"):
-        for patient in data[split]:
-            key = (patient["group"], str(patient["patient"]))
-            if key in seen:
-                raise SystemExit(
-                    f"Duplicate patient id {key}: the 80/20 split is no longer per patient, "
-                    "which would leak a patient across folds."
-                )
-            seen.add(key)
-            sessions.append({
-                "id": f"{patient['group']}-{patient['patient']}",
-                "group": patient["group"],
-                "split": split,
-                "sampleCount": len(patient["samples"]),
-                "features": session_features(patient["samples"]),
-                # Kept only as a positive control in the trainer: if a model
-                # built from age/BMI/diabetes duration cannot separate the
-                # groups either, the pipeline is broken rather than the
-                # pressure being uninformative.
-                "meta": {
-                    "age": _num(patient["meta"].get("age")),
-                    "sex": 1.0 if str(patient["meta"].get("sex", "")).upper().startswith("M") else 0.0,
-                    "diabetesYears": _num(patient["meta"].get("duration_min")),
-                    "bmi": _num(patient["meta"].get("bmi")),
-                },
-            })
+    for patient in data["patients"]:
+        key = (patient["group"], str(patient["patient"]))
+        if key in seen:
+            raise SystemExit(f"Duplicate patient id {key} in the dataset.")
+        seen.add(key)
+        sessions.append({
+            "id": f"{patient['group']}-{patient['patient']}",
+            "group": patient["group"],
+            "split": "all",
+            "sampleCount": len(patient["samples"]),
+            "features": session_features(patient["samples"]),
+            # Kept only as a positive control in the trainer: if a model
+            # built from age/BMI/diabetes duration cannot separate the
+            # groups either, the pipeline is broken rather than the
+            # pressure being uninformative.
+            "meta": {
+                "age": _num(patient["meta"].get("age")),
+                "sex": 1.0 if str(patient["meta"].get("sex", "")).upper().startswith("M") else 0.0,
+                "diabetesYears": _num(patient["meta"].get("duration_min")),
+                "bmi": _num(patient["meta"].get("bmi")),
+            },
+        })
 
     sessions.sort(key=lambda s: (s["group"], int(s["id"].split("-")[1])))
 

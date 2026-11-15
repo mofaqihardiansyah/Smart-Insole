@@ -19,7 +19,7 @@ import {
   StateRetry,
 } from "../components/ui/GlassComponents";
 import { useInsole } from "../context/InsoleContext";
-import { DURATION_WINDOWS, inferRisk } from "../utils/randomForestRisk";
+import { inferRisk } from "../utils/randomForestRisk";
 import { t } from "../utils/i18n";
 import type { LucideIcon } from "lucide-react";
 
@@ -159,29 +159,13 @@ const SettingsPage = () => {
         />
 
         <div className="px-6 pb-6">
-          <dl className="grid grid-cols-1 gap-4 sm:auto-rows-fr sm:grid-cols-3">
+          <dl className="grid grid-cols-1 gap-4 sm:auto-rows-fr">
             <div className="flex flex-col">
               <dt className="text-label uppercase text-fg-2">
                 {t("settings.warningKpa", language)}
               </dt>
               <dd className="mt-auto pt-1 tabular-data text-stat text-fg">
                 {thresholds.warningKpa}
-              </dd>
-            </div>
-            <div className="flex flex-col">
-              <dt className="text-label uppercase text-fg-2">
-                {t("settings.dangerKpa", language)}
-              </dt>
-              <dd className="mt-auto pt-1 tabular-data text-stat text-fg">
-                {thresholds.dangerKpa}
-              </dd>
-            </div>
-            <div className="flex flex-col">
-              <dt className="text-label uppercase text-fg-2">
-                {t("settings.warningSeconds", language)}
-              </dt>
-              <dd className="mt-auto pt-1 tabular-data text-stat text-fg">
-                {DURATION_WINDOWS.sustainedWarningSeconds}
               </dd>
             </div>
           </dl>

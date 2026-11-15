@@ -29,8 +29,10 @@ describe('rf-model copy', () => {
       preparedBy: 'scripts/prepare-dataset.py',
       trainedBy: 'scripts/train-model.js',
     });
-    expect(model.provenance.trainPatients).toBeGreaterThan(0);
-    expect(model.provenance.validationPatients).toBeGreaterThan(0);
+    expect(model.provenance.patients).toBeGreaterThan(0);
+    expect(model.provenance.samples).toBeGreaterThan(0);
+    expect(model.rule.warningKpa).toBe(45);
+    expect(model.levels).toEqual(['safe', 'warning']);
     expect(model.trees.length).toBe(model.combo.nTrees);
   });
 });

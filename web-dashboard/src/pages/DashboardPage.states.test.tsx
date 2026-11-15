@@ -109,7 +109,6 @@ const feedRegion = () => regionFor(t("dashboard.activityTitle", LANGUAGE));
 const RISK_TONE: Record<RiskLevel, string> = {
   safe: "bg-safe/15 text-safe-ink",
   warning: "bg-warning/15 text-warning-ink",
-  danger: "bg-danger/15 text-danger-ink",
 };
 /** What a verdict that reached the component's unmapped-key fallback renders. */
 const NEUTRAL_TONE = "bg-surface-2 text-fg-2";
@@ -214,16 +213,16 @@ describe("the score tile's semantic tone", () => {
     assertTone("safe");
   });
 
-  it("paints a warning reading with the warning tone", () => {
+  it("paints a reading above the limit with the warning tone", () => {
     renderDashboard({ autoConnect: true });
-    push({ forefoot: 40, midfoot: 20, heel: 20 });
+    push({ forefoot: 50, midfoot: 20, heel: 20 });
     assertTone("warning");
   });
 
-  it("paints a danger reading with the danger tone", () => {
+  it("paints a high reading with the warning tone", () => {
     renderDashboard({ autoConnect: true });
     push({ forefoot: 210, midfoot: 20, heel: 20 });
-    assertTone("danger");
+    assertTone("warning");
   });
 });
 
@@ -231,7 +230,7 @@ describe("the score tile's semantic tone", () => {
  * The meter band's Cadra vocabulary (cadra-2): the four tiles are assigned
  * specific completions by the restyle plan, and the assignment is data on the
  * card, never its position: the peak tile earns the one inverted dark card,
- * duration and battery read as proportion meters, and the score tile carries
+ * battery reads as a proportion meter, and the score tile carries
  * the real trend sparkline.
  */
 describe("the meter band's Cadra vocabulary", () => {
@@ -260,7 +259,9 @@ describe("the meter band's Cadra vocabulary", () => {
     ).toContain("text-inverted-fg");
 
     expect(duration.className).toContain("bg-tint-cream");
-    expect(duration.querySelector("[data-meter-fill]")).not.toBeNull();
+    // Duration is informational now: it reports how long pressure has been high
+    // and no longer drives a meter against a 20 s limit that no longer exists.
+    expect(duration.querySelector("[data-meter-fill]")).toBeNull();
 
     expect(score.className).toContain("bg-tint-mint");
     expect(score.querySelector("svg polyline")).not.toBeNull();

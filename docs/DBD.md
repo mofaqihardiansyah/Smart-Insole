@@ -41,7 +41,7 @@ butuh perhatian.
 | `tertiary` | `#0987B8` | info biru (tint dan teks besar saja) |
 | `safe` | `#15803D` | risiko Aman |
 | `warning` | `#A16207` | risiko Waspada |
-| `danger` | `#B41E1E` | risiko Bahaya |
+| `danger` | `#B41E1E` | galat dan aksi destruktif (bukan level risiko) |
 
 Ink pasangan (untuk teks di atas tint 15%): `safe-ink` `#12552D`,
 `warning-ink` `#823700`, `danger-ink` `#821414`, `secondary-ink` `#054B37`.
@@ -89,7 +89,7 @@ Nomor stasiun (01-04) adalah penunjuk jalan, bukan salinan.
 
 ## 6. Motion
 
-`MOTION 1`: hover, focus, transisi nilai, pulse node bahaya pada heatmap, satu
+`MOTION 1`: hover, focus, transisi nilai, pulse node berisiko pada heatmap, satu
 scroll ke peta (hormati `prefers-reduced-motion`). Dilarang: scroll reveal,
 parallax, animasi masuk, `animate-*`.
 

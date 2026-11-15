@@ -1,7 +1,7 @@
 # READY.md
 
 Verified environment and repository state. Read this before exploring.
-Snapshot: **10 November 2026**. Update only when a fact changes.
+Snapshot: **15 November 2026**. Update only when a fact changes.
 
 ## Runtime
 
@@ -24,8 +24,9 @@ Snapshot: **10 November 2026**. Update only when a fact changes.
   Client Library `^4.4.14`.
 - **Cloud**: Firebase Realtime Database (project `sole-3b2e8`), Auth,
   Firestore, Storage.
-- **Model**: Random Forest (20 trees) for `safe` / `warning` plus a clinical
-  rule for `danger`; artifacts as JSON and as a C++ header.
+- **Model**: Random Forest (20 trees, depth 8) for `safe` / `warning`, with a
+  two-sided `peak >= 45 kPa` level contract; artifacts as JSON and as a C++
+  header.
 
 ## Where things live
 
@@ -53,8 +54,13 @@ Snapshot: **10 November 2026**. Update only when a fact changes.
   `AdminLayout` and `RequireAdmin`; `/admin` is no longer part of the patient
   navigation or the patient shell.
 - TypeScript migration of the web app is complete for source files. There are
-  50 test files: 32 `.test.tsx`, 2 `.test.ts`, and 16 `.test.js` (the plain-JS
+  52 test files: 34 `.test.tsx`, 2 `.test.ts`, and 16 `.test.js` (the plain-JS
   ones are kept on purpose, see `375267a6`).
+- An account can be paired with more than one insole, one per foot. The header
+  shows a device switcher only when two or more are paired; the choice is
+  stored per account (`pairedDeviceId:<uid>`) and switching clears the previous
+  foot's sample, history, and incident register before the new subscription
+  opens.
 - The landing's motion is CSS only, documented as a timing table in `DESIGN.md`
   (ADR-016): `landing/` owns its content and sections, `useLandingMotion.ts`
   owns the reveal observer, the drift loop and the nav state. `framer-motion`
@@ -69,9 +75,12 @@ Snapshot: **10 November 2026**. Update only when a fact changes.
   `firestore.rules`, `storage.rules`, wired through `firebase.json`.
 - `web-dashboard/public/` contains `icon.svg` and `manifest.webmanifest`.
 - UI ships Indonesian only (`LANG-01`); the i18n dictionary keeps ID + EN.
-- Model is Random Forest + clinical rule: the forest separates `safe` /
-  `warning`; `danger` is rule-based (`peak >= 200 kPa` on one sample). Warning
-  is `peak >= 35 kPa` sustained 20 s (200 samples at 10 Hz).
+- Model is a two-class Random Forest (`models/rf-model.json`, v2.0): `safe`
+  vs `warning` at `peak >= 45 kPa`, no danger level. The label rule, the
+  firmware header constant (`WARNING_PEAK_KPA`), and the web inference all read
+  the same number; duration is a model feature only, not a level condition.
+  Trained on all 135 DFN-DS patients with 5-fold grouped CV and SMOTE inside
+  the training folds. The external test is a new self-recorded diabetic subject.
 - Firmware is flashed and boots clean: WiFi joins, Firebase is configured,
   `RandomForest model loaded (20 trees)`, and live samples print with
   `warning`/`safe` transitions. Sensor calibration is still the template

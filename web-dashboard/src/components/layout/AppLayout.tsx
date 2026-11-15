@@ -8,6 +8,7 @@ import { AccountCard, renderIcon } from "./AppSidebar";
 import type { NavItem } from "./AppSidebar";
 import { AlertBell } from "./AlertBell";
 import { AppTopbar, BrandCard } from "./AppTopbar";
+import { DeviceSwitcher } from "./DeviceSwitcher";
 import { AppNavPill } from "./AppNavPill";
 import { AppSearch } from "./AppSearch";
 
@@ -49,6 +50,9 @@ interface AppLayoutProps {
   userName?: string;
   userEmail?: string;
   onSignOut: () => void;
+  deviceIds?: string[];
+  deviceId?: string | null;
+  onSelectDevice?: (id: string) => void;
   children?: ReactNode;
 }
 
@@ -58,6 +62,9 @@ const AppLayout = ({
   userName,
   userEmail,
   onSignOut,
+  deviceIds = [],
+  deviceId = null,
+  onSelectDevice = () => {},
   children,
 }: AppLayoutProps) => {
   const { language } = useInsole();
@@ -151,6 +158,15 @@ const AppLayout = ({
           </div>
 
           <div className="flex items-center gap-1">
+            {/* Which foot is on screen, when both are paired. The select is
+                the only state control a phone gets besides the bell, because
+                the drawer is for places, not for readings. */}
+            <DeviceSwitcher
+              deviceIds={deviceIds}
+              deviceId={deviceId}
+              onSelectDevice={onSelectDevice}
+              className="w-28 shrink-0 sm:w-32"
+            />
             {/* The alert queue lives on the bell, not in the rail, so a phone
                 needs the same reach as a desktop. */}
             <AlertBell hasUnread={hasUnread} />
@@ -179,6 +195,9 @@ const AppLayout = ({
             userName={userName}
             userEmail={userEmail}
             onSignOut={onSignOut}
+            deviceIds={deviceIds}
+            deviceId={deviceId}
+            onSelectDevice={onSelectDevice}
           />
         </div>
       </header>

@@ -108,16 +108,12 @@ const ProfilePage = () => {
       ? creationDate.toLocaleDateString(language === "id" ? "id-ID" : "en-GB")
       : t("common.notAvailable", language);
 
-  const dangerCount = incidentLogs.filter(
-    (log: CountedIncident) => (log.type ?? log.risk) === "danger"
-  ).length;
   const warningCount = incidentLogs.filter(
     (log: CountedIncident) => (log.type ?? log.risk) === "warning"
   ).length;
 
   const stats: StatItem[] = [
     { key: "history.totalIncidents", value: incidentLogs.length, level: null },
-    { key: "history.dangerCount", value: dangerCount, level: "danger" },
     { key: "history.warningCount", value: warningCount, level: "warning" },
   ];
 
@@ -256,7 +252,7 @@ const ProfilePage = () => {
                   nextAction={t("profile.emptyNext", language)}
                 />
               ) : (
-                <dl className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                <dl className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   {stats.map((stat) => (
                     <div key={stat.key}>
                       <dt className="text-body-sm text-muted">

@@ -18,7 +18,7 @@ import type { RiskLevel } from "../../types/insole";
  * kept exactly as it was: the warning is an addition, not a replacement.
  */
 
-const LEVELS: RiskLevel[] = ["safe", "warning", "danger"];
+const LEVELS: RiskLevel[] = ["safe", "warning"];
 
 const renderChip = (props: Partial<React.ComponentProps<typeof StatusChip>> = {}) => {
   const utils = render(<StatusChip label="Level" {...props} />);
@@ -147,8 +147,8 @@ describe("StatusChip", () => {
     expect(line).toContain("StatusChip");
     expect(line).toContain("huge");
 
-    // The three levels are untouched by the size branch: it still renders the
-    // level's own pair.
+    // The declared levels are untouched by the size branch: it still renders
+    // the level's own pair.
     for (const token of toneTokens("warning")) {
       expect(chip.className, token).toContain(token);
     }

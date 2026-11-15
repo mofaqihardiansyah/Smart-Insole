@@ -91,7 +91,7 @@ function App() {
  */
 function AppShell() {
   const { user, loading, displayName, role, active, logout } = useAuth();
-  const deviceId = usePairedDevice(user?.uid);
+  const { deviceIds, deviceId, selectDevice } = usePairedDevice(user?.uid);
 
   return (
     <InsoleProvider autoConnect={Boolean(user)} deviceId={deviceId}>
@@ -108,7 +108,11 @@ function AppShell() {
           ) : user && active === false ? (
             <DeactivatedScreen onSignOut={logout} />
           ) : user ? (
-            <ProtectedApp />
+            <ProtectedApp
+              deviceIds={deviceIds}
+              deviceId={deviceId}
+              onSelectDevice={selectDevice}
+            />
           ) : (
             <PublicApp />
           )}
@@ -161,7 +165,15 @@ function PublicApp() {
 
 /* ======================== Protected routes ======================= */
 
-function ProtectedApp() {
+function ProtectedApp({
+  deviceIds,
+  deviceId,
+  onSelectDevice,
+}: {
+  deviceIds: string[];
+  deviceId: string | null;
+  onSelectDevice: (id: string) => void;
+}) {
   const {
     language,
     unreadIncidentCount,
@@ -212,6 +224,9 @@ function ProtectedApp() {
         userName={displayName}
         userEmail={user?.email as string | undefined}
         onSignOut={signOut}
+        deviceIds={deviceIds}
+        deviceId={deviceId}
+        onSelectDevice={onSelectDevice}
       >
         <Routes>
           <Route path="/" element={<DashboardPage />} />
@@ -234,15 +249,8 @@ function ProtectedApp() {
           on the dashboard is still present after navigating. */}
       <AlertModal
         open={alertOpen}
-        level={risk}
-        title={t(
-          risk === "danger" ? "alert.dangerTitle" : "alert.warningTitle",
-          language
-        )}
-        body={t(
-          risk === "danger" ? "alert.dangerBody" : "alert.warningBody",
-          language
-        )}
+        title={t("alert.warningTitle", language)}
+        body={t("alert.warningBody", language)}
         advice={`${t("risk.score", language)}: ${riskScore} / 100`}
         dismissLabel={t("alert.dismiss", language)}
         muteLabel={t("alert.mute", language)}

@@ -30,7 +30,7 @@ import {
 type Triaged = HistoryRowWithId & { deviceId: string; ack: TriageMark | null };
 
 /**
- * AdminIncidentsPage — danger events across the fleet, with triage.
+ * AdminIncidentsPage — warning events across the fleet, with triage.
  *
  * History stays append-only and owned by the firmware; the "done" mark lives in
  * `/triage/<deviceId>/<pushId>` so acknowledging an incident never rewrites a
@@ -78,7 +78,7 @@ const AdminIncidentsPage = () => {
   const rows = useMemo<Triaged[]>(() => {
     const all = deviceIds.flatMap((deviceId) =>
       (history[deviceId] ?? [])
-        .filter((row) => row.riskLevel === "danger")
+        .filter((row) => row.riskLevel === "warning")
         .map((row) => ({
           ...row,
           deviceId,
@@ -204,11 +204,11 @@ const AdminIncidentsPage = () => {
                   <GlassTableCell>{row.deviceId}</GlassTableCell>
                   <GlassTableCell>
                     <StatusChip
-                      level={row.ack ? "safe" : "danger"}
+                      level={row.ack ? "safe" : "warning"}
                       label={
                         row.ack
                           ? t("admin.incidents.done", language)
-                          : t("risk.danger", language)
+                          : t("admin.incidents.open", language)
                       }
                       size="sm"
                     />

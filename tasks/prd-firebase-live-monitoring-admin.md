@@ -114,7 +114,8 @@ PRD ini mencakup tiga fitur yang saling terkait:
 - FR-3: Web dashboard membaca `readings/{uid}` menggunakan `onValue` dari Firebase SDK
 - FR-4: Web dashboard membaca `devices/{uid}/status` untuk menampilkan baterai dan status koneksi
 - FR-5: Riwayat sesi disimpan di `history/{uid}/{sessionId}`: `{ "startTime": <unix_ms>, "endTime": <unix_ms>, "samples": [...] }`
-- FR-6: Konfigurasi global disimpan di `config/global`: `{ "safeThreshold": 30, "dangerThreshold": 70 }`
+- FR-6: Ambang risiko tidak disimpan di RTDB; ambang 45 kPa adalah bagian dari
+  model yang diekspor ke firmware dan web
 - FR-7: Rules RTDB: user hanya bisa baca/tulis path miliknya sendiri; admin bisa baca semua
 
 ### Monitoring Page
@@ -133,7 +134,8 @@ PRD ini mencakup tiga fitur yang saling terkait:
 - FR-16: Daftar pengguna menampilkan: nama, email, status (aktif/nonaktif), tanggal daftar, jumlah perangkat
 - FR-17: Admin dapat menonaktifkan akun (set `users/{uid}/active: false`) dengan dialog konfirmasi
 - FR-18: Admin dapat menghapus akun (hapus data user dari Firestore dan RTDB) dengan dialog konfirmasi
-- FR-19: Admin dapat mengubah threshold global dan perubahan langsung berlaku untuk semua user baru
+- FR-19: Ambang risiko tidak dapat diubah admin maupun user; nilainya melekat
+  pada model dua kelas (45 kPa) sehingga tampilan dan alarm tidak bisa berbeda
 - FR-20: Daftar perangkat menampilkan semua entry di `devices/*` dengan info user, baterai, firmware, status, last seen
 - FR-21: Perangkat dengan `online: false` atau `lastSeen > 5 menit` ditandai "Offline"
 - FR-22: Baterai < 20% mendapat badge peringatan kuning; < 10% badge merah
@@ -211,11 +213,12 @@ recognition), FSR_DATASET_FV (valgus only), Footscan (flatfoot norms).
 1. Aggregate DFN-DS 8 sensors/foot into 3 regions (forefoot, midfoot,
    heel) matching the insole layout.
 2. Derive per-sample features: peak pressure + sustained duration per region.
-3. Label: DFN -> danger, DM -> safe/warning (split by duration threshold).
+3. Label: `warning` bila tekanan puncak ≥ 45 kPa, `safe` bila di bawahnya.
+   Durasi tumpuan tidak mengubah label.
 4. Train Random Forest (trees, Gini impurity, bootstrap), validate against
    OptiTrack gait patterns and Figshare thresholds.
 5. Export model for inference (web dashboard and/or ESP32 firmware).
 
 **Deliverable:** `randomForestRisk.js` inference module (web) and
 `RandomForest.cpp` (ESP32 firmware), with the clinical contract asserted by
-tests (a 40 kPa reading must never be "safe").
+tests (40 kPa must always be Aman, 45 kPa must always be Waspada).

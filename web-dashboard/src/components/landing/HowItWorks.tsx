@@ -8,7 +8,7 @@ import { EXAMPLE_READINGS, STEPS, ZONE_ROWS } from "./landingData";
 /**
  * The "Cara kerja" steps: three rows, each pairing the step's own sentence with
  * a band that shows what the app actually renders at that point — the sensor
- * table, the three risk levels, the alarm — in the app's own vocabulary rather
+ * table, the two risk levels, the alarm — in the app's own vocabulary rather
  * than a decorative glyph in an empty panel.
  *
  * The vignettes used to be three conditionals inside the page's `.map`. They
@@ -43,7 +43,7 @@ const ZonesVignette = ({ language }: { language?: string }) => (
   </div>
 );
 
-/** What the model answers: one of three levels, not a bare score. */
+/** What the model answers: one of two levels, not a bare score. */
 const LevelsVignette = ({ language }: { language?: string }) => (
   <div className="flex flex-col items-center gap-4 text-center">
     <p className="text-caption text-warm-caption">
@@ -56,7 +56,6 @@ const LevelsVignette = ({ language }: { language?: string }) => (
         label={t("risk.warning", language)}
         size="lg"
       />
-      <StatusChip level="danger" label={t("risk.danger", language)} size="lg" />
     </div>
     <p className="text-caption text-warm-caption">
       {t("landing.step.demoNote", language)}
@@ -82,7 +81,6 @@ const AlarmVignette = ({
         label={t("risk.warning", language)}
         size="lg"
       />
-      <StatusChip level="danger" label={t("risk.danger", language)} size="lg" />
     </div>
     <p className="text-caption text-warm-caption">
       {t("landing.step.demoNote", language)}

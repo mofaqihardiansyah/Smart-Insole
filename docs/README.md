@@ -10,10 +10,10 @@ pelatihan.
 | --- | --- |
 | [`HARDWARE-SPEC.md`](HARDWARE-SPEC.md) | Spesifikasi hardware, daftar bahan (BOM), skema wiring, dan panduan perakitan smart insole |
 | [`ROADMAP-RF.md`](ROADMAP-RF.md) | Roadmap pelatihan model Random Forest: mulai dari persiapan data hingga integrasi firmware |
-| [`rf-model-report.md`](rf-model-report.md) | Laporan hasil pelatihan model: metrik evaluasi, clinical contract, dan rasional desain hybrid |
+| [`rf-model-report.md`](rf-model-report.md) | Laporan hasil pelatihan model: metrik evaluasi, clinical contract, dan rasional dua kelas |
 | [`validation-report.md`](validation-report.md) | Laporan validasi Fase 3: pola region OptiTrack, ambang DFU, dan edge case |
-| [`evidence/hasil-pengujian-model.html`](evidence/hasil-pengujian-model.html) | Paket bukti model: audit data, dua skenario ambang bahaya (200 vs 70 kPa), validasi silang per pasien, uji ketahanan, uji DFN vs DM, dan seluruh grafik (dihasilkan `scripts/evidence.js`) |
-| [`evidence/konsultasi-1-halaman.html`](evidence/konsultasi-1-halaman.html) | Versi satu halaman untuk bimbingan: tiga temuan, dua pilihan bentuk model, dan pertanyaan untuk dosen pembimbing |
+| [`evidence/hasil-pengujian-model.html`](evidence/hasil-pengujian-model.html) | Paket bukti model: audit data, label aturan 45 kPa, validasi silang 5 lipatan, sapuan galat gain, kontrak tingkat, uji DFN vs DM, dan seluruh grafik (dihasilkan `scripts/evidence.js`) |
+| [`evidence/konsultasi-1-halaman.html`](evidence/konsultasi-1-halaman.html) | Versi satu halaman untuk bimbingan: keputusan yang sudah dijalankan, tiga temuan, dan pertanyaan untuk dosen pembimbing |
 | [`evidence/README.md`](evidence/README.md) | Ringkasan isi folder bukti, cara reproduksi, dan batasan |
 | [`thesis-methodology.md`](thesis-methodology.md) | Draf Bab III (metodologi): data, praproses, model, evaluasi, hasil, ancaman validitas |
 | [`thesis-defense.md`](thesis-defense.md) | Materi sidang: kerangka slide metode Random Forest dan skrip demo ujung-ke-ujung |

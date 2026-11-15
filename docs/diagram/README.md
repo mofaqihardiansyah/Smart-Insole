@@ -84,10 +84,10 @@ for f in *.mmd; do mmdc -i "$f" -o "${f%.mmd}.png" -b white -w 2000; done
   Realtime Database (pohon JSON) dan Cloud Firestore (koleksi dokumen), jadi
   ERD perlu disertai tabel pemetaan ke node/collection. Tabel itu ada di draf
   Bab III, bagian 3.3.3.
-- **State machine** memakai ambang versi firmware (`src/RandomForest.cpp`):
-  bahaya pada 200 kPa satu sampel, aman di bawah 35 kPa dan durasi di bawah
-  20 detik. Ambang inilah yang dipakai laporan; angka 70 kPa pada Tabel 2.4
-  Bab II sudah diputuskan untuk direvisi menjadi 200 kPa.
+- **State machine** dan **flowchart inferensi** memakai kontrak versi
+  firmware (`src/RandomForest.cpp`): dua state, `Waspada` begitu peak >= 45 kPa
+  dan `Aman` di bawahnya. Tidak ada state ketiga dan durasi tidak mengubah
+  state; suara pohon hanya menempatkan skor di dalam pita level.
 
 ## Verifikasi
 

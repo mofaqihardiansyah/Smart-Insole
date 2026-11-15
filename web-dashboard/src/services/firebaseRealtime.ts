@@ -85,13 +85,16 @@ const toMillis = (value: unknown): number | null => {
   return n < 1e12 ? Math.round(n * 1000) : Math.round(n);
 };
 
-/** 'DANGER' | 'danger' -> 'danger'. Anything unrecognised -> null. */
+/**
+ * Wire status → two-level contract. Legacy packets may still say 'danger';
+ * it folds into 'warning', the highest level that exists now. Anything
+ * unrecognised → null, so the UI shows "unknown" instead of guessing.
+ */
 const normaliseRiskLevel = (value: unknown): RiskLevel | null => {
   if (typeof value !== 'string') return null;
   const lowered = value.trim().toLowerCase();
-  return lowered === 'safe' || lowered === 'warning' || lowered === 'danger'
-    ? lowered
-    : null;
+  if (lowered === 'danger') return 'warning';
+  return lowered === 'safe' || lowered === 'warning' ? lowered : null;
 };
 
 /**

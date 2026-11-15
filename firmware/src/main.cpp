@@ -9,14 +9,14 @@
  *
  * Flow:
  *   1. Read 3 FSR analog pins → convert to kPa
- *   2. Track sustained duration (consecutive seconds above 35 kPa)
- *   3. Run RandomForest inference → risk level
+ *   2. Track sustained duration (consecutive seconds above WARNING_PEAK_KPA)
+ *   3. Run RandomForest inference → safe / warning
  *   4. Drive the local buzzer from that level — works with NO internet
  *   5. Upload to Firebase every second (once WiFi AND NTP time are up)
  *
  * The alarm path (sensors → inference → buzzer) never depends on WiFi or
  * Firebase. A dropped connection delays telemetry only; it never silences
- * a danger verdict.
+ * a warning verdict.
  *
  * Pin mapping (left foot — ESP32 #1):
  *   GPIO34 (ADC1_CH6) → FSR Forefoot
@@ -38,15 +38,23 @@
 #include "config.h"
 #endif
 
+// The default DEVICE_ID lives in config.h, which is git-ignored. The second
+// board must publish under a different id, so a -DDEVICE_ID_OVERRIDE flag from
+// platformio.ini takes precedence without editing the credential file.
+#ifdef DEVICE_ID_OVERRIDE
+#undef DEVICE_ID
+#define DEVICE_ID DEVICE_ID_OVERRIDE
+#endif
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <time.h>
 #include <Firebase_ESP_Client.h>
 
 #include "RandomForest.h"
-// Threshold constants (WARNING_PEAK_KPA, DANGER_PEAK_KPA) come from the
-// generated model data, shared with RandomForest's own inference so the
-// sustained-duration accumulator and the classifier can never disagree.
+// WARNING_PEAK_KPA comes from the generated model data, shared with the
+// classifier's own inference so the sustained-duration accumulator and the
+// decision can never disagree.
 #include "rf-model-data.h"
 
 // ── Runtime state ───────────────────────────────────────────
@@ -68,7 +76,7 @@ static unsigned long pushFailStreak = 0;
 static float lastForefoot = 0.0f;
 static float lastMidfoot = 0.0f;
 static float lastHeel = 0.0f;
-static RiskResult lastResult = {RISK_SAFE, 0, 0, 0, 0};
+static RiskResult lastResult = {RISK_SAFE, 0, 0, 0};
 
 // ── Helpers ─────────────────────────────────────────────────
 
@@ -108,15 +116,14 @@ static void updateSustainedDuration(float peakPressure, float dtSeconds) {
   if (sustainedDuration > 60.0f) sustainedDuration = 60.0f;
 }
 
-// Drive the local alarm. Danger: fast pulse (300 ms on / 200 ms off).
-// Warning: single 100 ms beep every 3 s. Safe: silent. Runs every loop
-// tick, offline or online.
+// Drive the local alarm. Warning: single 100 ms beep every 3 s. Safe: silent.
+// Runs every loop tick, offline or online. Tidak ada pola bahaya: level
+// tertinggi adalah waspada.
 static void updateBuzzer(RiskLevel level, unsigned long nowMs) {
   unsigned long onMs = 0;
   unsigned long offMs = 0;
 
   switch (level) {
-    case RISK_DANGER:  onMs = 300; offMs = 200; break;
     case RISK_WARNING: onMs = 100; offMs = 2900; break;
     default: break;  // safe: stays silent
   }

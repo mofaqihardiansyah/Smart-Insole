@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { incidentsFromHistory, mergeIncidents } from './incidents';
 import { RISK_THRESHOLDS } from './randomForestRisk';
-import type { HistoryEntry } from '../types/insole';
+import type { HistoryEntry, RiskLevel } from '../types/insole';
 import type { IncidentLog } from '../context/InsoleContext';
 
 /**
@@ -40,30 +40,36 @@ describe('incidentsFromHistory', () => {
     expect(incidents[0].timestamp).toBe(2000);
   });
 
-  it('keeps an escalation and a de-escalation as separate incidents', () => {
+  it('keeps a de-escalation and a re-escalation as separate incidents', () => {
     const incidents = incidentsFromHistory([
       row(1000, { riskLevel: 'warning' }),
-      row(2000, { riskLevel: 'danger' }),
-      row(3000, { riskLevel: 'safe' }),
-      row(4000, { riskLevel: 'warning' }),
+      row(2000, { riskLevel: 'safe' }),
+      row(3000, { riskLevel: 'warning' }),
     ]);
 
-    expect(incidents.map((i) => i.type)).toEqual([
-      'warning',
-      'danger',
-      'warning',
-    ]);
+    expect(incidents.map((i) => i.type)).toEqual(['warning', 'warning']);
+    expect(incidents.map((i) => i.timestamp)).toEqual([1000, 3000]);
+  });
+
+  it('folds a legacy danger row into warning instead of dropping it', () => {
+    // Rows written by the three-level firmware still carry 'danger'. It is the
+    // highest level that exists now, so the row must survive as a warning.
+    const legacy = { riskLevel: 'danger' as unknown as RiskLevel };
+    const incidents = incidentsFromHistory([row(1000, legacy)]);
+
+    expect(incidents).toHaveLength(1);
+    expect(incidents[0].type).toBe('warning');
   });
 
   it('trusts the device verdict over client inference', () => {
-    // A 10 kPa row the firmware called danger is danger: the device measured
+    // A 10 kPa row the firmware called warning is warning: the device measured
     // the foot, the client only reads the number.
     const incidents = incidentsFromHistory([
-      row(1000, { peakPressure: 10, riskLevel: 'danger', riskScore: 88 }),
+      row(1000, { peakPressure: 10, riskLevel: 'warning', riskScore: 88 }),
     ]);
 
     expect(incidents).toHaveLength(1);
-    expect(incidents[0].type).toBe('danger');
+    expect(incidents[0].type).toBe('warning');
     expect(incidents[0].score).toBe(88);
   });
 
@@ -77,7 +83,8 @@ describe('incidentsFromHistory', () => {
       }),
     ]);
 
-    expect(incidents.map((i) => i.type)).toEqual(['danger']);
+    // 220 kPa is warning: the top level is warning now.
+    expect(incidents.map((i) => i.type)).toEqual(['warning']);
   });
 
   it('carries the peak the live log lacks', () => {
@@ -163,12 +170,12 @@ describe('mergeIncidents', () => {
   it('returns rows oldest first', () => {
     const merged = mergeIncidents(
       incidentsFromHistory([
-        row(9000, { riskLevel: 'danger' }),
-        row(3000, { riskLevel: 'warning' }),
+        row(9000, { riskLevel: 'warning' }),
+        row(3000, { riskLevel: 'safe' }),
       ]),
       [{ ...live, timestamp: 6000 }]
     );
 
-    expect(merged.map((i) => i.timestamp)).toEqual([3000, 6000, 9000]);
+    expect(merged.map((i) => i.timestamp)).toEqual([6000, 9000]);
   });
 });

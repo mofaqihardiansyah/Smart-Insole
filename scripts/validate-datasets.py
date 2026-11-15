@@ -35,8 +35,9 @@ FOREFOOT = {1, 17, 4, 20, 18, 2, 3, 19, 8, 5, 24, 10, 21, 6, 7, 22, 9, 11, 23}
 MIDFOOT = {12, 15, 16}
 HEEL = {13, 29, 14, 27, 30, 32, 26, 28, 31, 25}
 
-WARNING_KPA = 35.0
-DANGER_KPA = 70.0
+# Ambang label sistem (sama dengan model, web, dan firmware). Tidak ada ambang
+# bahaya: level tertinggi adalah Waspada.
+WARNING_KPA = 45.0
 
 
 def region(sensor_index):
@@ -160,7 +161,7 @@ def check_optitrack(limit):
         }
 
 
-def check_figshare():
+def check_figshare(warning_kpa=WARNING_KPA):
     if not FIGSHARE_XLSX.exists():
         print("3.2 SKIP: Data Sheets.xlsx tidak ada", file=sys.stderr)
         return None
@@ -195,8 +196,9 @@ def check_figshare():
         "measurements": len(peaks),
         "median_kpa": statistics.median(peaks),
         "max_kpa": max(peaks),
-        "at_or_above_warning_pct": 100.0 * sum(p >= WARNING_KPA for p in peaks) / len(peaks),
-        "at_or_above_danger_pct": 100.0 * sum(p >= DANGER_KPA for p in peaks) / len(peaks),
+        "at_or_above_warning_pct": 100.0
+        * sum(p >= warning_kpa for p in peaks)
+        / len(peaks),
     }
 
 
@@ -227,7 +229,6 @@ def main():
         print(f"median puncak      : {dfu['median_kpa']:.1f} kPa")
         print(f"puncak tertinggi   : {dfu['max_kpa']:.1f} kPa")
         print(f">= {WARNING_KPA:.0f} kPa        : {dfu['at_or_above_warning_pct']:.1f}%")
-        print(f">= {DANGER_KPA:.0f} kPa        : {dfu['at_or_above_danger_pct']:.1f}%")
 
     return 0 if (gait or dfu) else 1
 

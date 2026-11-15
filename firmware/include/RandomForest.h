@@ -1,11 +1,9 @@
 /**
  * RandomForest.h — On-device Random Forest inference for ESP32.
  *
- * Hybrid approach:
- *   - RF classifier (data-driven) for safe vs warning
- *   - Rule-based override for danger (peak >= 200 kPa on a single sample)
+ * Dua kelas: `safe` dan `warning`. Tidak ada level bahaya.
  *
- * Interface mirrors web-dashboard randomForestRisk.js:
+ * Interface mirrors web-dashboard randomForestRisk.ts:
  *   predict(peakPressure, sustainedDuration) → { level, score }
  *
  * peakPressure:      kPa (float)
@@ -22,7 +20,6 @@
 enum RiskLevel {
   RISK_SAFE = 0,
   RISK_WARNING = 1,
-  RISK_DANGER = 2,
 };
 
 struct RiskResult {
@@ -30,7 +27,6 @@ struct RiskResult {
   int score;       // 0-100
   int safeVotes;
   int warningVotes;
-  int dangerVotes;
 };
 
 class RandomForest {

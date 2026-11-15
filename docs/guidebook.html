@@ -305,7 +305,7 @@
           <span><i class="dot" style="background:var(--secondary)"></i> ESP32 + 3 FSR per kaki</span>
           <span><i class="dot" style="background:var(--tertiary)"></i> Firebase Realtime Database</span>
           <span><i class="dot" style="background:var(--warning)"></i> React 18 + Vite + Tailwind</span>
-          <span><i class="dot" style="background:var(--danger)"></i> Hybrid Random Forest + aturan klinis</span>
+          <span><i class="dot" style="background:var(--danger)"></i> Random Forest dua kelas + ambang 45 kPa</span>
         </div>
       </header>
 
@@ -328,13 +328,13 @@
         <div class="grid-3">
           <div class="tile"><div class="k">Sensor per kaki</div><div class="v">3</div><div class="u">FSR 402: forefoot, midfoot, heel</div></div>
           <div class="tile mint"><div class="k">Laju sampel</div><div class="v">1<span style="font-size:15px"> Hz</span></div><div class="u">1 sampel per detik</div></div>
-          <div class="tile blue"><div class="k">Kelas risiko</div><div class="v">3</div><div class="u">Aman · Waspada · Bahaya</div></div>
+          <div class="tile blue"><div class="k">Kelas risiko</div><div class="v">2</div><div class="u">Aman · Waspada</div></div>
         </div>
 
         <h3>Tujuan sistem</h3>
         <ul>
           <li><strong>Mengukur</strong> tekanan plantar pada tiga titik anatomis kritis secara berkelanjutan.</li>
-          <li><strong>Menilai risiko</strong> dari kombinasi besaran tekanan (kPa) dan lama tumpuan (<em>sustained duration</em>) ke dalam tiga tingkat: Aman, Waspada, Bahaya.</li>
+          <li><strong>Menilai risiko</strong> dari puncak tekanan (kPa) ke dalam dua tingkat: Aman dan Waspada. Durasi tumpuan tetap dihitung dan dipakai sebagai fitur model, tetapi bukan penentu tingkat.</li>
           <li><strong>Memberi peringatan dini</strong> lewat alarm lokal di perangkat (buzzer) dan notifikasi di web.</li>
           <li><strong>Menyimpan riwayat</strong> kuantitatif pola tumpuan harian dan menyediakan ekspor CSV untuk mendukung rekomendasi klinis.</li>
         </ul>
@@ -345,9 +345,8 @@
             <strong>Untuk pengguna akhir.</strong> Alat ini adalah <em>alat bantu
             pemantauan</em>, bukan alat diagnosis. Keluarannya berupa tingkat
             risiko dan alarm, dan tidak menggantikan pemeriksaan dokter. Bila
-            muncul status <span class="chip warning">Waspada</span> atau
-            <span class="chip danger">Bahaya</span>, kurangi beban pada kaki dan
-            ikuti anjuran tenaga medis.
+            muncul status <span class="chip warning">Waspada</span>, kurangi
+            beban pada kaki dan ikuti anjuran tenaga medis.
           </div>
         </div>
 
@@ -359,11 +358,11 @@
           </div>
           <div class="card" style="margin:0">
             <h4>Penilaian risiko Random Forest</h4>
-            <p style="margin:6px 0 0;font-size:14px;color:var(--muted)">Klasifikasi hybrid Random Forest + aturan klinis, dijalankan di sisi klien tanpa pemrosesan server.</p>
+            <p style="margin:6px 0 0;font-size:14px;color:var(--muted)">Klasifikasi dua kelas (Aman/Waspada) dengan ambang 45 kPa, dijalankan di sisi klien tanpa pemrosesan server.</p>
           </div>
           <div class="card" style="margin:0">
             <h4>Early Warning System</h4>
-            <p style="margin:6px 0 0;font-size:14px;color:var(--muted)">Notifikasi web (Web Notification API) dan alarm audio (Web Audio API) saat risiko Waspada atau Bahaya.</p>
+            <p style="margin:6px 0 0;font-size:14px;color:var(--muted)">Notifikasi web (Web Notification API) dan alarm audio (Web Audio API) saat risiko Waspada.</p>
           </div>
           <div class="card" style="margin:0">
             <h4>Riwayat &amp; ekspor CSV</h4>
@@ -406,9 +405,10 @@
             <strong>Dua besaran yang dipantau.</strong> Risiko tidak hanya soal
             seberapa besar tekanan (<em>peak pressure</em>, kPa), tetapi juga
             seberapa lama tekanan itu bertahan serta berapa kali berulang.
-            Tekanan sedang yang bertahan lama dapat sama berbahayanya dengan
-            tekanan tinggi sesaat. Karena itu model memakai dua fitur:
-            <strong>peak pressure</strong> dan <strong>sustained duration</strong>.
+            Model memakai dua fitur: <strong>peak pressure</strong> dan
+            <strong>sustained duration</strong>. Tingkatnya sendiri ditentukan
+            kontrak 45 kPa, karena data acuan tidak memuat tumpuan panjang
+            untuk menguji syarat durasi.
           </div>
         </div>
 
@@ -503,9 +503,9 @@
         <p>
           Klasifikasi risiko dihitung <strong>dua kali dari model yang sama</strong>:
           di ESP32 (untuk alarm lokal) dan di dashboard (untuk tampilan dan
-          riwayat). Keduanya memakai bobot model dan aturan klinis yang identik,
-          sehingga tidak dapat memberi kesimpulan berbeda atas pembacaan yang
-          sama. Model diekspor dari satu sumber ke dua format:
+          riwayat). Keduanya memakai bobot model dan kontrak tingkat yang
+          identik, sehingga tidak dapat memberi kesimpulan berbeda atas
+          pembacaan yang sama. Model diekspor dari satu sumber ke dua format:
         </p>
         <ul>
           <li><code>web-dashboard/src/utils/rf-model.json</code> untuk web,</li>
@@ -518,7 +518,7 @@
             <strong>Jalur alarm tidak bergantung jaringan.</strong> Rantai
             sensor → inferensi → buzzer berjalan sepenuhnya di perangkat. Koneksi
             Wi-Fi yang putus hanya menunda telemetri; ia tidak pernah mematikan
-            keputusan bahaya.
+            keputusan waspada.
           </div>
         </div>
       </section>
@@ -527,12 +527,15 @@
            04 METODE: RANDOM FOREST
            ========================================================= -->
       <section id="metode">
-        <div class="section-head"><span class="idx">04</span><h2>Metode: Random Forest &amp; Aturan Klinis</h2></div>
+        <div class="section-head"><span class="idx">04</span><h2>Metode: Random Forest Dua Kelas</h2></div>
         <p>
-          Model yang dipakai adalah <strong>hybrid Random Forest + aturan
-          klinis</strong>. Random Forest menangani batas <span class="chip safe">Aman</span>
-          / <span class="chip warning">Waspada</span> (data-driven), sedangkan
-          kelas <span class="chip danger">Bahaya</span> ditangani aturan klinis.
+          Model yang dipakai adalah <strong>Random Forest dua kelas</strong>:
+          <span class="chip safe">Aman</span> dan
+          <span class="chip warning">Waspada</span>. Tidak ada tingkat ketiga.
+          Melewati batas waspada, pasien neuropati sudah kehilangan sensasi
+          pelindung, sehingga tidak ada keadaan yang lebih mendesak daripada
+          &ldquo;geser beban sekarang&rdquo;; label tambahan hanya menambah kelas
+          tanpa menambah tindakan.
         </p>
 
         <h3>4.1 Dataset DFN-DS</h3>
@@ -556,22 +559,28 @@
         <ul>
           <li>Agregasi 8 sensor menjadi tiga region (forefoot, midfoot, heel).</li>
           <li>Ekstrak dua fitur per region: <em>peak pressure</em> (kPa) dan <em>sustained duration</em> (detik).</li>
-          <li>Kalibrasi ambang peringatan memakai kuantil ke-75 distribusi DFN-DS, menghasilkan <strong>35 kPa</strong>.</li>
-          <li>Pelabelan per sampel: <code>peak &gt;= 35 kPa</code> → <span class="chip warning">warning</span>, selain itu <span class="chip safe">safe</span>.</li>
-          <li>Pembagian data <strong>per pasien</strong> (bukan per sampel) dengan rasio 80/20: 107 pasien latih, 28 pasien validasi. Split per sampel akan membocorkan karakteristik pasien dan membuat akurasi terlalu optimistis.</li>
+          <li>Ambang label <strong>45 kPa</strong>: persentil ke-95 distribusi DFN-DS (45,4 kPa), setara ≈5,7 N pada FSR 402. Ambang ini menandai 93 dari 135 pasien.</li>
+          <li>Pelabelan per sampel: <code>peak &gt;= 45 kPa</code> → <span class="chip warning">warning</span>, selain itu <span class="chip safe">safe</span>.</li>
+          <li>Ketidakseimbangan 17,6:1 (76.653 aman vs 4.347 waspada) ditangani <strong>SMOTE</strong> di dalam lipatan latih saja (k=5, seed 42). Data uji tidak pernah disintesis.</li>
+          <li>Tidak ada split latih/uji internal. Seluruh 135 pasien dipakai dengan <strong>validasi silang 5 lipatan yang dikelompokkan per pasien</strong>, sehingga karakteristik satu pasien tidak bocor ke data latihnya. Data uji eksternal adalah subjek diabetes baru yang direkam sendiri.</li>
         </ul>
 
-        <h3>4.3 Mengapa hybrid (RF + aturan)</h3>
+        <h3>4.3 Mengapa hanya dua kelas</h3>
         <p>
-          DFN-DS tidak punya satu pun sampel <span class="chip danger">danger</span>:
-          puncak tertinggi hanya 87,06 kPa, sedangkan ambang <em>in-shoe</em>
-          paling konsensus adalah <strong>200 kPa</strong> (Castro-Martins dkk.,
-          Heliyon 2024). Tanpa contoh untuk dilatih, Random Forest tidak bisa
-          mempelajari batas bahaya. Karena itu:
+          DFN-DS tidak punya satu pun sampel di atas 70 kPa yang bisa dijadikan
+          contoh kelas ketiga: puncak tertinggi 87,06 kPa, hanya 31 sampel dari
+          3 pasien yang melewati 70 kPa, dan <strong>tidak ada satu pun sampel
+          yang mencapai 200 kPa</strong>. Ambang <em>in-shoe</em> 200 kPa
+          (Castro-Martins dkk., Heliyon 2024) juga berada di luar jangkauan FSR
+          402: 200 kPa ≈ 25,4 N pada luas aktif 126,7 mm², sedangkan sensor
+          dirating 0,1–10 N (≈0,8–79 kPa). Kelas yang tidak punya contoh latih
+          tidak dapat diuji, dan kelas yang tidak dapat diukur sensornya tidak
+          dapat dipakai di lapangan.
         </p>
         <ul>
-          <li><strong>Random Forest</strong> menangani batas Aman/Waspada, yang mencakup 99,95% data.</li>
-          <li><strong>Aturan klinis</strong> menangani Bahaya: <code>peak &gt;= 200 kPa</code> pada satu sampel (tanpa syarat durasi).</li>
+          <li><strong>Dua kelas</strong> sesuai arahan pembimbing: Aman dan Waspada.</li>
+          <li><strong>Ambang 45 kPa</strong> masih di dalam rentang sensor (≈5,7 N) dan menandai 93/135 pasien DFN-DS, cukup sering untuk berarti tetapi tidak begitu sering hingga alarm kehilangan makna.</li>
+          <li><strong>Durasi tidak menentukan tingkat.</strong> DFN-DS adalah rekaman berjalan: run terpanjang di atas 45 kPa hanya 13 sampel (1,3 detik), sehingga syarat durasi 20 detik tidak pernah menyala dan hanya menambah cabang mati.</li>
         </ul>
 
         <h3>4.4 Konfigurasi model</h3>
@@ -584,59 +593,58 @@
                 <tr><td>Kedalaman maksimum</td><td class="num">8</td></tr>
                 <tr><td>Kriteria split</td><td class="num">Gini impurity</td></tr>
                 <tr><td>Bootstrap</td><td>Berbobot</td></tr>
-                <tr><td>Bobot kelas</td><td>Inverse frequency, cap 10x</td></tr>
+                <tr><td>Bobot kelas</td><td>SMOTE di lipatan latih (17,6:1 → 1:1)</td></tr>
               </tbody>
             </table>
           </div>
           <div class="card" style="margin:0">
-            <h4 style="margin-top:0">Aturan klinis (kontrak)</h4>
+            <h4 style="margin-top:0">Kontrak tingkat (dua arah)</h4>
             <ul style="margin:6px 0 0;font-size:14px">
-              <li><code>peak &lt; 35 kPa</code> dan <code>sustained &lt; 20 s</code> → <span class="chip safe">Aman</span></li>
-              <li><code>peak &gt;= 35 kPa</code> → minimal <span class="chip warning">Waspada</span></li>
-              <li><code>peak &gt;= 200 kPa</code> (satu sampel) → <span class="chip danger">Bahaya</span></li>
-              <li>Tekanan bertahan &gt; ~20 s → minimal <span class="chip warning">Waspada</span></li>
+              <li><code>peak &lt; 45 kPa</code> → <span class="chip safe">Aman</span></li>
+              <li><code>peak &gt;= 45 kPa</code> → <span class="chip warning">Waspada</span></li>
+              <li>Durasi tidak mengubah tingkat; ia hanya fitur yang dibaca pohon.</li>
             </ul>
           </div>
         </div>
 
         <h3>4.5 Inferensi dan pita skor</h3>
         <p>
-          Inferensi adalah <em>majority vote</em> 20 pohon untuk Aman vs Waspada.
-          Skor adalah proporsi suara yang dipetakan ke pita tetap, sehingga
-          angka dan level tidak pernah bertentangan:
+          Tingkat ditentukan oleh <strong>kontrak dua arah</strong> di atas,
+          bukan oleh suara pohon. Suara 20 pohon hanya menentukan skor di dalam
+          pita tingkat itu, sehingga angka dan tingkat tidak pernah
+          bertentangan:
         </p>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Level</th><th class="num">Pita skor</th><th>Catatan</th></tr></thead>
             <tbody>
-              <tr><td><span class="chip safe">Aman</span></td><td class="num">0 – 47</td><td>Override: peak &lt; 35 kPa dan durasi &lt; 20 s</td></tr>
-              <tr><td><span class="chip warning">Waspada</span></td><td class="num">48 – 74</td><td>Hasil vote RF</td></tr>
-              <tr><td><span class="chip danger">Bahaya</span></td><td class="num">75 – 100</td><td>Override aturan, laporan skor 75</td></tr>
+              <tr><td><span class="chip safe">Aman</span></td><td class="num">0 – 47</td><td><code>peak &lt; 45 kPa</code></td></tr>
+              <tr><td><span class="chip warning">Waspada</span></td><td class="num">48 – 74</td><td><code>peak &gt;= 45 kPa</code>; skor dari proporsi suara</td></tr>
             </tbody>
           </table>
         </div>
         <p style="font-size:14px;color:var(--muted)">
-          Ambang peak (35 / 200 kPa) dan jendela durasi adalah konstanta klinis:
-          angka yang sama dikompilasi ke firmware dan ke web. Keduanya
-          <strong>tidak</strong> dapat diubah dari aplikasi, karena perangkat
-          yang mengukur kaki memakai angka yang sama; mengubah satu sisi saja
-          akan membuat dasbor dan alarm lokal berbeda kesimpulan. Mengubah
-          kontrak ini berarti keputusan klinis baru, ekspor ulang model, dan
-          flash ulang perangkat.
+          Ambang 45 kPa adalah konstanta klinis: angka yang sama dikompilasi ke
+          firmware (<code>WARNING_PEAK_KPA</code>) dan dibaca web dari
+          <code>rf-model.json</code>. Keduanya <strong>tidak</strong> dapat
+          diubah dari aplikasi, karena perangkat yang mengukur kaki memakai
+          angka yang sama; mengubah satu sisi saja akan membuat dasbor dan alarm
+          lokal berbeda kesimpulan. Mengubah kontrak ini berarti keputusan
+          klinis baru, ekspor ulang model, dan flash ulang perangkat.
         </p>
 
         <h3>4.6 Hasil evaluasi</h3>
         <div class="grid-3">
-          <div class="tile mint"><div class="k">Accuracy (safe vs warning)</div><div class="v">100,0%</div><div class="u">pada 28 pasien uji</div></div>
-          <div class="tile mint"><div class="k">Macro-F1</div><div class="v">100,0%</div><div class="u">safe vs warning</div></div>
-          <div class="tile"><div class="k">Clinical contract</div><div class="v">Lolos</div><div class="u">semua kasus acuan</div></div>
+          <div class="tile mint"><div class="k">Macro-F1</div><div class="v">100,0%</div><div class="u">5 lipatan, kelompok per pasien</div></div>
+          <div class="tile mint"><div class="k">Kesepakatan dengan aturan</div><div class="v">100,0%</div><div class="u">81.000 sampel</div></div>
+          <div class="tile"><div class="k">Kontrak tingkat</div><div class="v">Lolos</div><div class="u">10 uji native firmware</div></div>
         </div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Kelas</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th><th class="num">Support</th></tr></thead>
             <tbody>
-              <tr><td><span class="chip safe">safe</span></td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">12.934</td></tr>
-              <tr><td><span class="chip warning">warning</span></td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">3.866</td></tr>
+              <tr><td><span class="chip safe">safe</span></td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">76.653</td></tr>
+              <tr><td><span class="chip warning">warning</span></td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">100,0%</td><td class="num">4.347</td></tr>
             </tbody>
           </table>
         </div>
@@ -645,39 +653,56 @@
           <div class="bar"></div>
           <div>
             <strong>Membaca akurasi 100% dengan jujur.</strong> Angka ini hanya
-            berlaku untuk dua kelas (safe vs warning), pada populasi diabetes, dan
-            batas antara keduanya ditentukan oleh durasi tumpu yang juga menjadi
-            fitur masukan. Jadi 100% berarti <em>konsisten terhadap aturan label</em>,
-            bukan bukti generalisasi ke populasi umum. Kemampuan mendeteksi bahaya
-            diukur terpisah oleh clinical contract, bukan oleh akurasi ini.
+            berlaku untuk dua kelas pada populasi diabetes, dan batas antara
+            keduanya <em>adalah</em> aturan yang melabeli data (dan yang dipegang
+            kontrak di firmware serta web). Jadi 100% berarti
+            <em>konsisten terhadap aturan label</em>, bukan bukti generalisasi
+            ke pasien lain. Bukti terakhirnya harus datang dari subjek diabetes
+            baru yang direkam sendiri: satu studi kasus, yang mengukur
+            kesesuaian dengan aturan pada data yang belum pernah dilihat model,
+            bukan angka generalisasi.
           </div>
         </div>
 
-        <h3>4.7 Kontrak klinis</h3>
+        <h3>4.7 Kontrak tingkat</h3>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Input</th><th>Ekspektasi</th><th>Hasil</th></tr></thead>
             <tbody>
-              <tr><td class="num">40 kPa, 1 s</td><td><span class="chip warning">warning</span></td><td><span class="chip safe">Lolos</span></td></tr>
-              <tr><td class="num">210 kPa, 31 s</td><td><span class="chip danger">danger</span></td><td><span class="chip safe">Lolos</span></td></tr>
-              <tr><td class="num">20 kPa, 0 s</td><td><span class="chip safe">safe</span></td><td><span class="chip safe">Lolos</span></td></tr>
-              <tr><td class="num">30 kPa, 0 s</td><td><span class="chip safe">safe</span></td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td class="num">40 kPa, 3 s</td><td><span class="chip safe">safe</span></td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td class="num">45 kPa, 1 s</td><td><span class="chip warning">warning</span></td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td class="num">80 kPa, 2 s</td><td><span class="chip warning">warning</span></td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td class="num">210 kPa, 45 s</td><td><span class="chip warning">warning</span></td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td class="num">500 kPa, 60 s</td><td><span class="chip warning">warning</span></td><td><span class="chip safe">Lolos</span></td></tr>
             </tbody>
           </table>
         </div>
+        <p style="font-size:14px;color:var(--muted)">
+          Kontrak yang sama diuji di tiga tempat: <code>randomForestRisk.test.js</code>
+          (web), <code>test_randomforest.cpp</code> (native firmware), dan
+          halaman Risk Explorer di dashboard.
+        </p>
 
-        <h3>4.8 Mengapa ambang bahaya dapat diganti tanpa melatih ulang model</h3>
+        <h3>4.8 Mengapa tingkat ditentukan kontrak, bukan suara pohon</h3>
         <p>
-          Pelatihan memakai data, fitur, dan label untuk membangun pohon;
-          <code>dangerRule</code> baru dibaca setelah pohon selesai dan saat
-          ekspor. Label per sampel tidak berubah saat ambang danger berubah, jadi
-          keluaran latih juga tidak berubah (dibuktikan pada regenerasi 5 November
-          2026: hash <code>trees</code> identik). Syaratnya dua: batas
-          <code>peak &gt;= 35</code> tetap, dan tidak ada sampel yang berpindah
-          kelas (DFN-DS tidak punya sampel &gt;= 200 kPa). Ini alasan teknis
-          mengapa ambang dapat direvisi tanpa retraining; tetap saja revisi
-          berarti kontrak klinis baru, ekspor ulang model, dan flash ulang
-          perangkat, bukan isian di aplikasi.
+          Karena label latih <em>adalah</em> aturan ambang, pohon-pohon cepat
+          menemukan jalan pintas: hampir semua pohon memisah pada
+          <code>sustained &gt; 0</code> di akar, sebuah fitur yang hanya positif
+          ketika tekanan sudah melewati ambang. Kalau tingkat dibiarkan mengikuti
+          suara pohon, masukan seperti 40 kPa selama 12 detik akan tampil
+          <span class="chip warning">Waspada</span> walau berada di bawah ambang.
+          Masukan itu tidak mungkin datang dari perangkat (rekaman berjalan
+          berhenti di 1,3 detik) tetapi bisa diketik di Risk Explorer, dan
+          dasbor harus menjawab hal yang sama dengan alarm lokal. Karena itu
+          kontrak dua arah di 4.4 dijalankan di web dan firmware, dan pohon hanya
+          menyumbang skor.
+        </p>
+        <p>
+          Konsekuensi yang harus disebut di pembahasan: model ini rapuh terhadap
+          pergeseran skala sensor. Pada data validasi silang, macro-F1 turun ke
+          78,4% saat sinyal dikalikan 0,9, 82,4% pada ×1,1, dan 69,7% pada ×1,2,
+          karena setiap sampel bergeser melewati ambang. Kalibrasi FSR sebelum
+          pemakaian bukan pelengkap, melainkan syarat agar kontrak 45 kPa berarti.
         </p>
       </section>
 
@@ -713,9 +738,9 @@
         <h3>5.2 Alur loop</h3>
         <div class="flow">
           <div class="flow-step"><div class="n">1</div><div><div class="t">Baca sensor</div><div class="d">Tiga FSR dibaca via median-of-3 (menolak spike ADC tanpa menambah lag), lalu dikonversi ke kPa: <code>(raw − offset) × skala</code>, negatif dipaksa 0.</div></div></div>
-          <div class="flow-step"><div class="n">2</div><div><div class="t">Akumulasi durasi tumpuan</div><div class="d">Jika peak ≥ ambang peringatan, tambah <code>dt</code>; jika tidak, reset ke 0. Nilai dibatasi maksimum 60 detik.</div></div></div>
+          <div class="flow-step"><div class="n">2</div><div><div class="t">Akumulasi durasi tumpuan</div><div class="d">Jika peak ≥ 45 kPa, tambah <code>dt</code>; jika tidak, reset ke 0. Nilai dibatasi maksimum 60 detik. Durasi hanya menjadi fitur model, bukan penentu tingkat.</div></div></div>
           <div class="flow-step"><div class="n">3</div><div><div class="t">Inferensi Random Forest</div><div class="d"><code>rf.predict(peakPressure, sustainedDuration)</code> mengembalikan level dan skor.</div></div></div>
-          <div class="flow-step"><div class="n">4</div><div><div class="t">Buzzer lokal</div><div class="d">Bahaya: pulsa cepat 300 ms nyala / 200 ms mati. Waspada: satu bip 100 ms tiap 3 detik. Aman: senyap. Jalan setiap loop, offline atau online.</div></div></div>
+          <div class="flow-step"><div class="n">4</div><div><div class="t">Buzzer lokal</div><div class="d">Waspada: satu bip 100 ms tiap 3 detik. Aman: senyap. Jalan setiap loop, offline atau online.</div></div></div>
           <div class="flow-step"><div class="n">5</div><div><div class="t">Unggah ke Firebase</div><div class="d">Hanya bila terkonfigurasi, Wi-Fi tersambung, dan jam masuk akal (NTP &gt; 2020-09-13). Telemetri menunggu; alarm tidak pernah menunggu.</div></div></div>
         </div>
 
@@ -724,7 +749,6 @@
           <table>
             <thead><tr><th>Level</th><th>Pola buzzer</th></tr></thead>
             <tbody>
-              <tr><td><span class="chip danger">Bahaya</span></td><td class="num">300 ms nyala / 200 ms mati</td></tr>
               <tr><td><span class="chip warning">Waspada</span></td><td class="num">100 ms nyala / 2900 ms mati</td></tr>
               <tr><td><span class="chip safe">Aman</span></td><td>Senyap</td></tr>
             </tbody>
@@ -752,9 +776,9 @@ Firebase.RTDB.pushJSON(&amp;fbdo, (base + <span class="k">"/history"</span>).c_s
           <div class="bar"></div>
           <div>
             <strong>Model ter-ekspor kecil.</strong> Model 20 pohon dengan
-            kedalaman 8 diekspor ke header C++ sekitar <strong>7,9 KB</strong>
-            (JSON web sekitar 3,4 KB), cukup kecil untuk berjalan di ESP32 tanpa
-            pustaka tambahan. Uji native firmware: <strong>13/13 lolos</strong>.
+            kedalaman 8 diekspor ke header C++ sekitar <strong>7,7 KB</strong>
+            (JSON web sekitar 3,6 KB), cukup kecil untuk berjalan di ESP32 tanpa
+            pustaka tambahan. Uji native firmware: <strong>10/10 lolos</strong>.
           </div>
         </div>
       </section>
@@ -787,6 +811,17 @@ Firebase.RTDB.pushJSON(&amp;fbdo, (base + <span class="k">"/history"</span>).c_s
           </table>
         </div>
 
+        <p>
+          Satu akun bisa dipasangkan lebih dari satu insole, satu per kaki
+          (<code>insole-01</code> untuk kaki kiri, <code>insole-02</code> untuk
+          kaki kanan). Bila ada dua perangkat atau lebih, header menampilkan
+          pemilih perangkat, di baris desktop maupun mobile. Pilihan itu
+          menentukan perangkat yang dibaca seluruh halaman (Dasbor, Monitoring,
+          Riwayat, Insiden), disimpan per akun di peramban, dan dibuang bila
+          perangkatnya tidak lagi dipasangkan. Dengan satu perangkat, pemilihnya
+          tidak muncul dan tampilan tidak berubah.
+        </p>
+
         <h3>6.2 Alur data di web</h3>
         <ol>
           <li><code>firebaseRealtime.ts</code> berlangganan node pembacaan per perangkat.</li>
@@ -799,17 +834,17 @@ Firebase.RTDB.pushJSON(&amp;fbdo, (base + <span class="k">"/history"</span>).c_s
         <p>
           API publiknya <code>inferRisk({ peakPressure, sustainedDuration })</code>
           mengembalikan <code>{ level, score, severity, votes }</code>. Fungsi ini
-          juga mengekspor <code>RISK_THRESHOLDS</code>, <code>SCORE_BANDS</code>,
+          juga mengekspor <code>RISK_THRESHOLDS</code> (dibaca dari
+          <code>rf-model.json</code>), <code>SCORE_BANDS</code>,
           <code>levelFromScore</code>, dan <code>alignScoreToLevel</code> agar
           angka dan level tidak pernah bertentangan.
         </p>
-        <pre><span class="c">// Kontrak klinis yang dijaga di kode (ringkas)</span>
-<span class="k">peak</span> &lt;  <span class="n">35</span> kPa dan durasi &lt; <span class="n">20</span> s   → <span class="k">safe</span>
-<span class="k">peak</span> &gt;= <span class="n">35</span> kPa                     → minimal <span class="k">warning</span>
-<span class="k">peak</span> &gt;= <span class="n">200</span> kPa (satu sampel)        → <span class="k">danger</span> (aturan)
-durasi &gt; ~<span class="n">20</span> s                     → minimal <span class="k">warning</span>
+        <pre><span class="c">// Kontrak yang dijaga di kode (ringkas)</span>
+<span class="k">peak</span> &lt;  <span class="n">45</span> kPa  → <span class="k">safe</span>
+<span class="k">peak</span> &gt;= <span class="n">45</span> kPa  → <span class="k">warning</span>
 
-<span class="c">// Pita skor: safe 0–47, warning 48–74, danger 75–100</span></pre>
+<span class="c">// Durasi bukan penentu tingkat; ia fitur yang dibaca pohon.</span>
+<span class="c">// Pita skor: safe 0–47, warning 48–74.</span></pre>
 
         <div class="callout info">
           <div class="bar"></div>
@@ -823,7 +858,7 @@ durasi &gt; ~<span class="n">20</span> s                     → minimal <span c
 
         <h3>6.4 Early Warning System</h3>
         <p>
-          Saat level naik ke Waspada/Bahaya, aplikasi memicu notifikasi web
+          Saat level naik ke Waspada, aplikasi memicu notifikasi web
           (<em>Web Notification API</em>) dan alarm audio (<em>Web Audio API</em>).
           Izin notifikasi hanya bisa diminta setelah halaman dimuat di konteks
           aman (<code>https://</code> atau <code>localhost</code>), dan tidak
@@ -867,7 +902,7 @@ durasi &gt; ~<span class="n">20</span> s                     → minimal <span c
             <ul style="margin:6px 0 0;font-size:14px">
               <li>Mikrokontroler: ESP32-WROOM-32</li>
               <li>Sensor: 3x FSR 402 per kaki (6 total)</li>
-              <li>Power: LiPo 3.7V 600 mAh + TP4056 + step-up 5V</li>
+              <li>Power: LiPo 3.7V 600 mAh + TP4056 → VIN ESP32 (boost 5V hanya jika brownout)</li>
               <li>Bahasa: C++ (PlatformIO)</li>
               <li>Pustaka: <code>WiFi.h</code>, <code>Firebase_ESP_Client</code></li>
             </ul>
@@ -1022,7 +1057,7 @@ node scripts/export-model-cpp.js      <span class="c"># → firmware/include/rf-
               <tr><td><code>heel_kpa</code></td><td>number</td><td>Tekanan heel (kPa)</td></tr>
               <tr><td><code>sustained_duration_sec</code></td><td>number</td><td>Durasi tumpuan (detik)</td></tr>
               <tr><td><code>risk_score</code></td><td>number</td><td>Skor 0–100</td></tr>
-              <tr><td><code>risk_status</code></td><td>string</td><td><code>safe</code> / <code>warning</code> / <code>danger</code></td></tr>
+              <tr><td><code>risk_status</code></td><td>string</td><td><code>safe</code> / <code>warning</code> (nilai <code>danger</code> lama dibaca sebagai <code>warning</code>)</td></tr>
               <tr><td><code>battery_percent</code></td><td>number?</td><td>Baterai (opsional)</td></tr>
             </tbody>
           </table>
@@ -1106,8 +1141,8 @@ audit/                                <span class="c"># catatan aksi admin</span
             <thead><tr><th>Butir</th><th>Hasil</th><th>Status</th></tr></thead>
             <tbody>
               <tr><td>Pola 3 region saat gait (OptiTrack v2)</td><td>902 fase tumpu, tumit memuncak sebelum forefoot pada 99,9%</td><td><span class="chip safe">Lolos</span></td></tr>
-              <tr><td>Ambang klinis vs peak pressure DFU (Figshare)</td><td>1.296 pengukuran, 19,3% ≥ 35 kPa, 1,4% ≥ 70 kPa</td><td><span class="chip safe">Lolos</span></td></tr>
-              <tr><td>Edge case (kosong, NaN, 500 kPa)</td><td>Semua input degenerat → safe, tidak melempar galat</td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td>Ambang klinis vs peak pressure DFU (Figshare)</td><td>1.296 pengukuran, 9,8% ≥ 45 kPa, 1,4% ≥ 70 kPa</td><td><span class="chip safe">Lolos</span></td></tr>
+              <tr><td>Edge case (kosong, NaN, negatif)</td><td>Semua input degenerat → safe, tidak melempar galat</td><td><span class="chip safe">Lolos</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -1144,17 +1179,18 @@ audit/                                <span class="c"># catatan aksi admin</span
               <tr><td>Pengukuran peak pressure</td><td class="num">1.296</td></tr>
               <tr><td>Median</td><td class="num">18,1 kPa</td></tr>
               <tr><td>Puncak tertinggi</td><td class="num">123,8 kPa</td></tr>
-              <tr><td>≥ ambang warning (35 kPa)</td><td class="num">19,3%</td></tr>
-              <tr><td>≥ ambang danger lama (70 kPa)</td><td class="num">1,4%</td></tr>
-              <tr><td>≥ ambang danger sekarang (200 kPa)</td><td class="num">0,0%</td></tr>
+              <tr><td>≥ ambang waspada (45 kPa)</td><td class="num">9,8%</td></tr>
+              <tr><td>≥ 70 kPa (acuan keparahan)</td><td class="num">1,4%</td></tr>
             </tbody>
           </table>
         </div>
         <p style="font-size:14px;color:var(--muted)">
-          Ambang warning 35 kPa berada di dalam rentang terukur (19,3%
-          melewatinya). Ambang danger 200 kPa tidak pernah tercapai di dataset
-          ini (puncak 123,8 kPa), jadi validasi ini menguatkan arah ambang, bukan
-          ambang danger 200 kPa. Dataset tidak memuat durasi.
+          Ambang 45 kPa berada di dalam rentang terukur: 9,8% pengukuran
+          melewatinya (127 dari 1.296), dan puncak dataset 123,8 kPa. Ambang
+          <em>in-shoe</em> 200 kPa tidak pernah tercapai di dataset ini, satu
+          alasan lagi ia tidak bisa dijadikan batas operasional. Dataset tidak
+          memuat durasi, sehingga validasi ini hanya berlaku untuk ambang
+          tekanan.
         </p>
 
         <h3>11.3 Edge case</h3>
@@ -1166,7 +1202,7 @@ audit/                                <span class="c"># catatan aksi admin</span
               <tr><td><code>NaN</code> / <code>Infinity</code></td><td><span class="chip safe">safe</span></td></tr>
               <tr><td>Tekanan/durasi negatif</td><td><span class="chip safe">safe</span></td></tr>
               <tr><td>500 kPa sesaat</td><td><span class="chip warning">warning</span></td></tr>
-              <tr><td>500 kPa selama 1 s</td><td><span class="chip danger">danger</span></td></tr>
+              <tr><td>500 kPa selama 60 s</td><td><span class="chip warning">warning</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -1233,8 +1269,8 @@ npx vitest run src/utils/randomForestRisk.test.js   <span class="c"># 11.3</span
             <strong>Untuk pengguna akhir.</strong> Bila dashboard menunjukkan
             "tidak terhubung" atau data lama, jangan mengarang pembacaan. Periksa
             apakah perangkat menyala dan Wi-Fi tersambung, lalu muat ulang
-            halaman. Bila status Waspada/Bahaya muncul, kurangi beban pada kaki
-            dan hubungi tenaga medis.
+            halaman. Bila status Waspada muncul, kurangi beban pada kaki dan
+            hubungi tenaga medis.
           </div>
         </div>
       </section>
@@ -1250,9 +1286,9 @@ npx vitest run src/utils/randomForestRisk.test.js   <span class="c"># 11.3</span
           Sistem ini adalah <strong>alat bantu pemantauan, bukan alat
           diagnosis</strong>. Alat ditujukan untuk <strong>pasien
           diabetes</strong>, idealnya dengan neuropati perifer atau riwayat
-          ulkus kaki. Ambang 200 kPa adalah ambang <em>in-shoe</em> dengan
-          konsensus terluas untuk populasi itu (Castro-Martins dkk., 2024),
-          dan seluruh data latih DFN-DS berasal dari pasien diabetes. Alat ini
+          ulkus kaki. Ambang 45 kPa diturunkan dari persentil ke-95 distribusi
+          tekanan pasien diabetes DFN-DS (45,4 kPa) dan masih di dalam rentang
+          FSR 402; seluruh data latih berasal dari pasien diabetes. Alat ini
           bukan alat skrining umum dan tidak ditujukan untuk orang tanpa
           diabetes.
         </p>
@@ -1262,16 +1298,16 @@ npx vitest run src/utils/randomForestRisk.test.js   <span class="c"># 11.3</span
           Pada orang tanpa neuropati, sensasi protektif masih utuh: tekanan
           tinggi terasa nyeri dan otomatis di-<em>offload</em>, sehingga tidak
           menimbulkan ulkus. Karena itu alarm pada pengguna non-diabetes bukan
-          peringatan risiko, melainkan positif palsu. Angka 35 kPa pun bukan
+          peringatan risiko, melainkan positif palsu. Angka 45 kPa pun bukan
           batas cedera, melainkan penanda beban relatif hasil kalibrasi
           dataset.
         </p>
         <p>
-          Ambang 200 kPa praktis tidak pernah tercapai pada data acuan: 0 dari
-          81.000 sampel DFN-DS dan 0 dari 1.296 pengukuran Figshare
-          melampauinya. Alarm bahaya adalah plafon untuk kejadian ekstrem,
-          sedangkan pita yang bekerja sehari-hari adalah 35 kPa selama 20
-          detik.
+          Ambang 45 kPa terlampaui pada 5,4% sampel DFN-DS (4.347 dari 81.000,
+          dari 93 pasien) dan 9,8% pengukuran Figshare (127 dari 1.296). Itu
+          pita yang bekerja sehari-hari: cukup sering untuk memicu tindakan,
+          tidak begitu sering hingga alarm diabaikan. Puncak data acuan 87,06
+          kPa, jadi tidak ada dasar empiris untuk tingkat di atas Waspada.
         </p>
 
         <h3>13.3 Prasyarat pemakaian</h3>
@@ -1284,13 +1320,14 @@ npx vitest run src/utils/randomForestRisk.test.js   <span class="c"># 11.3</span
 
         <h3>13.4 Ancaman validitas</h3>
         <ul>
-          <li><strong>Tidak ada sampel bahaya.</strong> Dataset tidak memuat satu pun sampel <code>danger</code> (0 dari 81.000; puncak DFN-DS 87,06 kPa), sehingga kelas itu diserahkan ke aturan klinis. Akurasi 100% tidak mengukur kemampuan mendeteksi bahaya; bagian itu diukur oleh clinical contract.</li>
-          <li><strong>Sirkularitas label.</strong> Label latih adalah ambang <code>peak &gt;= 35 kPa</code>, dan pohon memisah pada fitur yang sama: 19 dari 20 pohon pada <code>sustained &gt; 0</code>, satu pada <code>peak</code> 34,97 kPa. Akurasi tinggi berarti model mereproduksi aturan yang melabelinya.</li>
+          <li><strong>Dua kelas saja.</strong> Data acuan tidak memuat sampel yang cukup tinggi untuk kelas ketiga (0 dari 81.000 mencapai 200 kPa; puncak DFN-DS 87,06 kPa), dan FSR 402 tidak mampu mengukurnya. Konsekuensinya, alat ini tidak membedakan keparahan di atas Waspada; sekali ambang terlampaui, tindakannya sama.</li>
+          <li><strong>Sirkularitas label.</strong> Label latih adalah ambang <code>peak &gt;= 45 kPa</code>, dan pohon memisah pada fitur yang sama: hampir semua pohon pada <code>sustained &gt; 0</code>, sisanya pada <code>peak</code>. Akurasi tinggi berarti model mereproduksi aturan yang melabelinya. Karena itu tingkat dipegang kontrak dua arah, dan pohon hanya menyumbang skor.</li>
           <li><strong>Populasi.</strong> DFN-DS berisi pasien diabetes, bukan populasi umum. Model belum divalidasi untuk pengguna tanpa riwayat diabetes.</li>
           <li><strong>Jumlah sensor.</strong> Insole memakai 3 sensor per kaki, sedangkan data latih 8 sensor yang diagregasi. Resolusi midfoot hanya tiga titik ukur.</li>
-          <li><strong>Jendela durasi.</strong> Beban 35&ndash;199 kPa yang bertahan lama tetap <code>warning</code>; hanya 200 kPa yang menaikkan ke <code>danger</code>. Tumpu berkepanjangan di bawah 200 kPa tidak pernah menjadi bahaya, dan celah ini wajib disebutkan saat pemakaian alat.</li>
+          <li><strong>Durasi tidak menentukan tingkat.</strong> Rekaman berjalan DFN-DS berhenti di 1,3 detik di atas 45 kPa, jadi syarat durasi panjang tidak dapat diuji pada data ini. Tumpu berkepanjangan baru terlihat pada rekaman statis, dan perilakunya belum diukur.</li>
+          <li><strong>Ketahanan skala.</strong> Pada validasi silang, macro-F1 turun ke 69,7% saat sinyal dikalikan 1,2. Kalibrasi sensor sebelum pemakaian menentukan apakah ambang 45 kPa benar-benar berarti.</li>
           <li><strong>Ambang Figshare.</strong> Dataset DFU tidak memuat durasi, sehingga validasi hanya berlaku untuk ambang tekanan.</li>
-          <li><strong>Uji perangkat fisik.</strong> Firmware terbangun dan lulus uji native (13/13), tetapi uji pada insole fisik belum dijalankan.</li>
+          <li><strong>Uji perangkat fisik.</strong> Firmware terbangun dan lulus uji native (10/10), tetapi uji pada insole fisik belum dijalankan.</li>
         </ul>
       </section>
 
@@ -1316,7 +1353,7 @@ npx vitest run src/utils/randomForestRisk.test.js   <span class="c"># 11.3</span
               <tr><td><code>docs/3d/</code></td><td>Model OpenSCAD, render, STL cek cetak, gambar kerja CADCraft (<code>build-3d.sh</code>)</td></tr>
               <tr><td><code>docs/rf-model-report.md</code></td><td>Laporan model, metrik, clinical contract</td></tr>
               <tr><td><code>docs/validation-report.md</code></td><td>Laporan validasi Fase 3</td></tr>
-              <tr><td><code>docs/evidence/hasil-pengujian-model.html</code></td><td>Paket bukti model: audit data, dua skenario ambang bahaya, validasi silang, uji ketahanan, DFN vs DM (dihasilkan <code>scripts/evidence.js</code>)</td></tr>
+              <tr><td><code>docs/evidence/hasil-pengujian-model.html</code></td><td>Paket bukti model: audit data, validasi silang kelompok per pasien, uji ketahanan terhadap skala, DFN vs DM (dihasilkan <code>scripts/evidence.js</code>)</td></tr>
               <tr><td><code>docs/thesis-methodology.md</code></td><td>Draf Bab III metodologi</td></tr>
               <tr><td><code>docs/thesis-defense.md</code></td><td>Materi sidang dan skrip demo</td></tr>
               <tr><td><code>docs/daftar-pustaka.md</code></td><td>Daftar pustaka APA 7 terverifikasi dan audit metadata sitasi</td></tr>

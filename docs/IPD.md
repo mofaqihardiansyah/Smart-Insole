@@ -14,8 +14,8 @@ dan demo ujung-ke-ujung. Asumsi tempo: 2-3 jam kerja per hari.
 
 | Fase | Isi | Status |
 | --- | --- | --- |
-| 1. Data Preparation | Parse DFN-DS, agregasi 3 region, ekstrak fitur, split 80/20 | Selesai |
-| 2. Model Training | Latih RF hybrid, sweep hyperparameter, ekspor portable | Selesai |
+| 1. Data Preparation | Parse DFN-DS, agregasi 3 region, ekstrak fitur, tanpa split | Selesai |
+| 2. Model Training | Latih RF dua kelas, sweep hyperparameter, ekspor portable | Selesai |
 | 3. Validasi | OptiTrack, Figshare DFU, edge case, kontrak klinis | Selesai |
 | 4. Integration Web | Model asli jalan di dashboard | Selesai |
 | 5. Integration Firmware | Ekspor C++, `RandomForest.cpp`, uji native | 5.1-5.3 selesai, 5.4 belum |
@@ -28,20 +28,21 @@ dan demo ujung-ke-ujung. Asumsi tempo: 2-3 jam kerja per hari.
 - Parse 135 file `.xls` (6001 baris x 17 kolom).
 - Agregasi 8 sensor/kaki menjadi 3 region.
 - Fitur per sampel: `peakPressure` dan `sustainedDuration`.
-- Label: `peak >= 35` menjadi `warning`, selain itu `safe`.
-- Split per pasien 107/28.
+- Label: `peak >= 45` menjadi `warning`, selain itu `safe`; durasi tidak dipakai.
+- Semua 135 pasien masuk data latih; validasi silang 5 lipatan berkelompok per pasien.
 
 ### Fase 2 - Model Training
 
 - Training di Node.js (`scripts/train-model.js`).
 - Sweep: n_trees {20, 50}, max_depth {8, 12}, min_samples {2, 5}.
-- Evaluasi per kelas dan clinical contract.
+- Tiga skema pada lipatan yang sama: aturan murni, RF berbobot kelas, RF + SMOTE.
+- Evaluasi per kelas, kontrak tingkat dua arah, dan sapuan galat penguatan (gain 0,9-1,3).
 - Ekspor ke `models/rf-model.json`.
 
 ### Fase 3 - Validasi
 
 - OptiTrack v2: 310 rekaman, 902 fase tumpu, tumit mendahului forefoot 99,9%.
-- Figshare DFU: 1.296 pengukuran, 19,3% >= 35 kPa, 1,4% >= 70 kPa, 0% >= 200 kPa.
+- Figshare DFU: 1.296 pengukuran, 9,8% >= 45 kPa, 1,4% >= 70 kPa.
 - Edge case: kosong, `NaN`, negatif, 500 kPa tanpa galat.
 
 ### Fase 4 - Integration Web
@@ -53,8 +54,8 @@ dan demo ujung-ke-ujung. Asumsi tempo: 2-3 jam kerja per hari.
 ### Fase 5 - Integration Firmware
 
 - Ekspor C++ (`scripts/export-model-cpp.js`).
-- `RandomForest.cpp`: majority vote, aturan danger, override safe, tanpa dependensi.
-- Uji native 13/13 lolos.
+- `RandomForest.cpp`: kontrak dua arah `peak >= 45 kPa`, skor dari suara pohon, tanpa dependensi.
+- Uji native 10/10 lolos.
 - **Tersisa:** flash ke ESP32 dan uji dengan data sensor nyata.
 
 ### Fase 6 - Dokumentasi & Sidang
@@ -94,10 +95,11 @@ pio test -e native    # bila PlatformIO absen: lewati dan sebutkan
 
 | Risiko | Mitigasi |
 | --- | --- |
-| Tidak ada contoh `danger` di dataset | `danger` dari aturan klinis, bukan RF |
+| Tidak ada contoh tekanan di atas 200 kPa | Hanya dua kelas; ambang 45 kPa dan FSR 402 (≈79 kPa) |
+| Ambang keliru bila FSR tidak dikalibrasi | Sapuan gain dilaporkan; kalibrasi prasyarat sebelum klaim kPa |
 | 8 sensor latih vs 3 sensor insole | Agregasi regional, divalidasi pada OptiTrack |
 | Model terlalu besar untuk ESP32 | 20 pohon, kedalaman 8, header < 100 KB |
-| Overfitting | Split per pasien, validasi silang, kontrak klinis |
+| Overfitting | Validasi silang berkelompok per pasien, kontrak klinis, uji subjek baru |
 
 ## 8. Definisi selesai
 

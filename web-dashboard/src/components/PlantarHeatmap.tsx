@@ -36,17 +36,16 @@ const ZERO_READINGS = { forefoot: 0, midfoot: 0, heel: 0 };
  * against the panel.
  */
 /**
- * Zone colour per pressure value, on the SAME thresholds and the SAME
- * boundaries the risk engine uses (at or above the safe limit is warning,
- * at or above the danger limit is danger). The map used to keep its own
- * 30/70 constants with strict `>`, so a high-pressure foot could read "danger" on
- * the chip and amber on the map.
+ * Zone colour per pressure value, on the SAME threshold and boundary the risk
+ * engine uses (at or above the warning limit is warning). The map used to keep
+ * its own 30/70 constants with strict `>`, so a high-pressure foot could read
+ * "warning" on the chip and amber on the map.
+ *
+ * There is no danger band any more: the highest level is warning, so the map
+ * has exactly two colours.
  */
-const zoneColor = (kpa: number, warningKpa: number, dangerKpa: number) => {
-  if (kpa < warningKpa) return 'rgb(var(--safe))';
-  if (kpa < dangerKpa) return 'rgb(var(--warning))';
-  return 'rgb(var(--danger))';
-};
+const zoneColor = (kpa: number, warningKpa: number) =>
+  kpa < warningKpa ? 'rgb(var(--safe))' : 'rgb(var(--warning))';
 
 /** Node radius in viewBox units: r = 18 + min(kPa, 100) * 0.22 */
 const nodeRadius = (kpa: number) =>
@@ -132,7 +131,7 @@ export default function PlantarHeatmap({
       <defs>
         {NODES.map((node) => {
           const kpa = Number(readings[node.key] ?? 0);
-          const color = zoneColor(kpa, thresholds.warningKpa, thresholds.dangerKpa);
+          const color = zoneColor(kpa, thresholds.warningKpa);
           return (
             <radialGradient
               key={node.key}
@@ -181,8 +180,8 @@ export default function PlantarHeatmap({
         const kpa = Number(readings[node.key] ?? 0);
         const radius = nodeRadius(kpa);
         const value = formatKpa(kpa);
-        const isDanger = kpa >= thresholds.dangerKpa;
-        const color = zoneColor(kpa, thresholds.warningKpa, thresholds.dangerKpa);
+        const isHigh = kpa >= thresholds.warningKpa;
+        const color = zoneColor(kpa, thresholds.warningKpa);
         const label = t(node.labelKey, language);
 
         // The value pill sits above the node so it never covers the blob, and
@@ -200,14 +199,15 @@ export default function PlantarHeatmap({
               cy={node.cy}
               r={radius}
               fill={`url(#heatmap-grad-${node.key})`}
-              className={isDanger ? 'plantar-node-pulse' : undefined}
+              className={isHigh ? 'plantar-node-pulse' : undefined}
             />
 
             {/*
-              A danger node gets a solid ring as well as a colour and a pulse,
-              so the state survives greyscale printing and forced-colors mode.
+              A high-pressure node gets a solid ring as well as a colour and a
+              pulse, so the state survives greyscale printing and forced-colors
+              mode.
             */}
-            {isDanger && (
+            {isHigh && (
               <circle
                 cx={node.cx}
                 cy={node.cy}

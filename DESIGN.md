@@ -62,45 +62,62 @@ by name: sage for the score tile, cream for the duration tile, blue for the
 informational battery and totals. Two hard rules ride along: every tinted card
 still takes the semantic ink for its verdict-bearing parts, so the reading
 never depends on the pastel, and the one risk-count card stays on plain white
-(a cream card behind a danger count would read as decoration over a vital
+(a cream card behind a warning count would read as decoration over a vital
 sign). The darkest surface on the page, `#141414`, exists for exactly one job:
 the headline metric the user is watching.
 
 ## Risk inference: Random Forest
 
-The risk verdict is computed by a **Random Forest** classifier
+The risk verdict is computed by a **two-class Random Forest** classifier
 (`src/utils/randomForestRisk.ts`), trained on **DFN-DS** — 135 patients, 81.000
 plantar-pressure samples — rather than on synthetic data or hand-tuned
-membership functions. The decision boundary is therefore **data-driven**, while
-the clinical contract comes from the expert rules:
+membership functions. The clinical contract fixes the level; the forest's votes
+place the score inside that level's band:
 
-- peak < 35 kPa, not sustained (< 20 s) -> safe
-- peak >= 35 kPa -> at least warning, immediately
-- peak >= 70 kPa, sustained >= 0.1 s (one sample at 10 Hz) -> danger
-  (rule-based override, identical to the firmware's buzzer rule)
+- peak < 45 kPa -> `safe`
+- peak >= 45 kPa -> `warning`, immediately
 
-The split of responsibilities is deliberate. DFN-DS contains only 31 `danger`
-samples (0,05%, 3 patients), far too few for a forest to generalise, and the
-danger threshold is well defined clinically; the forest therefore handles the
-`safe` / `warning` boundary, which covers 99,95% of the data.
+**There is no level above warning.** DFN-DS contains no sample at or above
+200 kPa (its highest peak is 87,06 kPa), only 31 samples in 3 patients reach
+70 kPa, and the FSR 402 itself saturates near 79 kPa, so a third level could be
+neither trained nor measured. Clinically it adds no action either: past the
+warning threshold a neuropathic foot has already lost its protective sensation,
+so the response is the same.
 
-Training: weighted bootstrap over the DFN-DS samples (inverse class frequency,
-capped at 10x), 20 trees, max depth 8, Gini impurity splits, selected by a
-hyperparameter sweep. Held-out validation on the 28-patient split gives 100%
-accuracy and macro-F1 for `safe` vs `warning`; see
+The threshold is the 95th percentile of DFN-DS peak pressure (45,4 kPa, about
+5,7 N on an FSR 402), rounded to 45 kPa; it flags 93 of 135 patients. It is a
+separate number from the 35 kPa **calibration anchor**, which only defines what
+a kPa means on this data (p75 raw mapped to 35 kPa). Changing the calibration
+does not change the class definition.
+
+Duration (`sustained`) stays a model feature and is still displayed, but it does
+not lift a level. DFN-DS is a walking recording: the longest run above the
+threshold is 13 samples (1,3 s), so a duration condition would never fire and
+would only add a dead branch.
+
+Training: 5-fold grouped cross-validation over all 135 patients (no patient
+appears on both sides of a fold), 20 trees, max depth 8, min-samples 4, Gini
+impurity, with SMOTE applied inside the training folds only (17,6 : 1 class
+imbalance). Three schemes — rule alone, class-weighted RF, RF + SMOTE — are run
+on identical folds and score identically, because the label is the rule; the
+exported model is RF + SMOTE, as required. Out-of-fold macro-F1 is 100%, which
+measures agreement with the labelling rule, not generalisation; see
 [`docs/rf-model-report.md`](docs/rf-model-report.md).
 
-Inference is a majority vote; the reported score is the vote proportion mapped
-onto the existing bands (safe 0-47, warning 48-74, danger 75-100), and the
-danger override reports 75. The model ships as committed JSON
+Inference traverses the forest, and the resulting vote proportion is mapped
+**inside the level's own band** (safe 0–47, warning 48–74). Level and score can
+therefore never contradict each other, including for inputs no device could
+produce (for example 210 kPa, which stays `warning`, or 40 kPa held for 45 s,
+which stays `safe`). The model ships as committed JSON
 (`src/utils/rf-model.json`) and as a C++ header for the firmware, so the web
 dashboard and the device compute the same verdict from the same weights.
 
-The clinical thresholds (`RISK_THRESHOLDS`) and score bands (`SCORE_BANDS`)
-live in `src/utils/randomForestRisk.ts`, the same file that runs the inference.
-The contract is asserted in `randomForestRisk.test.js` across the whole sweep:
-if a future change makes a 40 kPa reading "safe", the test fails before a
-patient is told they are fine.
+The clinical threshold (`RISK_THRESHOLDS`, read from the model) and the score
+bands (`SCORE_BANDS`) live in `src/utils/randomForestRisk.ts`, the same file
+that runs the inference. The contract is asserted in
+`randomForestRisk.test.js` across the whole sweep: if a future change makes a
+44 kPa reading `warning` or lets a 40 kPa reading leave `safe`, the test fails
+before a patient is told the wrong thing.
 
 ## Theme: light, and only light
 
@@ -115,8 +132,9 @@ metric card per page (the inverted tile), which is a card fill, not a theme.
 
 ## Palette
 
-Maximum one chromatic chrome colour (the sage accent) plus the three risk
-semantics. Neutrals do not count toward that limit.
+Maximum one chromatic chrome colour (the sage accent) plus the two risk
+semantics; the red reserved for errors and destructive actions is not a risk
+level. Neutrals do not count toward that limit.
 
 | Token | Hex | Role | Measured |
 |---|---|---|---|
@@ -136,11 +154,11 @@ semantics. Neutrals do not count toward that limit.
 | `border-control` | `#78787F` | input and control outlines | 3.80:1 on bg (passes non-text) |
 | `safe` | `#15803D` | risk: Aman / Safe | 5.02:1 on white (AA) |
 | `warning` | `#A16207` | risk: Waspada / Warning | 4.92:1 on white (AA) |
-| `danger` | `#B41E1E` | risk: Bahaya / Danger | 6.68:1 on white (AA) |
-| `danger-hover` | `#961414` | danger button hover fill | white on it 8.72:1 (AAA) |
+| `danger` | `#B41E1E` | errors and destructive actions (not a risk level) | 6.68:1 on white (AA) |
+| `danger-hover` | `#961414` | destructive button hover fill | white on it 8.72:1 (AAA) |
 | `safe-ink` | `#12552D` | written ON `bg-safe/15` | 7.25:1 (AA) |
 | `warning-ink` | `#823700` | on `bg-warning/15` | 6.90:1 (AA) |
-| `danger-ink` | `#821414` | on `bg-danger/15` | 7.89:1 (AA) |
+| `danger-ink` | `#821414` | error text on `bg-danger/15` | 7.89:1 (AA) |
 | `secondary-ink` | `#054B37` | sage text/glyph on `bg-secondary/15` | 8.03:1 (AA) |
 
 ### The Cadra stat-card tints
@@ -166,7 +184,7 @@ darkest surface is reliably the one place the headline number lives:
 | `inverted-muted` | `#A9A9A6` | 7.82:1 (AAA) |
 | `inverted-safe` | `#22C55E` | 8.08:1 on dark; 6.17:1 over the `bg-white/10` chip fill |
 | `inverted-warning` | `#EAB308` | 9.61:1; 7.33:1 over `bg-white/10` |
-| `inverted-danger` | `#F87171` | 6.66:1; 5.08:1 over `bg-white/10` |
+| `inverted-danger` | `#F87171` | 6.66:1; 5.08:1 over `bg-white/10` (rising trend, errors) |
 | `inverted-secondary` | `#34D399` | 9.58:1; 7.31:1 over `bg-white/10` |
 
 ### Why there are ink tokens at all
@@ -322,8 +340,8 @@ Dashboard composition, top to bottom:
    funnel (one third). These are cards, because each holds a plot surface.
 4. **Station 03:** the live reading feed, full width and OPEN: a ruled section
    with no card walls, because a running tape held inside a white box is
-   decoration around data. Each row's pressure reads against the danger
-   threshold as a mini bar painted by that row's own verdict.
+   decoration around data. Each row's pressure reads against the 45 kPa
+   warning threshold as a mini bar painted by that row's own verdict.
 5. **Station 04:** the pressure map, full width, in a card, with the colour
    legend under it.
 
@@ -396,7 +414,7 @@ hierarchy left to express.
 
 - Colour, border and the single `scale-105` on the floating control, on hover
   and focus (state feedback, at or under 150ms).
-- The heatmap's danger-node pulse (draws the eye to the point that needs
+- The heatmap's warning-node pulse (draws the eye to the point that needs
   relief).
 - Number transitions on value change (so the eye can follow the update).
 - One scroll to the pressure map, and only when

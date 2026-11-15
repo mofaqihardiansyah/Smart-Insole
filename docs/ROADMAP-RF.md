@@ -4,7 +4,7 @@
 > ter-validasi, inference module untuk web (`randomForestRisk.ts`) dan
 > firmware (`RandomForest.cpp`).
 >
-> Terakhir diperbarui: 1 November 2026.
+> Terakhir diperbarui: 13 November 2026.
 
 ## Status sekarang
 
@@ -12,12 +12,13 @@
       dari aturan expert, 25 tests lolos
 - [x] Dataset DFN-DS terunduh & terverifikasi (135 pasien, 8 sensor/kaki)
 - [x] Dataset Figshare DFU terverifikasi (threshold reference)
-- [x] **Fase 1 selesai**: `models/training-data.json` (8.3 MB, 81k samples,
-      kalibrasi kuantil p75→35 kPa, split 107/28 pasien, warning threshold 20s)
-- [x] **Fase 2 selesai**: training dengan class weighting (data imbalance) —
-      hybrid RF + rule, 100% accuracy, clinical contract all PASS
-      (lihat [`rf-model-report.md`](rf-model-report.md))
-- [x] **Fase 4 selesai**: model asli jalan di web dashboard (157 tests lolos)
+- [x] **Fase 1 selesai**: `models/training-data.json` v2.0 (81k samples,
+      135 pasien, label `peak >= 45 kPa`, tanpa split — semua pasien untuk
+      validasi silang berkelompok)
+- [x] **Fase 2 selesai**: tiga skema pada lipatan yang sama (aturan, RF
+      berbobot kelas, RF + SMOTE) — 100% macro-F1 karena label adalah aturan;
+      gain-error sweep 60,9-100% (lihat [`rf-model-report.md`](rf-model-report.md))
+- [x] **Fase 4 selesai**: model asli jalan di web dashboard (50 berkas / 424 tes lolos)
 - [ ] Fase 5: tinggal 5.4 (uji di hardware nyata)
 
 Fase 3 (validasi) selesai — lihat [`validation-report.md`](validation-report.md).
@@ -30,8 +31,8 @@ Fase 6: 6.1-6.3 selesai, 6.4 skrip demo siap dan menunggu 5.4.
 - [x] 1.1 Parse 135 file `.xls` DFN-DS (6001 baris × 17 kolom: time + L1-L8 + R1-R8)
 - [x] 1.2 Agregasi 8 sensor/kaki → 3 region (forefoot, midfoot, heel) sesuai layout insole
 - [x] 1.3 Ekstrak fitur per sampel: `peakPressure` + `sustainedDuration` per region
-- [x] 1.4 Label per sampel: `peak >= 35` → `warning`, selain itu `safe` (grup DFN/DM hanya konteks)
-- [x] 1.5 Split train/validation (80/20), simpan sebagai `training-data.json`
+- [x] 1.4 Label per sampel: `peak >= 45` → `warning`, selain itu `safe` (grup DFN/DM hanya konteks)
+- [x] 1.5 Tanpa split internal: seluruh 135 pasien dipakai untuk validasi silang berkelompok
 
 **Output:** `models/training-data.json` + script `scripts/prepare-dataset.py`
 
@@ -42,8 +43,8 @@ Fase 6: 6.1-6.3 selesai, 6.4 skrip demo siap dan menunggu 5.4.
 - [x] 2.1 Implementasi training RF di Node.js (`scripts/train-model.js`)
 - [x] 2.2 Hyperparameter sweep ringan: n_trees {20, 50}, max_depth {8, 12},
       min_samples {2, 5}
-- [x] 2.3 Evaluasi: accuracy, precision, recall, F1 per kelas (safe/warning/danger)
-- [x] 2.4 Cek clinical contract: 40 kPa harus `warning`, 210 kPa harus `danger`
+- [x] 2.3 Evaluasi: accuracy, precision, recall, F1 per kelas (safe/warning)
+- [x] 2.4 Cek clinical contract: 44,9 kPa harus `safe`, 45 kPa harus `warning`
 - [x] 2.5 Pilih model terbaik, export ke format portable (JSON array of trees)
 
 **Output:** `models/rf-model.json` + laporan di [`rf-model-report.md`](rf-model-report.md)
@@ -55,7 +56,7 @@ Fase 6: 6.1-6.3 selesai, 6.4 skrip demo siap dan menunggu 5.4.
 - [x] 3.1 Validasi silang dengan OptiTrack v2 (pola tekanan 3 region saat gait)
       — 310 rekaman, 902 fase tumpu, tumit mendahului forefoot 99,9%
 - [x] 3.2 Cek threshold klinis vs Figshare DFU (peak pressure per region)
-      — 1.296 pengukuran, 19,3% >= 35 kPa, 1,4% >= 70 kPa, 0% >= 200 kPa,
+      — 1.296 pengukuran, 9,8% >= 45 kPa, 1,4% >= 70 kPa, 0% >= 200 kPa,
       puncak 123,8 kPa
 - [x] 3.3 Uji edge case: input kosong, NaN, tekanan ekstrem (500 kPa)
 - [x] 3.4 Uji kontrak klinis pada test suite: edge case dan ambang
@@ -81,8 +82,8 @@ Fase 6: 6.1-6.3 selesai, 6.4 skrip demo siap dan menunggu 5.4.
 **Goal:** model yang sama jalan di ESP32 (on-device inference).
 
 - [x] 5.1 Export model ke C++ (`scripts/export-model-cpp.js` → `firmware/include/rf-model-data.h`)
-- [x] 5.2 Implementasi `RandomForest.cpp` — majority vote, danger rule, safe override, tanpa dependency
-- [x] 5.3 Test native (13/13 PASS — clinical contract sama dengan web)
+- [x] 5.2 Implementasi `RandomForest.cpp` — kontrak dua arah, skor dari suara pohon, tanpa dependency
+- [x] 5.3 Test native (10/10 PASS — clinical contract sama dengan web)
 - [ ] 5.4 Flash ke ESP32, uji dengan data nyata dari sensor (user manual)
 
 **Output:** firmware dengan RF inference, teruji di hardware
@@ -114,7 +115,7 @@ Fase 6: 6.1-6.3 selesai, 6.4 skrip demo siap dan menunggu 5.4.
 
 | Risiko | Mitigasi |
 |---|---|
-| DFN-DS label binary (DFN/DM), tidak ada contoh >= 200 kPa | Label per sampel dari ambang `peak >= 35`; `danger` dari aturan, bukan RF |
+| DFN-DS label binary (DFN/DM), tidak ada contoh >= 200 kPa | Dua kelas saja; label per sampel dari ambang `peak >= 45` |
 | 8 sensor/kaki vs 3 sensor insole | Agregasi regional: L1-L3 → forefoot, L4-L5 → midfoot, L6-L8 → heel |
 | Model terlalu besar untuk ESP32 | Batasi n_trees=20, max_depth=8; ukuran < 100KB |
-| Overfitting ke data training | Validasi silang + uji agreement dengan aturan expert |
+| Overfitting ke data training | Validasi silang berkelompok per pasien + uji subjek baru |

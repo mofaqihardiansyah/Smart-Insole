@@ -1,52 +1,39 @@
 /**
  * Random Forest risk inference for plantar pressure monitoring.
  *
- * Hybrid approach combining:
- *   - Random Forest classifier (data-driven) for safe vs warning
- *   - Rule-based override for danger (clinically well-defined)
+ * Dua kelas: `safe` dan `warning`. Tidak ada level bahaya — level tertinggi
+ * adalah waspada. Alasan klinisnya ada di keputusan proyek: melewati batas
+ * waspada, pasien sudah "mati rasa", jadi tidak ada keadaan yang lebih
+ * mendesak daripada itu.
  *
- * Trained on DFN-DS dataset (135 patients, 81k samples) with quantile
- * calibration (p75 raw 12.39 → 35 kPa, scale 2.82×).
+ * Dilatih pada DFN-DS (135 pasien, 81.000 sampel) dengan kalibrasi kuantil
+ * (p75 mentah 12,39 → 35 kPa, skala 2,82x). Kontrak yang dipegang:
  *
- * The clinical contract:
+ *   - peak <  45 kPa  -> safe
+ *   - peak >= 45 kPa  -> warning
  *
- *   - peak <  35 kPa, not sustained  -> safe
- *   - peak >= 35 kPa                 -> at least warning, immediately
- *   - peak >= 200 kPa (one sample)      -> danger (rule-based)
- *   - any peak sustained past ~20 s  -> at least warning
+ * Kontrak itu dua arah dan sama persis dengan label latih, jadi hutan
+ * mereproduksinya (kesepakatan 100% pada validasi silang). Suara pohon
+ * menentukan skor di dalam pita level, bukan levelnya.
  *
- * The two peak knobs (safe/danger limit) are overridable through the optional
- * `thresholds` argument of `inferRisk`; the duration windows come from the
- * trained model and are not configurable. With no argument the shared
- * RISK_THRESHOLDS defaults apply, which are the same numbers the firmware
- * ships, so device and client agree out of the box.
+ * Tidak ada syarat durasi di kontrak. DFN-DS adalah rekaman berjalan: satu
+ * kaki menapak < 1 detik per langkah, dan run terpanjang di atas 45 kPa hanya
+ * 1,3 detik. `sustained` tetap ada sebagai fitur model (berapa sampel
+ * berturut-turut di atas ambang), bukan sebagai penentu level.
  *
- * Reported score bands: safe 0-47, warning 48-74, danger 75-100.
+ * Ambang datang dari `rf-model.json` (dibuat `scripts/train-model.js`), sama
+ * dengan angka yang diekspor ke header firmware, sehingga web, model, dan
+ * perangkat tidak bisa menyimpang. `thresholds` hanya untuk pengujian.
+ *
+ * Pita skor: safe 0-47, warning 48-74.
  */
 
 import type { RiskLevel, RiskThresholds } from '../types/insole';
 import modelData from './rf-model.json';
 
-/** Clinical thresholds, in kPa and seconds. Single source of truth. */
+/** Clinical thresholds, in kPa. Single source of truth, from the model. */
 export const RISK_THRESHOLDS: Readonly<RiskThresholds> = Object.freeze({
-  warningKpa: 35,
-  // 200 kPa: in-shoe threshold with the broadest consensus (Castro-Martins
-  // et al., Heliyon 2024, e26161).
-  dangerKpa: 200,
-  // Display-only legacy fields. Inference uses DURATION_WINDOWS below; these
-  // stay so a stored settings object still parses.
-  warningSeconds: 20,
-  dangerSeconds: 30,
-});
-
-/** Duration windows the model actually enforces. Not user-editable. */
-export const DURATION_WINDOWS = Object.freeze({
-  /** Run above the warning limit that the RF's `sustained` feature measures. */
-  sustainedWarningSeconds: 20,
-  /** Danger needs one sample: the peak limit is the trigger, not a duration. */
-  dangerSamples: 1,
-  /** Samples at 10 Hz the training labels used as the safe floor. */
-  safeFloorSamples: 200,
+  warningKpa: (modelData as unknown as { rule: { warningKpa: number } }).rule.warningKpa,
 });
 
 /** Reported score bands. `score` is always constrained to its level's band. */
@@ -86,26 +73,13 @@ type RfNode = RfLeaf | RfSplit;
 
 interface RfModel {
   features: ModelFeature[];
-  dangerRule: { peakThreshold: number; sustainedThreshold: number };
+  rule: { warningKpa: number };
   trees: RfNode[];
 }
 
 const MODEL = modelData as unknown as RfModel;
 const TREES = MODEL.trees;
-const DANGER_RULE = MODEL.dangerRule;
 const FEATURES = MODEL.features; // ['peak', 'sustained']
-
-/**
- * Duration windows baked into the trained model, in samples at its 10 Hz.
- * Danger needs one sample (the 200 kPa peak is the trigger); the safe
- * floor is the duration the training labels used (200 samples = 20 s).
- * Neither is client-configurable — the firmware runs the same model, so a
- * duration edit here would make client and device disagree.
- */
-const DURATION_SAMPLES = Object.freeze({
-  danger: DURATION_WINDOWS.dangerSamples,
-  safeFloor: DURATION_WINDOWS.safeFloorSamples,
-});
 
 /** One sample, in the feature space the trees were trained on. */
 interface Sample {
@@ -142,14 +116,6 @@ function vote(sample: Sample): { safe: number; warning: number } {
 }
 
 /* ------------------------------------------------------------------ *
- * Level from votes: RF returns safe or warning (danger is decided by
- * the rule override before the vote ever runs).
- * ------------------------------------------------------------------ */
-function levelFromVotes(totals: { safe: number; warning: number }): 'safe' | 'warning' {
-  return totals.warning > totals.safe ? 'warning' : 'safe';
-}
-
-/* ------------------------------------------------------------------ *
  * Score from votes: map vote proportion to score band.
  * ------------------------------------------------------------------ */
 function scoreFromVotes(
@@ -173,7 +139,7 @@ export interface RiskVerdict {
   level: RiskLevel;
   score: number;
   severity: number;
-  votes: { safe: number; warning: number; danger: number };
+  votes: { safe: number; warning: number };
 }
 
 /**
@@ -183,9 +149,19 @@ export interface RiskVerdict {
  * of a verdict can never disagree on screen.
  */
 export function levelFromScore(score: number): RiskLevel {
-  if (score <= SCORE_BANDS.safeMax) return 'safe';
-  if (score <= SCORE_BANDS.warningMax) return 'warning';
-  return 'danger';
+  return score <= SCORE_BANDS.safeMax ? 'safe' : 'warning';
+}
+
+/**
+ * Memetakan level yang tersimpan ke kontrak dua kelas.
+ *
+ * Baris pembacaan lama masih menyimpan `'danger'` dari versi tiga tingkat.
+ * Nilai itu tidak dibuang dan tidak dibiarkan lolos ke `RiskLevel`: ia
+ * dilipat ke `'warning'`, level tertinggi yang masih ada. Dipakai saat
+ * memuat riwayat dan saat menerima paket dari perangkat lama.
+ */
+export function normaliseRiskLevel(value: unknown): RiskLevel {
+  return value === 'warning' || value === 'danger' ? 'warning' : 'safe';
 }
 
 /**
@@ -193,9 +169,6 @@ export function levelFromScore(score: number): RiskLevel {
  * number and the level can never contradict each other.
  */
 export function alignScoreToLevel(score: number, level: RiskLevel): number {
-  if (level === 'danger') {
-    return Math.min(100, Math.max(SCORE_BANDS.warningMax + 1, score));
-  }
   if (level === 'warning') {
     return Math.min(
       SCORE_BANDS.warningMax,
@@ -206,14 +179,12 @@ export function alignScoreToLevel(score: number, level: RiskLevel): number {
 }
 
 /**
- * Hybrid inference: RF for safe/warning + rule for danger.
+ * Inference: forest vote plus the warning floor.
  *
- * `thresholds` overrides the two peak knobs (safe/danger limit) that Settings
- * and the admin global config edit. The duration windows come from the trained
- * model (danger needs one sample, safe floor at 20 s) and are deliberately
- * NOT configurable: the forest was trained on them, and the firmware runs the
- * same model, so honouring client-side duration edits here would make the
- * client disagree with the device that measured the foot.
+ * `thresholds` overrides the peak limit; production uses RISK_THRESHOLDS,
+ * which comes from the model artifact and is the same number the firmware
+ * ships. Duration is a model feature only — it never promotes a level here,
+ * because the training labels never used it either.
  */
 export function inferRisk({
   peakPressure,
@@ -232,48 +203,24 @@ export function inferRisk({
   // Convert duration from seconds to samples (10 Hz sampling)
   const sustainedSamples = Math.round(duration * 10);
 
-  // Rule-based overrides (clinical contract):
-
-  // 1. Danger: peak >= danger limit on this sample (no duration requirement)
-  if (
-    pressure >= thresholds.dangerKpa &&
-    sustainedSamples >= DURATION_SAMPLES.danger
-  ) {
-    return {
-      level: 'danger',
-      score: 75,
-      severity: 75,
-      votes: { safe: 0, warning: 0, danger: TREES.length },
-    };
-  }
-
-  // 2. Safe: peak < warning limit AND sustained < the model's 20 s floor
-  // This overrides RF because in DFN-DS, sustained is only > 0 when peak >= 35
-  if (pressure < thresholds.warningKpa && sustainedSamples < DURATION_SAMPLES.safeFloor) {
-    return {
-      level: 'safe',
-      score: 0,
-      severity: 0,
-      votes: { safe: TREES.length, warning: 0, danger: 0 },
-    };
-  }
-
-  // RF classifier for safe vs warning
   const totals = vote({ peak: pressure, sustained: sustainedSamples });
-  // The forest only saw sustained > 0 at peak >= 35 kPa during training, so a
-  // lowered safe limit can push an out-of-distribution pair (e.g. 30 kPa
-  // sustained) into a "safe" leaf it never saw. The contract is "at or above
-  // the safe limit is at least warning" — enforce it over the vote.
-  const voted = levelFromVotes(totals);
-  const level =
-    voted === 'safe' && pressure >= thresholds.warningKpa ? 'warning' : voted;
+
+  // The training label IS the rule (`peak >= warningKpa`), so the forest was
+  // trained to reproduce it and does — 100% agreement in cross-validation. A
+  // tree can still only pick a split from its quantile candidates, and a pair
+  // the training data never contained (low peak, long duration) can land in a
+  // warning leaf. So the contract is applied on both sides of the boundary and
+  // the forest's vote only decides the score inside the band. The firmware
+  // applies the same contract, so client and device cannot disagree.
+  const level: RiskLevel =
+    pressure >= thresholds.warningKpa ? 'warning' : 'safe';
   const score = scoreFromVotes(totals, level);
 
   return {
     level,
     score,
     severity: score,
-    votes: { ...totals, danger: 0 },
+    votes: totals,
   };
 }
 
@@ -298,4 +245,5 @@ export default {
   classifyRisk,
   levelFromScore,
   alignScoreToLevel,
+  normaliseRiskLevel,
 };

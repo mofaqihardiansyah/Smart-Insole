@@ -1,14 +1,21 @@
 #!/usr/bin/env node
 /**
- * evidence.js — paket bukti model Random Forest.
+ * evidence.js — paket bukti model Random Forest dua kelas.
  *
  * Menjalankan semua pengukuran di memori dari data mentah, lalu menulis laporan,
  * grafik, dan angka ke `docs/evidence/`. Tidak menyentuh model produksi
  * (`models/rf-model.json`), header firmware, atau kode aplikasi.
  *
- * Skenario ambang bahaya dijalankan dua kali: 200 kPa (kondisi sekarang) dan
- * 70 kPa (usulan yang sesuai Bab II). Dua-duanya dilaporkan supaya keputusan
- * ambang bisa diambil dengan angka, bukan opini.
+ * Sejak kontrak 2 kelas (45 kPa), pertanyaan yang dijawab paket ini berubah.
+ * Bukan lagi "ambang bahaya mana yang dipilih", melainkan:
+ *
+ *   1. Apakah model benar-benar belajar, atau hanya menyalin aturan label?
+ *   2. Seberapa cepat ia runtuh saat sensor salah kalibrasi?
+ *   3. Apakah tekanan membawa sinyal pada label yang tidak dibuat sendiri
+ *      (DFN vs DM)?
+ *
+ * Validasi silang dipanggil dari `scripts/train-model.js`, bukan disalin, supaya
+ * angka di laporan dan angka di log pelatihan tidak bisa berbeda protokol.
  *
  * Usage: node scripts/evidence.js
  */
@@ -17,9 +24,10 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { execFileSync } = require('child_process');
-const { createRng, trainForest, voteCounts } = require('./lib/forest');
+const { createRng } = require('./lib/forest');
 const charts = require('./lib/charts');
 const sessionCv = require('./train-session-model');
+const trainer = require('./train-model');
 
 const ROOT = path.resolve(__dirname, '..');
 const TRAINING_DATA = path.join(ROOT, 'models', 'training-data.json');
@@ -29,31 +37,22 @@ const RF_HEADER = path.join(ROOT, 'firmware', 'include', 'rf-model-data.h');
 const OUT_DIR = path.join(ROOT, 'docs', 'evidence');
 const CHART_DIR = path.join(OUT_DIR, 'charts');
 
-const SEED = 42;
-const FOLDS = 5;
-const WARNING_KPA = 35;
-const SAFE_FLOOR_SAMPLES = 200; // 20 detik pada 10 Hz
-const DANGER_SUSTAINED_SAMPLES = 1;
-const TWO_CLASS = ['safe', 'warning'];
-const SCENARIOS = [200, 70];
+const SEED = trainer.SEED;
+const FOLDS = trainer.FOLDS;
+const LEVELS = trainer.LEVELS;
+const FEATURES = trainer.FEATURES;
+
+// Level dan skor diturunkan persis seperti `randomForestRisk.ts` dan
+// `RandomForest.cpp`: kontrak dua arah menentukan level, suara pohon hanya
+// menempatkan skor di dalam pita level itu.
+const SCORE_BANDS = { safeMax: 47, warningMax: 74 };
 
 const PALETTE = charts.PALETTE;
 const LEVEL_COLORS = {
   safe: PALETTE.safe,
   warning: PALETTE.warning,
-  danger: PALETTE.danger,
 };
-const LEVEL_LABELS = { safe: 'Aman', warning: 'Waspada', danger: 'Bahaya' };
-
-const CONTRACT = [
-  { peak: 40, seconds: 1, expect: { 200: 'warning', 70: 'warning' } },
-  { peak: 34, seconds: 0, expect: { 200: 'safe', 70: 'safe' } },
-  { peak: 30, seconds: 0, expect: { 200: 'safe', 70: 'safe' } },
-  { peak: 70, seconds: 1, expect: { 200: 'warning', 70: 'danger' } },
-  { peak: 199, seconds: 31, expect: { 200: 'warning', 70: 'danger' } },
-  { peak: 200, seconds: 1, expect: { 200: 'danger', 70: 'danger' } },
-  { peak: 210, seconds: 1, expect: { 200: 'danger', 70: 'danger' } },
-];
+const LEVEL_LABELS = { safe: 'Aman', warning: 'Waspada' };
 
 /* --------------------------------------------------------------- helpers --- */
 
@@ -64,6 +63,9 @@ const id = (value, digits = 0) =>
   });
 
 const pct = (value, digits = 1) => `${id(value * 100, digits)}%`;
+
+/** Gain factor in the Indonesian report style, e.g. `×0,9`. */
+const gainLabel = (factor) => `×${id(factor, 1)}`;
 
 function mean(values) {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
@@ -86,17 +88,6 @@ function gaussian(rng) {
   while (u === 0) u = rng();
   while (v === 0) v = rng();
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-}
-
-function classWeights(samples, labels) {
-  const counts = {};
-  for (const label of labels) counts[label] = 0;
-  for (const sample of samples) counts[sample.label] = (counts[sample.label] || 0) + 1;
-  const weights = {};
-  for (const label of labels) {
-    weights[label] = Math.min(10, samples.length / (labels.length * Math.max(1, counts[label])));
-  }
-  return weights;
 }
 
 function countNodes(tree) {
@@ -127,32 +118,44 @@ function forestVote(trees, sample) {
   return { safe, warning };
 }
 
-/** Same order of checks as `randomForestRisk.ts` and `RandomForest.cpp`. */
-function hybridLevel(model, sample, dangerKpa) {
-  const peak = Math.max(0, sample.peak);
-  const sustained = Math.max(0, Math.round(sample.sustained));
-  if (peak >= dangerKpa && sustained >= DANGER_SUSTAINED_SAMPLES) return 'danger';
-  if (peak < WARNING_KPA && sustained < SAFE_FLOOR_SAMPLES) return 'safe';
-  const totals = forestVote(model.trees, { peak, sustained });
-  const voted = totals.warning > totals.safe ? 'warning' : 'safe';
-  return voted === 'safe' && peak >= WARNING_KPA ? 'warning' : voted;
+function scoreFromVotes(totals, level) {
+  const total = totals.safe + totals.warning;
+  const proportion = total > 0 ? totals[level] / total : 0;
+  if (level === 'warning') {
+    return Math.min(
+      SCORE_BANDS.warningMax,
+      Math.max(SCORE_BANDS.safeMax + 1, Math.round(48 + proportion * 27))
+    );
+  }
+  return Math.min(SCORE_BANDS.safeMax, Math.max(0, Math.round(proportion * 48)));
 }
 
-const ruleLevel = (sample) => (sample.peak >= WARNING_KPA ? 'warning' : 'safe');
+/** Kontrak tingkat, dua arah, sama dengan web dan firmware. */
+function contractLevel(sample) {
+  return sample.peak >= sample.warningKpa ? 'warning' : 'safe';
+}
+
+/** Satu inferensi penuh: level dari kontrak, skor dari suara pohon. */
+function infer(model, sample, warningKpa) {
+  const clean = {
+    peak: Math.max(0, sample.peak),
+    sustained: Math.max(0, Math.round(sample.sustained)),
+  };
+  const level = contractLevel({ ...clean, warningKpa });
+  const votes = forestVote(model.trees, clean);
+  return { level, score: scoreFromVotes(votes, level), votes };
+}
+
+const ruleLevel = (sample, warningKpa) => (sample.peak >= warningKpa ? 'warning' : 'safe');
 
 /* -------------------------------------------------------------- metrics ---- */
 
-/**
- * Confusion-based classification metrics. `extraCols` catches predictions
- * outside the label set (a `danger` prediction counts against its true class).
- */
-function classify(actual, predicted, rowLabels = TWO_CLASS, extraCols = ['danger']) {
-  const colLabels = [...rowLabels, ...extraCols];
-  const matrix = rowLabels.map(() => colLabels.map(() => 0));
+function classify(actual, predicted, rowLabels = LEVELS) {
+  const matrix = rowLabels.map(() => rowLabels.map(() => 0));
   let correct = 0;
   for (let i = 0; i < actual.length; i += 1) {
     const r = rowLabels.indexOf(actual[i]);
-    const c = colLabels.indexOf(predicted[i]);
+    const c = rowLabels.indexOf(predicted[i]);
     if (r < 0 || c < 0) continue;
     matrix[r][c] += 1;
     if (actual[i] === predicted[i]) correct += 1;
@@ -166,24 +169,22 @@ function classify(actual, predicted, rowLabels = TWO_CLASS, extraCols = ['danger
     let fn = 0;
     rowLabels.forEach((_, rr) => {
       if (rr !== r) fp += matrix[rr][r];
-    });
-    colLabels.forEach((_, cc) => {
-      if (cc !== r) fn += matrix[r][cc];
+      if (rr !== r) fn += matrix[r][rr];
     });
     const precision = tp + fp > 0 ? tp / (tp + fp) : 0;
     const recall = tp + fn > 0 ? tp / (tp + fn) : 0;
     const f1 = precision + recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
-    perClass[label] = { precision, recall, f1, support: tp + fn };
+    perClass[label] = { precision, recall, f1, support: tp + fn, tp, fp, fn };
     macroF1 += f1;
   });
 
   return {
-    accuracy: correct / actual.length,
+    accuracy: correct / Math.max(1, actual.length),
     macroF1: macroF1 / rowLabels.length,
     perClass,
     matrix,
     rowLabels,
-    colLabels,
+    colLabels: rowLabels,
   };
 }
 
@@ -214,17 +215,18 @@ function rocPoints(scored) {
 /* ----------------------------------------------------------------- data ---- */
 
 /**
- * The dataset artifact stores the sample label as `level`; `trainForest` reads
+ * The dataset artifact stores the sample label as `level`; the trainer reads
  * `label`. Normalise once here so every consumer sees the same field name.
  */
-function normalisePatient(patient, split) {
+function normalisePatient(patient) {
   return {
     ...patient,
-    split,
-    samples: patient.samples.map((sample) => {
-      const { level, ...rest } = sample;
-      return { ...rest, label: level };
-    }),
+    samples: patient.samples.map((sample) => ({
+      ...sample,
+      // The trainer reads `level`; the evidence code reads `label`. Keeping
+      // both avoids a silent `undefined` label when the protocol is reused.
+      label: sample.level,
+    })),
   };
 }
 
@@ -232,40 +234,22 @@ function loadPatients() {
   const data = JSON.parse(fs.readFileSync(TRAINING_DATA, 'utf8'));
   return {
     meta: data,
-    patients: [
-      ...data.train.map((patient) => normalisePatient(patient, 'train')),
-      ...data.validation.map((patient) => normalisePatient(patient, 'validation')),
-    ],
+    patients: data.patients.map(normalisePatient),
   };
 }
 
-function audit(patients, meta) {
-  const bySplit = (split) => patients.filter((patient) => patient.split === split);
-  const samples = (split) => bySplit(split).flatMap((patient) => patient.samples);
+function audit(patients, meta, warningKpa) {
+  const allSamples = patients.flatMap((patient) => patient.samples);
 
-  const splitSummary = {};
-  for (const split of ['train', 'validation']) {
-    const rows = samples(split);
-    const labels = { safe: 0, warning: 0 };
-    const groups = { DFN: 0, DM: 0 };
-    for (const patient of bySplit(split)) groups[patient.group] = (groups[patient.group] || 0) + 1;
-    for (const sample of rows) labels[sample.label] += 1;
-    splitSummary[split] = {
-      patients: bySplit(split).length,
-      samples: rows.length,
-      labels,
-      groups,
-      maxPeak: Math.max(...rows.map((row) => row.peak)),
-      maxSustained: Math.max(...rows.map((row) => row.sustained)),
-      atOrAbove: {
-        35: rows.filter((row) => row.peak >= 35).length,
-        70: rows.filter((row) => row.peak >= 70).length,
-        200: rows.filter((row) => row.peak >= 200).length,
-      },
-    };
-  }
+  const labels = { safe: 0, warning: 0 };
+  const groups = { DFN: 0, DM: 0 };
+  for (const patient of patients) groups[patient.group] = (groups[patient.group] || 0) + 1;
+  for (const sample of allSamples) labels[sample.label] += 1;
 
-  const allSamples = samples('train').concat(samples('validation'));
+  const atOrAbove = (kpa) => allSamples.filter((sample) => sample.peak >= kpa).length;
+  const patientsAtOrAbove = (kpa) =>
+    patients.filter((patient) => patient.samples.some((sample) => sample.peak >= kpa)).length;
+
   const binWidth = 2.5;
   const binCount = 36; // 0 - 90 kPa
   const bins = Array.from({ length: binCount }, (_, index) => ({
@@ -282,10 +266,9 @@ function audit(patients, meta) {
     .map((patient) => ({
       id: patient.patient,
       group: patient.group,
-      split: patient.split,
       maxPeak: Math.max(...patient.samples.map((sample) => sample.peak)),
-      atOrAbove70: patient.samples.filter((sample) => sample.peak >= 70).length,
-      atOrAbove200: patient.samples.filter((sample) => sample.peak >= 200).length,
+      warningSamples: patient.samples.filter((sample) => sample.label === 'warning').length,
+      samples: patient.samples.length,
     }))
     .sort((a, b) => a.maxPeak - b.maxPeak);
 
@@ -293,211 +276,109 @@ function audit(patients, meta) {
     source: meta.source,
     version: meta.version,
     calibration: meta.calibration,
+    labelRule: meta.labelRule,
     features: meta.features,
-    splits: splitSummary,
+    warningKpa,
     totals: {
       patients: patients.length,
       samples: allSamples.length,
+      labels,
+      groups,
+      imbalance: labels.warning ? labels.safe / labels.warning : 0,
       atOrAbove: {
-        35: allSamples.filter((sample) => sample.peak >= 35).length,
-        70: allSamples.filter((sample) => sample.peak >= 70).length,
-        200: allSamples.filter((sample) => sample.peak >= 200).length,
+        warning: atOrAbove(warningKpa),
+        fifty: atOrAbove(50),
+        seventy: atOrAbove(70),
+      },
+      patientsAtOrAbove: {
+        warning: patientsAtOrAbove(warningKpa),
+        seventy: patientsAtOrAbove(70),
       },
       maxPeak: Math.max(...allSamples.map((sample) => sample.peak)),
+      maxSustained: Math.max(...allSamples.map((sample) => sample.sustained)),
     },
     bins,
     patients: patientRows,
   };
 }
 
-/* ----------------------------------------------------------- predictors ---- */
+/* --------------------------------------------------- cross-validation ------- */
 
-function evaluatePredictors(patients, model) {
-  const trainSamples = patients
-    .filter((patient) => patient.split === 'train')
-    .flatMap((patient) => patient.samples);
-  const valPatients = patients.filter((patient) => patient.split === 'validation');
-  const valSamples = valPatients.flatMap((patient) => patient.samples);
+function crossValidation(patients, warningKpa) {
+  const run = trainer.crossValidate(patients, warningKpa);
 
-  const singleTree = trainForest(
-    trainSamples,
-    ['peak', 'sustained'],
-    classWeights(trainSamples, TWO_CLASS),
-    1,
-    8,
-    4,
-    createRng(SEED)
-  );
-  const refit = trainForest(
-    trainSamples,
-    ['peak', 'sustained'],
-    classWeights(trainSamples, TWO_CLASS),
-    20,
-    8,
-    4,
-    createRng(SEED)
-  );
-
-  const predictors = [
-    { key: 'rule', name: 'Aturan murni', predict: (sample) => ruleLevel(sample) },
-    {
-      key: 'singleTree',
-      name: 'Pohon tunggal (d=8)',
-      predict: (sample) => (forestVote(singleTree, sample).warning >
-        forestVote(singleTree, sample).safe
-        ? 'warning'
-        : 'safe'),
-    },
-    {
-      key: 'rf',
-      name: 'Random Forest (20 pohon)',
-      predict: (sample) => {
-        const totals = forestVote(refit, sample);
-        return totals.warning > totals.safe ? 'warning' : 'safe';
-      },
-    },
-    {
-      key: 'shipped',
-      name: 'RF produksi (models/rf-model.json)',
-      predict: (sample) => {
-        const totals = forestVote(model.trees, sample);
-        return totals.warning > totals.safe ? 'warning' : 'safe';
-      },
-    },
-    { key: 'hybrid200', name: 'Hybrid 200 kPa (produksi)', predict: (sample) => hybridLevel(model, sample, 200) },
-    { key: 'hybrid70', name: 'Hybrid 70 kPa', predict: (sample) => hybridLevel(model, sample, 70) },
-  ];
-
-  const actual = valSamples.map((sample) => sample.label);
-  const results = predictors.map((predictor) => {
-    const predicted = valSamples.map((sample) => predictor.predict(sample));
-    const metrics = classify(actual, predicted);
-    let agreement = 0;
-    const baseline = valSamples.map((sample) => ruleLevel(sample));
-    for (let i = 0; i < predicted.length; i += 1) if (predicted[i] === baseline[i]) agreement += 1;
+  const schemes = run.schemes.map((name, index) => {
+    const metrics = trainer.summarise(run.pooled[name]);
     return {
-      key: predictor.key,
-      name: predictor.name,
+      key: name,
+      name,
       accuracy: metrics.accuracy,
       macroF1: metrics.macroF1,
-      perClass: metrics.perClass,
-      matrix: metrics.matrix,
-      rowLabels: metrics.rowLabels,
-      colLabels: metrics.colLabels,
-      agreementWithRule: agreement / predicted.length,
-      dangerPredictions: predicted.filter((level) => level === 'danger').length,
-    };
-  });
-
-  return { valSamples, results };
-}
-
-/* --------------------------------------------------- cross-validation ------ */
-
-function patientFolds(patients, k, seed) {
-  const rng = createRng(seed);
-  const buckets = {};
-  for (const patient of patients) {
-    if (!buckets[patient.group]) buckets[patient.group] = [];
-    buckets[patient.group].push(patient);
-  }
-  const folds = Array.from({ length: k }, () => []);
-  for (const key of Object.keys(buckets)) {
-    const list = buckets[key].slice();
-    for (let i = list.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(rng() * (i + 1));
-      [list[i], list[j]] = [list[j], list[i]];
-    }
-    list.forEach((patient, index) => folds[index % k].push(patient));
-  }
-  return folds;
-}
-
-function crossValidateSamples(patients, model) {
-  const folds = patientFolds(patients, FOLDS, SEED);
-  const schemes = [
-    { key: 'rule', name: 'Aturan murni', folds: [] },
-    { key: 'singleTree', name: 'Pohon tunggal', folds: [] },
-    { key: 'rf', name: 'Random Forest (20 pohon)', folds: [] },
-  ];
-
-  folds.forEach((foldPatients, foldIndex) => {
-    const trainPatients = folds.filter((_, index) => index !== foldIndex).flat();
-    const trainSamples = trainPatients.flatMap((patient) => patient.samples);
-    const testSamples = foldPatients.flatMap((patient) => patient.samples);
-    const actual = testSamples.map((sample) => sample.label);
-
-    const single = trainForest(
-      trainSamples,
-      ['peak', 'sustained'],
-      classWeights(trainSamples, TWO_CLASS),
-      1,
-      8,
-      4,
-      createRng(SEED + foldIndex)
-    );
-    const forest = trainForest(
-      trainSamples,
-      ['peak', 'sustained'],
-      classWeights(trainSamples, TWO_CLASS),
-      20,
-      8,
-      4,
-      createRng(SEED + foldIndex)
-    );
-
-    const vote = (trees, sample) => {
-      const totals = forestVote(trees, sample);
-      return totals.warning > totals.safe ? 'warning' : 'safe';
-    };
-
-    const predictions = {
-      rule: testSamples.map((sample) => ruleLevel(sample)),
-      singleTree: testSamples.map((sample) => vote(single, sample)),
-      rf: testSamples.map((sample) => vote(forest, sample)),
-    };
-
-    for (const scheme of schemes) {
-      const metrics = classify(actual, predictions[scheme.key], TWO_CLASS, []);
-      scheme.folds.push({
+      perLevel: metrics.perLevel,
+      folds: run.perFold[index].map((fold, foldIndex) => ({
         fold: foldIndex + 1,
-        patients: foldPatients.length,
-        samples: testSamples.length,
-        accuracy: metrics.accuracy,
-        macroF1: metrics.macroF1,
-      });
-    }
+        patients: run.foldLog[foldIndex].patients,
+        samples: run.foldLog[foldIndex].samples,
+        accuracy: fold.accuracy,
+        macroF1: fold.macroF1,
+        recallWarning: fold.perLevel.warning.recall,
+      })),
+    };
   });
 
-  return schemes.map((scheme) => ({
-    key: scheme.key,
-    name: scheme.name,
-    accuracyMean: mean(scheme.folds.map((fold) => fold.accuracy)),
-    accuracySd: sd(scheme.folds.map((fold) => fold.accuracy)),
-    macroF1Mean: mean(scheme.folds.map((fold) => fold.macroF1)),
-    macroF1Sd: sd(scheme.folds.map((fold) => fold.macroF1)),
-    folds: scheme.folds,
+  const gain = trainer.GAINS.map((factor) => {
+    const row = { gain: factor, schemes: {} };
+    for (const name of run.schemes) {
+      const metrics = trainer.summarise(run.gainPairs[factor][name]);
+      row.schemes[name] = {
+        macroF1: metrics.macroF1,
+        falsePositives: metrics.perLevel.warning.fp,
+        falseNegatives: metrics.perLevel.warning.fn,
+      };
+    }
+    return row;
+  });
+
+  const shippedPairs = run.pooled['RF + SMOTE'].map(({ actual, predicted }) => ({
+    actual,
+    predicted,
   }));
+  const confusion = classify(
+    shippedPairs.map((pair) => pair.actual),
+    shippedPairs.map((pair) => pair.predicted)
+  );
+
+  return {
+    schemes,
+    gain,
+    confusion,
+    folds: run.foldLog.map((entry) => ({
+      fold: entry.fold,
+      patients: entry.patients,
+      samples: entry.samples,
+      warningSamples: entry.warningSamples,
+      trainSamples: entry.trainSamples,
+      trainWarning: entry.trainWarning,
+      smote: entry.smote,
+    })),
+  };
 }
 
 /* ------------------------------------------------------------ robustness --- */
 
-function perturb(patient, transform) {
+function perturbPatient(patient, transform, warningKpa) {
   let run = 0;
   return patient.samples.map((sample) => {
     let [f, m, h] = [sample.forefoot, sample.midfoot, sample.heel];
     [f, m, h] = transform(f, m, h);
     const peak = Math.max(0, f, m, h);
-    run = peak >= WARNING_KPA ? run + 1 : 0;
+    run = peak >= warningKpa ? run + 1 : 0;
     return { peak, sustained: run, label: sample.label };
   });
 }
 
-function robustness(patients, model) {
-  const valPatients = patients.filter((patient) => patient.split === 'validation');
+function robustness(patients, model, warningKpa) {
   const rng = createRng(SEED);
-  const noise = {};
-  for (let i = 0; i < 1000; i += 1) noise[i] = gaussian(rng);
 
   const scenarios = [
     { key: 'clean', name: 'Bersih (hitung ulang)', transform: (f, m, h) => [f, m, h] },
@@ -506,9 +387,9 @@ function robustness(patients, model) {
       name: `Noise ${Math.round(sigma * 100)}%`,
       transform: (f, m, h) => [f, m, h].map((value) => Math.max(0, value * (1 + gaussian(rng) * sigma))),
     })),
-    ...[0.8, 0.9, 1.1, 1.2].map((factor) => ({
+    ...[0.9, 1.0, 1.1, 1.2].map((factor) => ({
       key: `gain${Math.round(factor * 100)}`,
-      name: `Gain ×${factor.toFixed(1)}`,
+      name: `Gain ${gainLabel(factor)}`,
       transform: (f, m, h) => [f * factor, m * factor, h * factor],
     })),
     ...[
@@ -526,49 +407,78 @@ function robustness(patients, model) {
     })),
   ];
 
-  const cleanPredictions = [];
+  let cleanLevels = [];
   const rows = scenarios.map((scenario) => {
     const actual = [];
-    const predicted = [];
-    for (const patient of valPatients) {
-      for (const sample of perturb(patient, scenario.transform)) {
+    const levels = [];
+    for (const patient of patients) {
+      for (const sample of perturbPatient(patient, scenario.transform, warningKpa)) {
         actual.push(sample.label);
-        predicted.push(hybridLevel(model, sample, 200));
+        levels.push(infer(model, sample, warningKpa).level);
       }
     }
-    if (scenario.key === 'clean') cleanPredictions.push(...predicted);
-    const metrics = classify(actual, predicted);
+    if (scenario.key === 'clean') cleanLevels = levels;
+    const metrics = classify(actual, levels);
     let flips = 0;
-    if (cleanPredictions.length === predicted.length && scenario.key !== 'clean') {
-      for (let i = 0; i < predicted.length; i += 1) {
-        if (predicted[i] !== cleanPredictions[i]) flips += 1;
-      }
+    if (scenario.key !== 'clean' && cleanLevels.length === levels.length) {
+      for (let i = 0; i < levels.length; i += 1) if (levels[i] !== cleanLevels[i]) flips += 1;
     }
     return {
       key: scenario.key,
       name: scenario.name,
       accuracy: metrics.accuracy,
       macroF1: metrics.macroF1,
-      flipRate: scenario.key === 'clean' ? 0 : flips / predicted.length,
-      dangerPredictions: predicted.filter((level) => level === 'danger').length,
+      flipRate: scenario.key === 'clean' ? 0 : flips / Math.max(1, levels.length),
+      warningCount: levels.filter((level) => level === 'warning').length,
     };
   });
 
-  return { rows, samples: cleanPredictions.length };
+  return { rows, samples: cleanLevels.length };
 }
 
-/* ------------------------------------------------------- threshold map ----- */
+/* ----------------------------------------------------- contract & score ---- */
 
-function thresholdMap(model, dangerKpa) {
+function contractCases(model, warningKpa) {
+  const cases = [
+    { peak: 20, seconds: 0, expected: 'safe' },
+    { peak: 40, seconds: 3, expected: 'safe' },
+    { peak: 44.9, seconds: 12, expected: 'safe' },
+    { peak: warningKpa, seconds: 1, expected: 'warning' },
+    { peak: 60, seconds: 5, expected: 'warning' },
+    { peak: 80, seconds: 2, expected: 'warning' },
+    { peak: 210, seconds: 45, expected: 'warning' },
+    { peak: 500, seconds: 60, expected: 'warning' },
+  ];
+
+  return cases.map((item) => {
+    const verdict = infer(model, { peak: item.peak, sustained: item.seconds * 10 }, warningKpa);
+    return {
+      peak: item.peak,
+      seconds: item.seconds,
+      expected: item.expected,
+      level: verdict.level,
+      score: verdict.score,
+      pass: verdict.level === item.expected &&
+        (verdict.level === 'warning'
+          ? verdict.score > SCORE_BANDS.safeMax && verdict.score <= SCORE_BANDS.warningMax
+          : verdict.score >= 0 && verdict.score <= SCORE_BANDS.safeMax),
+    };
+  });
+}
+
+function scoreMap(model, warningKpa) {
   const peaks = [];
   for (let value = 0; value <= 220; value += 4) peaks.push(value);
   const durations = [];
-  for (let value = 0; value <= 60; value += 2) durations.push(value);
+  for (let value = 0; value <= 60; value += 4) durations.push(value);
 
-  const cells = durations.map((seconds) =>
-    peaks.map((peak) => hybridLevel(model, { peak, sustained: seconds * 10 }, dangerKpa))
+  const levels = durations.map((seconds) =>
+    peaks.map((peak) => infer(model, { peak, sustained: seconds * 10 }, warningKpa).level)
   );
-  return { peaks, durations, cells };
+  const scores = durations.map((seconds) =>
+    peaks.map((peak) => infer(model, { peak, sustained: seconds * 10 }, warningKpa).score)
+  );
+  return { peaks, durations, levels, scores };
 }
 
 /* --------------------------------------------------------- session task ---- */
@@ -629,21 +539,18 @@ function sessionEvidence() {
 
 /* ---------------------------------------------------------- figshare DFU --- */
 
-function figshareNumbers() {
-  // The validator ships with DANGER_KPA = 70. Its `at_or_above_danger_pct`
-  // therefore means ">= 70 kPa"; we need both 70 and 200, so the threshold is
-  // patched between two calls instead of duplicating the parser.
+function figshareNumbers(warningKpa) {
+  // The validator owns the parser; the threshold is a parameter so the 70 kPa
+  // reference can be asked for without a second copy of the parsing code.
   const script = [
     'import importlib.util, json',
     'spec = importlib.util.spec_from_file_location("validator", "scripts/validate-datasets.py")',
     'module = importlib.util.module_from_spec(spec)',
     'spec.loader.exec_module(module)',
-    'base = module.check_figshare()',
-    'module.DANGER_KPA = 200.0',
-    'two = module.check_figshare()',
-    'result = dict(base)',
-    'result["at_or_above_70_pct"] = base["at_or_above_danger_pct"]',
-    'result["at_or_above_200_pct"] = two["at_or_above_danger_pct"]',
+    `base = module.check_figshare(${warningKpa})`,
+    'seventy = module.check_figshare(70.0)',
+    'result = dict(base or {})',
+    'result["at_or_above_70_pct"] = (seventy or {}).get("at_or_above_warning_pct")',
     'print(json.dumps(result))',
   ].join('\n');
   try {
@@ -662,15 +569,15 @@ function figshareNumbers() {
 
 /* ------------------------------------------------------------ model facts -- */
 
-function modelFacts(model) {
+function modelFacts(model, warningKpa) {
   const nodes = model.trees.reduce((sum, tree) => sum + countNodes(tree), 0);
   const depth = Math.max(...model.trees.map((tree) => treeDepth(tree)));
 
   const sample = { peak: 52.5, sustained: 40 };
   const iterations = 20000;
-  for (let i = 0; i < 500; i += 1) hybridLevel(model, sample, 200);
+  for (let i = 0; i < 500; i += 1) infer(model, sample, warningKpa);
   const start = process.hrtime.bigint();
-  for (let i = 0; i < iterations; i += 1) hybridLevel(model, sample, 200);
+  for (let i = 0; i < iterations; i += 1) infer(model, sample, warningKpa);
   const perCall = Number(process.hrtime.bigint() - start) / iterations;
 
   const splitFeatures = {};
@@ -686,6 +593,7 @@ function modelFacts(model) {
   return {
     version: model.version,
     features: model.features,
+    levels: model.levels,
     trees: model.trees.length,
     nodes,
     depth,
@@ -695,7 +603,7 @@ function modelFacts(model) {
     jsonBytes: fs.statSync(RF_MODEL).size,
     headerBytes: fs.statSync(RF_HEADER).size,
     hostMicros: perCall / 1000,
-    dangerRule: model.dangerRule,
+    warningKpa,
     hash: sha256(fs.readFileSync(RF_MODEL)),
   };
 }
@@ -704,6 +612,7 @@ function modelFacts(model) {
 
 function renderCharts(m) {
   const out = {};
+  const warningKpa = m.audit.warningKpa;
 
   out['histogram-peak'] = charts.histogram({
     title: 'Distribusi tekanan puncak seluruh dataset',
@@ -713,22 +622,31 @@ function renderCharts(m) {
     xLabel: 'Tekanan puncak (kPa)',
     yLabel: 'Jumlah sampel (skala log)',
     markers: [
-      { x: 35, label: 'ambang Waspada 35 kPa', color: PALETTE.warning },
-      { x: 70, label: 'usulan bahaya 70 kPa', color: PALETTE.danger },
+      { x: warningKpa, label: `ambang label ${warningKpa} kPa`, color: PALETTE.warning },
+      { x: 70, label: '70 kPa (acuan keparahan)', color: PALETTE.slate },
     ],
-    note: `Tekanan tertinggi ${id(m.audit.totals.maxPeak, 2)} kPa; ambang 200 kPa berada jauh di luar sumbu ini.`,
+    note: `Tekanan tertinggi ${id(m.audit.totals.maxPeak, 2)} kPa; tidak ada sampel di atas 90 kPa.`,
   });
 
   out['ambang-counts'] = charts.bars({
     title: 'Berapa sampel yang mencapai tiap ambang',
-    subtitle: 'Skala log, supaya angka 0 dan 31 tetap terbaca',
-    categories: ['≥ 35 kPa', '≥ 70 kPa', '≥ 200 kPa'],
-    series: [{ name: 'sampel', values: [m.audit.totals.atOrAbove[35], m.audit.totals.atOrAbove[70], m.audit.totals.atOrAbove[200]] }],
-    colors: [PALETTE.warning, PALETTE.danger, PALETTE.slate],
+    subtitle: 'Skala log, supaya angka kecil tetap terbaca',
+    categories: [`≥ ${warningKpa} kPa`, '≥ 50 kPa', '≥ 70 kPa'],
+    series: [
+      {
+        name: 'sampel',
+        values: [
+          m.audit.totals.atOrAbove.warning,
+          m.audit.totals.atOrAbove.fifty,
+          m.audit.totals.atOrAbove.seventy,
+        ],
+      },
+    ],
+    colors: [PALETTE.warning, PALETTE.accent, PALETTE.slate],
     log: true,
     yLabel: 'Jumlah sampel',
     valueFormat: (value) => id(value),
-    note: 'Kelas Bahaya hanya mungkin jika ada sampel di kolom terakhir.',
+    note: `Ambang ${warningKpa} kPa menandai ${m.audit.totals.patientsAtOrAbove.warning} dari ${m.audit.totals.patients} pasien.`,
   });
 
   out['per-pasien'] = charts.dotPlot({
@@ -738,53 +656,45 @@ function renderCharts(m) {
       x: index,
       y: patient.maxPeak,
       group: patient.group,
-      split: patient.split,
     })),
     groups: { DFN: PALETTE.violet, DM: PALETTE.accent },
     markers: [
-      { y: 35, label: 'ambang Waspada 35 kPa', color: PALETTE.warning },
-      { y: 70, label: 'usulan bahaya 70 kPa', color: PALETTE.danger },
+      { y: warningKpa, label: `ambang label ${warningKpa} kPa`, color: PALETTE.warning },
+      { y: 70, label: '70 kPa', color: PALETTE.slate },
     ],
     yMax: 95,
-    note: 'Ambang 200 kPa tidak digambar: tidak ada pasien yang melewatinya.',
+    note: `${m.audit.totals.patients - m.audit.totals.patientsAtOrAbove.warning} pasien tidak pernah melewati ${warningKpa} kPa.`,
   });
 
-  for (const scenario of m.scenarios) {
-    const result = m.validation.results.find((item) => item.key === scenario.key);
-    const rowLabels = result.rowLabels.map((label) => LEVEL_LABELS[label]);
-    const colLabels = result.colLabels.map((label) => LEVEL_LABELS[label]);
-    out[`confusion-${scenario.kpa}`] = charts.confusion({
-      title: `Matriks konfusi — ${scenario.label}`,
-      subtitle: `Validasi ${id(m.audit.splits.validation.samples)} sampel, akurasi ${pct(result.accuracy)}`,
-      matrix: result.matrix,
-      rowLabels,
-      colLabels,
-    });
-  }
+  out.confusion = charts.confusion({
+    title: 'Matriks konfusi — RF + SMOTE, out-of-fold',
+    subtitle: `${id(m.cv.confusion.perClass.safe.support + m.cv.confusion.perClass.warning.support)} sampel uji dari ${FOLDS} lipatan`,
+    matrix: m.cv.confusion.matrix,
+    rowLabels: LEVELS.map((label) => LEVEL_LABELS[label]),
+    colLabels: LEVELS.map((label) => LEVEL_LABELS[label]),
+  });
 
-  out['perbandingan-model'] = charts.bars({
-    title: 'Perbandingan model pada data validasi',
-    subtitle: 'Macro-F1, label berasal dari aturan ambang',
-    categories: ['Aturan murni', 'Pohon tunggal', 'RF 20 pohon', 'Hybrid 200 kPa'],
+  out['cv-skema'] = charts.bars({
+    title: 'Tiga skema pada lipatan yang sama',
+    subtitle: 'Macro-F1 out-of-fold; label berasal dari aturan ambang',
+    categories: m.cv.schemes.map((scheme) => scheme.name),
     series: [
       {
         name: 'Macro-F1',
-        values: ['rule', 'singleTree', 'rf', 'hybrid200'].map((key) => {
-          const item = m.validation.results.find((result) => result.key === key);
-          return Number((item.macroF1 * 100).toFixed(2));
-        }),
+        values: m.cv.schemes.map((scheme) => Number((scheme.macroF1 * 100).toFixed(2))),
       },
     ],
-    colors: [PALETTE.slate, PALETTE.violet, PALETTE.accent, PALETTE.safe],
+    colors: [PALETTE.slate, PALETTE.violet, PALETTE.accent],
     yLabel: 'Macro-F1 (%)',
     valueFormat: (value) => `${id(value, 2)}%`,
-    note: 'Semua bar sama tinggi: tidak ada model yang lebih baik dari aturan pada target ini.',
+    categoryRotate: 15,
+    note: 'Semua bar sama tinggi: tidak ada skema yang lebih baik dari aturan pada target ini.',
   });
 
   out['cv-lipatan'] = charts.strip({
-    title: 'Macro-F1 per lipatan, validasi silang 5 lipatan per pasien',
-    subtitle: 'Satu lingkaran = satu lipatan (28 pasien); garis = rata-rata',
-    rows: m.cv.map((scheme, index) => ({
+    title: 'Macro-F1 per lipatan',
+    subtitle: `${FOLDS} lipatan berkelompok per pasien; satu lingkaran = satu lipatan`,
+    rows: m.cv.schemes.map((scheme, index) => ({
       name: scheme.name,
       color: [PALETTE.slate, PALETTE.violet, PALETTE.accent][index],
       values: scheme.folds.map((fold) => fold.macroF1),
@@ -792,12 +702,27 @@ function renderCharts(m) {
     yDomain: [0.9, 1.005],
     xLabel: 'Macro-F1',
     valueFormat: (value) => value.toFixed(3).replace('.', ','),
-    note: 'Kelima lipatan bernilai sama, jadi titiknya ditumpuk vertikal di 1,000; posisi horizontal tetap nilai sebenarnya.',
+    note: 'Kelima lipatan bernilai sama, jadi titiknya ditumpuk vertikal di 1,000.',
   });
 
-  out['ketahanan'] = charts.bars({
-    title: 'Ketahanan keputusan terhadap gangguan input',
-    subtitle: 'Persentase keputusan hybrid 200 kPa yang berubah dibanding input bersih',
+  out['gain-error'] = charts.bars({
+    title: 'Galat penguatan sensor',
+    subtitle: 'Macro-F1 terhadap label asli setelah seluruh deret digeser',
+    categories: m.cv.gain.map((row) => gainLabel(row.gain)),
+    series: m.cv.schemes.map((scheme) => ({
+      name: scheme.name,
+      values: m.cv.gain.map((row) => Number((row.schemes[scheme.key].macroF1 * 100).toFixed(1))),
+    })),
+    colors: [PALETTE.slate, PALETTE.violet, PALETTE.accent],
+    yLabel: 'Macro-F1 (%)',
+    valueFormat: (value) => `${id(value, 1)}%`,
+    height: 420,
+    note: 'Kurva berbentuk lonceng: hanya gain tepat 1,0 yang lolos sempurna.',
+  });
+
+  out.ketahanan = charts.bars({
+    title: 'Keputusan yang berubah saat input terganggu',
+    subtitle: `Persentase keputusan berbeda dibanding input bersih (kontrak ${warningKpa} kPa)`,
     categories: m.robustness.rows.filter((row) => row.key !== 'clean').map((row) => row.name),
     series: [
       {
@@ -814,23 +739,21 @@ function renderCharts(m) {
     valueFormat: (value) => `${id(value, 2)}%`,
     categoryRotate: 30,
     height: 430,
-    note: 'Ambang yang dipakai adalah batas keras: kesalahan kalibrasi gain langsung memindahkan sampel ke sisi lain ambang.',
+    note: 'Ambang adalah batas keras: kesalahan gain langsung memindahkan sampel ke sisi lain ambang.',
   });
 
-  for (const scenario of m.scenarios) {
-    out[`peta-ambang-${scenario.kpa}`] = charts.heatmap({
-      title: `Peta tingkat risiko — ambang bahaya ${scenario.kpa} kPa`,
-      subtitle: `Keluaran hybrid pada ${scenario.map.peaks.length} × ${scenario.map.durations.length} kombinasi tekanan dan durasi`,
-      xs: scenario.map.peaks,
-      ys: scenario.map.durations,
-      cells: scenario.map.cells,
-      colors: LEVEL_COLORS,
-      labels: { safe: 'Aman', warning: 'Waspada', danger: 'Bahaya' },
-      xLabel: 'Tekanan puncak (kPa)',
-      yLabel: 'Durasi tumpuan (detik)',
-      note: scenario.note,
-    });
-  }
+  out['peta-kontrak'] = charts.heatmap({
+    title: `Peta tingkat risiko — kontrak ${warningKpa} kPa`,
+    subtitle: `Keluaran pada ${m.scoreMap.peaks.length} × ${m.scoreMap.durations.length} kombinasi tekanan dan durasi`,
+    xs: m.scoreMap.peaks,
+    ys: m.scoreMap.durations,
+    cells: m.scoreMap.levels,
+    colors: LEVEL_COLORS,
+    labels: LEVEL_LABELS,
+    xLabel: 'Tekanan puncak (kPa)',
+    yLabel: 'Durasi tumpuan (detik)',
+    note: 'Batasnya garis vertikal di 45 kPa: durasi tidak mengubah tingkat sama sekali.',
+  });
 
   out['jangkauan-sensor'] = charts.sensorRange({
     title: 'Ambang model dibanding jangkauan FSR 402',
@@ -838,9 +761,8 @@ function renderCharts(m) {
     max: 220,
     band: { from: 0.8, to: 79, color: PALETTE.safe, label: 'jangkauan FSR 402' },
     markers: [
-      { x: 35, label: 'Waspada 35 kPa', color: PALETTE.warning },
-      { x: 70, label: 'Bahaya 70 kPa (8,9 N)', color: PALETTE.danger },
-      { x: 200, label: 'Bahaya 200 kPa (25,4 N)', color: PALETTE.slate },
+      { x: warningKpa, label: `Waspada ${warningKpa} kPa (≈5,7 N)`, color: PALETTE.warning },
+      { x: 200, label: '200 kPa (≈25,4 N)', color: PALETTE.slate },
     ],
   });
 
@@ -883,90 +805,99 @@ function box(kind, title, body) {
 }
 
 function renderReport(m, svg) {
-  const val = m.audit.splits.validation;
-  const train = m.audit.splits.train;
-  const rule = m.validation.results.find((item) => item.key === 'rule');
-  const rf = m.validation.results.find((item) => item.key === 'rf');
-  const hybrid200 = m.validation.results.find((item) => item.key === 'hybrid200');
-  const hybrid70 = m.validation.results.find((item) => item.key === 'hybrid70');
-  const twoHundred = m.scenarios.find((scenario) => scenario.kpa === 200);
-  const seventy = m.scenarios.find((scenario) => scenario.kpa === 70);
-  const dfnPlayers = m.audit.patients.filter((patient) => patient.atOrAbove70 > 0);
-
+  const warningKpa = m.audit.warningKpa;
+  const totals = m.audit.totals;
   const fast = m.session.gate.passed;
+  const worstGain = m.cv.gain.reduce((worst, row) =>
+    row.schemes['RF + SMOTE'].macroF1 < worst.schemes['RF + SMOTE'].macroF1 ? row : worst);
+  const shipped = m.cv.schemes.find((scheme) => scheme.key === 'RF + SMOTE');
+  const rule = m.cv.schemes.find((scheme) => scheme.key === 'aturan murni');
+  const single = m.cv.schemes.find((scheme) => scheme.key === 'RF class-weight');
+  const confusion = m.cv.confusion;
+  const allContractPass = m.contract.every((item) => item.pass);
 
   const findings = [
     {
-      value: `${id(m.audit.totals.atOrAbove[200])} / ${id(m.audit.totals.samples)}`,
-      label: 'sampel mencapai 200 kPa',
-      note: `tekanan tertinggi ${id(m.audit.totals.maxPeak, 2)} kPa`,
+      value: `${id(totals.atOrAbove.warning)}`,
+      label: `sampel ≥ ${warningKpa} kPa`,
+      note: `${pct(totals.atOrAbove.warning / totals.samples)} dari ${id(totals.samples)}; ${totals.patientsAtOrAbove.warning}/${totals.patients} pasien`,
     },
     {
-      value: `${id(m.audit.totals.atOrAbove[70])} sampel`,
-      label: 'mencapai 70 kPa',
-      note: `hanya di ${dfnPlayers.length} pasien, semuanya data latih`,
+      value: `${id(totals.imbalance, 1)} : 1`,
+      label: 'rasio aman : waspada',
+      note: `SMOTE menyeimbangkan lipatan latih saja`,
     },
     {
-      value: `${pct(rule.accuracy, 0)} vs ${pct(rf.accuracy, 0)}`,
-      label: 'RF dan aturan sama-sama sempurna',
-      note: `kecocokan keputusan ${pct(rule.agreementWithRule, 1)}`,
+      value: pct(shipped.macroF1),
+      label: 'macro-F1 out-of-fold',
+      note: `${FOLDS} lipatan berkelompok per pasien`,
     },
     {
-      value: pct(val.atOrAbove[70] / val.samples, 1),
-      label: 'sampel validasi di atas 70 kPa',
-      note: `puncak validasi ${id(val.maxPeak, 2)} kPa`,
+      value: pct(worstGain.schemes['RF + SMOTE'].macroF1),
+      label: `macro-F1 pada gain ${gainLabel(worstGain.gain)}`,
+      note: 'batas keandalan terhadap kalibrasi sensor',
     },
     {
       value: m.session.auc.toFixed(3).replace('.', ','),
-      label: 'AUC DFN vs DM (validasi silang)',
-      note: fast ? 'lolos ambang 0,650' : 'di bawah ambang 0,650',
+      label: 'AUC DFN vs DM',
+      note: fast ? `lolos ambang ${m.session.gate.floor.toFixed(3).replace('.', ',')}` : 'di bawah ambang gerbang',
     },
   ];
 
-  const scenarioRows = [
-    ['Ambang bahaya', '200 kPa (kondisi sekarang)', '70 kPa (usulan Bab II)'],
-    ['Sampel latih ≥ ambang', id(twoHundred.samplesTrain), id(seventy.samplesTrain)],
-    ['Sampel validasi ≥ ambang', id(twoHundred.samplesVal), id(seventy.samplesVal)],
-    ['Pasien latih ≥ ambang', id(twoHundred.patientsTrain), id(seventy.patientsTrain)],
-    ['Figshare DFU ≥ ambang', `${id(twoHundred.figshareShare || 0, 1)}%`, `${id(seventy.figshareShare || 0, 1)}%`],
-    ['Ada contoh di dataset', twoHundred.canTrigger ? 'ya' : 'tidak', seventy.canTrigger ? 'ya' : 'tidak'],
-    ['Ada contoh di data uji', twoHundred.canValidate ? 'ya' : 'tidak', seventy.canValidate ? 'ya' : 'tidak'],
-    ['Di dalam jangkauan FSR 402', 'tidak (≈25,4 N)', 'ya (≈8,9 N)'],
+  const dataRows = [
+    ['Pasien', id(totals.patients)],
+    ['Sampel', id(totals.samples)],
+    ['Kelompok DFN / DM', `${id(totals.groups.DFN)} / ${id(totals.groups.DM)}`],
+    ['Label aman / waspada', `${id(totals.labels.safe)} / ${id(totals.labels.warning)}`],
+    [`Sampel ≥ ${warningKpa} kPa`, id(totals.atOrAbove.warning)],
+    ['Sampel ≥ 50 kPa', id(totals.atOrAbove.fifty)],
+    ['Sampel ≥ 70 kPa', id(totals.atOrAbove.seventy)],
+    ['Pasien yang pernah ≥ ' + warningKpa + ' kPa', id(totals.patientsAtOrAbove.warning)],
+    ['Pasien yang pernah ≥ 70 kPa', id(totals.patientsAtOrAbove.seventy)],
+    ['Tekanan puncak', `${id(totals.maxPeak, 2)} kPa`],
+    ['Run terpanjang di atas ambang', `${id(totals.maxSustained)} sampel (${id(totals.maxSustained / 10, 1)} s)`],
   ];
 
-  const contractRows = m.contract.map((item) => {
-    const cell = (actual, expected) =>
-      `${LEVEL_LABELS[actual]} ${actual === expected ? '<span class="ok">sesuai</span>' : '<span class="bad">beda</span>'}`;
-    return [
-      `${id(item.peak)} kPa, ${id(item.seconds)} s`,
-      cell(item.level200, item.expect200),
-      cell(item.level70, item.expect70),
-    ];
-  });
-
-  const validationRows = m.validation.results.map((item) => [
-    item.name,
-    `${id(item.accuracy * 100, 1)}%`,
-    `${id(item.macroF1 * 100, 1)}%`,
-    `${id(item.perClass.safe.precision * 100, 1)}% / ${id(item.perClass.warning.precision * 100, 1)}%`,
-    `${id(item.perClass.warning.recall * 100, 1)}%`,
-    `${id(item.agreementWithRule * 100, 1)}%`,
-    id(item.dangerPredictions),
+  const schemeRows = m.cv.schemes.map((scheme) => [
+    scheme.name,
+    pct(scheme.macroF1),
+    pct(scheme.accuracy),
+    `${pct(scheme.perLevel.safe.precision)} / ${pct(scheme.perLevel.warning.precision)}`,
+    pct(scheme.perLevel.warning.recall),
+    `${id(scheme.perLevel.warning.fp)} / ${id(scheme.perLevel.warning.fn)}`,
   ]);
 
-  const cvRows = m.cv.map((scheme) => [
-    scheme.name,
-    `${pct(scheme.macroF1Mean)} ± ${id(scheme.macroF1Sd * 100, 1)}%`,
-    `${pct(scheme.accuracyMean)} ± ${id(scheme.accuracySd * 100, 1)}%`,
-    scheme.folds.map((fold) => `${id(fold.macroF1 * 100, 1)}%`).join(', '),
+  const foldRows = m.cv.folds.map((fold, index) => [
+    id(fold.fold),
+    id(fold.patients),
+    id(fold.samples),
+    id(fold.warningSamples),
+    id(fold.smote.synthetic),
+    id(fold.smote.rejected),
+    `${pct(single.folds[index].macroF1)} / ${pct(shipped.folds[index].macroF1)}`,
+  ]);
+
+  const gainRows = m.cv.gain.map((row) => [
+    gainLabel(row.gain),
+    ...m.cv.schemes.map((scheme) => pct(row.schemes[scheme.key].macroF1)),
+    id(row.schemes['RF + SMOTE'].falsePositives),
+    id(row.schemes['RF + SMOTE'].falseNegatives),
   ]);
 
   const robustnessRows = m.robustness.rows.map((row) => [
     row.name,
-    `${id(row.accuracy * 100, 2)}%`,
-    `${id(row.macroF1 * 100, 2)}%`,
-    row.key === 'clean' ? '—' : `${id(row.flipRate * 100, 2)}%`,
-    id(row.dangerPredictions),
+    pct(row.accuracy, 2),
+    pct(row.macroF1, 2),
+    row.key === 'clean' ? '—' : pct(row.flipRate, 2),
+    id(row.warningCount),
+  ]);
+
+  const contractRows = m.contract.map((item) => [
+    `${id(item.peak, 1)} kPa, ${id(item.seconds)} s`,
+    `<span class="chip ${item.expected}">${LEVEL_LABELS[item.expected]}</span>`,
+    `<span class="chip ${item.level}">${LEVEL_LABELS[item.level]}</span>`,
+    id(item.score),
+    item.pass ? '<span class="ok">lolos</span>' : '<span class="bad">gagal</span>',
   ]);
 
   const sessionRows = [
@@ -984,28 +915,29 @@ function renderReport(m, svg) {
   ];
 
   const conclusions = [
-    `Kelas Bahaya tidak bisa dilatih maupun divalidasi: ${id(m.audit.totals.atOrAbove[200])} dari ${id(m.audit.totals.samples)} sampel mencapai 200 kPa, dan tidak ada satu pun sampel validasi yang mencapai 70 kPa (puncak validasi ${id(val.maxPeak, 2)} kPa).`,
-    `Akurasi 100% mengukur reproduksi aturan, bukan generalisasi: Random Forest dan aturan ambang memberi keputusan yang sama pada ${id(rule.agreementWithRule * 100, 1)}% sampel validasi, dan validasi silang memberi macro-F1 ${id(m.cv[2].macroF1Mean * 100, 1)}% ± ${id(m.cv[2].macroF1Sd * 100, 1)}% pada setiap lipatan.`,
-    `Ambang 200 kPa berada di luar jangkauan FSR 402: 200 kPa ≈ 25,4 N pada luas aktif 126,7 mm², sedangkan sensor dirating 0,1–10 N (≈79 kPa). Figshare DFU mendukung: ${id(m.figshare.at_or_above_200_pct || 0, 1)}% pengukuran pasien ulkus mencapai 200 kPa, sedangkan ${id(m.figshare.at_or_above_70_pct || 0, 1)}% mencapai 70 kPa dan ${id(m.figshare.at_or_above_warning_pct || 0, 1)}% mencapai 35 kPa.`,
+    `Model hanya punya dua kelas, dan batasnya adalah aturan yang juga melabeli data: ${id(rule.perLevel.warning.support)} sampel warning lahir dari \`peak >= ${warningKpa} kPa\`. Karena itu macro-F1 ${pct(shipped.macroF1)} tidak mengukur kepintaran model, melainkan kesesuaiannya dengan aturan.`,
+    `Ketiga skema (aturan murni, RF berbobot kelas, RF + SMOTE) memberi hasil ${pct(rule.macroF1)}, ${pct(single.macroF1)}, dan ${pct(shipped.macroF1)}; tidak ada skema yang lebih baik dari aturan pada target ini. SMOTE dipakai karena diminta dan karena ketidakseimbangan ${id(totals.imbalance, 1)}:1 nyata, bukan karena ia memperbaiki skor.`,
+    `Bentuk pohon menjelaskan sebabnya: ${id(m.model.splitFeatures.sustained || 0)} dari ${id(m.model.trees)} pohon memisah pada \`sustained\`, fitur yang hanya positif ketika tekanan sudah melewati ambang. Kontrak dua arah di web dan firmware memastikan angka dan tingkat tidak bisa bertentangan, termasuk untuk masukan yang tidak mungkin datang dari perangkat.`,
+    `Sinyal yang jujur adalah galat penguatan: macro-F1 turun ke ${pct(m.cv.gain.find((row) => row.gain === 0.9).schemes['RF + SMOTE'].macroF1)} pada ×0,9, ${pct(m.cv.gain.find((row) => row.gain === 1.1).schemes['RF + SMOTE'].macroF1)} pada ×1,1, dan ${pct(worstGain.schemes['RF + SMOTE'].macroF1)} pada ${gainLabel(worstGain.gain)}. Kalibrasi FSR adalah prasyarat, bukan pelengkap.`,
     fast
-      ? `Random Forest tidak terbukti menambah kemampuan di atas aturan pada target risiko, tetapi pada target yang labelnya berasal dari diagnosis (DFN vs DM) model mencapai AUC ${m.session.auc.toFixed(3).replace('.', ',')} secara out-of-fold, di atas baseline fitur tunggal terbaik (${m.session.bestFeature.auc.toFixed(3).replace('.', ',')}).`
-      : `Random Forest tidak terbukti menambah kemampuan di atas aturan pada target risiko, dan pada target diagnosis (DFN vs DM) model hanya mencapai AUC ${m.session.auc.toFixed(3).replace('.', ',')} (ambang ${m.session.gate.floor.toFixed(3).replace('.', ',')}); kontrol demografi saja ${m.session.controls.demographicsAuc.toFixed(3).replace('.', ',')}. Jadi tekanan sendirian belum memisahkan DFN dari DM pada dataset ini.`,
-    `Skenario 70 kPa membuat kelas Bahaya dapat menyala (${id(seventy.samplesTrain)} sampel latih, ${id(seventy.figshareShare || 0, 1)}% pengukuran Figshare), tetapi tetap tanpa satu pun contoh validasi, sehingga recall kelas Bahaya tidak dapat diukur di sini.`,
+      ? `Pada target yang labelnya berasal dari diagnosis (DFN vs DM), tekanan membawa sinyal: AUC out-of-fold ${m.session.auc.toFixed(3).replace('.', ',')}, di atas fitur tunggal terbaik (${m.session.bestFeature.auc.toFixed(3).replace('.', ',')}).`
+      : `Pada target diagnosis (DFN vs DM), tekanan tidak memisahkan kelompok: AUC out-of-fold ${m.session.auc.toFixed(3).replace('.', ',')} (gerbang ${m.session.gate.floor.toFixed(3).replace('.', ',')}), kontrol demografi ${m.session.controls.demographicsAuc.toFixed(3).replace('.', ',')}. Ini hasil negatif yang dilaporkan apa adanya.`,
+    `Tidak ada tingkat di atas Waspada. Data acuan berhenti di ${id(totals.maxPeak, 2)} kPa dan FSR 402 mencapai ≈79 kPa, jadi tingkat ketiga tidak dapat dilatih maupun diukur; secara klinis pun pasien neuropati yang melewati ambang sudah kehilangan sensasi pelindung.`,
   ];
 
   const recommendations = [
-    'Pertahankan Random Forest; masalahnya ada di label dan jangkauan sensor, bukan pada algoritma.',
-    'Nyatakan model di Bab I–II sebagai hybrid: Random Forest untuk Aman–Waspada, aturan klinis untuk Bahaya. Judul tetap sah karena kerangka dan inferensinya Random Forest.',
-    'Bawa perbandingan dua ambang (200 vs 70 kPa) ke dosen pembimbing; keputusan ambang adalah keputusan klinis, bukan teknis.',
-    'Masukkan empat pengujian di paket ini ke Bab IV: perbandingan aturan vs pohon tunggal vs RF, validasi silang per pasien, uji ketahanan, dan uji DFN vs DM.',
-    'Selesaikan kalibrasi FSR (offset dan gain) sebelum mengklaim angka kPa; tanpa itu, ambang mana pun belum berarti secara absolut.',
+    'Pertahankan Random Forest dua kelas; masalahnya ada di label, kalibrasi, dan jangkauan sensor — bukan pada algoritma.',
+    `Jawab pertanyaan penguji dengan urutan ini: (1) dua kelas dan alasannya, (2) label berasal dari aturan ${warningKpa} kPa sehingga skor 100% wajar, (3) bukti sesungguhnya ada pada sapuan gain dan pada uji subjek baru.`,
+    'Kalibrasi FSR (offset dan gain) sebelum mengklaim angka kPa; tanpa itu ambang berapa pun belum berarti secara absolut.',
+    `Rekam subjek diabetes baru sebagai studi kasus eksternal, lalu laporkan kesesuaiannya dengan aturan ${warningKpa} kPa tanpa menyebutnya generalisasi.`,
+    'Jangan menghidupkan kembali kelas bahaya tanpa data yang bisa mengukurnya; itu akan memaksa label sintetis yang tidak bisa dipertanggungjawabkan.',
   ];
 
   const body = `
 <header>
   <h1>Paket Bukti Model Random Forest</h1>
-  <p class="lead">Penilaian mandiri atas model klasifikasi risiko tekanan plantar: apa yang terbukti, apa yang tidak, dan mengapa.</p>
-  <p class="meta">Dihasilkan otomatis oleh <code>scripts/evidence.js</code> · dataset ${m.audit.source} v${m.audit.version} · ${id(m.audit.totals.patients)} pasien · ${id(m.audit.totals.samples)} sampel · model <code>${m.model.hash}</code> · seed ${SEED}. Tidak ada angka yang diketik manual.</p>
+  <p class="lead">Penilaian mandiri atas model klasifikasi risiko tekanan plantar dua kelas (${warningKpa} kPa): apa yang terbukti, apa yang tidak, dan mengapa.</p>
+  <p class="meta">Dihasilkan otomatis oleh <code>scripts/evidence.js</code> · dataset ${m.audit.source} v${m.audit.version} · ${id(totals.patients)} pasien · ${id(totals.samples)} sampel · model <code>${m.model.hash}</code> · seed ${SEED}. Tidak ada angka yang diketik manual.</p>
 </header>
 
 <section>
@@ -1013,87 +945,78 @@ function renderReport(m, svg) {
   <div class="kpis">
     ${findings.map((finding) => kpi(finding.value, finding.label, finding.note)).join('')}
   </div>
-  ${box('warn', 'Satu kalimat inti', 'Kelas Bahaya tidak punya contoh di data, dan kelas Aman–Waspada dilabeli oleh aturan yang sama dengan fitur model. Jadi skor sempurna bukan bukti model pintar, melainkan bukti bahwa model menyalin aturan.')}
+  ${box('warn', 'Satu kalimat inti', `Label latih adalah aturan <code>peak >= ${warningKpa} kPa</code> itu sendiri, jadi skor sempurna bukan bukti model pintar melainkan bukti model menyalin aturan. Yang menguji model adalah pergeseran skala sensor dan subjek baru.`)}
 </section>
 
 <section>
   <h2>1. Data yang dipakai</h2>
-  ${table(
-    ['Ukuran', 'Latih', 'Validasi', 'Total'],
-    [
-      ['Pasien', id(train.patients), id(val.patients), id(m.audit.totals.patients)],
-      ['Sampel', id(train.samples), id(val.samples), id(m.audit.totals.samples)],
-      ['Label aman / waspada', `${id(train.labels.safe)} / ${id(train.labels.warning)}`, `${id(val.labels.safe)} / ${id(val.labels.warning)}`, '—'],
-      ['Kelompok DFN / DM', `${id(train.groups.DFN)} / ${id(train.groups.DM)}`, `${id(val.groups.DFN)} / ${id(val.groups.DM)}`, '—'],
-      ['Sampel ≥ 35 kPa', id(train.atOrAbove[35]), id(val.atOrAbove[35]), id(m.audit.totals.atOrAbove[35])],
-      ['Sampel ≥ 70 kPa', id(train.atOrAbove[70]), id(val.atOrAbove[70]), id(m.audit.totals.atOrAbove[70])],
-      ['Sampel ≥ 200 kPa', id(train.atOrAbove[200]), id(val.atOrAbove[200]), id(m.audit.totals.atOrAbove[200])],
-      ['Tekanan puncak', `${id(train.maxPeak, 2)} kPa`, `${id(val.maxPeak, 2)} kPa`, `${id(m.audit.totals.maxPeak, 2)} kPa`],
-    ]
-  )}
-  ${chart(svg['histogram-peak'], 'Sebaran tekanan membuat jelas mengapa kelas Bahaya tidak bisa dilatih: seluruh data berada di bawah 90 kPa.')}
-  ${chart(svg['ambang-counts'], 'Hanya 31 sampel melewati 70 kPa, dan tidak ada yang melewati 200 kPa.')}
-  ${chart(svg['per-pasien'], `${dfnPlayers.length} pasien (No. ${dfnPlayers.map((patient) => patient.id).join(', ')}) menjadi satu-satunya sumber contoh di atas 70 kPa; semuanya ada di data latih.`)}
+  <p>Seluruh ${id(totals.patients)} pasien DFN-DS dipakai sebagai data latih, tanpa split internal. Data uji eksternal adalah subjek diabetes baru yang direkam sendiri, karena dataset publik tidak boleh dipakai sebagai data uji pada penelitian ini.</p>
+  ${table(['Ukuran', 'Nilai'], dataRows)}
+  ${chart(svg['histogram-peak'], 'Seluruh data berada di bawah 90 kPa; ambang label 45 kPa berada di dalam sebaran, ambang 200 kPa jauh di luar.')}
+  ${chart(svg['ambang-counts'], `Hanya ${id(totals.atOrAbove.warning)} sampel melewati ambang label; ${id(totals.patients - totals.patientsAtOrAbove.warning)} pasien tidak pernah melewatinya.`)}
+  ${chart(svg['per-pasien'], `Sebaran puncak per pasien: ambang ${warningKpa} kPa membagi pasien menjadi dua kelompok yang tidak seimbang, dan itu alasan SMOTE dipakai.`)}
 </section>
 
 <section>
-  <h2>2. Dua skenario ambang Bahaya</h2>
-  <p>Model produksi sekarang memakai 200 kPa. Bab II dokumen ini sendiri menulis 70 kPa. Keduanya dijalankan pada data yang sama supaya perbedaannya terukur.</p>
-  ${table(['Butir', 'Skenario A', 'Skenario B'], scenarioRows)}
-  ${chart(svg['jangkauan-sensor'], 'Ambang 200 kPa berada di luar jangkauan FSR 402 yang dipakai insole; 70 kPa masih di dalam jangkauan.')}
-  <div class="grid">
-    ${chart(svg['peta-ambang-200'], 'Skenario 200 kPa: pita Bahaya hanya muncul di tekanan di atas 200 kPa, di luar jangkauan sensor.')}
-    ${chart(svg['peta-ambang-70'], 'Skenario 70 kPa: kelas Bahaya menjadi terjangkau oleh sensor dan muncul di peta.')}
-  </div>
-  <h3>Uji kontrak klinis</h3>
-  ${table(['Masukan', 'Skenario 200 kPa', 'Skenario 70 kPa'], contractRows)}
-</section>
-
-<section>
-  <h2>3. Apakah model benar-benar belajar?</h2>
-  <p>Semua pembanding diuji pada ${id(val.samples)} sampel validasi yang tidak dipakai melatih. Label berasal dari aturan ambang, jadi model yang jujur akan menghasilkan skor yang sama dengan aturan.</p>
-  <p>Perhatikan bentuk matriks di bawah: barisnya hanya <em>Aman</em> dan <em>Waspada</em> karena tidak ada satu pun sampel Bahaya untuk diuji, tetapi kolom <em>Bahaya</em> tetap disediakan dan seluruhnya nol.</p>
+  <h2>2. Apakah model benar-benar belajar?</h2>
+  <p>Validasi silang memakai ${FOLDS} lipatan berkelompok per pasien: tidak ada satu pun pasien yang muncul di sisi latih dan sisi uji pada lipatan yang sama. Ketiga skema dijalankan pada lipatan yang identik, sehingga perbedaannya benar-benar berasal dari skema, bukan dari pembagian data.</p>
   ${table(
-    ['Prediktor', 'Akurasi', 'Macro-F1', 'Presisi aman / waspada', 'Recall waspada', 'Sama dengan aturan', 'Prediksi bahaya'],
-    validationRows
+    ['Skema', 'Macro-F1', 'Akurasi', 'Presisi aman / waspada', 'Recall waspada', 'FP / FN (waspada)'],
+    schemeRows
   )}
-  ${chart(svg['perbandingan-model'], 'Empat pendekatan, satu hasil: aturan murni tidak kalah dari Random Forest pada target ini.')}
+  ${chart(svg['cv-lipatan'], 'Setiap lipatan berisi pasien yang berbeda; skor tetap 1,000 pada semua lipatan.')}
+  ${chart(svg['cv-skema'], 'Aturan murni tidak kalah dari Random Forest pada target ini — hasil yang jujur, bukan kegagalan pelatihan.')}
+  ${table(
+    ['Lipatan', 'Pasien uji', 'Sampel uji', 'Sampel warning', 'SMOTE sintetis', 'SMOTE ditolak', 'Macro-F1 class-weight / SMOTE'],
+    foldRows
+  )}
+  <h3>Bentuk model yang sebenarnya</h3>
   ${box(
     'warn',
-    'Bentuk model yang sebenarnya',
+    'Pohon berhenti di satu pertanyaan',
     `Seluruh ${id(m.model.trees)} pohon berhenti pada kedalaman ${id(m.model.depth)}: setiap pohon hanya berisi satu pertanyaan. ` +
       `${id(m.model.splitFeatures.sustained || 0)} pohon bertanya "sustained > ${id(Math.max(0, ...m.model.sustainedThresholds), 2)}"? dan ${id(m.model.splitFeatures.peak || 0)} pohon bertanya "peak > ${id(Math.max(...m.model.peakThresholds), 2)} kPa"? ` +
-      'Karena durasi tumpuan hanya bisa positif ketika tekanan sudah melewati 35 kPa, pertanyaan itu sama artinya dengan aturan ambang. Inilah sebabnya skor validasi tidak mungkin berbeda dari aturan.'
+      `Karena durasi tumpuan hanya bisa positif ketika tekanan sudah melewati ${warningKpa} kPa, kedua pertanyaan itu sama artinya dengan aturan ambang.`
   )}
-  <div class="grid">
-    ${chart(svg['confusion-200'], 'Hybrid 200 kPa (sama dengan produksi dan aturan) pada data validasi.')}
-    ${chart(svg['confusion-70'], 'Hybrid 70 kPa pada data validasi: selnya identik, karena tidak ada sampel validasi di atas 70 kPa.')}
-  </div>
-  <h3>Validasi silang 5 lipatan per pasien</h3>
-  ${table(['Skema', 'Macro-F1 (rata-rata ± sd)', 'Akurasi (rata-rata ± sd)', 'Macro-F1 per lipatan'], cvRows)}
-  ${chart(svg['cv-lipatan'], 'Setiap lipatan berisi pasien yang berbeda; skor tetap 1,000 pada semua lipatan.')}
+  ${chart(svg.confusion, 'RF + SMOTE pada prediksi out-of-fold: tidak ada satu pun false positive atau false negative.')}
 </section>
 
 <section>
-  <h2>4. Ketahanan input</h2>
-  <p>Gangguan diterapkan pada tekanan tiga region, lalu durasi tumpuan dihitung ulang dari sinyal yang sudah terganggu. Ukuran yang paling bermakna di sini adalah <em>tingkat perubahan keputusan</em>, karena akurasi tetap tinggi selama gangguan tidak memindahkan sampel melewati ambang 35 kPa.</p>
-  ${table(['Skenario', 'Akurasi', 'Macro-F1', 'Keputusan berubah', 'Prediksi bahaya'], robustnessRows)}
-  ${chart(svg['ketahanan'], `Gangguan kalibrasi gain paling berpengaruh: gain ×1,2 mengubah ${id(Math.max(...m.robustness.rows.filter((row) => row.key !== 'clean').map((row) => row.flipRate)) * 100, 1)}% keputusan, sedangkan sensor midfoot yang mati hampir tidak berpengaruh (${id(Math.min(...m.robustness.rows.filter((row) => row.key !== 'clean').map((row) => row.flipRate)) * 100, 2)}%).`)}
+  <h2>3. Ketahanan terhadap galat kalibrasi</h2>
+  <p>Setiap deret pasien digeser, lalu <code>sustained</code> dihitung ulang dari sinyal yang sudah tergeser, persis seperti firmware menghitungnya. Model tidak dilatih ulang: yang diuji adalah model yang sama pada masukan yang salah skala.</p>
+  ${table(['Gain', ...m.cv.schemes.map((scheme) => scheme.name), 'FP (SMOTE)', 'FN (SMOTE)'], gainRows)}
+  ${chart(svg['gain-error'], 'Kurva berbentuk lonceng sempit: hanya gain tepat 1,0 yang bertahan.')}
+  ${box(
+    'bad',
+    'Kesimpulan yang dipakai di Bab IV',
+    `Tidak ada skema yang membeli ketahanan terhadap galat kalibrasi: ketiganya runtuh bersamaan. Pada gain ${gainLabel(worstGain.gain)}, macro-F1 tinggal ${pct(worstGain.schemes['RF + SMOTE'].macroF1)} dan alarm palsu mencapai ${id(worstGain.schemes['RF + SMOTE'].falsePositives)} sampel. Perbaikannya ada di kalibrasi FSR, bukan di classifier.`
+  )}
+  <h3>Gangguan lain</h3>
+  <p>Gangguan diterapkan pada tekanan tiga region, lalu durasi dihitung ulang. Ukuran yang paling bermakna adalah <em>tingkat perubahan keputusan</em>, karena akurasi tetap tinggi selama gangguan tidak memindahkan sampel melewati ambang.</p>
+  ${table(['Skenario', 'Akurasi', 'Macro-F1', 'Keputusan berubah', 'Keputusan waspada'], robustnessRows)}
+  ${chart(svg.ketahanan, 'Gangguan gain paling berpengaruh; sensor yang mati hanya menghilangkan satu region.')}
 </section>
 
 <section>
-  <h2>5. Apakah Random Forest menangkap sinyal di luar aturan?</h2>
-  <p>Target risiko semuanya berasal dari aturan, sehingga tidak bisa dipakai untuk membuktikan kemampuan belajar. Kolom diagnosis DFN/DM di dataset yang sama adalah satu-satunya label yang tidak dibuat sendiri, jadi model sesi diuji di situ.</p>
+  <h2>4. Kontrak tingkat</h2>
+  <p>Level ditentukan kontrak dua arah di web dan firmware, bukan suara pohon. Tabel ini adalah kasus acuan yang sama dengan <code>randomForestRisk.test.js</code> dan <code>test_randomforest.cpp</code>; skor harus selalu berada di pita levelnya.</p>
+  ${table(['Masukan', 'Ekspektasi', 'Hasil', 'Skor', 'Status'], contractRows)}
+  ${box(allContractPass ? 'ok' : 'bad', allContractPass ? 'Semua kasus acuan lolos' : 'Ada kasus acuan yang gagal', `Pita skor: aman 0–${SCORE_BANDS.safeMax}, waspada ${SCORE_BANDS.safeMax + 1}–${SCORE_BANDS.warningMax}.`)}
+  ${chart(svg['peta-kontrak'], 'Peta keluaran: batasnya garis vertikal di 45 kPa, dan durasi tidak mengubah tingkat sama sekali.')}
+  ${chart(svg['jangkauan-sensor'], 'Ambang 45 kPa berada di dalam jangkauan FSR 402; 200 kPa tidak.')}
+</section>
+
+<section>
+  <h2>5. Apakah tekanan membawa sinyal di luar aturan?</h2>
+  <p>Target risiko seluruhnya berasal dari aturan, sehingga tidak bisa dipakai membuktikan kemampuan belajar. Kolom diagnosis DFN/DM adalah satu-satunya label yang tidak dibuat sendiri, jadi model sesi diuji di situ.</p>
   ${table(['Butir', 'Nilai'], sessionRows)}
-  <div class="grid">
-    ${chart(svg['roc-dfn-dm'], 'Kurva ROC out-of-fold untuk DFN vs DM.')}
-  </div>
+  ${chart(svg['roc-dfn-dm'], 'Kurva ROC out-of-fold untuk DFN vs DM.')}
   ${box(
     fast ? 'ok' : 'bad',
     fast ? 'Temuan: tekanan membawa sinyal' : 'Temuan: tekanan belum cukup memisahkan',
     fast
-      ? `AUC out-of-fold ${m.session.auc.toFixed(3).replace('.', ',')} melewati ambang ${m.session.gate.floor.toFixed(3).replace('.', ',')} dan melebihi fitur tunggal terbaik sebesar ≥${m.session.gate.margin.toFixed(3).replace('.', ',')}. Ini bukti bahwa Random Forest belajar pola di luar aturan ambang, tetapi pada masalah yang berbeda (skrining neuropati, bukan tingkat risiko per sampel).`
-      : `AUC out-of-fold hanya ${m.session.auc.toFixed(3).replace('.', ',')}, di bawah ambang ${m.session.gate.floor.toFixed(3).replace('.', ',')}. Kontrol demografi saja memberi ${m.session.controls.demographicsAuc.toFixed(3).replace('.', ',')}, sehingga yang gagal bukan pipeline melainkan sinyal tekanan pada dataset ini. Ini hasil negatif yang harus dilaporkan apa adanya.`
+      ? `AUC out-of-fold ${m.session.auc.toFixed(3).replace('.', ',')} melewati ambang ${m.session.gate.floor.toFixed(3).replace('.', ',')} dan melebihi fitur tunggal terbaik sebesar ≥${m.session.gate.margin.toFixed(3).replace('.', ',')}. Ini bukti bahwa Random Forest belajar pola di luar aturan ambang, tetapi pada masalah yang berbeda: skrining neuropati per sesi, bukan tingkat risiko per sampel.`
+      : `AUC out-of-fold hanya ${m.session.auc.toFixed(3).replace('.', ',')}, di bawah ambang ${m.session.gate.floor.toFixed(3).replace('.', ',')}. Kontrol demografi saja memberi ${m.session.controls.demographicsAuc.toFixed(3).replace('.', ',')}, sehingga yang gagal bukan pipeline melainkan sinyal tekanan pada dataset ini. Hasil negatif ini dilaporkan apa adanya.`
   )}
 </section>
 
@@ -1108,10 +1031,11 @@ function renderReport(m, svg) {
       ['Ukuran JSON model', `${id(m.model.jsonBytes / 1024, 1)} KB`],
       ['Ukuran header C++', `${id(m.model.headerBytes / 1024, 1)} KB`],
       ['Waktu inferensi di laptop (proxy)', `${id(m.model.hostMicros, 2)} µs per keputusan`],
-      ['Aturan bahaya model produksi', `${id(m.model.dangerRule.peakThreshold)} kPa, ${id(m.model.dangerRule.sustainedThreshold)} sampel @10 Hz`],
+      ['Kontrak tingkat', `peak >= ${warningKpa} kPa → warning`],
+      ['Level yang diekspor', m.model.levels.join(', ')],
     ]
   )}
-  ${box('note', 'Belum diukur', 'Waktu inferensi di ESP32 dan latensi ujung-ke-ujung belum diukur di paket ini; angka di atas hanya proxy di laptop. Pengukuran perangkat harus dilakukan saat pengujian hardware.')}
+  ${box('note', 'Belum diukur', 'Waktu inferensi di ESP32 dan latensi ujung-ke-ujung belum diukur di paket ini; angka di atas hanya proxy di laptop. Pengukuran perangkat dilakukan saat pengujian hardware.')}
 </section>
 
 <section>
@@ -1120,16 +1044,16 @@ function renderReport(m, svg) {
   <ol>${conclusions.map((item) => `<li>${item}</li>`).join('')}</ol>
   <h3>Rekomendasi</h3>
   <ol>${recommendations.map((item) => `<li>${item}</li>`).join('')}</ol>
-  ${box('warn', 'Apa yang tidak dibuktikan paket ini', 'Paket ini tidak mengukur akurasi pada pasien nyata, tidak memvalidasi ambang secara klinis, dan tidak mengukur latensi perangkat. Semua angka berasal dari dataset publik dan model yang ada di repositori.')}
+  ${box('warn', 'Apa yang tidak dibuktikan paket ini', 'Paket ini tidak mengukur akurasi pada subjek baru, tidak memvalidasi ambang secara klinis, dan tidak mengukur latensi perangkat. Semua angka berasal dari dataset publik dan model yang ada di repositori.')}
 </section>
 
 <section>
   <h2>8. Cara membaca dan mereproduksi</h2>
   <ul>
     <li>Semua angka dihitung ulang dari <code>models/training-data.json</code> dan <code>models/session-dataset.json</code>.</li>
+    <li>Validasi silang dipanggil dari <code>scripts/train-model.js</code>, sehingga laporan dan log pelatihan memakai protokol yang sama.</li>
     <li>Jalankan <code>node scripts/evidence.js</code> untuk menghasilkan ulang seluruh berkas di <code>docs/evidence/</code>.</li>
-    <li>Grafik tersedia sebagai SVG (vektor, untuk laporan web) dan PNG (untuk disalin ke Word) di <code>docs/evidence/charts/</code>.</li>
-    <li>Angka mentah ada di <code>docs/evidence/metrics.json</code>; halaman konsultasi ada di <code>docs/evidence/konsultasi-1-halaman.html</code>.</li>
+    <li>Grafik tersedia sebagai SVG dan PNG di <code>docs/evidence/charts/</code>; angka mentah di <code>metrics.json</code>.</li>
   </ul>
 </section>
 
@@ -1139,57 +1063,47 @@ function renderReport(m, svg) {
   return page('Paket Bukti Model Random Forest', body);
 }
 
-function renderConsultation(m, svg) {
-  const val = m.audit.splits.validation;
+function renderConsultation(m) {
+  const warningKpa = m.audit.warningKpa;
+  const totals = m.audit.totals;
   const fast = m.session.gate.passed;
-  const dfnPlayers = m.audit.patients.filter((patient) => patient.atOrAbove70 > 0).length;
+  const shipped = m.cv.schemes.find((scheme) => scheme.key === 'RF + SMOTE');
+  const g09 = m.cv.gain.find((row) => row.gain === 0.9).schemes['RF + SMOTE'];
+  const g12 = m.cv.gain.find((row) => row.gain === 1.2).schemes['RF + SMOTE'];
 
   const body = `
 <header>
   <h1>Bahan Konsultasi — Model Random Forest</h1>
-  <p class="lead">Satu halaman: apa yang sudah benar, apa yang belum bisa dibuktikan, dan keputusan apa yang saya butuhkan.</p>
+  <p class="lead">Satu halaman: keputusan yang sudah diambil, angka yang mendukungnya, dan pertanyaan yang masih terbuka.</p>
 </header>
 
 <section>
-  <h2>Masalahnya dalam satu kalimat</h2>
-  <p>Data publik yang saya pakai tidak punya satu pun contoh tekanan yang cukup tinggi untuk disebut bahaya, jadi kelas Bahaya tidak bisa dilatih; yang bisa dipelajari model hanya batas Aman dan Waspada.</p>
+  <h2>Keputusan yang sudah dijalankan</h2>
+  <ul>
+    <li><strong>Dua kelas</strong> (Aman, Waspada) di model, firmware, web, dan seluruh dokumen. Tidak ada tingkat bahaya.</li>
+    <li><strong>Ambang label ${warningKpa} kPa</strong>, dari persentil ke-95 DFN-DS (45,4 kPa ≈ 5,7 N pada FSR 402).</li>
+    <li><strong>Durasi bukan penentu tingkat.</strong> Run terpanjang di atas ambang hanya ${id(totals.maxSustained)} sampel (${id(totals.maxSustained / 10, 1)} detik), jadi syarat durasi tidak pernah menyala.</li>
+    <li><strong>Dataset publik hanya untuk latih.</strong> Uji memakai subjek diabetes baru yang direkam sendiri.</li>
+    <li><strong>SMOTE</strong> di dalam lipatan latih saja, karena rasio ${id(totals.imbalance, 1)}:1.</li>
+  </ul>
 </section>
 
 <section>
-  <h2>Tiga temuan</h2>
+  <h2>Tiga temuan yang harus disampaikan apa adanya</h2>
   <ol class="findings">
-    <li><strong>Tidak ada contoh bahaya.</strong> Dari ${id(m.audit.totals.samples)} data, tidak ada yang mencapai 200 kPa; tekanan tertinggi ${id(m.audit.totals.maxPeak, 2)} kPa.</li>
-    <li><strong>Skor sempurna itu wajar, bukan prestasi.</strong> Label Aman–Waspada saya buat dari aturan ambang, dan model memakai ambang yang sama. Model dan aturan memberi jawaban identik pada seluruh data validasi (${pct(m.validation.results.find((item) => item.key === 'rule').agreementWithRule)}).</li>
-    <li><strong>Ambang 200 kPa di luar kemampuan sensor.</strong> Sensor FSR 402 jenuh sekitar 79 kPa; supaya 200 kPa terbaca, dibutuhkan gaya sekitar 25,4 N, sedangkan sensor dirating 0,1–10 N.</li>
+    <li><strong>Skor sempurna itu wajar.</strong> Label dibuat dari aturan yang sama dengan yang dipakai model. Ketiga skema (aturan, RF berbobot kelas, RF + SMOTE) memberi macro-F1 ${pct(shipped.macroF1)} pada ${FOLDS} lipatan; yang diukur adalah kesesuaian dengan aturan, bukan generalisasi.</li>
+    <li><strong>Model rapuh terhadap salah kalibrasi.</strong> Macro-F1 turun ke ${pct(g09.macroF1)} saat sinyal dikalikan 0,9 dan ${pct(g12.macroF1)} pada ×1,2. Kalibrasi FSR menentukan apakah ambang ${warningKpa} kPa berarti.</li>
+    <li><strong>Tidak ada contoh untuk kelas ketiga.</strong> ${id(totals.atOrAbove.seventy)} dari ${id(totals.samples)} sampel mencapai 70 kPa dan tidak ada yang mencapai 200 kPa; FSR 402 sendiri hanya sampai ≈79 kPa.</li>
   </ol>
-  <div class="grid">
-    ${chart(svg['histogram-peak'], 'Seluruh data ada di bawah 90 kPa.')}
-    ${chart(svg['per-pasien'], `Hanya ${dfnPlayers} pasien yang pernah melewati 70 kPa.`)}
-  </div>
 </section>
 
 <section>
-  <h2>Dua pilihan</h2>
-  ${table(
-    ['Aspek', 'Pilihan A — Hybrid (disarankan)', 'Pilihan B — Paksa 3 kelas'],
-    [
-      ['Klaim di Bab I–II', 'Random Forest untuk Aman–Waspada, aturan klinis untuk Bahaya', 'Random Forest untuk tiga kelas'],
-      ['Ambang bahaya', '70 kPa (bisa diukur sensor)', '200 kPa (tidak bisa diukur sensor)'],
-      ['Data Bahaya', 'Tidak perlu; berasal dari aturan', 'Harus dibuat sintetis, tetap berasal dari aturan'],
-      ['Yang bisa dibuktikan', 'Sistem, inferensi on-device, uji ketahanan', 'Sulit: tidak ada contoh validasi untuk kelas Bahaya'],
-      ['Risiko sidang', 'Rendah, alasannya jelas dan berbasis data', 'Tinggi: penguji bisa menanyakan asal label Bahaya'],
-    ]
-  )}
-  <p><strong>Rekomendasi saya:</strong> Pilihan A, dengan ambang 70 kPa, karena bisa dipertanggungjawabkan dari data yang ada dan tetap memakai Random Forest sebagai metode.</p>
-</section>
-
-<section>
-  <h2>Yang ingin saya tanyakan</h2>
+  <h2>Yang masih terbuka</h2>
   <ol>
-    <li>Apakah boleh sistem saya dijelaskan sebagai hybrid, dengan Random Forest untuk dua kelas dan aturan klinis untuk kelas bahaya?</li>
-    <li>Kalau harus tiga kelas, apakah boleh memakai data bahaya sintetis, dan bagaimana cara melaporkannya dengan jujur?</li>
-    <li>Untuk ambang bahaya, sebaiknya 70 kPa atau tetap 200 kPa dengan catatan keterbatasan sensor?</li>
-    <li>Pengujian tambahan apa yang Bapak/Ibu anggap paling penting untuk Bab IV?</li>
+    <li>Apakah satu subjek diabetes baru cukup sebagai studi kasus eksternal, atau perlu dua sampai tiga subjek dengan catatan bahwa jumlahnya tidak untuk generalisasi?</li>
+    <li>Apakah ambang ${warningKpa} kPa perlu dibulatkan ke angka klinis lain (misalnya 50 kPa) sebelum pengambilan data subjek baru?</li>
+    <li>Untuk Bab IV, apakah Bapak/Ibu menganggap sapuan gain dan uji subjek baru sudah cukup, atau perlu pengukuran ulang tekanan statis (berdiri) untuk menguji durasi?</li>
+    <li>Apakah hasil negatif model sesi (AUC ${m.session.auc.toFixed(3).replace('.', ',')}) sebaiknya masuk Bab IV sebagai pembanding, atau cukup di lampiran?</li>
   </ol>
 </section>
 
@@ -1197,21 +1111,22 @@ function renderConsultation(m, svg) {
   <h2>Kalau ditanya</h2>
   <table>
     <tbody>
-      <tr><td><strong>Kenapa pakai Random Forest?</strong></td><td>Untuk batas Aman–Waspada, dan karena modelnya kecil (${id(m.model.jsonBytes / 1024, 1)} KB) sehingga bisa berjalan di ESP32 tanpa server.</td></tr>
-      <tr><td><strong>Kenapa tidak ganti model?</strong></td><td>Kendalanya bukan model, tapi tidak adanya contoh kelas Bahaya di data. Model lain akan menemui masalah yang sama.</td></tr>
-      <tr><td><strong>Akurasi 100% itu mencurigakan?</strong></td><td>Betul, dan itu sudah saya catat sebagai keterbatasan. Karena itu saya menambahkan pembanding aturan, uji ketahanan, dan uji ${fast ? 'DFN vs DM' : 'DFN vs DM yang hasilnya belum lulus'}.</td></tr>
-      <tr><td><strong>Kenapa ambangnya 70 kPa?</strong></td><td>70 kPa masih terbaca sensor (8,9 N), sedangkan 200 kPa butuh 25,4 N dan berada di luar jangkauan FSR 402 yang dipakai.</td></tr>
+      <tr><td><strong>Kenapa hanya dua kelas?</strong></td><td>Karena tidak ada data untuk kelas ketiga dan sensornya tidak mampu mengukurnya; melewati ambang, pasien neuropati sudah kehilangan sensasi pelindung sehingga tindakannya sama.</td></tr>
+      <tr><td><strong>Kenapa ${warningKpa} kPa?</strong></td><td>Persentil ke-95 tekanan pasien diabetes DFN-DS, masih di dalam rentang FSR 402 (≈5,7 N), dan menandai ${id(totals.patientsAtOrAbove.warning)} dari ${id(totals.patients)} pasien.</td></tr>
+      <tr><td><strong>Akurasi 100% mencurigakan?</strong></td><td>Betul, dan itu sudah dicatat sebagai keterbatasan. Karena itu ada pembanding aturan, sapuan gain, kontrak tingkat, dan uji DFN vs DM.</td></tr>
+      <tr><td><strong>Kenapa Random Forest kalau hasilnya sama dengan aturan?</strong></td><td>Karena kontribusinya bukan menyalin aturan, melainkan menunjukkan bahwa batas itu memang yang paling mudah dipelajari dari data, dan menyediakan skor kontinu; kelemahannya dilaporkan, bukan disembunyikan.</td></tr>
+      <tr><td><strong>Bagaimana dengan durasi?</strong></td><td>Tetap fitur model dan tetap ditampilkan, tetapi tidak menaikkan tingkat; data acuan tidak punya tumpu panjang untuk diuji.</td></tr>
     </tbody>
   </table>
 </section>
 
 <section>
-  <h2>Lampiran angka yang bisa ditunjukkan</h2>
+  <h2>Lampiran angka</h2>
   <ul>
-    <li>Sampel ≥ 35 kPa: ${id(m.audit.totals.atOrAbove[35])}; ≥ 70 kPa: ${id(m.audit.totals.atOrAbove[70])}; ≥ 200 kPa: ${id(m.audit.totals.atOrAbove[200])}.</li>
-    <li>Sampel validasi ≥ 70 kPa: ${id(val.atOrAbove[70])} (puncak validasi ${id(val.maxPeak, 2)} kPa).</li>
-    <li>Pada data pasien ulkus (Figshare DFU): ${id(m.figshare.at_or_above_warning_pct || 0, 1)}% pengukuran ≥ 35 kPa, ${id(m.figshare.at_or_above_70_pct || 0, 1)}% ≥ 70 kPa, ${id(m.figshare.at_or_above_200_pct || 0, 1)}% ≥ 200 kPa.</li>
-    <li>Uji ketahanan: gangguan terberat hanya mengubah ${id(Math.max(...m.robustness.rows.filter((row) => row.key !== 'clean').map((row) => row.flipRate)) * 100, 2)}% keputusan.</li>
+    <li>Sampel ≥ ${warningKpa} kPa: ${id(totals.atOrAbove.warning)} (${pct(totals.atOrAbove.warning / totals.samples)}); ≥ 50 kPa: ${id(totals.atOrAbove.fifty)}; ≥ 70 kPa: ${id(totals.atOrAbove.seventy)}.</li>
+    <li>Pasien yang pernah melewati ambang: ${id(totals.patientsAtOrAbove.warning)} dari ${id(totals.patients)}; puncak dataset ${id(totals.maxPeak, 2)} kPa.</li>
+    <li>Figshare DFU: ${id(m.figshare.at_or_above_warning_pct || 0, 1)}% pengukuran ≥ ${warningKpa} kPa dan ${id(m.figshare.at_or_above_70_pct || 0, 1)}% ≥ 70 kPa.</li>
+    <li>DFN vs DM, validasi silang ${m.session.folds} lipatan: AUC ${m.session.auc.toFixed(3).replace('.', ',')} (${fast ? 'lulus' : 'tidak lulus'} gerbang ${m.session.gate.floor.toFixed(3).replace('.', ',')}).</li>
     <li>Laporan lengkap: <code>docs/evidence/hasil-pengujian-model.html</code>.</li>
   </ul>
 </section>
@@ -1263,6 +1178,9 @@ function page(title, body) {
   .box.note { border-color: #2563eb; background: #eff6ff; }
   .ok { color: #16a34a; font-weight: 600; }
   .bad { color: #dc2626; font-weight: 600; }
+  .chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; }
+  .chip.safe { background: #e7f5ee; color: #04644c; }
+  .chip.warning { background: #fdf0d5; color: #8a5a00; }
   .chart { margin: 8px 0 20px; }
   .chart svg { width: 100%; height: auto; border: 1px solid #e5e7eb; border-radius: 10px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 8px 20px; align-items: start; }
@@ -1289,6 +1207,7 @@ ${body}
 
 function main() {
   const { meta, patients } = loadPatients();
+  const warningKpa = meta.labelRule.warningKpa;
   const model = JSON.parse(fs.readFileSync(RF_MODEL, 'utf8'));
   let last = Date.now();
   const step = (label) => {
@@ -1298,106 +1217,50 @@ function main() {
   };
 
   console.log('Menghitung audit data...');
-  const auditData = audit(patients, meta);
+  const auditData = audit(patients, meta, warningKpa);
   step('audit');
 
-  console.log('Mengevaluasi prediktor pada data validasi...');
-  const { results } = evaluatePredictors(patients, model);
-  step('prediktor');
-
   console.log(`Menjalankan validasi silang ${FOLDS} lipatan...`);
-  const cv = crossValidateSamples(patients, model);
+  const cv = crossValidation(patients, warningKpa);
   step('validasi silang');
 
   console.log('Menguji ketahanan input...');
-  const robust = robustness(patients, model);
+  const robust = robustness(patients, model, warningKpa);
   step('ketahanan');
 
-  console.log('Menyusun peta ambang...');
-  const scenarios = SCENARIOS.map((kpa) => {
-    const map = thresholdMap(model, kpa);
-    const trainPatients = patients.filter((patient) => patient.split === 'train');
-    const valPatients = patients.filter((patient) => patient.split === 'validation');
-    const trainSamples = trainPatients.flatMap((patient) => patient.samples);
-    const valSamples = valPatients.flatMap((patient) => patient.samples);
-    return {
-      kpa,
-      label: `Bahaya ${kpa} kPa`,
-      map,
-      samplesTrain: trainSamples.filter((sample) => sample.peak >= kpa).length,
-      samplesVal: valSamples.filter((sample) => sample.peak >= kpa).length,
-      patientsTrain: trainPatients.filter((patient) => patient.samples.some((sample) => sample.peak >= kpa)).length,
-      patientsVal: valPatients.filter((patient) => patient.samples.some((sample) => sample.peak >= kpa)).length,
-      // "Bisa menyala" is about the whole dataset the device can produce;
-      // "bisa divalidasi" is about the held-out split alone.
-      canTrigger: trainSamples.concat(valSamples).some((sample) => sample.peak >= kpa),
-      canValidate: valSamples.some((sample) => sample.peak >= kpa),
-      figshareShare: null,
-    };
-  });
+  console.log('Menyusun kontrak dan peta tingkat...');
+  const contract = contractCases(model, warningKpa);
+  const map = scoreMap(model, warningKpa);
+  step('kontrak');
 
   console.log('Memvalidasi ambang terhadap Figshare DFU...');
-  step('peta ambang');
-  const figshare = figshareNumbers();
+  const figshare = figshareNumbers(warningKpa);
   step('figshare');
-  if (!figshare.error) {
-    for (const scenario of scenarios) {
-      scenario.figshareShare =
-        scenario.kpa === 200 ? figshare.at_or_above_200_pct : figshare.at_or_above_70_pct;
-    }
-  }
 
   console.log('Menjalankan evaluasi sesi DFN vs DM...');
   const session = sessionEvidence();
   step('sesi DFN/DM');
 
-  const modelInfo = modelFacts(model);
+  const modelInfo = modelFacts(model, warningKpa);
   step('fakta model');
-  const scenarioMap = {};
-  for (const scenario of scenarios) scenarioMap[scenario.kpa] = scenario;
 
   const m = {
     meta: {
       generatedBy: 'scripts/evidence.js',
       seed: SEED,
       folds: FOLDS,
-      thresholds: { warningKpa: WARNING_KPA, safeFloorSamples: SAFE_FLOOR_SAMPLES },
-      scenarios: SCENARIOS,
+      warningKpa,
+      levels: LEVELS,
+      scoreBands: SCORE_BANDS,
     },
     audit: auditData,
-    validation: {
-      results,
-      sampleCount: auditData.splits.validation.samples,
-    },
     cv,
     robustness: robust,
-    scenarios: [
-      {
-        key: 'hybrid200',
-        kpa: 200,
-        label: 'Bahaya 200 kPa (produksi)',
-        ...scenarioMap[200],
-        note: 'Pita Bahaya hanya ada pada tekanan di atas 200 kPa, di luar jangkauan FSR 402.',
-      },
-      {
-        key: 'hybrid70',
-        kpa: 70,
-        label: 'Bahaya 70 kPa (usulan Bab II)',
-        ...scenarioMap[70],
-        note: 'Kelas Bahaya menjadi terjangkau sensor; tetap tanpa contoh pada data validasi.',
-      },
-    ],
+    contract,
+    scoreMap: map,
     session,
     figshare,
     model: modelInfo,
-    contract: CONTRACT.map((item) => ({
-      peak: item.peak,
-      seconds: item.seconds,
-      level200: hybridLevel(model, { peak: item.peak, sustained: item.seconds * 10 }, 200),
-      level70: hybridLevel(model, { peak: item.peak, sustained: item.seconds * 10 }, 70),
-      expect200: item.expect[200],
-      expect70: item.expect[70],
-    })),
   };
 
   const svg = renderCharts(m);
@@ -1426,14 +1289,15 @@ function main() {
 
   fs.writeFileSync(path.join(OUT_DIR, 'metrics.json'), `${JSON.stringify(m, null, 2)}\n`);
   fs.writeFileSync(path.join(OUT_DIR, 'hasil-pengujian-model.html'), renderReport(m, svg));
-  fs.writeFileSync(path.join(OUT_DIR, 'konsultasi-1-halaman.html'), renderConsultation(m, svg));
+  fs.writeFileSync(path.join(OUT_DIR, 'konsultasi-1-halaman.html'), renderConsultation(m));
 
   const readme = `# Paket Bukti Model Random Forest
 
 > Dihasilkan otomatis oleh \`scripts/evidence.js\`. Jangan diedit manual.
 
 Folder ini memuat pengukuran mandiri atas model klasifikasi risiko tekanan
-plantar: kondisi dataset, hasil pengujian, dan bukti untuk tiap temuan.
+plantar dua kelas (${warningKpa} kPa): kondisi dataset, hasil pengujian, dan bukti
+untuk tiap temuan.
 
 ## Berkas
 
@@ -1452,22 +1316,21 @@ node scripts/evidence.js
 \`\`\`
 
 Skrip menghitung ulang semua angka dari \`models/training-data.json\` dan
-\`models/session-dataset.json\`. Model produksi tidak diubah.
+\`models/session-dataset.json\`, serta memanggil protokol validasi silang dari
+\`scripts/train-model.js\`. Model produksi tidak diubah.
 
 ## Ringkasan temuan
 
-- Kelas Bahaya tidak punya contoh: ${id(m.audit.totals.atOrAbove[200])} dari ${id(m.audit.totals.samples)} sampel mencapai 200 kPa; puncak dataset ${id(m.audit.totals.maxPeak, 2)} kPa.
-- Tidak ada sampel validasi di atas 70 kPa, sehingga kelayakan ambang 70 kPa
-  belum bisa diuji pada data uji.
-- Random Forest dan aturan ambang memberi keputusan identik pada
-  ${pct(m.validation.results.find((item) => item.key === 'rule').agreementWithRule)} sampel validasi, karena labelnya berasal dari aturan itu sendiri (label melingkar).
-- Ambang 200 kPa di luar jangkauan FSR 402 (200 kPa ≈ 25,4 N, sensor 0,1–10 N).
-- DFN vs DM, validasi silang ${m.session.folds} lipatan: AUC ${m.session.auc.toFixed(3).replace('.', ',')} (${m.session.gate.passed ? 'lulus' : 'tidak lulus'} ambang ${m.session.gate.floor.toFixed(3).replace('.', ',')}).
+- ${id(auditData.totals.atOrAbove.warning)} dari ${id(auditData.totals.samples)} sampel (${pct(auditData.totals.atOrAbove.warning / auditData.totals.samples)}) mencapai ambang label ${warningKpa} kPa, dari ${id(auditData.totals.patientsAtOrAbove.warning)} pasien; rasio kelas ${id(auditData.totals.imbalance, 1)}:1.
+- Ketiga skema (aturan murni, RF berbobot kelas, RF + SMOTE) memberi macro-F1 ${pct(cv.schemes.find((s) => s.key === 'RF + SMOTE').macroF1)} pada ${FOLDS} lipatan berkelompok per pasien, karena labelnya berasal dari aturan itu sendiri (label melingkar).
+- Galat penguatan paling menentukan: macro-F1 turun ke ${pct(cv.gain.find((row) => row.gain === 0.9).schemes['RF + SMOTE'].macroF1)} pada ×0,9 dan ${pct(cv.gain.find((row) => row.gain === 1.2).schemes['RF + SMOTE'].macroF1)} pada ×1,2.
+- Tidak ada level di atas Waspada: ${id(auditData.totals.atOrAbove.seventy)} sampel mencapai 70 kPa dan 0 mencapai 200 kPa; FSR 402 berhenti di ≈79 kPa.
+- DFN vs DM, validasi silang ${session.folds} lipatan: AUC ${session.auc.toFixed(3).replace('.', ',')} (${session.gate.passed ? 'lulus' : 'tidak lulus'} ambang ${session.gate.floor.toFixed(3).replace('.', ',')}).
 
 ## Batasan
 
 - Waktu inferensi di laptop, bukan ESP32.
-- Tidak ada data pasien nyata dan tidak ada validasi klinis.
+- Belum ada data subjek baru; uji eksternal dilakukan terpisah sebagai studi kasus.
 - Label sampel berasal dari aturan, sehingga metrik klasifikasi mengukur
   kesesuaian terhadap aturan, bukan generalisasi.
 `;
@@ -1476,8 +1339,9 @@ Skrip menghitung ulang semua angka dari \`models/training-data.json\` dan
 
   console.log('\nSelesai.');
   console.log(`  audit     : ${id(auditData.totals.samples)} sampel, puncak ${id(auditData.totals.maxPeak, 2)} kPa`);
-  console.log(`  validasi  : aturan ${pct(results.find((item) => item.key === 'rule').accuracy)} | RF ${pct(results.find((item) => item.key === 'rf').accuracy)} | hybrid200 ${pct(results.find((item) => item.key === 'hybrid200').accuracy)}`);
-  console.log(`  CV        : RF macro-F1 ${pct(cv[2].macroF1Mean)} ± ${id(cv[2].macroF1Sd * 100, 1)}%`);
+  console.log(`  CV        : aturan ${pct(cv.schemes[0].macroF1)} | class-weight ${pct(cv.schemes[1].macroF1)} | SMOTE ${pct(cv.schemes[2].macroF1)}`);
+  console.log(`  gain      : ${cv.gain.map((row) => `x${row.gain.toFixed(1)} ${pct(row.schemes['RF + SMOTE'].macroF1)}`).join(' | ')}`);
+  console.log(`  kontrak   : ${contract.filter((item) => item.pass).length}/${contract.length} lolos`);
   console.log(`  sesi      : AUC ${session.auc.toFixed(3)} (${session.gate.passed ? 'lulus' : 'tidak lulus'})`);
   console.log(`  grafik    : ${written.svg.length} SVG, ${written.png.length} PNG`);
   if (written.skippedPng.length) console.log(`  PNG dilewati: ${written.skippedPng.join(', ')}`);
@@ -1487,14 +1351,14 @@ Skrip menghitung ulang semua angka dari \`models/training-data.json\` dan
 module.exports = {
   loadPatients,
   audit,
-  evaluatePredictors,
-  crossValidateSamples,
+  crossValidation,
   robustness,
-  thresholdMap,
+  contractCases,
+  scoreMap,
   sessionEvidence,
   figshareNumbers,
   modelFacts,
-  hybridLevel,
+  infer,
 };
 
 if (require.main === module) main();

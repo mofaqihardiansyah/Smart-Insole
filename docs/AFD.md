@@ -59,7 +59,7 @@ Di mobile, tujuan dipindah ke drawer.
 ## 5. Alur riwayat
 
 - Register insiden dibangun dari transisi level (verdict perangkat lebih dulu).
-- Filter tingkat risiko (Semua / Bahaya / Waspada), kolom waktu dapat diurutkan.
+- Filter tingkat risiko (Semua / Waspada / Aman), kolom waktu dapat diurutkan.
 - Header lengket dengan kolom waktu dibekukan saat register menggulir.
 - Di bawah `md`, tabel berubah menjadi baris definisi bertumpuk.
 - Ekspor CSV mencakup seluruh register.
@@ -71,10 +71,10 @@ Di mobile, tujuan dipindah ke drawer.
 
 ## 7. Alur pengaturan
 
-- Pengguna biasa melihat dua ambang sebagai nilai biasa (tanpa editor).
-- Admin dapat mengubah ambang peringatan; skor contoh ikut berubah sebelum
-  disimpan.
-- Ambang durasi bahaya tidak dapat diubah klien (diputuskan perangkat).
+- Ambang risiko tampil sebagai nilai tetap (45 kPa), tanpa editor: nilainya
+  melekat pada model dua kelas yang juga dipakai firmware, jadi mengubahnya di
+  klien akan membuat tampilan dan alarm berbeda.
+- Pratinjau skor memakai kontrak yang sama dengan dashboard.
 
 ## 8. Alur profil
 
@@ -93,7 +93,7 @@ Di mobile, tujuan dipindah ke drawer.
 
 ## 10. Early warning
 
-- Saat level naik ke Waspada/Bahaya, web memicu notifikasi dan alarm audio.
+- Saat level naik ke Waspada, web memicu notifikasi dan alarm audio.
 - Izin notifikasi hanya bisa diminta di konteks aman (`https://` atau
   `localhost`).
 

@@ -31,7 +31,7 @@ heatmap_, grafik tren, dan _Early Warning System_.
 | `src/hooks/useAuth.ts` | Listener status autentikasi Firebase |
 | `src/services/firebaseConfig.ts` | Inisialisasi Firebase Web SDK |
 | `src/services/firebaseRealtime.ts` | Listener _realtime_ dari Firebase RTDB |
-| `src/utils/randomForestRisk.ts` | Inferensi risiko (hybrid RF + rule) |
+| `src/utils/randomForestRisk.ts` | Inferensi risiko (kontrak 45 kPa + skor) |
 | `src/utils/rf-model.json` | Model Random Forest ter-ekspor |
 | `src/utils/i18n.ts` | Kamus teks ID/EN (permukaan terkirim: Indonesia) |
 

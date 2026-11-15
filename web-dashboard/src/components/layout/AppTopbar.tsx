@@ -4,6 +4,7 @@ import { useInsole } from "../../context/InsoleContext";
 import { t } from "../../utils/i18n";
 import { AlertBell } from "./AlertBell";
 import { AppSearch } from "./AppSearch";
+import { DeviceSwitcher } from "./DeviceSwitcher";
 import { initialsOf } from "./AppSidebar";
 import type { NavItem } from "./AppSidebar";
 
@@ -160,6 +161,9 @@ interface AppTopbarProps {
   userName?: string;
   userEmail?: string;
   onSignOut: () => void;
+  deviceIds?: string[];
+  deviceId?: string | null;
+  onSelectDevice?: (id: string) => void;
 }
 
 const AppTopbar = ({
@@ -168,9 +172,18 @@ const AppTopbar = ({
   userName,
   userEmail,
   onSignOut,
+  deviceIds = [],
+  deviceId = null,
+  onSelectDevice = () => {},
 }: AppTopbarProps) => {
   return (
     <div className="ml-auto flex min-w-0 items-center gap-2">
+      <DeviceSwitcher
+        deviceIds={deviceIds}
+        deviceId={deviceId}
+        onSelectDevice={onSelectDevice}
+        className="shrink-0"
+      />
       <div className="w-56 min-w-0 shrink xl:w-72">
         <AppSearch links={links} />
       </div>

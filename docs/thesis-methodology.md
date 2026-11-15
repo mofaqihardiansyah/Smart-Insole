@@ -15,7 +15,7 @@ paket per detik (1 Hz), lalu dibaca dashboard. Fitur model dinyatakan dalam
 satuan sampel 10 Hz; dashboard mengonversi durasi detik dari perangkat ke
 satuan itu sebelum inferensi. Klasifikasi risiko dihitung dua kali dari
 model yang sama: di ESP32 untuk alarm lokal, dan di dashboard untuk tampilan
-riwayat. Karena keduanya memakai bobot model dan aturan klinis yang identik,
+riwayat. Karena keduanya memakai bobot model dan kontrak ambang yang identik,
 keduanya tidak dapat memberi kesimpulan berbeda atas pembacaan yang sama.
 
 ## 3.2 Data
@@ -52,53 +52,59 @@ Setiap timestep menghasilkan dua fitur: *peak pressure* (kPa) dan `sustained`,
 yaitu panjang run berurutan dengan `peak` di atas ambang kalibrasi p75, dalam
 satuan sampel 10 Hz.
 
-Kalibrasi ambang peringatan memakai kuantil ke-75 distribusi tekanan DFN-DS
-(12,39 kPa mentah) yang diskalakan 2,82x menjadi 35 kPa; jendela durasi
-peringatan adalah 20 detik.
+Kalibrasi jangkar konversi ADC memakai kuantil ke-75 distribusi tekanan
+DFN-DS (12,39 kPa mentah) yang diskalakan 2,82x menjadi 35 kPa. Ambang label
+merupakan angka terpisah: persentil ke-95 distribusi (45,4 kPa), dibulatkan
+menjadi **45 kPa**, setara sekitar 5,7 N pada FSR 402.
 
 Pelabelan **tidak** memakai kelompok pasien. Aturan label di
-`scripts/prepare-dataset.py` adalah `peak >= 35 kPa` atau `sustained >= 200
-sampel` (20 detik pada 10 Hz) menjadi `warning`, selain itu `safe`. Pada
-DFN-DS run terpanjang hanya 30 sampel, sehingga klausa `sustained` tidak pernah
-tercapai dan label efektifnya adalah `peak >= 35 kPa`. Kelompok DFN/DM hanya
-dipakai untuk memastikan pembagian data seimbang, bukan sebagai label.
+`scripts/prepare-dataset.py` adalah `peak >= 45 kPa` menjadi `warning`,
+selain itu `safe`. Durasi tumpuan tidak menjadi syarat label: DFN-DS adalah
+rekaman berjalan dengan run terpanjang di atas 45 kPa hanya 13 sampel
+(1,3 detik), sehingga syarat durasi 20 detik tidak pernah tercapai. Kelompok
+DFN/DM hanya dipakai untuk memastikan sebaran lipatan seimbang, bukan sebagai
+label.
 
-Pembagian data dilakukan **per pasien**, bukan per sampel, dengan rasio 80/20:
-107 pasien untuk latihan dan 28 pasien untuk validasi. Pembagian per sampel
-akan membocorkan karakteristik pasien ke kedua sisi dan membuat akurasi
-validasi terlalu optimistis.
+Seluruh 135 pasien dipakai sebagai data latih dengan **validasi silang lima
+lipatan yang dikelompokkan per pasien**, bukan pembagian 80/20. Pembagian per
+sampel akan membocorkan karakteristik pasien ke kedua sisi; kelompok per
+pasien mencegahnya. Data uji eksternal adalah subjek diabetes baru yang
+direkam sendiri untuk penelitian ini, sehingga tidak ada bagian dataset publik
+yang diklaim sebagai data uji.
 
 ## 3.4 Model
 
-Model yang dipakai adalah **hybrid Random Forest dan aturan klinis**.
+Model yang dipakai adalah **Random Forest dua kelas**, `safe` dan `warning`.
 
-Random Forest (Breiman, 2001) menangani batas `safe` dan `warning`. Alasan
+Random Forest (Breiman, 2001) mempelajari batas `safe`/`warning`. Alasan
 pemilihan Random Forest: batas keputusan dipelajari dari data sehingga tidak
 bergantung pada fungsi keanggotaan yang ditentukan manual, model tidak
-memerlukan asumsi
-distribusi, dan hasilnya dapat diekspor ke C++ agar berjalan di ESP32 tanpa
-pustaka tambahan. Pada dataset ini batas yang dipelajari ternyata berimpit
-dengan ambang label di 3.3, sehingga pohon mereproduksi aturan; implikasinya
-dibahas di 3.7 dan 3.8.
+memerlukan asumsi distribusi, dan hasilnya dapat diekspor ke C++ agar berjalan
+di ESP32 tanpa pustaka tambahan. Pada dataset ini batas yang dipelajari
+ternyata berimpit dengan ambang label di 3.3, sehingga pohon mereproduksi
+aturan; implikasinya dibahas di 3.7 dan 3.8.
 
-Aturan klinis menangani kelas `danger`:
+Tidak ada tingkat `danger`. Puncak tekanan tertinggi di DFN-DS hanya 87,06 kPa,
+sehingga 0 dari 81.000 sampel mencapai 200 kPa dan tidak ada contoh yang bisa
+dilatih maupun diuji. FSR 402 juga tidak mampu mengukur 200 kPa: angka itu
+setara 25,4 N pada luas aktif 126,7 mm², sedangkan sensor dirating 0,1-10 N
+(sekitar 0,8-79 kPa). Secara klinis tingkat ketiga tidak menambah tindakan,
+karena pasien neuropati yang melewati batas waspada sudah kehilangan sensasi
+pelindung. Kontrak yang dipegang karena itu dua arah:
 
 ```
-danger  : peak >= 200 kPa (satu sampel; tidak ada syarat durasi)
-safe    : peak < 35 kPa dan sustained < 20 detik
+warning : peak >= 45 kPa
+safe    : peak <  45 kPa
 ```
 
-Pemisahan ini didasari komposisi dataset: puncak tekanan tertinggi di DFN-DS
-hanya 87,06 kPa, sehingga 0 dari 81.000 sampel mencapai ambang 200 kPa. Tidak
-ada contoh `danger` yang bisa dipelajari Random Forest, sedangkan ambangnya
-sudah terdefinisi untuk pengukuran in-shoe (Castro-Martins dkk., 2024). Dengan
-pembagian ini, model hanya memutuskan `safe`/`warning`; `danger` selalu berasal
-dari aturan.
+Kontrak ini dijalankan di firmware dan di web; suara pohon hanya menentukan
+skor di dalam pita tingkatnya, sehingga angka dan tingkat tidak pernah
+bertentangan.
 
 Konfigurasi terpilih dari sapuan hiperparameter ringan: 20 pohon, kedalaman
-maksimum 8, Gini impurity, dan *bootstrap* berbobot dengan bobot kelas
-berbanding terbalik dengan frekuensi, dibatasi maksimum 10x untuk mencegah
-kelas minoritas mendominasi.
+maksimum 8, dan Gini impurity. Ketidakseimbangan kelas 17,6:1 ditangani SMOTE
+(k=5, seed 42) di dalam lipatan latih saja, sehingga data uji tidak pernah
+disintesis.
 
 ## 3.5 Pelatihan
 
@@ -113,11 +119,13 @@ JSON untuk web dan ke header C++ untuk firmware.
 
 Empat evaluasi dijalankan:
 
-1. **Kinerja klasifikasi** pada 28 pasien yang tidak dipakai melatih:
-   accuracy, precision, recall, dan F1 per kelas.
-2. **Clinical contract**: kasus acuan 40 kPa harus `warning`, 199 kPa selama
-   31 detik harus tetap `warning`, 210 kPa selama 31 detik harus `danger`,
-   dan 20 kPa tanpa durasi harus `safe`.
+1. **Kinerja klasifikasi** dengan validasi silang lima lipatan berkelompok
+   per pasien atas 135 pasien: accuracy, precision, recall, dan F1 per kelas,
+   dilaporkan untuk tiga skema (aturan murni, RF berbobot kelas, RF + SMOTE).
+2. **Kontrak tingkat**: 40 kPa selama 3 detik harus `safe`, 45 kPa selama
+   1 detik harus `warning`, 80 kPa selama 2 detik harus `warning`, 210 kPa
+   selama 45 detik dan 500 kPa selama 60 detik tetap `warning`, dan 20 kPa
+   tanpa durasi harus `safe`.
 3. **Konsistensi level dan skor**: sapuan grid seragam 0-120 kPa x 0-60 detik
    memastikan setiap level selalu berada di pita skornya dan tidak ada lompatan
    di luar kontrak klinis.
@@ -129,39 +137,45 @@ Empat evaluasi dijalankan:
 
 | Evaluasi | Hasil |
 | --- | --- |
-| Accuracy `safe` vs `warning` (28 pasien) | 100,0% |
+| Accuracy `safe` vs `warning` (5 lipatan) | 100,0% |
 | Macro-F1 | 100,0% |
-| Clinical contract | 5/5 lolos |
+| Kontrak tingkat | 6/6 kasus acuan lolos |
+| Ketahanan skala (gain 0,9 / 1,1 / 1,2 / 1,3) | 78,4% / 82,4% / 69,7% / 60,9% macro-F1 |
 | Edge case degenerat (kosong, `NaN`, 500 kPa) | Tidak ada galat, skor tetap 0-100 |
 | OptiTrack: tumit mendahului forefoot | 99,9% dari 902 fase tumpu |
-| Figshare DFU: >= 70 kPa / >= 200 kPa | 1,4% / 0,0% (puncak 123,8 kPa) |
-| Uji native firmware | 13/13 lolos |
+| Figshare DFU: >= 45 kPa / >= 70 kPa | 9,8% / 1,4% (puncak 123,8 kPa) |
+| Uji native firmware | 10/10 lolos |
 
 Akurasi 100% perlu dibaca bersama keterbatasan di 3.8. Kelas yang dievaluasi
 hanya `safe` dan `warning`, dan batas antara keduanya berasal dari ambang
-`peak >= 35 kPa` yang juga menjadi fitur masukan: 19 dari 20 pohon memisah
-pada `sustained > 0` dan satu pohon pada `peak` 34,97 kPa. Angka itu mengukur
-reproduksi aturan, bukan kemampuan generalisasi.
+`peak >= 45 kPa` yang juga menjadi fitur masukan: hampir semua pohon memisah
+pada `sustained > 0`, sisanya pada `peak`. Angka itu mengukur reproduksi
+aturan, bukan kemampuan generalisasi. Sinyal yang lebih jujur adalah sapuan
+galat penguatan: macro-F1 turun ke 69,7% saat sinyal dikalikan 1,2, sehingga
+kalibrasi sensor menjadi prasyarat.
 
 ## 3.8 Ancaman validitas
 
-- **Tidak ada sampel bahaya.** Dataset tidak memuat satu pun sampel `danger`
-  (0 dari 81.000; puncak DFN-DS 87,06 kPa), sehingga kelas itu diserahkan ke
-  aturan klinis. Akurasi 100% tidak mengukur kemampuan mendeteksi bahaya;
-  bagian itu diukur oleh clinical contract.
-- **Sirkularitas label.** Label latih adalah ambang `peak >= 35 kPa`, dan
+- **Hanya dua kelas.** Dataset tidak memuat contoh yang cukup tinggi untuk
+  kelas ketiga (0 dari 81.000 mencapai 200 kPa; puncak DFN-DS 87,06 kPa), dan
+  FSR 402 tidak mampu mengukurnya. Konsekuensinya alat ini tidak membedakan
+  keparahan di atas Waspada; sekali ambang terlampaui, tindakannya sama.
+- **Sirkularitas label.** Label latih adalah ambang `peak >= 45 kPa`, dan
   pohon memisah pada fitur yang sama. Model mereproduksi aturan yang
   melabelinya, sehingga akurasi tinggi tidak membuktikan pola tekanan baru.
+  Karena itu tingkat dipegang kontrak dua arah, dan pohon hanya menyumbang
+  skor.
 - **Populasi.** DFN-DS berisi pasien diabetes, bukan populasi umum. Model
   tidak divalidasi untuk pengguna tanpa riwayat diabetes (lihat 3.9).
 - **Jumlah sensor.** Insole memakai 3 sensor per kaki, sedangkan data latih
   memakai 8 sensor per kaki yang diagregasi. Agregasi ini divalidasi pada
   OptiTrack (3.1), tetapi resolusi *midfoot* pada perangkat hanya diwakili
   tiga titik ukur.
-- **Jendela durasi.** Beban 35-199 kPa yang bertahan lama tetap `warning`;
-  hanya 200 kPa yang menaikkan ke `danger`. Tumpu berkepanjangan di bawah
-  200 kPa karena itu tidak pernah menjadi bahaya, dan celah ini wajib
-  disebutkan saat pemakaian alat.
+- **Durasi tidak menentukan tingkat.** Rekaman berjalan DFN-DS berhenti di
+  1,3 detik di atas 45 kPa, jadi syarat durasi panjang tidak dapat diuji pada
+  data ini. Perilaku pada tumpu berkepanjangan (rekaman statis) belum diukur.
+- **Ketahanan skala.** Macro-F1 turun ke 69,7% saat sinyal dikalikan 1,2.
+  Kalibrasi FSR sebelum pemakaian menentukan apakah ambang 45 kPa berarti.
 - **Ambang Figshare.** Dataset DFU tidak memuat durasi, sehingga validasi 3.2
   hanya berlaku untuk ambang tekanan.
 
@@ -173,24 +187,25 @@ tingkat risiko dan alarm lokal, dan tidak menggantikan pemeriksaan klinis.
 ### 3.9.1 Populasi sasaran
 
 Alat ditujukan untuk **pasien diabetes**, idealnya dengan neuropati perifer
-atau riwayat ulkus kaki. Ambang 200 kPa adalah ambang *in-shoe* dengan
-konsensus terluas untuk populasi itu (Castro-Martins dkk., 2024), dan seluruh
-data latih DFN-DS berasal dari pasien diabetes. Tidak ada subjek non-diabetes
-dalam data latih maupun validasi.
+atau riwayat ulkus kaki. Ambang 45 kPa diturunkan dari persentil ke-95
+distribusi tekanan pasien diabetes DFN-DS (45,4 kPa) dan masih di dalam rentang
+FSR 402; seluruh data latih berasal dari pasien diabetes. Tidak ada subjek
+non-diabetes dalam data latih.
 
 ### 3.9.2 Arti ambang di luar populasi itu
 
 Pada orang tanpa neuropati, sensasi protektif masih utuh: tekanan tinggi terasa
 nyeri dan otomatis di-*offload*, sehingga tidak menimbulkan ulkus. Karena itu
 alarm pada pengguna non-diabetes bukan peringatan risiko, melainkan positif
-palsu. Angka 35 kPa juga bukan batas cedera, melainkan penanda beban relatif
+palsu. Angka 45 kPa juga bukan batas cedera, melainkan penanda beban relatif
 hasil kalibrasi dataset. Alat ini tidak boleh dipakai sebagai skrining umum
 atau untuk orang sehat.
 
-Perlu dicatat bahwa ambang 200 kPa praktis tidak pernah tercapai pada data
-acuan: 0 dari 81.000 sampel DFN-DS dan 0 dari 1.296 pengukuran Figshare
-melampauinya. Alarm bahaya berfungsi sebagai plafon untuk kejadian ekstrem,
-sedangkan pita yang bekerja sehari-hari adalah 35 kPa selama 20 detik.
+Perlu dicatat bahwa ambang 45 kPa terlampaui pada 5,4% sampel DFN-DS (4.347
+dari 81.000, dari 93 pasien) dan 9,8% pengukuran Figshare (127 dari 1.296).
+Itu pita yang bekerja sehari-hari: cukup sering untuk memicu tindakan, tidak
+begitu sering hingga alarm diabaikan. Puncak data acuan 87,06 kPa, jadi tidak
+ada dasar empiris untuk tingkat di atas Waspada.
 
 ### 3.9.3 Risiko negatif palsu
 

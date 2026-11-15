@@ -1,17 +1,22 @@
 /**
  * test_randomforest.cpp — Unit tests for RandomForest inference.
  *
- * Mirrors web-dashboard randomForestRisk.test.js clinical contract.
+ * Kontrak 2 kelas: `safe` dan `warning`. Ambang dari header model
+ * (WARNING_PEAK_KPA, sekarang 45). Tidak ada level bahaya, dan durasi tidak
+ * pernah menaikkan level sendiri — ia hanya fitur model.
+ *
+ * Mirrors web-dashboard src/utils/randomForestRisk.test.
  * Run: pio test -e native
  */
 
 #include <unity.h>
 #include <cstdio>
 #include "RandomForest.h"
+#include "rf-model-data.h"
 
 static RandomForest rf;
 
-// ── Clinical contract test cases ────────────────────────────
+// ── Contract test cases ─────────────────────────────────────
 // {peak, sustained_seconds, expected_level}
 
 struct TestCase {
@@ -22,39 +27,30 @@ struct TestCase {
 };
 
 static const TestCase CASES[] = {
-  // Safe: low pressure, no sustained
-  {0,  0,  RISK_SAFE,    "0 kPa, 0s"},
-  {12, 0,  RISK_SAFE,    "12 kPa, 0s"},
-  {25, 0,  RISK_SAFE,    "25 kPa, 0s"},
-  {31, 0,  RISK_SAFE,    "31 kPa, 0s"},
+  // Safe: well below the warning limit
+  {0,  0,  RISK_SAFE, "0 kPa, 0s"},
+  {12, 0,  RISK_SAFE, "12 kPa, 0s"},
+  {25, 0,  RISK_SAFE, "25 kPa, 0s"},
+  {40, 0,  RISK_SAFE, "40 kPa, 0s"},
+  {40, 3,  RISK_SAFE, "40 kPa, 3s"},
 
-  // Warning: at or above 35 kPa
-  {35, 1,  RISK_WARNING, "35 kPa, 1s"},
-  {40, 1,  RISK_WARNING, "40 kPa, 1s"},
-  {48, 2,  RISK_WARNING, "48 kPa, 2s"},
+  // Warning: at or above the warning limit
+  {45, 1,  RISK_WARNING, "45 kPa, 1s (batas)"},
+  {50, 1,  RISK_WARNING, "50 kPa, 1s"},
   {60, 5,  RISK_WARNING, "60 kPa, 5s"},
+  {80, 2,  RISK_WARNING, "80 kPa, 2s"},
 
-  // Danger: peak >= 200 kPa on one sample (rule-based)
-  {200, 1,  RISK_DANGER,  "200 kPa, 1s"},
-  {205, 15, RISK_DANGER,  "205 kPa, 15s"},
-  {210, 15, RISK_DANGER,  "210 kPa, 15s"},
-  {210, 30, RISK_DANGER,  "210 kPa, 30s"},
-  {210, 31, RISK_DANGER,  "210 kPa, 31s"},
-  {220, 45, RISK_DANGER,  "220 kPa, 45s"},
-  // Just below the limit stays a warning, however long it is held.
-  {199, 45, RISK_WARNING, "199 kPa, 45s"},
-
-  // Warning: prolonged moderate load (peak < 35 but sustained >= 20s)
-  {30, 25, RISK_WARNING, "30 kPa, 25s"},
-  {30, 45, RISK_WARNING, "30 kPa, 45s"},
-  {55, 45, RISK_WARNING, "55 kPa, 45s"},
+  // Tidak ada level bahaya: tekanan sangat tinggi tetap warning
+  {200, 1,  RISK_WARNING, "200 kPa, 1s"},
+  {210, 45, RISK_WARNING, "210 kPa, 45s"},
+  {500, 60, RISK_WARNING, "500 kPa, 60s"},
 };
 
 static const int NUM_CASES = sizeof(CASES) / sizeof(TestCase);
 
 // ── Individual test functions ───────────────────────────────
 
-void test_clinical_contract(void) {
+void test_contract(void) {
   for (int i = 0; i < NUM_CASES; i++) {
     const TestCase& tc = CASES[i];
     RiskResult r = rf.predict(tc.peak, tc.sustained);
@@ -70,19 +66,28 @@ void test_clinical_contract(void) {
 void test_safe_low_pressure(void) {
   RiskResult r = rf.predict(20, 0);
   TEST_ASSERT_EQUAL(RISK_SAFE, r.level);
-  TEST_ASSERT_EQUAL(0, r.score);
+  TEST_ASSERT_TRUE(r.score >= 0 && r.score <= 47);
 }
 
-void test_warning_at_threshold(void) {
-  RiskResult r = rf.predict(35, 1);
+void test_warning_at_limit(void) {
+  RiskResult r = rf.predict((float)WARNING_PEAK_KPA, 1);
   TEST_ASSERT_EQUAL(RISK_WARNING, r.level);
   TEST_ASSERT_TRUE(r.score >= 48 && r.score <= 74);
 }
 
-void test_danger_high_pressure(void) {
-  RiskResult r = rf.predict(210, 1);
-  TEST_ASSERT_EQUAL(RISK_DANGER, r.level);
-  TEST_ASSERT_EQUAL(75, r.score);
+void test_crossover_between_40_and_limit(void) {
+  // Jangan mengunci titik potong persis: pohon memilih ambang dari kandidat
+  // kuantil, jadi bisa meleset beberapa persepuluh kPa dari angka bulat.
+  // Yang dikunci adalah kontrak di kedua sisinya.
+  TEST_ASSERT_EQUAL(RISK_SAFE, rf.predict(40, 0).level);
+  TEST_ASSERT_EQUAL(RISK_WARNING, rf.predict((float)WARNING_PEAK_KPA, 1).level);
+}
+
+void test_no_danger_level(void) {
+  // Level tertinggi adalah warning, sekeras apa pun tekanannya.
+  RiskResult r = rf.predict(500, 60);
+  TEST_ASSERT_EQUAL(RISK_WARNING, r.level);
+  TEST_ASSERT_TRUE(r.score <= 74);
 }
 
 void test_nan_input_safe(void) {
@@ -95,44 +100,19 @@ void test_negative_input_safe(void) {
   TEST_ASSERT_EQUAL(RISK_SAFE, r.level);
 }
 
-void test_extreme_pressure_danger(void) {
-  RiskResult r = rf.predict(500, 1);
-  TEST_ASSERT_EQUAL(RISK_DANGER, r.level);
-}
-
-void test_safe_override_below_threshold(void) {
-  // peak < 35 AND sustained < 20s → safe (rule override)
-  RiskResult r = rf.predict(25, 3);
-  TEST_ASSERT_EQUAL(RISK_SAFE, r.level);
-}
-
-void test_vote_counts_sum_to_tree_count(void) {
-  // For warning case (not danger, not safe override)
+void test_vote_counts_are_positive(void) {
+  // Votes are raw leaf counts, so they sum to the leaf population across the
+  // forest, not to the number of trees. What matters is that both are real
+  // counts and that the pair is non-empty.
   RiskResult r = rf.predict(50, 5);
-  int total = r.safeVotes + r.warningVotes;
-  TEST_ASSERT_GREATER_THAN(0, total);
-  TEST_ASSERT_EQUAL(0, r.dangerVotes);
-}
-
-void test_danger_override_wins_over_rf(void) {
-  // Even though RF might say warning, danger rule overrides
-  RiskResult r = rf.predict(200, 1);
-  TEST_ASSERT_EQUAL(RISK_DANGER, r.level);
-  TEST_ASSERT_EQUAL(20, r.dangerVotes); // all trees
-}
-
-void test_safe_to_warning_crossover(void) {
-  // Crossover should be at exactly 35 kPa
-  RiskLevel below = rf.predict(34, 1).level;
-  RiskLevel at = rf.predict(35, 1).level;
-  TEST_ASSERT_EQUAL(RISK_SAFE, below);
-  TEST_ASSERT_EQUAL(RISK_WARNING, at);
+  TEST_ASSERT_TRUE(r.safeVotes + r.warningVotes > 0);
+  TEST_ASSERT_TRUE(r.safeVotes >= 0);
+  TEST_ASSERT_TRUE(r.warningVotes >= 0);
 }
 
 void test_pressure_relief_resets(void) {
-  // Start high, then relief
-  RiskResult high = rf.predict(210, 5);
-  TEST_ASSERT_EQUAL(RISK_DANGER, high.level);
+  RiskResult high = rf.predict(80, 5);
+  TEST_ASSERT_EQUAL(RISK_WARNING, high.level);
 
   RiskResult relief = rf.predict(12, 0);
   TEST_ASSERT_EQUAL(RISK_SAFE, relief.level);
@@ -141,28 +121,23 @@ void test_pressure_relief_resets(void) {
 void test_scores_in_band(void) {
   RiskResult safe = rf.predict(15, 0);
   RiskResult warning = rf.predict(50, 5);
-  RiskResult danger = rf.predict(215, 10);
 
   TEST_ASSERT_TRUE(safe.score >= 0 && safe.score <= 47);
   TEST_ASSERT_TRUE(warning.score >= 48 && warning.score <= 74);
-  TEST_ASSERT_TRUE(danger.score >= 75 && danger.score <= 100);
 }
 
 // ── Main ─────────────────────────────────────────────────────
 int main() {
   UNITY_BEGIN();
 
-  RUN_TEST(test_clinical_contract);
+  RUN_TEST(test_contract);
   RUN_TEST(test_safe_low_pressure);
-  RUN_TEST(test_warning_at_threshold);
-  RUN_TEST(test_danger_high_pressure);
+  RUN_TEST(test_warning_at_limit);
+  RUN_TEST(test_crossover_between_40_and_limit);
+  RUN_TEST(test_no_danger_level);
   RUN_TEST(test_nan_input_safe);
   RUN_TEST(test_negative_input_safe);
-  RUN_TEST(test_extreme_pressure_danger);
-  RUN_TEST(test_safe_override_below_threshold);
-  RUN_TEST(test_vote_counts_sum_to_tree_count);
-  RUN_TEST(test_danger_override_wins_over_rf);
-  RUN_TEST(test_safe_to_warning_crossover);
+  RUN_TEST(test_vote_counts_are_positive);
   RUN_TEST(test_pressure_relief_resets);
   RUN_TEST(test_scores_in_band);
 

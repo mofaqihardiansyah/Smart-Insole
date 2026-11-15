@@ -110,7 +110,7 @@ describe('InsoleProvider', () => {
     expect(text('connectionState')).toBe('idle');
     expect(text('isMuted')).toBe('false');
     expect(text('language')).toBe('id');
-    expect(text('warningKpa')).toBe('35');
+    expect(text('warningKpa')).toBe('45');
     expect(text('historyLength')).toBe('0');
     expect(text('incidentTypes')).toBe('[]');
   });
@@ -222,16 +222,16 @@ describe('InsoleProvider', () => {
 
     expect(text('risk')).toBe('safe');
 
-    // 40 kPa peak: inside the 35-200 kPa warning band
-    setReadings({ forefoot: 40, midfoot: 22, heel: 18 });
+    // 48 kPa peak: above the 45 kPa warning limit
+    setReadings({ forefoot: 48, midfoot: 22, heel: 18 });
     expect(text('risk')).toBe('warning');
     expect(text('riskLabel')).toBe('Waspada'); // t('risk.warning', 'id')
-    expect(Number(text('riskScore'))).toBeGreaterThanOrEqual(50);
-    expect(Number(text('riskScore'))).toBeLessThanOrEqual(89);
+    expect(Number(text('riskScore'))).toBeGreaterThanOrEqual(48);
+    expect(Number(text('riskScore'))).toBeLessThanOrEqual(74);
     expect(currentReadings().sustainedDuration).toBe(1);
     expect(text('incidentTypes')).toBe('["warning"]');
 
-    // One more second above 35 kPa extends the sustained duration
+    // One more second above the warning limit extends the sustained duration
     setReadings({ forefoot: 48, midfoot: 25, heel: 20 });
     expect(text('risk')).toBe('warning');
     expect(currentReadings().sustainedDuration).toBe(2);
@@ -246,29 +246,29 @@ describe('InsoleProvider', () => {
     expect(text('incidentTypes')).toBe('["warning"]');
   });
 
-  it('escalates to danger on one sample above 200 kPa', () => {
+  it('never reports a level above warning, even at extreme pressure', () => {
     renderProvider();
 
-    // peak >= 200 kPa triggers danger on the sample that carries it; the
-    // context passes dangerDuration starting at 1 for that sample.
+    // The product has two levels. 220 kPa is warning, not a higher state: past
+    // the warning limit the patient is already numb, so a third level would
+    // describe a state the device is not worn in.
     setReadings({ forefoot: 220, midfoot: 215, heel: 210 });
-    expect(text('risk')).toBe('danger');
-    expect(text('riskLabel')).toBe('Bahaya');
-    expect(Number(text('riskScore'))).toBeGreaterThanOrEqual(75);
-    expect(text('incidentTypes')).toBe('["danger"]');
+    expect(text('risk')).toBe('warning');
+    expect(text('riskLabel')).toBe('Waspada');
+    expect(Number(text('riskScore'))).toBeLessThanOrEqual(74);
+    expect(text('incidentTypes')).toBe('["warning"]');
   });
 
-  it('does not report danger for high pressure that immediately subsides', () => {
+  it('returns to safe when high pressure immediately subsides', () => {
     renderProvider();
 
-    // One sample above 200 kPa, then relief. The danger run resets.
     setReadings({ forefoot: 220, midfoot: 215, heel: 210 });
-    expect(text('risk')).toBe('danger');
-
-    // Pressure relief: below danger threshold resets danger run
-    setReadings({ forefoot: 50, midfoot: 45, heel: 40 });
     expect(text('risk')).toBe('warning');
-    expect(text('incidentTypes')).toBe('["danger","warning"]');
+
+    // Relief below the limit resets the run and the level.
+    setReadings({ forefoot: 30, midfoot: 25, heel: 20 });
+    expect(text('risk')).toBe('safe');
+    expect(text('incidentTypes')).toBe('["warning"]');
   });
 
   it('reads the paired device path when the account has one', () => {
@@ -471,9 +471,10 @@ describe('InsoleProvider', () => {
       } as unknown as MappedReading);
     });
 
-    // 90 sits in the danger band, so the chip and the score agree.
-    expect(text('risk')).toBe('danger');
-    expect(text('riskScore')).toBe('90');
+    // 90 is the old danger band. The level folds to warning and the score is
+    // clamped into that band, so the chip and the number agree.
+    expect(text('risk')).toBe('warning');
+    expect(text('riskScore')).toBe('74');
   });
 
   /**
@@ -481,7 +482,7 @@ describe('InsoleProvider', () => {
    */
   const storedRow = (
     timestamp: number,
-    level: 'safe' | 'warning' | 'danger'
+    level: 'safe' | 'warning'
   ): HistoryEntry => ({
     id: `row-${timestamp}`,
     readings: { forefoot: 80, midfoot: 20, heel: 15, sustainedDuration: 2 },
@@ -575,7 +576,7 @@ describe('InsoleProvider', () => {
 
 describe('measureSustainedDurations across packet gaps', () => {
   const HIGH: HistoryRecord['readings'] = {
-    forefoot: 40,
+    forefoot: 50,
     midfoot: 20,
     heel: 15,
     sustainedDuration: 0,
@@ -586,7 +587,7 @@ describe('measureSustainedDurations across packet gaps', () => {
       { readings: HIGH, timestamp: 1_000 },
       { readings: HIGH, timestamp: 2_000 },
     ];
-    const { warningDuration } = measureSustainedDurations(history, 40, undefined, 3_000);
+    const { warningDuration } = measureSustainedDurations(history, 50, undefined, 3_000);
     expect(warningDuration).toBe(3);
   });
 
@@ -599,10 +600,76 @@ describe('measureSustainedDurations across packet gaps', () => {
     // sustained pressure on a diabetic foot.
     const { warningDuration } = measureSustainedDurations(
       history,
-      40,
+      50,
       undefined,
       2_000 + MAX_PACKET_GAP_MS + 1
     );
     expect(warningDuration).toBe(1);
+  });
+});
+
+describe('switching the paired device', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    ctxRef.current = null;
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    localStorage.clear();
+  });
+
+  it('clears the previous foot before the next packet arrives', () => {
+    const emitters: Record<string, (reading: MappedReading) => void> = {};
+    const transport: InsoleTransport = {
+      subscribeToReadings: () => () => {},
+      subscribeToHistory: () => () => {},
+      subscribeToDeviceReadings: (
+        deviceId: string,
+        onData: (reading: MappedReading) => void
+      ) => {
+        emitters[deviceId] = onData;
+        return () => {};
+      },
+      subscribeToDeviceHistory: () => () => {},
+    };
+
+    const { rerender } = render(
+      <InsoleProvider transport={transport} autoConnect deviceId="insole-01">
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    act(() => {
+      emitters['insole-01']?.({
+        readings: { forefoot: 40, midfoot: 22, heel: 18 },
+        riskLevel: 'warning',
+        riskScore: 60,
+        timestamp: Date.now(),
+      } as unknown as MappedReading);
+    });
+
+    expect(currentReadings().forefoot).toBe(40);
+    expect(Number(text('historyLength'))).toBeGreaterThan(0);
+
+    // The other foot: the dashboard must show nothing from the first one while
+    // the new subscription opens, or the label and the numbers disagree.
+    rerender(
+      <InsoleProvider transport={transport} autoConnect deviceId="insole-02">
+        <TestComponent />
+      </InsoleProvider>
+    );
+
+    expect(currentReadings()).toEqual({
+      forefoot: 0,
+      midfoot: 0,
+      heel: 0,
+      sustainedDuration: 0,
+    });
+    expect(text('historyLength')).toBe('0');
+    expect(text('incidentTypes')).toBe('[]');
+    expect(text('risk')).toBe('safe');
+    expect(emitters['insole-02']).toBeTypeOf('function');
   });
 });

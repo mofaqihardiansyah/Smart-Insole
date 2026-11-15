@@ -96,13 +96,13 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.devices.archive': 'Unduh arsip lalu hapus',
     'admin.devices.pruneResult': '{deleted} dihapus, {failed} gagal.',
     'admin.incidents.device': 'Perangkat',
-    'admin.incidents.empty': 'Tidak ada insiden bahaya',
-    'admin.incidents.emptyBody': 'Riwayat perangkat belum memuat kejadian danger, atau rules belum di-deploy.',
+    'admin.incidents.empty': 'Tidak ada insiden waspada',
+    'admin.incidents.emptyBody': 'Riwayat perangkat belum memuat kejadian waspada, atau rules belum di-deploy.',
     'admin.incidents.ack': 'Tandai selesai',
     'admin.incidents.unack': 'Batalkan',
     'admin.incidents.done': 'Selesai',
     'admin.incidents.subtitle':
-      'Kejadian bahaya lintas perangkat, dengan penandaan selesai.',
+      'Kejadian waspada lintas perangkat, dengan penandaan selesai.',
     'admin.incidents.count': '{count} insiden',
     'admin.incidents.actions': 'Tindakan',
     'admin.incidents.open': 'Belum selesai',
@@ -160,7 +160,6 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     /* ------------------------------ Risk ------------------------------- */
     'risk.safe': 'Aman',
     'risk.warning': 'Waspada',
-    'risk.danger': 'Bahaya',
     'risk.unknown': 'Belum diketahui',
     'risk.status': 'Status risiko',
     'risk.score': 'Skor risiko',
@@ -168,8 +167,6 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Tekanan dalam batas aman. Lanjutkan aktivitas seperti biasa.',
     'risk.advice.warning':
       'Tekanan meningkat. Ganti tumpuan kaki dan kurangi durasi berdiri.',
-    'risk.advice.danger':
-      'Kurangi tumpuan pada kaki sekarang. Istirahatkan kaki untuk mencegah luka.',
 
     /* ---------------------------- Sensors ------------------------------ */
     'anatomy.forefoot': 'Kaki Depan (Metatarsal)',
@@ -247,20 +244,19 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'dashboard.heatmapBody':
       'Tiga titik sensor dipetakan ke bentuk telapak kaki kiri.',
     // Stat card captions
-    'dashboard.caption.threshold': 'Ambang bahaya {value} kPa',
-    'dashboard.caption.durationLimit': 'Batas durasi {value} detik',
+    'dashboard.caption.threshold': 'Ambang waspada {value} kPa',
+    'dashboard.caption.durationInfo':
+      'Lama tekanan sudah di atas ambang; tidak mengubah level.',
     'dashboard.caption.battery': 'Sumber data: {value}',
     'dashboard.caption.scoreRange': 'Skala 0 sampai 100',
     'dashboard.deltaSteady': 'stabil',
-    'dashboard.withinLimit': 'Dalam batas',
-    'dashboard.overLimit': 'Lewat batas',
 
     /* ---------------------------- Monitoring --------------------------- */
     'monitoring.title': 'Tren tekanan',
     'monitoring.subtitle':
       'Tiga sensor selama 30 detik terakhir pada sesi yang sedang berjalan.',
     'monitoring.chartTitle': 'Grafik tekanan waktu nyata',
-    'monitoring.threshold': 'Batas bahaya',
+    'monitoring.threshold': 'Batas waspada',
     'monitoring.axisTime': 'Waktu',
     'monitoring.axisPressure': 'Tekanan (kPa)',
     'monitoring.empty': 'Belum ada data grafik',
@@ -278,7 +274,6 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Catatan insiden yang tercatat selama pemantauan berlangsung.',
     'history.totalIncidents': 'Total insiden',
     'history.totalIncidentsWindow': 'Total dalam jendela perangkat',
-    'history.dangerCount': 'Insiden bahaya',
     'history.warningCount': 'Insiden waspada',
     'history.export': 'Ekspor CSV',
     'history.refresh': 'Muat ulang',
@@ -322,6 +317,9 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'device.firmware': 'Versi firmware',
     'device.lastSeen': 'Terakhir terlihat',
     'device.deviceId': 'ID perangkat',
+    'device.switcher.label': 'Pilih perangkat',
+    'device.switcher.left': 'Kaki kiri',
+    'device.switcher.right': 'Kaki kanan',
     'device.unavailable': 'Tidak tersedia',
     'device.notYet': 'Belum pernah',
     'device.loading': 'Memuat status perangkat',
@@ -343,9 +341,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'settings.thresholds': 'Ambang batas risiko',
     'settings.thresholdsBody':
       'Nilai yang dipakai mesin risiko, identik dengan yang tertanam di firmware.',
-    'settings.warningKpa': 'Batas aman (kPa)',
-    'settings.dangerKpa': 'Batas bahaya (kPa)',
-    'settings.warningSeconds': 'Durasi waspada (detik)',
+    'settings.warningKpa': 'Batas waspada (kPa)',
     'settings.thresholdsDeviceNote':
       'Ambang ini tidak dapat diubah dari aplikasi. Mengubahnya berarti mengubah kontrak klinis dan mem-flash ulang perangkat, karena alarm lokal memakai angka yang sama.',
     'settings.preview': 'Pratinjau klasifikasi',
@@ -420,11 +416,8 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
 
     /* ------------------------------ Alert ------------------------------ */
     'alert.warningTitle': 'Tekanan meningkat',
-    'alert.dangerTitle': 'Tekanan berbahaya terdeteksi',
     'alert.warningBody':
       'Tumpuan bertekanan tinggi terdeteksi. Ganti posisi kaki untuk mengurangi beban.',
-    'alert.dangerBody':
-      'Tumpuan bertekanan tinggi sudah berlangsung terlalu lama. Istirahatkan kaki sekarang.',
     'alert.dismiss': 'Mengerti, tutup peringatan',
     'alert.mute': 'Bungkam suara alarm',
     'alert.unmute': 'Nyalakan suara alarm',
@@ -590,8 +583,8 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'landing.spec.sensor.body': 'Titik ukur: kaki depan, tengah, tumit',
     'landing.spec.rate.title': '1x',
     'landing.spec.rate.body': 'Pembacaan sensor per detik',
-    'landing.spec.risk.title': '3',
-    'landing.spec.risk.body': 'Tingkat risiko: aman, waspada, bahaya',
+    'landing.spec.risk.title': '2',
+    'landing.spec.risk.body': 'Tingkat risiko: aman, waspada',
     'landing.feature.title': 'Yang bisa Anda lakukan',
     'landing.feature.body':
       'Dari melihat titik tekanan sampai membawa riwayat saat kontrol.',
@@ -612,7 +605,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Baterai dan koneksi insole terlihat, sehingga pemantauan tidak berhenti tanpa kabar.',
     'landing.feature.6.title': 'Ambang yang sama di mana pun',
     'landing.feature.6.body':
-      'Batas aman dan bahaya di dasbor sama dengan yang dipakai alarm di perangkat.',
+      'Ambang waspada di dasbor sama dengan yang dipakai alarm di perangkat.',
     'landing.audience.eyebrow': 'Untuk siapa',
     'landing.audience.title': 'Satu alur, tiga peran',
     'landing.audience.1.title': 'Penderita diabetes',
@@ -630,14 +623,14 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Tiga sensor di sol membaca kaki depan, tengah, dan tumit sekali per detik.',
     'landing.step.judge.title': 'Nilai',
     'landing.step.judge.body':
-      'Random Forest membaca tekanan puncak dan lama tumpuan, lalu memilih tingkat risiko. Aturan klinis menangani tekanan 200 kPa atau lebih pada satu pembacaan.',
+      'Random Forest membaca tekanan puncak dan lama tumpuan, lalu memilih aman atau waspada. Ambangnya 45 kPa.',
     'landing.step.warn.title': 'Peringatkan',
     'landing.step.warn.body':
-      'Saat waspada atau bahaya, layar menandai titik yang perlu diistirahatkan dan alarm berbunyi.',
+      'Saat waspada, layar menandai titik yang perlu diistirahatkan dan alarm berbunyi.',
     'landing.step.number': 'Langkah',
     'landing.step.demoNote': 'Contoh angka dan status dari dasbor.',
     'landing.sensors.title': 'Tiga titik pengukuran',
-    'landing.risk.title': 'Tiga tingkat risiko',
+    'landing.risk.title': 'Dua tingkat risiko',
     'landing.tech.eyebrow': 'Di balik layar',
     'landing.tech.title': 'Dari sensor ke skor risiko',
     'landing.tech.body':
@@ -653,7 +646,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       '20 pohon keputusan, kedalaman maksimum 8, dilatih pada 135 pasien dan 81.000 sampel.',
     'landing.tech.pipeline.4.title': 'Keputusan',
     'landing.tech.pipeline.4.body':
-      'Random Forest memilih aman atau waspada. Aturan klinis menetapkan bahaya.',
+      'Random Forest memilih aman atau waspada dari tekanan puncak dan lama tumpuan.',
     'landing.tech.facts.1.label': 'Pasien',
     'landing.tech.facts.1.value': '135',
     'landing.tech.facts.2.label': 'Sampel',
@@ -670,11 +663,9 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'landing.tech.sim.result': 'Hasil',
     'landing.tech.sim.score': 'Skor risiko',
     'landing.tech.sim.whySafe':
-      'Tekanan di bawah 35 kPa dan tidak bertahan lama.',
+      'Tekanan puncak di bawah 45 kPa.',
     'landing.tech.sim.whyWarning':
-      'Tekanan mencapai 35 kPa atau tumpuan melewati 20 detik.',
-    'landing.tech.sim.whyDanger':
-      'Tekanan mencapai 200 kPa pada satu pembacaan.',
+      'Tekanan puncak mencapai 45 kPa atau lebih.',
     'landing.tech.sim.preset': 'Contoh cepat',
     'landing.tech.sim.presetWalk': 'Berjalan',
     'landing.tech.sim.presetStand': 'Berdiri lama',
@@ -831,13 +822,13 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'admin.devices.archive': 'Download archive and delete',
     'admin.devices.pruneResult': '{deleted} deleted, {failed} failed.',
     'admin.incidents.device': 'Device',
-    'admin.incidents.empty': 'No danger incidents',
-    'admin.incidents.emptyBody': 'Device history carries no danger event yet, or the rules are not deployed.',
+    'admin.incidents.empty': 'No warning incidents',
+    'admin.incidents.emptyBody': 'Device history carries no warning event yet, or the rules are not deployed.',
     'admin.incidents.ack': 'Mark done',
     'admin.incidents.unack': 'Undo',
     'admin.incidents.done': 'Done',
     'admin.incidents.subtitle':
-      'Danger events across the fleet, with a done mark.',
+      'Warning events across the fleet, with a done mark.',
     'admin.incidents.count': '{count} incidents',
     'admin.incidents.actions': 'Action',
     'admin.incidents.open': 'Open',
@@ -895,15 +886,12 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     /* ------------------------------ Risk ------------------------------- */
     'risk.safe': 'Safe',
     'risk.warning': 'Warning',
-    'risk.danger': 'Danger',
     'risk.unknown': 'Unknown',
     'risk.status': 'Risk status',
     'risk.score': 'Risk score',
     'risk.advice.safe': 'Pressure is within the safe range. Continue as normal.',
     'risk.advice.warning':
       'Pressure is rising. Shift your weight and stand for less time.',
-    'risk.advice.danger':
-      'Relieve weight from the foot now. Rest it to prevent tissue damage.',
 
     /* ---------------------------- Sensors ------------------------------ */
     'anatomy.forefoot': 'Forefoot (Metatarsal)',
@@ -981,20 +969,19 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'dashboard.heatmapTitle': 'Plantar pressure map',
     'dashboard.heatmapBody': 'Three sensor points mapped onto the left sole shape.',
     // Stat card captions
-    'dashboard.caption.threshold': 'Danger limit {value} kPa',
-    'dashboard.caption.durationLimit': 'Duration limit {value} seconds',
+    'dashboard.caption.threshold': 'Warning limit {value} kPa',
+    'dashboard.caption.durationInfo':
+      'How long pressure has been above the limit; it does not change the level.',
     'dashboard.caption.battery': 'Data source: {value}',
     'dashboard.caption.scoreRange': 'Scale 0 to 100',
     'dashboard.deltaSteady': 'steady',
-    'dashboard.withinLimit': 'Within limit',
-    'dashboard.overLimit': 'Over limit',
 
     /* ---------------------------- Monitoring --------------------------- */
     'monitoring.title': 'Pressure trend',
     'monitoring.subtitle':
       'Three sensors over the last 30 seconds of the current session.',
     'monitoring.chartTitle': 'Real time pressure chart',
-    'monitoring.threshold': 'Danger threshold',
+    'monitoring.threshold': 'Warning threshold',
     'monitoring.axisTime': 'Time',
     'monitoring.axisPressure': 'Pressure (kPa)',
     'monitoring.empty': 'No chart data yet',
@@ -1011,7 +998,6 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'history.subtitle': 'Incidents recorded while monitoring was running.',
     'history.totalIncidents': 'Total incidents',
     'history.totalIncidentsWindow': 'Total in the device window',
-    'history.dangerCount': 'Danger incidents',
     'history.warningCount': 'Warning incidents',
     'history.export': 'Export CSV',
     'history.refresh': 'Refresh',
@@ -1056,6 +1042,9 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'device.firmware': 'Firmware version',
     'device.lastSeen': 'Last seen',
     'device.deviceId': 'Device ID',
+    'device.switcher.label': 'Choose device',
+    'device.switcher.left': 'Left foot',
+    'device.switcher.right': 'Right foot',
     'device.unavailable': 'Unavailable',
     'device.notYet': 'Never',
     'device.loading': 'Loading device status',
@@ -1077,9 +1066,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'settings.thresholds': 'Risk thresholds',
     'settings.thresholdsBody':
       'The values the risk engine uses, identical to the ones compiled into the firmware.',
-    'settings.warningKpa': 'Safe limit (kPa)',
-    'settings.dangerKpa': 'Danger limit (kPa)',
-    'settings.warningSeconds': 'Warning duration (s)',
+    'settings.warningKpa': 'Warning limit (kPa)',
     'settings.thresholdsDeviceNote':
       'These limits cannot be changed from the app. Changing one means changing the clinical contract and reflashing the device, because the local alarm uses the same numbers.',
     'settings.preview': 'Classification preview',
@@ -1154,11 +1141,8 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
 
     /* ------------------------------ Alert ------------------------------ */
     'alert.warningTitle': 'Pressure is rising',
-    'alert.dangerTitle': 'Dangerous pressure detected',
     'alert.warningBody':
       'Sustained high pressure was detected. Shift your foot to reduce the load.',
-    'alert.dangerBody':
-      'High pressure has been sustained for too long. Rest the foot now.',
     'alert.dismiss': 'Understood, dismiss warning',
     'alert.mute': 'Mute alarm',
     'alert.unmute': 'Unmute alarm',
@@ -1322,8 +1306,8 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'landing.spec.sensor.body': 'Measuring points: forefoot, midfoot, heel',
     'landing.spec.rate.title': '1x',
     'landing.spec.rate.body': 'Sensor readings per second',
-    'landing.spec.risk.title': '3',
-    'landing.spec.risk.body': 'Risk levels: safe, warning, danger',
+    'landing.spec.risk.title': '2',
+    'landing.spec.risk.body': 'Risk levels: safe, warning',
     'landing.feature.title': 'What you can do',
     'landing.feature.body':
       'From seeing the pressure points to taking the history to an appointment.',
@@ -1344,7 +1328,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Battery and insole connection stay visible, so monitoring does not stop without word.',
     'landing.feature.6.title': 'The same limits everywhere',
     'landing.feature.6.body':
-      'The safe and danger limits on the dashboard are the ones the device alarm uses.',
+      'The warning limit on the dashboard is the one the device alarm uses.',
     'landing.audience.eyebrow': 'Who it is for',
     'landing.audience.title': 'One flow, three roles',
     'landing.audience.1.title': 'People with diabetes',
@@ -1362,14 +1346,14 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       'Three sensors in the sole read the forefoot, midfoot, and heel once a second.',
     'landing.step.judge.title': 'Judge',
     'landing.step.judge.body':
-      'A Random Forest reads peak pressure and load duration, then picks the risk level. Clinical rules handle 200 kPa or more on a single reading.',
+      'A Random Forest reads peak pressure and load duration, then picks safe or warning. The limit is 45 kPa.',
     'landing.step.warn.title': 'Warn',
     'landing.step.warn.body':
-      'At warning or danger, the screen marks the point to rest and the alarm sounds.',
+      'At warning, the screen marks the point to rest and the alarm sounds.',
     'landing.step.number': 'Step',
     'landing.step.demoNote': 'Example readings and statuses from the dashboard.',
     'landing.sensors.title': 'Three measurement points',
-    'landing.risk.title': 'Three risk levels',
+    'landing.risk.title': 'Two risk levels',
     'landing.tech.eyebrow': 'Behind the scenes',
     'landing.tech.title': 'From sensor to risk score',
     'landing.tech.body':
@@ -1385,7 +1369,7 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
       '20 decision trees, maximum depth 8, trained on 135 patients and 81,000 samples.',
     'landing.tech.pipeline.4.title': 'Decision',
     'landing.tech.pipeline.4.body':
-      'The Random Forest chooses safe or warning. Clinical rules set danger.',
+      'The Random Forest chooses safe or warning from peak pressure and stance duration.',
     'landing.tech.facts.1.label': 'Patients',
     'landing.tech.facts.1.value': '135',
     'landing.tech.facts.2.label': 'Samples',
@@ -1402,11 +1386,9 @@ export const DICTIONARY: Record<string, Record<string, string>> = {
     'landing.tech.sim.result': 'Result',
     'landing.tech.sim.score': 'Risk score',
     'landing.tech.sim.whySafe':
-      'Pressure is below 35 kPa and does not last long.',
+      'Peak pressure below 45 kPa.',
     'landing.tech.sim.whyWarning':
-      'Pressure reaches 35 kPa or the load passes 20 seconds.',
-    'landing.tech.sim.whyDanger':
-      'Pressure reaches 200 kPa on a single reading.',
+      'Peak pressure reaches 45 kPa or more.',
     'landing.tech.sim.preset': 'Quick examples',
     'landing.tech.sim.presetWalk': 'Walking',
     'landing.tech.sim.presetStand': 'Standing long',

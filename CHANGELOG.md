@@ -5,8 +5,94 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `docs/hardware-build-guide.html` §00 **"Posisi pekerjaan & sisa langkah"**:
+  two cards separating what is already built (cut EVA, marked sensor points,
+  glued pouch shell) from what is not, plus an eight-step order that links to
+  the existing sections.
+- §07 now explains how to carve: measure the sensor body instead of copying
+  `14 × 14 mm`, stop the blade at 1 mm with masking-tape depth stops, score the
+  outline before scooping, cut a 6 mm tail notch, and run a 3–3.5 mm wide by
+  2–2.5 mm deep channel entirely in the 5 mm base. It also documents the
+  no-pocket alternative, the 12-hour cover clamp, and the before/after-glue
+  tests. A deviation callout marks the 3D appendix and `docs/3d/params.md` as
+  illustrative.
+- §08 gains cleaning before bonding, the Fox contact-cement procedure (thin
+  coats on both faces, 5–10 minutes to tack, 30–60 minute clamp, 24 hours to
+  full strength, no turning inside out), a hand-sewing procedure, a table of
+  the three holes, a GPIO wiring table, pouch contents in two versions
+  (**A** with a 3 × 4 cm perfboard, **B** with inline resistors), JST polarity,
+  and velcro closure with a safety tether.
+- §02 adds B-7000 as its own line, 3 mm foam, 25 mm webbing, nylon thread, and
+  a tether; §04 adds the `B±`/`OUT±` wiring table and the charge-current table;
+  §15 adds nine glossary terms.
+- Sections 05 to 11 each open with a **"Bahan & alat bagian ini"** block, so a
+  reader can gather only what a given stage needs instead of buying the whole
+  BOM first. §05 also warns that heat shrink must be on hand before soldering,
+  because the sleeve goes onto the wire before the joint is made.
+
 ### Changed
 
+- Battery runtime in §11 corrected from 8–10 hours to **3–4 hours** for the
+  600 mAh cell (ESP32 with Wi-Fi ≈ 130 mA, 80 % usable capacity).
+- Buzzer is now optional everywhere: BOM row, bench gate G3, assembly checklist,
+  QC list, and the alarm test are conditional.
+- BOM corrections: measure the FSR body (12.7 mm on old datasheets, 14.7 mm on
+  the current product page), TP4056 must show four pads `B+`/`B−`/`OUT+`/`OUT−`,
+  perfboard is fiber single 5 × 7 cm × 2 cut to 3 × 4 cm, heat shrink is 3 mm for
+  joints, and the 5-pin header must be 2.54 mm pitch.
+- Pocket depth unified to **1 mm** (was 1–2 mm in text, 2–3 mm in a figure
+  caption, 2 mm in the 3D model); channel depth unified to 2–2.5 mm in the base
+  instead of splitting 1.5 mm into the 2 mm cover.
+- `docs/hardware-build-guide.html` now treats the perfboard as optional: the
+  BOM gains a `PCB bolong 5 × 7 cm (opsional)` row, soldering step 1 is a
+  choice with a "Tanpa PCB pun bisa" callout, and §08 lists the resistor board
+  among the pouch contents. The buzzer callout states the firmware runs without
+  it (sensors, inference, Firebase unaffected) and that only an **active**
+  3.3 V part works with the HIGH/LOW drive on GPIO 27. A new power-path callout
+  in §04 (`#daya`) explains that the AMS1117 needs ≈4.4 V input, so the direct
+  LiPo → `VIN` link should be verified by measuring `3V3`–`GND` during a WiFi
+  transmit, with an MT3608 boost added only on brownout (below 3.1 V or a
+  spontaneous reboot); §05 step 5 links to it. `docs/guidebook.html` power line
+  now reads `TP4056 → VIN (boost 5V only on brownout)` instead of always
+  claiming a step-up module.
+
+- Model rebuilt as **two classes (`safe`/`warning`) at `peak >= 45 kPa`**, no
+  danger level anywhere (model, firmware, web, copy, docs). The label rule is
+  applied two-sided from the contract in `randomForestRisk.ts` and
+  `RandomForest.cpp`; forest votes only place the score inside the level's band.
+  Legacy stored `danger` rows and legacy scores are folded into `warning`
+  (`normaliseRiskLevel`, `alignScoreToLevel`). `models/rf-model.json` is v2.0,
+  trained on all 135 DFN-DS patients with 5-fold grouped CV and SMOTE inside the
+  training folds; the web copy and `firmware/include/rf-model-data.h` are
+  regenerated from it. See `DECISIONS.md` ADR-021.
+- `scripts/prepare-dataset.py` writes the v2.0 dataset (one `patients` array,
+  `labelRule.warningKpa: 45`, no 107/28 split); `scripts/train-model.js`
+  compares rule / class-weight / SMOTE on identical grouped folds and reports a
+  gain-error sweep; `scripts/prepare-session-dataset.py` reads the new shape and
+  uses 45 kPa for its `*_hi45` session features; `scripts/validate-datasets.py`
+  reports the Figshare share at 45 kPa.
+- `scripts/export-model-cpp.js` emits `WARNING_PEAK_KPA` instead of the danger
+  defines, and leaf vote counts are `uint32_t` because SMOTE raises a leaf
+  population past `uint16_t`.
+- `docs/guidebook.html` rewritten for the two-class, 45 kPa system: dataset
+  facts, cross-validation protocol, contract table, score bands, firmware
+  buzzer/test counts, client inference snippet, Figshare thresholds, and the
+  limitations list.
+- `DESIGN.md` diselaraskan ke kontrak dua kelas: bagian inferensi ditulis ulang
+  (ambang 45 kPa, tanpa level ketiga, kalibrasi 35 kPa sebagai jangkar skala,
+  validasi silang berkelompok, SMOTE, pita skor 0–47/48–74), dan token `danger`
+  kini dinyatakan sebagai galat/aksi destruktif, bukan level risiko. Nilai warna
+  dan kontras tidak berubah.
+- Dokumen kontrak lain diselaraskan ke dua kelas/45 kPa: `README.md`,
+  `docs/PRD.md`, `docs/TRD.md`, `docs/AFD.md`, `docs/BSD.md`, `docs/DBD.md`,
+  `docs/IPD.md`, `docs/ROADMAP-RF.md`, `docs/README.md`, `models/README.md`,
+  `datasets/README.md`, `docs/thesis-defense.md`,
+  `docs/hardware-build-guide.html` (uji alarm, kontrak acuan, batas FSR 402),
+  `docs/rf-model-report.md` dan `docs/validation-report.md` (ditulis ulang untuk
+  kontrak baru), `docs/diagram/README.md`, serta Mermaid
+  `gambar-3-7/3-8/3-14`.
 - `docs/hardware-build-guide.html` lampiran `#model3d` ditulis ulang: kesepuluh
   gambar berlabel (Gambar 5–14) menggantikan enam render sebelumnya, ditambah
   tabel legenda 21 komponen, bagian "cara membaca gambar", dan tabel berkas.
@@ -37,29 +123,43 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Web: an account with two paired insoles can choose which foot the dashboard
+  reads. `usePairedDevice` returns every paired id plus the selected one
+  (persisted per account, stale ids dropped), `DeviceSwitcher` appears in both
+  header rows only when there is a choice, and `InsoleContext` clears the
+  sample, history, and incident register on a switch so the previous foot's
+  numbers never sit under the new label. UI copy is Indonesian; the wire
+  contract, RTDB paths, and rules are unchanged.
+
+- `firmware/platformio.ini` + `firmware/src/main.cpp`: a second board can
+  publish under its own id. `main.cpp` honours `-DDEVICE_ID_OVERRIDE`, and the
+  new `esp32_kanan` environment inherits `esp32dev` and sets it to
+  `insole-02`, so flashing either foot is `pio run -e esp32dev -t upload` or
+  `pio run -e esp32_kanan -t upload`, with no edits to the git-ignored
+  `include/config.h` and no uncommenting between boards.
 - `docs/bab-iii-kegiatan-pelaksanaan.md`: draf Bab III lengkap (3.1–3.5) dengan
   16 tabel, placeholder gambar, dan Lampiran A–E. Angka diambil dari kode, bukan
-  hasil pengukuran; ambang memakai versi firmware (Bahaya ≥ 200 kPa,
-  Waspada ≥ 35 kPa atau ≥ 20 detik).
+  hasil pengukuran; ambang memakai kontrak dua kelas (Waspada ≥ 45 kPa, Aman di
+  bawahnya).
 - `docs/diagram/`: tiga berkas Mermaid baru, yaitu diagram blok arsitektur tiga
   lapis, flowchart sistem, dan flowchart inferensi Random Forest. Totalnya kini 13
   berkas `.mmd`. Nomor gambar diurutkan ulang mengikuti urutan kemunculan pada
   laporan: 3.9 diagram blok, 3.10 component, 3.11 deployment, 3.12 ERD,
   3.13 flowchart sistem, 3.14 flowchart inferensi.
-- `docs/evidence/`: paket bukti model Random Forest, dihasilkan oleh
+- `docs/evidence/`: paket bukti model dua kelas, dihasilkan oleh
   `scripts/evidence.js` yang menghitung ulang semua angka dari
   `models/training-data.json` dan `models/session-dataset.json` (tidak ada angka
-  yang diketik manual). Isinya satu laporan A4 (`hasil-pengujian-model.html`),
-  satu halaman bimbingan (`konsultasi-1-halaman.html`), `metrics.json`, dan 12
-  grafik SVG + PNG. Temuan utamanya: dua skenario ambang bahaya dilaporkan
-  berdampingan (200 kPa yang sekarang dan 70 kPa usulan Bab II); 0 dari 81.000
-  sampel mencapai 200 kPa dan 0 sampel validasi mencapai 70 kPa, jadi kelas
-  Bahaya tidak bisa dilatih maupun divalidasi; model 20 pohon ternyata 20
-  tunggul kedalaman 1 (60 simpul, 19 split pada `sustained`, 1 pada `peak`
-  34,97 kPa), bukti bahwa Random Forest hanya menyalin aturan ambang; uji
-  DFN vs DM memberi AUC out-of-fold 0,503 sehingga tidak lulus gerbang 0,650
-  dan dilaporkan sebagai hasil negatif. Model produksi, header firmware, dan
-  web tidak berubah.
+  yang diketik manual) dan memanggil protokol validasi silang dari
+  `scripts/train-model.js`. Isinya satu laporan A4
+  (`hasil-pengujian-model.html`), satu halaman bimbingan
+  (`konsultasi-1-halaman.html`), `metrics.json`, dan 11 grafik SVG + PNG.
+  Temuannya: label berasal dari aturan 45 kPa sehingga ketiga skema (aturan
+  murni, RF berbobot kelas, RF + SMOTE) identik 100%; 20 pohon berhenti di
+  kedalaman 1 (60 simpul, 18 split pada `sustained`, 2 pada `peak` 44,97 kPa);
+  sapuan gain ×0,9–×1,3 memberi macro-F1 78,4% / 100% / 82,4% / 69,7% / 60,9%;
+  8 kasus kontrak lolos; uji DFN vs DM memberi AUC out-of-fold 0,536 sehingga
+  tidak lulus gerbang 0,650 dan dilaporkan sebagai hasil negatif. Model
+  produksi, header firmware, dan web tidak berubah.
 - `scripts/lib/charts.js`: grafik SVG tanpa dependensi (histogram, batang, dot
   plot, matriks konfusi, garis, heatmap, rentang sensor, ROC, dan strip), lalu
   dikonversi ke PNG dengan `rsvg-convert`.
@@ -284,6 +384,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Removed
 
+- The danger level and everything that only existed for it: `DURATION_WINDOWS`,
+  the 20 s duration meter and badge, the danger threshold row/cell, the second
+  buzzer pattern, `history.dangerCount`, `settings.dangerKpa`,
+  `settings.warningSeconds`, `alert.dangerTitle/Body`, `risk.danger`,
+  `risk.advice.danger`, `dashboard.caption.durationLimit`,
+  `dashboard.withinLimit/overLimit`, `landing.tech.sim.whyDanger`, `levelFromVotes`,
+  and `AlertModal`'s `level` prop (both levels styled identically).
 - The threshold editor and its local override (`riskThresholds.v2`), the
   `config/global` RTDB node and subscription, `setGlobalConfig`, the admin
   Configuration page and tab, and their i18n keys and tests.

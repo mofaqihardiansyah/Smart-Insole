@@ -7,6 +7,150 @@ summary line per month.
 
 ## Done
 
+- **2026-11-16 — Daftar bahan per bagian di panduan hardware.**
+  `docs/hardware-build-guide.html`: bagian 05 sampai 11 masing-masing dibuka
+  dengan blok "Bahan & alat bagian ini" (kartu Bahan dan Alat), sehingga bahan
+  satu tahap bisa disiapkan tanpa membeli seluruh BOM lebih dulu. §05 diberi
+  callout bahwa heat shrink 3 mm harus ada sebelum menyolder, dan §00 diberi
+  callout belanja yang menyebut heat shrink sebagai satu-satunya penahan tahap
+  solder; papan bolong dan B-7000 baru dipakai di §07–§08. Verifikasi: parser
+  HTML tanpa tag menggantung, 17 section, 19 tabel, semua anchor resolve,
+  render Chrome headless 1440 dan 375 px. (working tree)
+
+- **2026-11-15 — Panduan hardware: status pekerjaan, ceruk/parit, pouch, isi pouch dua versi.**
+  `docs/hardware-build-guide.html`: bagian baru §00 "Posisi pekerjaan & sisa
+  langkah" (kartu sudah/belum selesai, urutan delapan tahap). §02: FSR harus
+  diukur (12,7 vs 14,7 mm), buzzer jadi opsional, LiPo 503040, TP4056 empat pad
+  + RPROG, papan fiber single 5 × 7 dua buah, heat shrink 3 mm, header 2,54 mm,
+  tambahan B-7000, busa 3 mm, webbing 25 mm, benang nylon, tali pengaman. §04:
+  tabel jalur `B±`/`OUT±` dan tabel arus pengisian (2 kΩ = 580 mA). §05: heat
+  shrink dipasang sebelum menyolder. §07: ceruk 1 mm dengan pembatas isolasi
+  kertas, takik ekor, parit 2–2,5 mm di alas, callout "boleh tidak menceruk",
+  catatan penyimpangan 3D, cover 12 jam, uji sebelum/sesudah lem, pola karton.
+  §08: pola, pembersihan, prosedur lem Fox, jahitan, tabel tiga lubang, tabel
+  sambungan GPIO, isi pouch versi A (papan 3 × 4) dan versi B (inline),
+  polaritas JST, penutupan velcro + tali pengaman. §09–§13 dan glosarium
+  disesuaikan; daya tahan baterai 8–10 jam dikoreksi menjadi 3–4 jam; semua
+  pemeriksaan buzzer jadi bersyarat. Verifikasi: parser HTML tanpa tag
+  menggantung, 19 tabel dengan jumlah sel konsisten, semua anchor resolve,
+  em dash 4 (tidak bertambah), render Chrome headless di 1440 dan 375 px.
+  (working tree)
+
+- **2026-11-15 — Pemilih perangkat (kaki kiri/kanan) di dashboard.**
+  `usePairedDevice` kini mengembalikan `{ deviceIds, deviceId, selectDevice }`:
+  id diurutkan, pilihan disimpan per akun (`pairedDeviceId:<uid>`), dan pilihan
+  yang sudah tidak dipasangkan dibuang. `DeviceSwitcher` muncul di baris header
+  desktop dan mobile hanya bila ada dua perangkat atau lebih, dengan label
+  "Kaki kiri/kanan" untuk `insole-01/02` dan id mentah untuk id lain.
+  `InsoleContext` mereset sampel, riwayat, register insiden, dan verdict saat
+  `deviceId` berubah, supaya angka kaki lama tidak tampil di bawah label kaki
+  baru selama langganan baru dibuka. Verifikasi: `npm test` 52 berkas /
+  434 uji (6 uji hook, 3 uji komponen, 1 uji reset konteks), `tsc --noEmit`
+  bersih, `vite build` ke `/tmp` sukses, `web-dashboard/dist` tidak disentuh.
+  (working tree)
+
+- **2026-11-15 — `DEVICE_ID` bisa dioverride per board tanpa menyentuh `config.h`.**
+  `firmware/src/main.cpp` menerima `-DDEVICE_ID_OVERRIDE` (di-`#undef` lebih
+  dulu) sehingga board kedua bisa menulis ke `devices/insole-02/...` tanpa
+  mengedit `include/config.h` yang git-ignored. `firmware/platformio.ini`
+  menambah environment `esp32_kanan` yang mewarisi `esp32dev` dan menambahkan
+  flag itu, jadi tidak ada lagi mengomentari-buka komentar tiap ganti board:
+  kaki kiri `-e esp32dev`, kaki kanan `-e esp32_kanan`. Verifikasi:
+  `pio run -e esp32_kanan` SUCCESS dan string `insole-02` muncul 1× di ELF;
+  `pio run -e esp32dev` SUCCESS tanpa `insole-02` (0×); `pio test -e native`
+  10/10 lolos. (working tree)
+
+- **2026-11-14 — Status opsional PCB dan kejujuran jalur daya di panduan hardware.**
+  `docs/hardware-build-guide.html`: BOM §02 dapat baris `PCB bolong 5 × 7 cm
+  (opsional)` (qty 1, dipotong jadi dua board 2 × 2 cm); §05 langkah 1 diubah
+  dari perintah menjadi pilihan, ditambah callout "Tanpa PCB pun bisa"; §08
+  menyebut papan resistor sebagai isi pouch; callout buzzer menegaskan sistem
+  tetap hidup tanpa buzzer dan tipenya harus aktif 3,3 V; §04 diberi anchor
+  `#daya` dan callout uji brownout (AMS1117 butuh ±4,4 V, boost MT3608 hanya
+  kalau `3V3` < 3,1 V atau board reboot), dirujuk dari §05 langkah 5.
+  `docs/guidebook.html` baris power diselaraskan menjadi
+  `TP4056 → VIN (boost 5V hanya jika brownout)`. (working tree)
+
+- **2026-11-13 — Paket bukti 2 kelas + penyelarasan dokumen kontrak.**
+  `scripts/evidence.js` ditulis ulang: tidak lagi membaca `data.train` /
+  `data.validation` dan tidak lagi membandingkan ambang 200 vs 70 kPa. Validasi
+  silang dipanggil dari `scripts/train-model.js` (`crossValidate`), jadi laporan
+  dan log pelatihan memakai protokol yang sama. Isi paket: audit data (81.000
+  sampel, 4.347 ≥ 45 kPa, 93/135 pasien, rasio 17,6:1), tiga skema pada lipatan
+  identik, matriks konfusi, sapuan gain ×0,9–×1,3 (78,4% / 100% / 82,4% / 69,7%
+  / 60,9%), uji ketahanan (noise, gain, sensor mati), 8 kasus kontrak, peta
+  tingkat, dan DFN vs DM (AUC 0,536; gerbang 0,650 tidak lulus). Grafik baru:
+  `ambang-counts`, `confusion`, `cv-skema`, `gain-error`, `ketahanan`,
+  `peta-kontrak`; grafik narasi lama (`confusion-70/200`, `peta-ambang-70/200`,
+  `perbandingan-model`) dihapus. Keluaran: `docs/evidence/{hasil-pengujian-model.html,
+  konsultasi-1-halaman.html,metrics.json,README.md,charts/*}`.
+  Dokumen diselaraskan ke kontrak 2 kelas: `DESIGN.md`, `README.md` (root),
+  `docs/PRD.md`,
+  `docs/TRD.md`, `docs/AFD.md`, `docs/BSD.md`, `docs/DBD.md`, `docs/IPD.md`,
+  `docs/ROADMAP-RF.md`, `docs/README.md`, `docs/rf-model-report.md` (ditulis
+  ulang), `docs/validation-report.md` (3.2/3.3 ditulis ulang),
+  `docs/thesis-defense.md`, `docs/hardware-build-guide.html` (uji alarm, kontrak,
+  batas FSR), `models/README.md`, `datasets/README.md`, `docs/diagram/README.md`,
+  dan diagram `gambar-3-7/3-8/3-14`. (working tree)
+
+- **2026-11-13 — Propagasi kontrak 2 kelas / 45 kPa ke model, firmware, web, dan dokumen.**
+  `models/rf-model.json` v2.0 diekspor ulang (20 pohon, 60 simpul, `rule.warningKpa`
+  45, `levels: [safe, warning]`, tanpa `dangerRule`/`effectiveWarningKpa`),
+  disalin ke `web-dashboard/src/utils/rf-model.json` (byte-identik, dijaga
+  `rf-modelSync.test.js`), dan diekspor ke `firmware/include/rf-model-data.h`
+  (`WARNING_PEAK_KPA` 45; `safeCount`/`warningCount` menjadi `uint32_t` karena
+  SMOTE membuat populasi daun melewati 65.535).
+  Kontrak tingkat dipegang **dua arah** di `randomForestRisk.ts` dan
+  `RandomForest.cpp`: `peak >= 45` → warning, selain itu safe; suara pohon hanya
+  memetakan skor ke pita level (`alignScoreToLevel`), karena pohon memisah pada
+  `sustained > 0` dan tanpa kontrak masukan 40 kPa/12 s di Risk Explorer akan
+  tampil Waspada. `levelFromVotes`, level `danger`, meter durasi 20 s, baris
+  ambang danger, dan seluruh copy danger dihapus dari `types/insole.ts`,
+  `InsoleContext`, `incidents`, `firebaseRealtime`, `AlertModal`, `PlantarHeatmap`,
+  `StatusChip`, `HeroTimeline`, `HowItWorks`, `RiskExplorer`, `HistoryPage`,
+  `ProfilePage`, `DashboardPage`, `MonitoringPage`, `SettingsPage`, `DevicePage`,
+  halaman admin, `audioAlert.ts` (satu nada), dan `i18n.ts` (id+en). Baris
+  `danger` lama di RTDB dibaca sebagai `warning`, skor lama dipetakan ke pita
+  levelnya.
+  Verifikasi: `npm test` 50 berkas / 424 uji lolos, `npm run typecheck` bersih,
+  `npm run build` sukses; `pio test -e native` 10/10 lolos (`~/.platformio/penv/bin/pio`).
+  `docs/guidebook.html` ditulis ulang ke sistem 2 kelas/45 kPa (dataset, protokol
+  validasi silang, kontrak, pita skor, buzzer, Figshare 9,8% ≥ 45 kPa, batasan);
+  `DECISIONS.md` ADR-021 (men-supersede ADR-008/019), `READY.md`, `CHANGELOG.md`,
+  `docs/bab-iii-kegiatan-pelaksanaan.md`, `docs/thesis-methodology.md`,
+  `docs/IPD.md`, dan `docs/ROADMAP-RF.md` diselaraskan. (working tree)
+
+- **2026-11-13 — Dataset 2 kelas (45 kPa) dan pipeline validasi silang.**
+  Temuan yang mengubah rencana: run terpanjang di atas 45 kPa di DFN-DS hanya
+  **13 sampel (1,3 detik)**, karena dataset ini rekaman berjalan dan satu kaki
+  menapak < 1 detik per langkah. Syarat "bertahan 5 detik" karena itu
+  menghasilkan **nol** sampel positif, dan aturan lama pun (`sustained >= 20 s`)
+  tidak pernah menyala. Aturan label yang dipakai sekarang: `warning <=> peak >=
+  45 kPa`; durasi dikeluarkan dari definisi label dan tetap hanya relevan di
+  perangkat saat pasien berdiri.
+  `scripts/prepare-dataset.py`: `CALIBRATION_ANCHOR_KPA` (35, jangkar skala —
+  p75 mentah dipetakan ke 35 kPa) dipisahkan dari `WARNING_KPA` (45, batas
+  operasional) supaya mengubah ambang tidak menggeser seluruh dataset;
+  `sustained` dihitung ulang di ruang kPa sebagai panjang run di atas 45; split
+  107/28 dihapus dan seluruh 135 pasien menjadi `patients`; skema v2.0 dengan
+  `labelRule` yang diekspor. Hasil: 81.000 sampel utuh, 4.347 warning (5,4%),
+  93/135 pasien, rasio 17,6:1, 0 label tidak konsisten, keluaran deterministik
+  (sha256 identik pada dua regenerasi, ~30 detik).
+  `scripts/train-model.js` ditulis ulang: `StratifiedGroupKFold` manual 5 lipatan
+  (strata = pasien punya warning / tidak, karena 42 dari 135 pasien tidak pernah
+  melewati 45 kPa), tiga skema pada lipatan yang sama, dan SMOTE kelas minoritas
+  k=5 dengan tetangga hanya dari pasien yang sama, sintesis di ruang 3 region
+  lalu `peak` dihitung ulang, dijalankan hanya di dalam lipatan latih, seed 42.
+  Hasil: ketiga skema **identik 100%** di kelima lipatan — label berasal dari
+  aturan, jadi RF meniru aturan itu, dan SMOTE tidak mengubah apa pun pada
+  17,6:1 dengan batas kelas yang bersih. Uji galat penguatan (deret digeser lalu
+  `sustained` dihitung ulang, persis seperti firmware menghitungnya) membuat
+  ketiganya runtuh bersamaan: x0,9 78,4%, x1,1 82,4% (4.181 alarm palsu),
+  x1,2 69,7% (10.067), x1,3 60,9% (16.836). Kesimpulan yang dipakai di Bab IV:
+  tidak ada classifier yang membeli ketahanan terhadap galat kalibrasi;
+  perbaikannya ada di kalibrasi FSR, bukan di model. `models/rf-model.json`
+  tidak ditulis karena kontrak web + firmware masih 3 tingkat. (working tree)
+
 - **2026-11-13 — Lampiran 3D: 10 gambar berlabel + legenda bernomor.**
   `docs/3d/legend.json` (21 komponen, nomor = urutan array + 1) dan
   `annotations.json` (kamera, judul, titik penunjuk tiap gambar) menjadi satu
@@ -386,13 +530,22 @@ summary line per month.
 
 ## In progress
 
+- **Perakitan insole & pouch** — dua alas EVA 28 cm sudah dipotong dan tiga titik
+  sensor ditandai (6,3 / 14,7 / 23,1 cm); pouch Fox kuning sudah kuat dengan
+  mulut terbuka. Sisa: solder ekor FSR, ceruk dan parit, cover, isi pouch,
+  strap, kalibrasi. Urutannya di §00 `docs/hardware-build-guide.html`.
+
 - **Web live check** — RTDB already carries fresh data (`readings/latest` plus
   80 history rows); the dashboard needs a refresh to confirm it leaves `error`
   and settles on `live`.
 
 ## Next
 
-1. **Uji hapus akun** — buat akun uji, hapus dari Profile dengan kata sandi,
+1. **Uji subjek diabetes baru** — rekam satu subjek sebagai studi kasus
+   eksternal, cocokkan labelnya dengan aturan 45 kPa, lalu laporkan sebagai
+   kesesuaian kasus (bukan generalisasi). Paket bukti sudah siap
+   (`docs/evidence/hasil-pengujian-model.html`).
+2. **Uji hapus akun** — buat akun uji, hapus dari Profile dengan kata sandi,
    lalu pastikan login gagal `auth/user-not-found`; dokumen Firestore dan mirror
    `users/<uid>` harus hilang.
 2. **Pairing** — pasangkan device ke akun
@@ -403,11 +556,11 @@ summary line per month.
    template, jadi bacaan tanpa beban melompat 0–125 kPa. Ikuti prosedur di
    `docs/HARDWARE-SPEC.md`, lalu catat konstanta hasil kalibrasi.
 4. **Thesis docs** — klaim metodologi sudah dikoreksi 2026-11-08 dan sitasi
-   2026-11-11. Sisa: subbab hasil negatif model sesi (OOF AUC 0,503, kontrol
-   demografi 0,525) sebagai alasan memilih Bentuk 1 — angkanya sudah tersedia
-   di `docs/evidence/metrics.json` dan narasinya di
-   `docs/evidence/hasil-pengujian-model.html`; lalu render slide, dan angkat
-   `docs/HARDWARE-SPEC.md` dari Draft setelah perangkat divalidasi.
+   2026-11-11. Sisa: subbab hasil negatif model sesi (OOF AUC 0,536; kontrol
+   demografi 0,525; fitur tunggal terbaik 0,617) sebagai alasan memilih
+   Bentuk 1 — angkanya sudah tersedia di `docs/evidence/metrics.json` dan
+   narasinya di `docs/evidence/hasil-pengujian-model.html`; lalu render slide,
+   dan angkat `docs/HARDWARE-SPEC.md` dari Draft setelah perangkat divalidasi.
 5. **Riwayat RTDB tumbuh tanpa batas** — firmware push 1 Hz, node
    `readings/history` tak pernah dibersihkan; putuskan retensi/arsip.
 

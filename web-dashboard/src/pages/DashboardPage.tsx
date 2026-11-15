@@ -21,7 +21,6 @@ import {
 } from "../context/InsoleContext";
 import { useUser } from "../context/UserContext";
 import { t } from "../utils/i18n";
-import { DURATION_WINDOWS } from "../utils/randomForestRisk";
 import {
   GlassCard,
   PanelHeader,
@@ -69,6 +68,16 @@ import { downloadCsv, dateStamp } from "../utils/exportCsv";
  */
 
 const ZONES = ["forefoot", "midfoot", "heel"] as const;
+
+/**
+ * Display ceiling for the per-zone mini bars in the reading feed.
+ *
+ * The bar used to be scaled to the danger limit (200 kPa), which is gone. Scaling
+ * to the warning limit (45 kPa) would pin every high reading at 100% and lose
+ * the difference between 50 and 87 kPa. 80 kPa is the top of the observed range
+ * in DFN-DS (max 87 kPa), so the bar keeps its resolution across real data.
+ */
+const ZONE_BAR_MAX_KPA = 80;
 
 type ZoneKey = (typeof ZONES)[number];
 
@@ -369,7 +378,6 @@ const DashboardPage = () => {
   );
 
   const duration = Number(readings.sustainedDuration || 0);
-  const overDurationLimit = duration >= DURATION_WINDOWS.sustainedWarningSeconds;
 
   /**
    * The spark reads the buffer's real peaks, new end last (the timeline of the
@@ -399,7 +407,7 @@ const DashboardPage = () => {
       unit: t("metrics.unit.kpa", language),
       badge: trendChipDark,
       caption: t("dashboard.caption.threshold", language, {
-        value: thresholds.dangerKpa,
+        value: thresholds.warningKpa,
       }),
     },
     {
@@ -407,20 +415,10 @@ const DashboardPage = () => {
       tint: "cream",
       title: t("metrics.sustainedDuration", language),
       icon: <Timer className="h-5 w-5" />,
-      iconTone: overDurationLimit ? "warning" : "neutral",
+      iconTone: "neutral",
       value: String(duration),
       unit: t("metrics.unit.seconds", language),
-      meter: { value: duration, max: DURATION_WINDOWS.sustainedWarningSeconds },
-      badge: (
-        <Chip tone={overDurationLimit ? "warning" : "success"}>
-          {overDurationLimit
-            ? t("dashboard.overLimit", language)
-            : t("dashboard.withinLimit", language)}
-        </Chip>
-      ),
-      caption: t("dashboard.caption.durationLimit", language, {
-        value: DURATION_WINDOWS.sustainedWarningSeconds,
-      }),
+      caption: t("dashboard.caption.durationInfo", language),
     },
     {
       id: "score",
@@ -570,7 +568,7 @@ const DashboardPage = () => {
             {history.length > 0 ? (
               <TrendChart
                 history={history}
-                dangerKpa={thresholds.dangerKpa}
+                thresholdKpa={thresholds.warningKpa}
                 language={language}
                 labels={{
                   chartTitle: t("dashboard.trendTitle", language),
@@ -736,7 +734,7 @@ const DashboardPage = () => {
                         </th>
                         <td className="px-6 py-4">
                           {/* The reading and, under it, how far it stands
-                              from the danger threshold. The bar's length is
+                              on the 80 kPa display scale. The bar's length is
                               the same claim in inches that the number makes
                               in text, so it is aria-hidden: the row already
                               states the value, and the verdict chip beside
@@ -759,7 +757,7 @@ const DashboardPage = () => {
                                   Math.max(
                                     0,
                                     (finiteOf(record.readings?.[zone]) /
-                                      (thresholds.dangerKpa || 1)) *
+                                      ZONE_BAR_MAX_KPA) *
                                       100
                                   )
                                 ).toFixed(1)}%`,
@@ -827,7 +825,7 @@ const DashboardPage = () => {
                                 Math.max(
                                   0,
                                   (finiteOf(record.readings?.[zone]) /
-                                    (thresholds.dangerKpa || 1)) *
+                                    ZONE_BAR_MAX_KPA) *
                                     100
                                 )
                               ).toFixed(1)}%`,

@@ -34,8 +34,9 @@ titik anatomis kritis (_forefoot_, _midfoot_, _heel_) dan dikendalikan oleh
 mikrokontroler **ESP32**. Model **Random Forest** dilatih pada _dataset_
 tekanan plantar pasien diabetes (DFN-DS, 135 pasien) untuk mengevaluasi
 kombinasi besaran tekanan (kPa) dan durasi tumpuan (_sustained pressure
-duration_) ke dalam 3 kategori tingkat risiko: **Aman**, **Waspada**, dan
-**Bahaya**. Data ditransmisikan nirkabel ke **Google Firebase Realtime
+duration_) ke dalam 2 kategori tingkat risiko: **Aman** dan **Waspada**
+(ambang 45 kPa; tidak ada tingkat ketiga karena data acuan dan jangkauan FSR
+402 tidak mencapainya). Data ditransmisikan nirkabel ke **Google Firebase Realtime
 Database** dan ditayangkan pada **Web Dashboard Multiplatform (_Mobile-First
 Responsive Design_)**.
 
@@ -44,14 +45,14 @@ Responsive Design_)**.
 - **Real-time Plantar Heatmap** — visualisasi gradasi warna kontur tekanan
   telapak kaki secara langsung di layar browser, baik HP maupun PC
   (komponen SVG `PlantarHeatmap`).
-- **Random Forest Risk Assessment** — klasifikasi risiko berbasis _machine
-  learning_ (hybrid Random Forest + rule klinis) yang dilatih dari data pasien
+- **Random Forest Risk Assessment** — klasifikasi risiko dua kelas berbasis
+  _machine learning_ dengan kontrak ambang 45 kPa, dilatih dari data pasien
   diabetes asli, dijalankan di sisi client tanpa pemrosesan _server-side_.
 - **Sustained Pressure Monitoring** — mengukur akumulasi durasi waktu tumpuan
   berulang untuk mencegah pembentukan lesi jaringan lunak.
 - **Early Warning System (EWS)** — pemicuan notifikasi web (_Web Notification
   API_) dan alarm audio (_Web Audio API_) saat risiko mencapai kategori
-  Waspada atau Bahaya.
+  Waspada.
 - **Histori & Analytics** — rekam medis kuantitatif pola tumpuan harian
   beserta ekspor CSV untuk membantu rekomendasi terapi dokter/_orthotics_.
 - **Panel Admin** — pengelolaan pengguna dan konfigurasi sistem tanpa menyentuh
@@ -123,7 +124,7 @@ smart-insole-ta/
 │   │   └── rf-model-data.h      # Model ter-ekspor sebagai array C++
 │   ├── src/
 │   │   ├── main.cpp             # Program utama: ADC → filter → inferensi → Firebase
-│   │   └── RandomForest.cpp     # Inference Random Forest (majority vote + rule)
+│   │   └── RandomForest.cpp     # Inference Random Forest (kontrak ambang + skor)
 │   ├── test/                    # Unit test native (PlatformIO)
 │   └── README.md
 │

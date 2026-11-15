@@ -65,7 +65,7 @@ const DevicePage = () => {
   const connectionChip: ConnectionChip = connecting
     ? { level: "warning", label: t("source.connecting", language) }
     : errored
-      ? { level: "danger", label: t("source.error", language) }
+      ? { level: "warning", label: t("source.error", language) }
       : isLive
         ? { level: "safe", label: t("source.live", language) }
         : { level: "warning", label: t("source.idle", language) };
