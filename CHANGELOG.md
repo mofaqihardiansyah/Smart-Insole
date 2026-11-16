@@ -7,6 +7,15 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Five classifiers from five different journals (decision tree, ANN/MLP, SVM,
+  AdaBoost, fuzzy cognitive map) are compared against Random Forest on the same
+  patient-grouped folds. `scripts/export-folds.js` exports the fold assignment
+  from `train-model.js`, and `scripts/compare-models.py` trains the models with
+  scikit-learn via `uv`, selects each decision threshold on the training fold,
+  and writes a twelve-section report with eleven charts to
+  `docs/evidence/perbandingan/`. On clean data every model reaches macro-F1
+  0.995-1.000; under a calibration gain sweep they fall together, and the rule
+  baseline reproduces the previous evidence pack exactly.
 - `docs/hardware-build-guide.html` §00 **"Posisi pekerjaan & sisa langkah"**:
   two cards separating what is already built (cut EVA, marked sensor points,
   glued pouch shell) from what is not, plus an eight-step order that links to
@@ -45,6 +54,11 @@ All notable changes to this project are documented here. The format follows
 - Pocket depth unified to **1 mm** (was 1–2 mm in text, 2–3 mm in a figure
   caption, 2 mm in the 3D model); channel depth unified to 2–2.5 mm in the base
   instead of splitting 1.5 mm into the 2 mm cover.
+- §07 now also carries the chosen build variant: **no sensor pocket, cable
+  channel kept** ("jalur pendek"). The callout lists the seven steps that
+  replace pocket carving, keeps the 3–3.5 mm × 2–2.5 mm channel, mounts the
+  sensor with 0.1 mm double-sided tape or B-7000 on the film edge, and records
+  the 0.5 mm height deviation for Bab III.
 - `docs/hardware-build-guide.html` now treats the perfboard as optional: the
   BOM gains a `PCB bolong 5 × 7 cm (opsional)` row, soldering step 1 is a
   choice with a "Tanpa PCB pun bisa" callout, and §08 lists the resistor board

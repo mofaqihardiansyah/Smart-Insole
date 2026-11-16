@@ -387,7 +387,7 @@
             <h4>Belum selesai</h4>
             <ul class="check">
               <li>Ekor FSR belum disolder dan belum diuji dengan multimeter (bagian 05)</li>
-              <li>Ceruk sensor dan parit kabel belum dibuat (bagian 07)</li>
+              <li>Ceruk sensor dan parit kabel belum dibuat (bagian 07). Varian yang dipilih: <strong>tanpa ceruk, parit tetap</strong></li>
               <li>Sensor belum ditanam dan cover belum dilem (bagian 07)</li>
               <li>Isi pouch belum disusun: papan resistor, TP4056, ESP32, baterai (bagian 08)</li>
               <li>Strap, velcro penutup, dan tali pengaman belum dipasang (bagian 08)</li>
@@ -1252,7 +1252,8 @@ void loop() {
           Ceruk adalah cekungan dangkal tempat sensor duduk, parit adalah alur
           tempat kabel lewat. Keduanya hanya dibuat di alas EVA 5 mm dan
           <strong>tidak menembus</strong>. Setelah ceruk 1 mm, masih ada 4 mm busa
-          di bawahnya.
+          di bawahnya. Kalau memilih jalur pendek tanpa ceruk (lihat callout di
+          bawah langkah ini), lewati langkah 1 sampai 6 dan mulai dari langkah 7.
         </p>
         <ol class="steps">
           <li><b>Jiplak badan sensor, jangan pakai angka meja</b> Letakkan sensor di titik yang sudah ditandai, arahkan ekornya ke sisi dalam (medial), lalu jiplak lingkar badannya dengan pulpen halus. Beri jarak 1,5–2 mm di luar garis itu supaya sensor tidak terjepit. Untuk FSR 402 hasilnya biasanya sekitar 20 mm. Jangan memakai ukuran 14 × 14 mm dari gambar contoh, karena badan sensor bisa lebih besar.</li>
@@ -1292,19 +1293,29 @@ void loop() {
         <div class="callout critical">
           <div class="bar"></div>
           <div class="body">
-            <span class="label">Boleh tidak menceruk?</span>
+            <span class="label">Jalur pendek: tanpa ceruk, parit tetap dibuat</span>
             <p>
-              Ceruk sensor boleh dilewati. Sensor cukup ditempel di permukaan alas
-              dan ditutup cover; tekanan justru tersalur langsung tanpa rongga.
-              Yang <strong>tidak boleh</strong> dilewati adalah parit kabel. Bundel
-              enam kabel berdiameter 3,2 mm di bawah cover 2 mm akan menonjol 3 mm,
-              membuat cover tidak menempel rata, dan kabel tertekuk setiap langkah.
+              Kalau waktu atau alat terbatas, ceruk sensor boleh dilewati
+              sepenuhnya. Sensor cukup ditempel di permukaan alas, dan tekanan
+              justru tersalur langsung tanpa rongga di bawah cover. Yang
+              <strong>tidak boleh</strong> dilewati adalah parit kabel: bundel
+              enam kabel berdiameter 3,2 mm di bawah cover 2 mm akan menonjol
+              3 mm, lem tidak menempel rata, dan kabel tertekuk setiap langkah.
             </p>
+            <ol>
+              <li>Lewati langkah 1 sampai 6 di atas. Takik ekor juga tidak perlu, karena ekor sensor ada di permukaan.</li>
+              <li>Tetap buat parit 3–3,5 mm lebar dan 2–2,5 mm dalam, keluar di tepi tumit sisi dalam 1,5 cm dari ujung belakang.</li>
+              <li>Bersihkan permukaan alas dengan kain kering sampai tidak ada remahan busa.</li>
+              <li>Tempelkan sensor dengan double tape tipis 0,1 mm di seluruh badan film, atau lem B-7000 tipis di tepi film saja. Tape lebih cepat dan tidak menambah tebal.</li>
+              <li>Arahkan ekor sensor langsung ke parit, lalu kunci dengan tape setiap 3 cm.</li>
+              <li>Uji tekan dengan koin sambil membaca multimeter sebelum cover dilem.</li>
+              <li>Lem cover di jalur pinggir 8–10 mm dan 3 mm di sekeliling sensor, jangan di atas lingkaran aktif.</li>
+            </ol>
             <p>
-              Kalau memilih tanpa ceruk, jalankan kabel menyusuri <strong>tepi luar
-              insole</strong>, di luar garis telapak, lalu keluar di tepi tumit.
-              Cover dilem di area telapak saja, sisakan 5 mm di tepi tempat kabel
-              lewat, dan beri penahan tarikan (hot glue) di titik keluar.
+              Yang berubah dibanding jalur penuh: tinggi bertambah 0,5 mm di tiga
+              titik, dan sensor lebih mudah bergeser kalau lemnya kurang. Karena
+              itu catat varian ini sebagai penyimpangan di Bab III, dan jangan
+              menggeser sensor setelah kalibrasi.
             </p>
           </div>
         </div>
@@ -1340,7 +1351,7 @@ void loop() {
         <ol class="steps">
           <li><b>Bersihkan sisa remahan busa</b> Bersihkan debu potongan busa EVA dengan kuas atau kain kering agar lem menempel kuat.</li>
           <li><b>Beri lem hanya di tepi film</b> Pakai lem B-7000, oles tipis di pinggir luar sensor saja. <strong>Jangan beri lem pada lingkaran aktif tengah</strong> agar sensor tetap bebas merespons tekanan. Lem tembak tidak dipakai di sini karena terlalu tebal dan terlalu kaku.</li>
-          <li><b>Arahkan ekor ke takik</b> Ekor sensor harus keluar lewat takik yang sudah dibuat, bukan terlipat di bawah badan sensor. Sensor yang duduk di atas ekornya sendiri akan miring dan bacaannya tidak simetris.</li>
+          <li><b>Arahkan ekor ke parit</b> Ekor sensor harus keluar lewat takik bila memakai ceruk, atau langsung menuju parit bila memakai jalur pendek. Sensor yang duduk di atas ekornya sendiri akan miring dan bacaannya tidak simetris.</li>
           <li><b>Tekan lembut selama 30 detik</b> Posisikan sensor pada ceruknya dan tekan perlahan sampai lem mengikat.</li>
           <li><b>Kunci kabel di dalam parit</b> Tempelkan potongan kecil double-sided tape tipis (0,1 mm) di atas kabel silikon setiap 3 cm agar kabel tetap berada di parit. Jangan memakai double tape busa 1 mm di sini karena akan mengangkat cover.</li>
           <li><b>Biarkan lem mengering</b> Tunggu lem mengering sebelum menutup insole dengan busa cover, agar uap lem tidak terperangkap di dalam.</li>

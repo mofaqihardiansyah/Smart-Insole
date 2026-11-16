@@ -542,3 +542,52 @@ level; that is a separate feature with its own PRD. `insole-01`/`insole-02` are
 rendered as "Kaki kiri"/"Kaki kanan", so the naming convention becomes a UI
 contract: renaming a device id changes the label to the raw id. Any future page
 that needs both feet must fan out per device rather than extend this switcher.
+
+## ADR-023: Five external algorithms from five journals, no tuning, no CNN
+
+- **Date:** 2026-11-16
+- **Status:** Accepted
+
+**Context.** The supervisor asked for a comparison of five algorithms other
+than Random Forest, taken from the journals used in the thesis. Inspecting the
+23 PDFs in the Mendeley folder showed only three actually train a classifier on
+plantar data: Agrawal dkk. (2024, nine models on smart-insole pressure),
+Ramirez-Bautista dkk. (2022, fuzzy cognitive map) and Veran dkk. (2026,
+ResNet-18 on pressure heatmaps). The other twenty are clinical, device-design,
+review, cost or patent papers. Five journals therefore required three new
+references.
+
+**Decision.**
+
+- The five methods are **Decision Tree** (Sheikh dkk. 2025), **ANN/MLP**
+  (Darwich dkk. 2023), **SVM** (Agrawal dkk. 2023), **AdaBoost** (Agrawal dkk.
+  2024) and **Fuzzy Cognitive Map** (Ramirez-Bautista dkk. 2022), each from a
+  different journal.
+- **CNN/ResNet-18 is excluded.** Veran dkk. convert segments into 28×28×3
+  images; our contract has two tabular features, so a CNN comparison would be
+  unequal and would not survive a defence question.
+- **No hyperparameter tuning and no feature engineering.** Tuning per model
+  makes the comparison unfair and the numbers optimistic.
+- **scikit-learn and matplotlib run through `uv run`** with pinned versions in
+  `scripts/requirements-ml.txt`; nothing is installed into the base
+  environment.
+- **Folds come from `train-model.js`**, exported by `scripts/export-folds.js`,
+  so Random Forest and the five models are tested on the same patients.
+- **Decision thresholds are chosen on the training fold**, not on the test
+  fold. With a 5,4 % positive class, a well-calibrated model (FCM with BCE)
+  never crosses 0,5 and would otherwise miss every warning despite a perfect
+  ranking.
+- **The FCM is a documented simplification**: gradient descent on BCE instead
+  of the journal's Bacterial Foraging Optimization, and one output concept
+  because the level here is binary.
+- **Gain-sweep numbers are pooled**, the same aggregation `metrics.json` uses,
+  and the rule baseline must reproduce 78,41 % (×0,9) and 82,36 % (×1,1) or the
+  script stops.
+
+**Consequences.** Clean-data scores are not evidence of algorithmic merit: the
+labels come from a threshold rule, and `sustained >= 1` is equivalent to
+`peak >= 45 kPa` on all 81.000 samples, so the task is effectively
+one-dimensional. The defensible comparison is the gain sweep, where every model
+falls together and Random Forest's advantage is deployment cost, not accuracy.
+Any future claim that one algorithm beats another on this dataset has to
+explain this label leak first.

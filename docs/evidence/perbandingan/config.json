@@ -1,0 +1,87 @@
+{
+  "generatedBy": "scripts/compare-models.py",
+  "seed": 42,
+  "folds": 5,
+  "warningKpa": 45.0,
+  "dataset": {
+    "file": "models/training-data.json",
+    "sha256": "384aaa103b6c3f1bed3c0afa28d3614e80686c4704551e187113c0af7c50e530",
+    "patients": 135,
+    "samples": 81000,
+    "warningSamples": 4347
+  },
+  "foldsFile": {
+    "file": "models/folds.json",
+    "sha256": "9f05d3cbba73239ed92b53cae64593cde165c880e405b8514dbd20d2830ff394"
+  },
+  "environment": {
+    "python": "3.14.9",
+    "numpy": "2.5.4",
+    "scikit-learn": "1.9.1",
+    "platform": "Linux-7.2.2-zen1-1-zen-x86_64-with-glibc2.44"
+  },
+  "models": {
+    "Decision Tree": {
+      "reference": "Sheikh dkk. 2025, Scientific Reports 15:20962",
+      "hyperparameters": {
+        "max_depth": 8,
+        "criterion": "gini",
+        "class_weight": "balanced"
+      },
+      "scaled": false,
+      "parameters": 511
+    },
+    "ANN (MLP)": {
+      "reference": "Darwich dkk. 2023, Baghdad Science Journal 20(6)",
+      "hyperparameters": {
+        "hidden_layer_sizes": [
+          16
+        ],
+        "max_iter": 2000,
+        "activation": "relu"
+      },
+      "scaled": true,
+      "parameters": 82
+    },
+    "SVM (linear)": {
+      "reference": "Agrawal dkk. 2023, IEEE Access 11:23119-23126",
+      "hyperparameters": {
+        "kernel": "linear",
+        "C": 1.0,
+        "class_weight": "balanced"
+      },
+      "scaled": true,
+      "parameters": 3
+    },
+    "AdaBoost": {
+      "reference": "Agrawal dkk. 2024, Technologies 12:231",
+      "hyperparameters": {
+        "n_estimators": 100,
+        "learning_rate": 0.5,
+        "base": "decision stump"
+      },
+      "scaled": false,
+      "parameters": 300
+    },
+    "Fuzzy Cognitive Map": {
+      "reference": "Ramirez-Bautista dkk. 2022, IEEE Latin America Transactions 20(7)",
+      "hyperparameters": {
+        "concepts": 3,
+        "steps": 2,
+        "lr": 2.0,
+        "epochs": 300,
+        "learning": "BCE gradient",
+        "threshold": "dipilih pada lipatan latih"
+      },
+      "scaled": true,
+      "parameters": 12
+    }
+  },
+  "gains": [
+    0.9,
+    1.0,
+    1.1,
+    1.2,
+    1.3
+  ]
+}

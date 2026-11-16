@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perbandingan lima algoritma klasifikasi — smart insole</title>
+<style>
+  :root { --bg:#EFEFEC; --surface:#FFFFFF; --fg:#0A0A0F; --fg2:#46464F; --line:#DCDCD8; --accent:#04644C; --warn:#823700; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height:1.6; }
+  main { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 1.85rem; line-height:1.2; margin:0 0 8px; }
+  h2 { font-size: 1.24rem; margin: 38px 0 12px; padding-top: 18px; border-top:1px solid var(--line); }
+  p, li { color: var(--fg2); }
+  .lead { font-size: 1.02rem; }
+  .meta { color: var(--fg2); font-size: .85rem; margin-bottom: 22px; }
+  .card { background: var(--surface); border:1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 14px 0; }
+  .table-wrap { overflow-x: auto; }
+  table { width:100%; border-collapse: collapse; font-size: .86rem; background: var(--surface); }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; color: var(--fg); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  figure { margin: 18px 0; background: var(--surface); border:1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  figure img { width: 100%; height: auto; display:block; }
+  figcaption { font-size: .82rem; color: var(--fg2); margin-top: 8px; }
+  .fig-no { font-weight: 600; color: var(--fg); }
+  code { background:#E7E7E3; padding:1px 5px; border-radius:4px; font-size:.85em; }
+  pre { background:#E7E7E3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.8rem; }
+  .note { border-left: 3px solid var(--warn); padding-left: 14px; }
+  ul.tight li { margin-bottom: 4px; }
+  @media print { body { background:#fff; } main { padding: 0; } figure, .card { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<main>
+
+<h1 style="font-size:1.45rem">Perbandingan lima algoritma — satu halaman</h1>
+<p class="meta">Untuk bimbingan; rincian di <code>index.html</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Model</th><th class="num">Macro-F1</th>
+<th class="num">Recall waspada</th><th>Jurnal</th></tr></thead><tbody><tr><td>Decision Tree</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000 ± 0,000</td><td>Sheikh dkk. 2025, Scientific Reports 15:20962</td></tr><tr><td>ANN</td><td class='num'>0,995 ± 0,005</td><td class='num'>1,000 ± 0,001</td><td>Darwich dkk. 2023, Baghdad Science Journal 20(6)</td></tr><tr><td>SVM</td><td class='num'>0,995 ± 0,005</td><td class='num'>1,000 ± 0,001</td><td>Agrawal dkk. 2023, IEEE Access 11:23119-23126</td></tr><tr><td>AdaBoost</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000 ± 0,000</td><td>Agrawal dkk. 2024, Technologies 12:231</td></tr><tr><td>Fuzzy Cognitive Map</td><td class='num'>0,995 ± 0,005</td><td class='num'>1,000 ± 0,001</td><td>Ramirez-Bautista dkk. 2022, IEEE Latin America Transactions 20(7)</td></tr></tbody></table></div>
+<figure><img src="charts/07-gain-sweep.svg" alt="Sapuan gain">
+<figcaption><span class="fig-no">Gambar 1.</span> Gambar yang paling perlu dibawa: ketahanan
+terhadap galat kalibrasi. Pada gain &times;1,2 semua model turun bersama.</figcaption></figure>
+<div class="card"><ul class="tight">
+<li>Semua model meniru aturan 45 kPa pada data bersih; urutan juara tidak bermakna klinis.</li>
+<li>Pembeda nyata: ketahanan terhadap gain dan biaya inferensi, bukan akurasi.</li>
+<li>Macro-F1 tertinggi: <b>Decision Tree</b> (1,000 ± 0,000).</li>
+</ul></div>
+</main></body></html>

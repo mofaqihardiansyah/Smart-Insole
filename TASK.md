@@ -7,6 +7,37 @@ summary line per month.
 
 ## Done
 
+- **2026-11-16 — Perbandingan lima algoritma dari lima jurnal pada data latih DFN-DS.**
+  Lima model dilatih dan diuji pada lipatan pasien yang sama dengan Random
+  Forest: Decision Tree (Sheikh 2025), ANN/MLP (Darwich 2023), SVM (Agrawal
+  2023), AdaBoost (Agrawal 2024), Fuzzy Cognitive Map (Ramirez-Bautista 2022).
+  Skrip baru: `scripts/export-folds.js` (memakai `groupedFolds` dari
+  `train-model.js`) dan `scripts/compare-models.py` (scikit-learn lewat `uv`,
+  versi dipin di `scripts/requirements-ml.txt`). Protokol: grouped 5-fold,
+  scaler hanya lipatan latih, ambang keputusan dipilih pada lipatan latih,
+  tanpa tuning. Hasil data bersih: DT dan AdaBoost 1,000; ANN, SVM, FCM
+  0,995 ± 0,005; AUC 1,000 untuk semua. Sapuan gain: semua model turun ke
+  0,61 pada ×1,3, dan baseline aturan mereproduksi 78,41 % (×0,9) serta
+  82,36 % (×1,1) dari paket bukti lama dengan selisih nol.
+  Temuan yang dicatat: `sustained >= 1` setara dengan `peak >= 45 kPa` pada
+  seluruh 81.000 sampel, sehingga masalahnya efektif satu dimensi.
+  Keluaran: `docs/evidence/perbandingan/` (index.html 12 bagian, 11 gambar
+  SVG+PNG, metrics.json, config.json, README, ringkasan konsultasi) dan
+  `docs/perbandingan-algoritma.md`. Verifikasi: dua kali jalan menghasilkan
+  JSON identik setelah kolom waktu latih dikeluarkan, 11 SVG lolos parser,
+  HTML tanpa tag tak seimbang dan tanpa URL eksternal. (working tree)
+
+- **2026-11-16 — Varian insole "tanpa ceruk, parit tetap" (opsi B).**
+  `docs/hardware-build-guide.html` §07: callout "Boleh tidak menceruk?" diganti
+  menjadi prosedur tujuh langkah untuk jalur pendek (lewati langkah 1–6, tetap
+  buat parit 3–3,5 × 2–2,5 mm, tempel sensor dengan double tape 0,1 mm atau
+  B-7000 di tepi film, lem cover 3 mm di sekeliling sensor), plus catatan
+  penyimpangan 0,5 mm dan larangan menggeser sensor setelah kalibrasi.
+  Pengantar Langkah 3 dan Langkah 4 menyesuaikan ("takik bila memakai ceruk"),
+  dan §00 mencatat varian yang dipilih. Verifikasi: parser HTML bersih, 17
+  section, 19 tabel, anchor resolve, render Chrome headless 1440 px.
+  (working tree)
+
 - **2026-11-16 — Daftar bahan per bagian di panduan hardware.**
   `docs/hardware-build-guide.html`: bagian 05 sampai 11 masing-masing dibuka
   dengan blok "Bahan & alat bagian ini" (kartu Bahan dan Alat), sehingga bahan

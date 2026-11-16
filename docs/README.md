@@ -15,6 +15,8 @@ pelatihan.
 | [`evidence/hasil-pengujian-model.html`](evidence/hasil-pengujian-model.html) | Paket bukti model: audit data, label aturan 45 kPa, validasi silang 5 lipatan, sapuan galat gain, kontrak tingkat, uji DFN vs DM, dan seluruh grafik (dihasilkan `scripts/evidence.js`) |
 | [`evidence/konsultasi-1-halaman.html`](evidence/konsultasi-1-halaman.html) | Versi satu halaman untuk bimbingan: keputusan yang sudah dijalankan, tiga temuan, dan pertanyaan untuk dosen pembimbing |
 | [`evidence/README.md`](evidence/README.md) | Ringkasan isi folder bukti, cara reproduksi, dan batasan |
+| [`perbandingan-algoritma.md`](perbandingan-algoritma.md) | Narasi Bab IV: perbandingan lima algoritma dari lima jurnal pada data latih DFN-DS, protokol, hasil, dan batasannya |
+| [`evidence/perbandingan/index.html`](evidence/perbandingan/index.html) | Paket bukti perbandingan: 12 bagian, 11 gambar, confusion matrix, kurva ROC/PR, kalibrasi, dan sapuan gain (dihasilkan `scripts/compare-models.py`) |
 | [`thesis-methodology.md`](thesis-methodology.md) | Draf Bab III (metodologi): data, praproses, model, evaluasi, hasil, ancaman validitas |
 | [`thesis-defense.md`](thesis-defense.md) | Materi sidang: kerangka slide metode Random Forest dan skrip demo ujung-ke-ujung |
 | [`daftar-pustaka.md`](daftar-pustaka.md) | Daftar pustaka APA 7 terverifikasi: 23 entri, sumber ekspor Mendeley grup TA, plus catatan koreksi metadata |
@@ -37,6 +39,7 @@ pelatihan.
 | `schematics/` | Skematik rangkaian: FSR 402, ESP32, TP4056, pinout (saat ini placeholder) |
 | `reference-design/` | Referensi visual dashboard (ekspor Figma) yang menjadi acuan `DESIGN.md` |
 | `evidence/` | Keluaran `scripts/evidence.js`: laporan HTML, `metrics.json`, dan grafik SVG/PNG. Jangan diedit manual. |
+| `evidence/perbandingan/` | Keluaran `scripts/compare-models.py`: laporan HTML, `metrics.json`, `config.json`, dan 11 grafik. Jangan diedit manual. |
 | `3d/` | Model 3D insole & pouch: sumber OpenSCAD, gambar kerja CADCraft, enam render, dan dua STL cek cetak. Bangun ulang dengan `./3d/build-3d.sh`; jangan mengedit berkas di `3d/gen/`, `3d/cadcraft/out/`, `3d/render/`, `3d/stl/`. |
 
 ## Daftar Paper Acuan

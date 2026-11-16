@@ -1,7 +1,7 @@
 # READY.md
 
 Verified environment and repository state. Read this before exploring.
-Snapshot: **15 November 2026**. Update only when a fact changes.
+Snapshot: **16 November 2026**. Update only when a fact changes.
 
 ## Runtime
 
@@ -43,12 +43,13 @@ Snapshot: **15 November 2026**. Update only when a fact changes.
 | `firmware/include/` | `config.h.example`, `RandomForest.h`, `rf-model-data.h` |
 | `firmware/test/` | `test_randomforest.cpp` |
 | `models/` | `rf-model.json`, `training-data.json` |
-| `scripts/` | `prepare-dataset.py`, `train-model.js`, `export-model-cpp.js`, `validate-datasets.py`, `prepare-session-dataset.py`, `train-session-model.js`, `lib/forest.js` |
+| `scripts/` | `prepare-dataset.py`, `train-model.js`, `export-model-cpp.js`, `validate-datasets.py`, `prepare-session-dataset.py`, `train-session-model.js`, `lib/forest.js`, `export-folds.js`, `compare-models.py`, `requirements-ml.txt` |
 | `datasets/` | `dfn-ds/` (273 MB), `optitrack/` (84 MB), `figshare-dfu/` (32 KB) |
 | `design/` | `smart-insole-dashboard.figcraft` (FigCraft: dashboard 1440 + 375) |
+| `docs/evidence/perbandingan/` | `index.html`, `metrics.json`, `config.json`, `README.md`, `ringkasan-konsultasi.html`, `charts/` (11 gambar) |
 | `docs/3d/` | `params.md`, `insole.scad`, `pouch.scad`, `pouch-contents.scad`, `assembly.scad`, `build-cad.py`, `build-3d.sh`; outputs in `gen/`, `cadcraft/out/`, `render/`, `stl/` |
 
-## Current state (as of 10 Nov 2026)
+## Current state (as of 16 Nov 2026)
 
 - The admin console lives at `/admin/*` (`pages/admin/`) with its own
   `AdminLayout` and `RequireAdmin`; `/admin` is no longer part of the patient
@@ -81,6 +82,10 @@ Snapshot: **15 November 2026**. Update only when a fact changes.
   the same number; duration is a model feature only, not a level condition.
   Trained on all 135 DFN-DS patients with 5-fold grouped CV and SMOTE inside
   the training folds. The external test is a new self-recorded diabetic subject.
+- Five classifiers from five journals are compared against Random Forest on the
+  same grouped folds (`docs/evidence/perbandingan/`). scikit-learn and
+  matplotlib run through `uv run` only; the base Python has numpy but no
+  scikit-learn, pandas or matplotlib.
 - Firmware is flashed and boots clean: WiFi joins, Firebase is configured,
   `RandomForest model loaded (20 trees)`, and live samples print with
   `warning`/`safe` transitions. Sensor calibration is still the template

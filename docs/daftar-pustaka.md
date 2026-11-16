@@ -13,6 +13,8 @@ grup itu belum memuatnya.
 
 ## Pustaka
 
+Agrawal, D. K., Usaha, W., Pojprapai, S., & Wattanapan, P. (2023). Fall risk prediction using wireless sensor insoles with machine learning. *IEEE Access, 11*, 23119–23126. https://doi.org/10.1109/ACCESS.2023.3252886
+
 Agrawal, D. K., Jongpinit, W., Pojprapai, S., Usaha, W., Wattanapan, P., Tangkanjanavelukul, P., & Vitoonpong, T. (2024). Smart insole-based plantar pressure analysis for healthy and diabetic feet classification: Statistical vs. machine learning approaches. *Technologies, 12*(11), 231. https://doi.org/10.3390/technologies12110231
 
 Ahmadinia, A. (2026). *Design and implementation of a smart insole for the prevention of diabetic foot ulcers* [Master's thesis, Metropolia University of Applied Sciences]. Theseus. http://www.theseus.fi/handle/10024/919399
@@ -30,6 +32,8 @@ Cao, Z., Wang, F., Li, X., Hu, J., He, Y., & Zhang, J. (2022). Characteristics o
 Castro-Martins, P., Marques, A., Coelho, L., Vaz, M., & Baptista, J. S. (2024). In-shoe plantar pressure measurement technologies for the diabetic foot: A systematic review. *Heliyon, 10*(9), e29672. https://doi.org/10.1016/j.heliyon.2024.e29672
 
 Chinarro, M., Redondo-Madruga, M., Dobrescu, C. C., & Carneros-Prado, D. (2026). *Multimodal gait dataset: Synchronized sensorized-insole (pressure + IMU) and OptiTrack motion capture recordings* [Data set]. Zenodo. https://doi.org/10.5281/zenodo.22936249
+
+Darwich, A., Ismaiel, E., Al-kayal, A., Ali, M., & Masri, M. (2023). Recognizing different foot deformities using FSR sensors by static classification of neural networks. *Baghdad Science Journal, 20*(6), 2638–2650. https://doi.org/10.21123/bsj.2023.8968
 
 Khandakar, A., Mahmud, S., Chowdhury, M. E. H., Reaz, M. B. I., Kiranyaz, S., Mahbub, Z. B., Ali, S. H., Bakar, A. A. A., Ayari, M. A., Alhatou, M., Abdul-Moniem, M., & Faisal, M. A. A. (2022). Design and implementation of a smart insole system to measure plantar pressure and temperature. *Sensors, 22*(19), 7599. https://doi.org/10.3390/s22197599
 
@@ -51,6 +55,8 @@ Ngui, I. R. Y., Causby, R., Jones, S., Bowden, J., & Daebeler, R. (2025). *Measu
 
 Ramirez-Bautista, J. A., Chaparro-Cárdenas, S. L., Hernández-Zavala, A., Gallegos-Torres, R. M., Zequera, M., Tovar-Barrera, Y., Pradilla-Gómez, J. M., & Huerta-Ruelas, J. A. (2022). Fuzzy cognitive map to classify plantar foot alterations. *IEEE Latin America Transactions, 20*(7), 1092–2000. https://doi.org/10.1109/TLA.2021.9827472
 
+Sheikh, M. M., Balachandra, M., Narendra, V. G., & Maiya, A. G. (2025). Predicting diabetic peripheral neuropathy through advanced plantar pressure analysis: A machine learning approach. *Scientific Reports, 15*(1), 20962. https://doi.org/10.1038/s41598-025-07774-0
+
 Supriyatin, S., Purwono, P., & Wirasto, A. (2023). Revolutionizing diabetes care: Prototype sepatu pintar untuk foot health monitoring. *Prosiding Seminar Nasional Penelitian dan Pengabdian kepada Masyarakat (SNPPKM), 3*(1), 20–26. https://prosiding.uhb.ac.id/index.php/SNPPKM/article/view/1242
 
 Tahir, A. M., Chowdhury, M. E. H., Khandakar, A., Al-Hamouz, S., Abdalla, M., Awadallah, S., Reaz, M. B. I., & Al-Emadi, N. (2020). A systematic approach to the design and characterization of a smart insole for detecting vertical ground reaction force (vGRF) in gait analysis. *Sensors, 20*(4), 957. https://doi.org/10.3390/s20040957
@@ -65,6 +71,9 @@ Zhong, Y., Yan, Z., Xie, Y., Wu, S., Zhang, H., Lin, S., & Zhou, P. (2025). MSSD
 |---|---|---|
 | Zhong dkk. (2025) — MSSDA | Dataset latih DFN-DS (§3.2.1) | grup TA berisi pustaka smart insole, bukan paper datasetnya |
 | Chinarro dkk. (2026) — Zenodo | Dataset validasi OptiTrack v2 (§3.2.2) | dataset terbit 24 September 2026, setelah pustaka dikumpulkan |
+| Darwich dkk. (2023) — Baghdad Science Journal | Pembanding ANN pada perbandingan lima algoritma (Bab IV) | grup TA fokus smart insole klinis, bukan klasifikasi ML |
+| Sheikh dkk. (2025) — Scientific Reports | Pembanding Decision Tree pada perbandingan lima algoritma (Bab IV) | terbit setelah pustaka dikumpulkan |
+| Agrawal dkk. (2023) — IEEE Access | Pembanding SVM pada perbandingan lima algoritma (Bab IV) | penulis sama dengan Agrawal 2024, artikel terpisah |
 | Ngui dkk. (2025) — Figshare | Dataset validasi ambang DFU (§3.2.3) | dataset terbit 23 Desember 2025; sumbernya tidak tercatat di repo sampai 11 November 2026 |
 | Breiman (2001) | Dasar metode Random Forest (§3.4) | pustaka klasik, belum pernah diunduh |
 

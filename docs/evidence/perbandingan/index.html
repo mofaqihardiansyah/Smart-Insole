@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perbandingan lima algoritma klasifikasi — smart insole</title>
+<style>
+  :root { --bg:#EFEFEC; --surface:#FFFFFF; --fg:#0A0A0F; --fg2:#46464F; --line:#DCDCD8; --accent:#04644C; --warn:#823700; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height:1.6; }
+  main { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 1.85rem; line-height:1.2; margin:0 0 8px; }
+  h2 { font-size: 1.24rem; margin: 38px 0 12px; padding-top: 18px; border-top:1px solid var(--line); }
+  p, li { color: var(--fg2); }
+  .lead { font-size: 1.02rem; }
+  .meta { color: var(--fg2); font-size: .85rem; margin-bottom: 22px; }
+  .card { background: var(--surface); border:1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 14px 0; }
+  .table-wrap { overflow-x: auto; }
+  table { width:100%; border-collapse: collapse; font-size: .86rem; background: var(--surface); }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; color: var(--fg); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  figure { margin: 18px 0; background: var(--surface); border:1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  figure img { width: 100%; height: auto; display:block; }
+  figcaption { font-size: .82rem; color: var(--fg2); margin-top: 8px; }
+  .fig-no { font-weight: 600; color: var(--fg); }
+  code { background:#E7E7E3; padding:1px 5px; border-radius:4px; font-size:.85em; }
+  pre { background:#E7E7E3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.8rem; }
+  .note { border-left: 3px solid var(--warn); padding-left: 14px; }
+  ul.tight li { margin-bottom: 4px; }
+  @media print { body { background:#fff; } main { padding: 0; } figure, .card { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Perbandingan lima algoritma klasifikasi risiko tekanan plantar</h1>
+<p class='meta'>Smart insole tiga sensor FSR · dataset DFN-DS (135 pasien. 81.000 sampel) · validasi silang berkelompok 5 lipatan · label <code>peak &ge; 45 kPa</code> · seed 42</p>
+<p class='lead'>Laporan ini membandingkan lima algoritma dari lima jurnal berbeda, pada data, lipatan, dan metrik yang sama dengan Random Forest produksi. Setiap pasien hanya muncul di satu sisi (latih atau uji), dan scaler hanya melihat lipatan latih.</p>
+<h2>1. Ringkasan eksekutif</h2>
+<div class='card'><ul class='tight'>
+<li>Macro-F1 tertinggi: <b>Decision Tree</b>, 1,000 ± 0,000.</li>
+<li>Semua model meniru aturan ambang pada data bersih. Itu konsekuensi label yang berasal dari aturan, bukan bukti keunggulan algoritma.</li>
+<li>Pembeda yang jujur ada pada kolom ketahanan (bagian 9): saat gain bergeser, seluruh model turun bersama dan urutannya berubah.</li>
+</ul></div>
+<h2>2. Dataset</h2>
+<p>Sumber DFN-DS (Zenodo MSSDA, CC BY 4.0), tersedia sebagai <code>models/training-data.json</code> v2.0 dengan kalibrasi kuantil dan aturan label dua kelas.</p>
+<div class='table-wrap'><table><thead><tr><th>Properti</th><th class='num'>Nilai</th></tr></thead><tbody><tr><td>Pasien</td><td class='num'>135</td></tr><tr><td>Sampel</td><td class='num'>81.000</td></tr><tr><td>Sampel waspada</td><td class='num'>4.347 (5.4%)</td></tr><tr><td>Rasio kelas</td><td class='num'>18.6 : 1</td></tr><tr><td>Fitur</td><td class='num'><code>peak</code> (kPa). <code>sustained</code> (sampel)</td></tr></tbody></table></div>
+<figure><img src='charts/01-komposisi-kelas.svg' alt='Komposisi kelas per lipatan'><figcaption><span class='fig-no'>Gambar 1.</span> Komposisi kelas per lipatan: proporsi waspada 5–6 % di setiap lipatan, jadi stratifikasi bekerja.</figcaption></figure>
+<figure><img src='charts/02-sebaran-fitur.svg' alt='Sebaran fitur per kelas'><figcaption><span class='fig-no'>Gambar 2.</span> Sebaran dua fitur per kelas. Garis putus-putus adalah ambang label; kelas waspada terpisah oleh garis itu, yang menjelaskan hasil mendekati sempurna di semua model.</figcaption></figure>
+<h2>3. Protokol evaluasi</h2>
+<p>Lipatan dibuat <code>groupedFolds</code> di <code>scripts/train-model.js</code> dan diekspor ke <code>models/folds.json</code>, sehingga Random Forest dan kelima model diuji pada pasien yang sama. Skrip berhenti bila ada pasien yang masuk dua lipatan.</p>
+<h2>4. Konfigurasi model</h2>
+<div class='table-wrap'><table><thead><tr><th>Model</th><th>Jurnal asal</th><th>Hiperparameter</th><th class='num'>Parameter</th></tr></thead><tbody>
+<tr><td>Decision Tree</td><td>Sheikh dkk. 2025, Scientific Reports 15:20962</td><td><code>max_depth</code>: 8, <code>criterion</code>: gini, <code>class_weight</code>: balanced</td><td class='num'>511</td></tr>
+<tr><td>ANN</td><td>Darwich dkk. 2023, Baghdad Science Journal 20(6)</td><td><code>hidden_layer_sizes</code>: [16], <code>max_iter</code>: 2000, <code>activation</code>: relu</td><td class='num'>82</td></tr>
+<tr><td>SVM</td><td>Agrawal dkk. 2023, IEEE Access 11:23119-23126</td><td><code>kernel</code>: linear, <code>C</code>: 1.0, <code>class_weight</code>: balanced</td><td class='num'>3</td></tr>
+<tr><td>AdaBoost</td><td>Agrawal dkk. 2024, Technologies 12:231</td><td><code>n_estimators</code>: 100, <code>learning_rate</code>: 0.5, <code>base</code>: decision stump</td><td class='num'>300</td></tr>
+<tr><td>Fuzzy Cognitive Map</td><td>Ramirez-Bautista dkk. 2022, IEEE Latin America Transactions 20(7)</td><td><code>concepts</code>: 3, <code>steps</code>: 2, <code>lr</code>: 2.0, <code>epochs</code>: 300, <code>learning</code>: BCE gradient, <code>threshold</code>: dipilih pada lipatan latih</td><td class='num'>12</td></tr>
+</tbody></table></div>
+<p class='note'>Tidak ada tuning hiperparameter. Tuning per model akan membuat perbandingan tidak sebanding dan angkanya bias optimis.</p>
+<p>Ambang keputusan setiap model dipilih pada lipatan latih (bukan lipatan uji) dengan memaksimalkan macro-F1. Tanpa langkah ini model yang terkalibrasi baik, seperti FCM dengan BCE, menghasilkan probabilitas di sekitar prevalensi kelas dan tidak pernah melewati 0,5 sehingga seluruh kelas waspada terlewat walaupun peringkatnya sempurna. Ambang rata-rata per model: Decision Tree 1,0000, ANN 0,2007, SVM -0,4480, AdaBoost 2,0000, Fuzzy Cognitive Map -2,6092.</p>
+<h2>5. Hasil utama</h2>
+<div class='table-wrap'><table><thead><tr><th>Model</th><th class='num'>Akurasi</th><th class='num'>Macro-F1</th><th class='num'>Precision (waspada)</th><th class='num'>Recall (waspada)</th><th class='num'>Specificity</th><th class='num'>AUC</th><th class='num'>Latih (dtk)</th></tr></thead><tbody>
+<tr><td>Decision Tree</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000</td><td class='num'>0.04</td></tr>
+<tr><td>ANN</td><td class='num'>0,999 ± 0,001</td><td class='num'>0,995 ± 0,005</td><td class='num'>0,980 ± 0,018</td><td class='num'>1,000 ± 0,001</td><td class='num'>0,999 ± 0,001</td><td class='num'>1,000</td><td class='num'>5.29</td></tr>
+<tr><td>SVM</td><td class='num'>0,999 ± 0,001</td><td class='num'>0,995 ± 0,005</td><td class='num'>0,980 ± 0,018</td><td class='num'>1,000 ± 0,001</td><td class='num'>0,999 ± 0,001</td><td class='num'>1,000</td><td class='num'>0.06</td></tr>
+<tr><td>AdaBoost</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000 ± 0,000</td><td class='num'>1,000</td><td class='num'>0.03</td></tr>
+<tr><td>Fuzzy Cognitive Map</td><td class='num'>0,999 ± 0,001</td><td class='num'>0,995 ± 0,005</td><td class='num'>0,980 ± 0,018</td><td class='num'>1,000 ± 0,001</td><td class='num'>0,999 ± 0,001</td><td class='num'>1,000</td><td class='num'>5.21</td></tr>
+</tbody></table></div>
+<p>Rata-rata &plusmn; simpangan baku antar lima lipatan. Recall kelas waspada adalah metrik utama: melewatkan tekanan berbahaya lebih mahal daripada alarm palsu.</p>
+<h3>5.1 Pembanding dari pipeline produksi (Random Forest)</h3>
+<div class='table-wrap'><table><thead><tr><th>Skema</th><th class='num'>Akurasi</th><th class='num'>Macro-F1</th><th class='num'>Precision (waspada)</th><th class='num'>Recall (waspada)</th></tr></thead><tbody><tr><td>Aturan murni (baseline)</td><td class='num'>1,000</td><td class='num'>1,000</td><td class='num'>1,000</td><td class='num'>1,000</td></tr><tr><td>Random Forest + class-weight</td><td class='num'>1,000</td><td class='num'>1,000</td><td class='num'>1,000</td><td class='num'>1,000</td></tr><tr><td>Random Forest + SMOTE (produksi)</td><td class='num'>1,000</td><td class='num'>1,000</td><td class='num'>1,000</td><td class='num'>1,000</td></tr></tbody></table></div>
+<p>Angka ini berasal dari <code>docs/evidence/metrics.json</code> (pipeline JS), <b>bukan</b> dilatih ulang di Python, tetapi memakai lipatan pasien yang sama sehingga sebanding. Ketiga skema identik 1,000 karena label berasal dari aturan; SMOTE dan <em>class weighting</em> tidak bisa memperbaiki batas yang sudah sempurna.</p>
+<figure><img src='charts/06-metrik-per-lipatan.svg' alt='Metrik per lipatan'><figcaption><span class='fig-no'>Gambar 3.</span> Metrik per lipatan. Sebaran antar lipatan lebih lebar daripada selisih antar model, tanda variasi pasien mendominasi.</figcaption></figure>
+<h2>6. Confusion matrix</h2>
+<figure><img src='charts/04-confusion-matrix.svg' alt='Confusion matrix'><figcaption><span class='fig-no'>Gambar 4.</span> Confusion matrix gabungan lima lipatan, dinormalisasi per baris.</figcaption></figure>
+<h2>7. Kurva ROC dan Precision–Recall</h2>
+<figure><img src='charts/05-roc.svg' alt='Kurva ROC'><figcaption><span class='fig-no'>Gambar 5.</span> Kurva ROC rata-rata lima lipatan. Pada data bersih semua model mendekati sudut kiri atas.</figcaption></figure>
+<figure><img src='charts/05-pr.svg' alt='Kurva precision recall'><figcaption><span class='fig-no'>Gambar 6.</span> Kurva Precision–Recall kelas waspada; garis putus-putus adalah prevalensi 5.4%, batas acak.</figcaption></figure>
+<h2>8. Batas keputusan dan kalibrasi</h2>
+<figure><img src='charts/03-batas-keputusan.svg' alt='Batas keputusan'><figcaption><span class='fig-no'>Gambar 7.</span> Wilayah keputusan tiap model. Decision Tree memilih potongan tegak di 45 kPa, sedangkan model lain memilih batas miring yang setara: keduanya memisahkan kelas dengan sempurna karena data memang dibangun dari aturan.</figcaption></figure>
+<p class='note'>Temuan yang harus disebut di Bab IV: pada dataset ini <code>sustained &ge; 1</code> setara dengan <code>peak &ge; 45 kPa</code> untuk <b>seluruh 81.000 sampel</b>, karena <code>sustained</code> dihitung sebagai panjang run di atas ambang yang sama. Artinya masalah klasifikasinya efektif satu dimensi: model cukup memakai salah satu fitur untuk sempurna. Ini keterbatasan desain label, bukan keunggulan algoritma, dan alasan tabel hasil bersih tidak boleh dipakai untuk memilih model.</p>
+<figure><img src='charts/08-kalibrasi.svg' alt='Diagram reliabilitas'><figcaption><span class='fig-no'>Gambar 8.</span> Diagram reliabilitas. Kurva yang jauh dari diagonal berarti skor model tidak bisa dibaca sebagai probabilitas.</figcaption></figure>
+<h2>9. Ketahanan terhadap galat kalibrasi</h2>
+<figure><img src='charts/07-gain-sweep.svg' alt='Sapuan gain'><figcaption><span class='fig-no'>Gambar 9.</span> Macro-F1 saat nilai sensor digeser gain. Model dilatih pada data bersih; gain hanya diterapkan pada data uji dan <code>sustained</code> dihitung ulang dari deret tergeser.</figcaption></figure>
+<div class='table-wrap'><table><thead><tr><th>Model</th><th class='num'>&times;0.9</th><th class='num'>&times;1.0</th><th class='num'>&times;1.1</th><th class='num'>&times;1.2</th><th class='num'>&times;1.3</th></tr></thead><tbody>
+<tr><td>Decision Tree</td><td class='num'>0,784</td><td class='num'>1,000</td><td class='num'>0,823</td><td class='num'>0,696</td><td class='num'>0,609</td></tr>
+<tr><td>ANN</td><td class='num'>0,790</td><td class='num'>0,995</td><td class='num'>0,818</td><td class='num'>0,693</td><td class='num'>0,606</td></tr>
+<tr><td>SVM</td><td class='num'>0,790</td><td class='num'>0,995</td><td class='num'>0,818</td><td class='num'>0,693</td><td class='num'>0,606</td></tr>
+<tr><td>AdaBoost</td><td class='num'>0,784</td><td class='num'>1,000</td><td class='num'>0,824</td><td class='num'>0,697</td><td class='num'>0,609</td></tr>
+<tr><td>Fuzzy Cognitive Map</td><td class='num'>0,790</td><td class='num'>0,995</td><td class='num'>0,818</td><td class='num'>0,693</td><td class='num'>0,606</td></tr>
+<tr><td>Aturan murni</td><td class='num'>0,784</td><td class='num'>1,000</td><td class='num'>0,824</td><td class='num'>0,697</td><td class='num'>0,609</td></tr>
+</tbody></table></div>
+<p>Baseline aturan dipakai sebagai jangkar: bila angka &times;1,1 dan &times;1,2 tidak mendekati 82,4 % dan 69,7 % dari paket bukti sebelumnya, porting perhitungan <code>sustained</code> salah.</p>
+<h2>10. Kompleksitas dan on-device</h2>
+<figure><img src='charts/09-kompleksitas.svg' alt='Trade-off kompleksitas'><figcaption><span class='fig-no'>Gambar 10.</span> Waktu latih dan kinerja. Waktu latih bukan kendala; semuanya di bawah beberapa detik per lipatan.</figcaption></figure>
+<figure><img src='charts/10-ukuran-model.svg' alt='Ukuran model'><figcaption><span class='fig-no'>Gambar 11.</span> Jumlah parameter efektif. Angka ini yang menentukan apakah model muat di ESP32; Random Forest 20 pohon kedalaman 8 jauh lebih besar daripada kelima model ini.</figcaption></figure>
+<p>Kelayakan perangkat ditentukan biaya inferensi dan ukuran kode, bukan akurasi. Model linear (SVM, FCM) paling murah, tetapi keduanya memerlukan normalisasi masukan yang harus ikut dikalibrasi di perangkat.</p>
+<h2>11. Analisis kesalahan</h2>
+<div class='table-wrap'><table><thead><tr><th>Model</th><th class='num'>False negative</th><th class='num'>False positive</th><th class='num'>FN / total waspada</th></tr></thead><tbody>
+<tr><td>Decision Tree</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0.00%</td></tr>
+<tr><td>ANN</td><td class='num'>2</td><td class='num'>88</td><td class='num'>0.05%</td></tr>
+<tr><td>SVM</td><td class='num'>2</td><td class='num'>88</td><td class='num'>0.05%</td></tr>
+<tr><td>AdaBoost</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0.00%</td></tr>
+<tr><td>Fuzzy Cognitive Map</td><td class='num'>2</td><td class='num'>88</td><td class='num'>0.05%</td></tr>
+</tbody></table></div>
+<p>Kesalahan yang paling mahal adalah false negative: sampel waspada yang diprediksi aman, karena pasien tidak menerima peringatan.</p>
+<h2>12. Batasan dan reproducibility</h2>
+<ul class='tight'>
+<li>Label berasal dari aturan; macro-F1 mendekati 1 berarti model meniru aturan, bukan tervalidasi secara klinis.</li>
+<li>Tidak ada tuning hiperparameter dan tidak ada seleksi fitur.</li>
+<li>Belum ada data uji eksternal (subjek diabetes baru); semua angka adalah validasi silang pada DFN-DS.</li>
+<li>Seed 42, scikit-learn 1.9.1, NumPy 2.5.4; dua kali jalan menghasilkan JSON identik.</li>
+</ul>
+<p>Reproduksi:</p><pre><code>node scripts/export-folds.js
+uv run --with scikit-learn --with matplotlib python scripts/compare-models.py</code></pre>
+</main></body></html>

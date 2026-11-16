@@ -633,7 +633,22 @@
           klinis baru, ekspor ulang model, dan flash ulang perangkat.
         </p>
 
-        <h3>4.6 Hasil evaluasi</h3>
+        <h3>4.6 Perbandingan lima algoritma</h3>
+        <p>
+          Selain Random Forest, lima algoritma dari lima jurnal berbeda dilatih
+          dan diuji pada lipatan pasien yang sama: Decision Tree (Sheikh dkk.,
+          2025), ANN/MLP (Darwich dkk., 2023), SVM (Agrawal dkk., 2023),
+          AdaBoost (Agrawal dkk., 2024), dan Fuzzy Cognitive Map
+          (Ramirez-Bautista dkk., 2022). Pada data bersih kelimanya mencapai
+          macro-F1 0,995–1,000, karena label memang berasal dari aturan
+          <code>peak &ge; 45 kPa</code>; pembeda sebenarnya muncul saat gain
+          kalibrasi digeser, dan di sana semua model turun bersama ke sekitar
+          0,70 pada gain &times;1,2. Rincian, gambar, dan tabel ada di
+          <code>docs/evidence/perbandingan/</code>, narasi Bab IV di
+          <code>docs/perbandingan-algoritma.md</code>.
+        </p>
+
+        <h3>4.7 Hasil evaluasi</h3>
         <div class="grid-3">
           <div class="tile mint"><div class="k">Macro-F1</div><div class="v">100,0%</div><div class="u">5 lipatan, kelompok per pasien</div></div>
           <div class="tile mint"><div class="k">Kesepakatan dengan aturan</div><div class="v">100,0%</div><div class="u">81.000 sampel</div></div>
@@ -664,7 +679,7 @@
           </div>
         </div>
 
-        <h3>4.7 Kontrak tingkat</h3>
+        <h3>4.8 Kontrak tingkat</h3>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Input</th><th>Ekspektasi</th><th>Hasil</th></tr></thead>
@@ -683,7 +698,7 @@
           halaman Risk Explorer di dashboard.
         </p>
 
-        <h3>4.8 Mengapa tingkat ditentukan kontrak, bukan suara pohon</h3>
+        <h3>4.9 Mengapa tingkat ditentukan kontrak, bukan suara pohon</h3>
         <p>
           Karena label latih <em>adalah</em> aturan ambang, pohon-pohon cepat
           menemukan jalan pintas: hampir semua pohon memisah pada
