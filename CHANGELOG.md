@@ -86,6 +86,11 @@ All notable changes to this project are documented here. The format follows
   with an M3 × 12 mm low-profile head specified instead of a 3 mm socket head.
 - The TP4056 moved 2 mm toward the side wall, so its connector sits 0.5 mm from
   the slot instead of 2.5 mm and the plug no longer cantilevers.
+- The band spec is loosened from 30–40 mm to **20–40 mm** in
+  `docs/3d/cetak/README.md`, §08 of the hardware guide, and `docs/3d/params.md`:
+  the 44 mm groove accepts either width, so no geometry changes, and a 20 mm
+  velcro strip is enough as the band's closure though too narrow as the strap
+  itself.
 - `docs/3d/build-case.sh` reported the two-case weight as 76 g: it counted the
   lid once although that STL is printed twice. Each part now carries its print
   count and the summary reads **92 g for two cases** (2 bodies + 2 lids) and

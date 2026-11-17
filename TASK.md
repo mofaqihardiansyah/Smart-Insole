@@ -43,7 +43,9 @@ summary line per month.
   baru di `case.scad` yang semuanya dibuktikan menolak nilai salah di
   `build-case.sh`. Verifikasi: pipeline hijau, keempat STL LULUS, berat 92 g
   (dua kotak) dan 107 g (dengan kupon), render `case-congkel.png` diperiksa.
-  (working tree)
+  Spesifikasi band dilonggarkan dari 30–40 mm menjadi **20–40 mm** setelah
+  pengguna membeli velcro 20 mm: alur 44 mm menerima keduanya, jadi tidak ada
+  geometri yang berubah. (working tree)
 
   Temuan: pemeriksaan bentuk di `build-3d.sh` tidak pernah berjalan
   (`openscad --info` tidak pernah memuat `Simple: yes`); diganti `check-stl.py`,

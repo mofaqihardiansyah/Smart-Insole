@@ -67,7 +67,7 @@ lubang sekrup memakai ukuran resin, lalu pakai insert heat-set M3.
 | Slot masuk kabel | 5 × 4 mm di dinding bawah, tengah |
 | Dudukan board | 4 pad 2,5 mm (ESP32) dan 4 pad 1,5 mm (TP4056) |
 | Ruang bebas di atas isi | ± 5 mm, cukup untuk bundel kabel Ø 3,2 mm |
-| Alur band elastis | 44 × 4 × 0,8 mm di muka luar |
+| Alur band elastis | 44 × 4 × 0,8 mm di muka luar; menerima band 20–40 mm |
 | Ventilasi | 3 × Ø 2,5 mm di dinding samping, y 22–30 mm (di atas jangkauan band) |
 
 ## Tata letak isi
@@ -136,7 +136,7 @@ Tiga hal yang mudah salah:
    khusus di dalam kotak: ruang di atas isi sudah cukup dan relung busa
    1 mm di tutup mencegah kabel terjepit.
 6. Tutup dengan lidah tutup masuk ke rongga, tekan sampai rata.
-7. Pasang band elastis 30–40 mm dengan velcro; band masuk ke alur 44 mm
+7. Pasang band elastis 20–40 mm dengan velcro; band masuk ke alur 44 mm
    di muka luar supaya tidak meluncur.
 8. Ikat tali pengaman dari kotak ke tali sepatu.
 

@@ -112,7 +112,7 @@ berubah berarti ekspor ulang 30 detik selama belum dipesan.
 Fitur dalam yang menentukan hasil: bos sekrup Ø 7 di koridor tengah, curb
 baterai 2 mm dengan takik jari 14 mm, empat pad dudukan ESP32 setinggi 2,5 mm
 dengan bibir penahan 3,5 mm, empat pad TP4056 setinggi 1,5 mm dengan bibir
-2,5 mm, alur band elastis 44 × 4 × 0,8 mm di muka luar, tiga ventilasi Ø 2,5
+2,5 mm, alur band elastis 44 × 4 × 0,8 mm di muka luar (menerima band 20–40 mm), tiga ventilasi Ø 2,5
 di atas jangkauan band, dan takik congkel Ø 6 mm di tepi atas dinding bawah.
 
 Dua soket USB punya tinggi berbeda karena dudukannya berbeda: ESP32 di
