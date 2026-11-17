@@ -1592,6 +1592,49 @@ void loop() {
           <li><b>Pasang tali pengaman</b> Ikat tali nilon dari pouch ke tali sepatu. Kalau velcro mengendor, pouch tidak jatuh dan baterai tidak terhempas.</li>
         </ol>
 
+        <h3>Alternatif: kotak cetak 3D</h3>
+        <p>
+          Kalau pouch kain terasa kurang kokoh, ada jalur kedua: kotak plastik
+          yang dicetak 3D. Berkas STL-nya sudah disiapkan di
+          <code>docs/3d/cetak/</code>, lengkap dengan lembar spesifikasi untuk
+          jasa cetak. Cara ini menghilangkan tiga masalah pouch kain sekaligus:
+          bahan tidak tertekuk, tutup rapat, dan modul tidak bergeser.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Berkas</th><th>Jumlah</th><th>Keterangan</th></tr></thead>
+            <tbody>
+              <tr><td><code>case-body-kanan.stl</code></td><td class="num">1</td><td>Badan kotak untuk kaki kanan</td></tr>
+              <tr><td><code>case-body-kiri.stl</code></td><td class="num">1</td><td>Badan cermin untuk kaki kiri</td></tr>
+              <tr><td><code>case-lid.stl</code></td><td class="num">2</td><td>Tutup, satu desain untuk kedua sisi</td></tr>
+              <tr><td><code>case-test.stl</code></td><td class="num">1</td><td>Kupon uji coba; cetak ini lebih dulu (opsional)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ol class="steps">
+          <li><b>Cetak kupon uji coba lebih dulu</b> Beratnya ± 15 g. Uji tiga hal: baterai masuk longgar ke relungnya, sekrup M3 × 12 masuk tanpa membuat bos retak, dan kabel charger USB-C lewat slot 10 × 6 mm. Baru cetak kotak penuh.</li>
+          <li><b>Minta PETG, bukan resin</b> PETG ulet dan tahan dibuka-tutup. Resin getas dan retak di lubang sekrup kalau sering dibuka.</li>
+          <li><b>Susun isi menurut kolom</b> Papan bolong dan baterai di kolom kiri dengan busa 2 mm di antaranya; ESP32 di kanan atas dengan <strong>pin header menghadap ke atas</strong> di atas empat pad; TP4056 di kanan bawah di atas empat pad, port USB-C menghadap slot samping.</li>
+          <li><b>Masukkan kabel lewat slot bawah</b> Slot 5 × 4 mm di dinding bawah. Alirkan bundel di atas tumpukan papan, lalu kunci dengan setitik lem tembak di mulut slot. Ruang bebas di atas isi ± 5 mm, jadi kabel tidak terjepit tutup.</li>
+          <li><b>Tekan tutup sampai rata</b> Lidah tutup 1,5 mm memakai pas-cerat 0,15 mm, jadi tutup ditahan gesekan dan tidak perlu sekrup.</li>
+          <li><b>Buka lewat takik congkel</b> Di dinding bawah ada lekukan Ø 6 mm pada tepi atas. Masukkan kuku atau uang logam ke situ, lalu ungkit tepi tutup. Jangan mencongkel di garis sambungan yang rata, karena akan menggores tepinya.</li>
+          <li><b>Pasang band elastis 30–40 mm</b> Masukkan band ke alur 44 mm di muka luar kotak supaya tidak meluncur naik-turun. Band ini juga yang menekan tutup ke arah kaki, dan itu sebabnya sekrup tidak wajib.</li>
+          <li><b>Pasang tali pengaman</b> Tali nilon dari kotak ke tali sepatu, sama seperti pada pouch kain.</li>
+        </ol>
+        <div class="callout tip">
+          <div class="bar"></div>
+          <div class="body">
+            <span class="label">Bahan tambahan untuk jalur ini</span>
+            <p>
+              Band elastis 30–40 mm dengan velcro, velcro untuk pengunci ujung
+              band, busa 3 mm sebagai pelapis sisi kulit, busa 2 mm sebagai
+              ganjal antara baterai dan papan, dan tali pengaman nilon.
+              Sekrup M3 × 12 mm kepala bulat rendah (tinggi kepala maksimal
+              2 mm) hanya perlu kalau tutup terasa longgar, dua buah per kotak.
+            </p>
+          </div>
+        </div>
+
         <h3>Cara memasang pouch di kaki</h3>
         <div class="grid-3">
           <div class="card">
@@ -2271,6 +2314,10 @@ ADC_OFFSET = ADC1 - (P1 / ADC_TO_KPA)</code></pre>
               <tr><td><code>docs/3d/cadcraft/out/</code></td><td>Gambar kerja 2D: denah, potongan, pola pouch (DXF/SVG/PDF/PNG)</td></tr>
               <tr><td><code>docs/3d/render/</code></td><td>Kesepuluh render berlabel di lampiran ini</td></tr>
               <tr><td><code>docs/3d/stl/</code></td><td><code>insole.stl</code> dan <code>pouch-shell.stl</code> untuk cek cetak</td></tr>
+              <tr><td><code>docs/3d/case.scad</code></td><td>Kotak elektronik cetak 3D: badan kanan, badan kiri, tutup, kupon uji</td></tr>
+              <tr><td><code>docs/3d/build-case.sh</code></td><td>Gerbang dimensi, ekspor STL, periksa mesh, render tampak</td></tr>
+              <tr><td><code>docs/3d/check-stl.py</code></td><td>Pemeriksa STL: manifold, tertutup, jumlah cangkang, volume</td></tr>
+              <tr><td><code>docs/3d/cetak/</code></td><td>STL siap kirim, gambar kerja DXF, dan lembar spesifikasi jasa cetak</td></tr>
             </tbody>
           </table>
         </div>

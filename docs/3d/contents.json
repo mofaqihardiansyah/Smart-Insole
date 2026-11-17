@@ -1,5 +1,5 @@
 {
-  "_catatan": "Tata letak isi pouch dalam satu lapisan. x = lebar (65), y = tinggi (80), z = tebal (20). pos adalah titik tengah di bidang x-y; z dihitung dari lantai rongga. Dibaca annotate.py untuk membuat gen/pouch-contents.scad sekaligus memeriksa apakah semua komponen muat.",
+  "_catatan": "Tata letak isi pouch lama (kain) dalam satu lapisan. Model kotak cetak 3D memakai tata letak sendiri di case.scad: baterai + papan bolong bertumpuk di kolom kiri, ESP32 dan TP4056 di kolom kanan, koridor sekrup di tengah. Berkas ini tetap dipakai render lampiran 3D.",
   "cavity": [
     65,
     80,
@@ -25,7 +25,7 @@
       "id": "esp32",
       "size": [
         25.5,
-        51.5,
+        50,
         11
       ],
       "pos": [
@@ -58,7 +58,8 @@
         -20.5,
         14
       ],
-      "shape": "box"
+      "shape": "box",
+      "catatan": "Gambar lampiran (pouch kain) memakai 20 x 20. Kotak cetak 3D di case.scad memakai bay 36 x 26 x 6 karena papan 3 x 4 cm lebih lega untuk 3 resistor dan soket 5 pin."
     },
     {
       "id": "buzzer",

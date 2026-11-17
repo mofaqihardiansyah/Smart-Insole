@@ -7,6 +7,52 @@ summary line per month.
 
 ## Done
 
+- **2026-11-17 — Kotak pouch cetak 3D: model, STL siap cetak, pemeriksa mesh.**
+  Berkas baru `docs/3d/case.scad` (parameter FDM/resin, gerbang `assert`
+  dimensi dan tata letak), `docs/3d/check-stl.py` (manifold, tertutup, jumlah
+  cangkang, volume, normal), dan `docs/3d/build-case.sh` (gerbang → ekspor →
+  periksa → berat → render). Ukuran dari pengukuran 2026-11-16: ESP32 50 × 27
+  × 11, baterai 40 × 29 × 5,5, TP4056 20 × 13 × 5, papan bolong 36 × 26.
+  Rongga 68 × 68 × 18, luar 73 × 73 × 23,5 mm, dua badan bercermin + satu
+  desain tutup, penutup pas-cerat 0,15 mm dengan 2 pin pemandu dan 2 bos
+  sekrup cadangan, alur band elastis 44 mm, dua slot USB (TP4056 dan ESP32),
+  slot kabel 5 × 4, empat ventilasi Ø 2,5. Keluaran: `docs/3d/cetak/` (4 STL
+  biner + 2 DXF + `README.md` lembar spesifikasi) dan 8 render
+  `docs/3d/render/case-*.png`. Verifikasi: `build-case.sh` hijau, keempat STL
+  LULUS (1 cangkang, 0 sisi batas, 0 degenerate, normal konsisten), bbox cocok
+  hitungan, dua gerbang terbukti menolak nilai salah; berat terhitung 45,3 g
+  per kotak.
+  Tindak lanjut hari yang sama: kupon uji dirapikan (rel curb 41 → 38 mm, bbox
+  kupon 60 × 40 × 17, ditambah dua `assert` batas kupon), ringkasan berat
+  `build-case.sh` diperbaiki karena sebelumnya hanya menghitung satu tutup
+  padahal tutup dicetak dua kali (**dua kotak 90,6 g**, dengan kupon 105,7 g),
+  dan `cetak/README.md` mendapat bagian "Tata letak isi" (denah rongga, tabel
+  rentang koordinat tiap komponen, tiga catatan praktis) serta tabel berat yang
+  dikoreksi.
+  Audit ketiga berkas lalu menemukan enam cacat desain dan semuanya diperbaiki:
+  (1) soket USB TP4056 2,5 mm terlalu tinggi karena board tidak punya pad;
+  (2) lubang pin pemandu menembus tepi luar tutup 0,15 mm sehingga **pin
+  dihapus** (`USE_PINS = false`, karena lidah cincin penuh sudah memandu);
+  (3) bibir penahan setinggi 1 mm berada di bawah alas board sehingga tidak
+  menahan apa pun, kini 3,5 mm (ESP32) dan 2,5 mm (TP4056);
+  (4) alur band 1 mm menyisakan lantai 1,5 mm, di bawah `MIN_WALL`, kini 0,8 mm;
+  (5) ventilasi berada di area yang tertutup band, kini di y 22–30;
+  (6) reses sekrup 2,6 mm menyisakan pelat 0,4 mm, kini 2 mm dengan sekrup
+  kepala bulat rendah. Ditambah **takik congkel** Ø 6 mm di dinding bawah,
+  TP4056 digeser 2 mm ke dinding (konektor 0,5 mm dari slot), dan tujuh gerbang
+  baru di `case.scad` yang semuanya dibuktikan menolak nilai salah di
+  `build-case.sh`. Verifikasi: pipeline hijau, keempat STL LULUS, berat 92 g
+  (dua kotak) dan 107 g (dengan kupon), render `case-congkel.png` diperiksa.
+  (working tree)
+
+  Temuan: pemeriksaan bentuk di `build-3d.sh` tidak pernah berjalan
+  (`openscad --info` tidak pernah memuat `Simple: yes`); diganti `check-stl.py`,
+  yang langsung menemukan `stl/insole.stl` memang dua cangkang (cover
+  mengambang 0,02 mm, disengaja). `docs/3d/params.md` dan `contents.json`
+  diselaraskan; §08 `docs/hardware-build-guide.html` dapat subbagian
+  "Alternatif: kotak cetak 3D"; lampiran 3D mencatat empat berkas baru.
+  (working tree)
+
 - **2026-11-16 — Perbandingan lima algoritma dari lima jurnal pada data latih DFN-DS.**
   Lima model dilatih dan diuji pada lipatan pasien yang sama dengan Random
   Forest: Decision Tree (Sheikh 2025), ANN/MLP (Darwich 2023), SVM (Agrawal

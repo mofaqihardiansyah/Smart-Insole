@@ -63,13 +63,10 @@ for f in render/*.png stl/*.stl; do
   [ -s "$f" ] || { echo "GAGAL: $f kosong" >&2; exit 1; }
   printf '  %-34s %8s\n' "$f" "$(du -h "$f" | cut -f1)"
 done
-python3 - <<'PY'
-import subprocess
-for stl in ("stl/insole.stl", "stl/pouch-shell.stl"):
-    out = subprocess.run(["openscad", "--info", stl],
-                         capture_output=True, text=True)
-    txt = out.stdout + out.stderr
-    print(f"  {stl}: {'Simple: yes' if 'Simple: yes' in txt else 'PERIKSA MANUAL'}")
-print("\nSelesai. Render berlabel di render/, gambar kerja di cadcraft/out/, "
-      "STL di stl/.")
-PY
+# Insole sengaja dua cangkang: cover mengambang 0,02 mm di atas alas
+# (COVER_GAP) supaya tidak ada garis z-fighting di render.
+python3 check-stl.py --expect-shells 2 stl/insole.stl
+python3 check-stl.py stl/pouch-shell.stl
+echo ""
+echo "Selesai. Render berlabel di render/, gambar kerja di cadcraft/out/, "
+echo "STL di stl/."

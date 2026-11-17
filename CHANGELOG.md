@@ -7,6 +7,31 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- **Printed case for the ankle electronics** (`docs/3d/case.scad`,
+  `docs/3d/build-case.sh`, `docs/3d/check-stl.py`). Parametric OpenSCAD model
+  driven by measured part sizes (ESP32 50 × 27 × 11, battery 40 × 29 × 5.5,
+  TP4056 20 × 13 × 5, perfboard 36 × 26), with FDM and SLA profiles, a
+  press-fit lid (0.15 mm tongue clearance, no pins, two screw bosses kept as a
+  fallback), a 44 mm elastic-band groove, two external USB slots at different
+  heights for the two boards, three vents above the band, and per-foot mirrored
+  bodies.
+- A **pry notch** (Ø 6 mm scallop, 1.5 mm deep) in the bottom wall's top edge, so
+  the lid can be lifted with a fingernail or a coin instead of prizing at the
+  flush seam with a screwdriver. Rendered as `render/case-congkel.png`.
+- `docs/3d/cetak/`: binary STLs ready to send to a print service (two bodies,
+  lid, fit-test coupon), two DXF projections, and `README.md` with print
+  settings, the print-service questions, the assembly order, a cavity layout
+  plan with per-component coordinates, and the dimensions to verify.
+- `docs/3d/check-stl.py`: STL checker reporting triangle count, bbox, volume,
+  surface area, boundary edges, non-manifold edges, degenerate triangles,
+  inconsistent normals, and separate shells, with a pass/fail verdict and an
+  optional expected bbox.
+- Seven layout asserts in `case.scad` plus a `check_gate` helper in
+  `build-case.sh`, which runs each one with a deliberately bad value and fails
+  the build if the model accepts it.
+- §08 of `docs/hardware-build-guide.html` gained "Alternatif: kotak cetak 3D":
+  when to use it, the four STL files, fit-test-first, PETG over resin, the
+  pry notch, and the extra materials (elastic band, 3 mm and 2 mm foam, tether).
 - Five classifiers from five different journals (decision tree, ANN/MLP, SVM,
   AdaBoost, fuzzy cognitive map) are compared against Random Forest on the same
   patient-grouped folds. `scripts/export-folds.js` exports the fold assignment
@@ -40,6 +65,34 @@ All notable changes to this project are documented here. The format follows
   reader can gather only what a given stage needs instead of buying the whole
   BOM first. §05 also warns that heat shrink must be on hand before soldering,
   because the sleeve goes onto the wire before the joint is made.
+
+### Fixed
+
+- **Six design defects in the printed case**, each found by checking numbers
+  rather than by eye:
+  (1) the TP4056 USB slot was centred 2.5 mm above its socket because that board
+  had no pads — it now sits on four 1.5 mm pads and the socket height is its own
+  parameter (`TP_USB_Z`, 7.1 mm, versus 8.1 mm for the ESP32);
+  (2) the Ø2.8 mm alignment-pin holes broke through the lid's outer edge by
+  0.15 mm — **the pins are removed** (`USE_PINS = false`), since the
+  full-perimeter tongue already locates the lid, and an assert keeps the numbers
+  honest if they are ever reinstated;
+  (3) the retention lips were 1 mm tall while the board underside sat at 5.0 mm,
+  so they retained nothing — now 3.5 mm (ESP32) and 2.5 mm (TP4056);
+  (4) the elastic-band groove left 1.5 mm of floor, below `MIN_WALL` — now
+  0.8 mm deep, leaving 1.7 mm;
+  (5) the vents sat where a 40 mm band covers them — moved to y 22–30;
+  (6) the screw counterbore left 0.4 mm of lid under the head — now 2 mm deep,
+  with an M3 × 12 mm low-profile head specified instead of a 3 mm socket head.
+- The TP4056 moved 2 mm toward the side wall, so its connector sits 0.5 mm from
+  the slot instead of 2.5 mm and the plug no longer cantilevers.
+- `docs/3d/build-case.sh` reported the two-case weight as 76 g: it counted the
+  lid once although that STL is printed twice. Each part now carries its print
+  count and the summary reads **92 g for two cases** (2 bodies + 2 lids) and
+  **107 g** with the fit-test coupon.
+- The fit-test coupon had a 41 mm rail on a 40 mm plate, so its bbox was
+  60 × 41 × 17 mm. The rail is now 38 mm (bbox 60 × 40 × 17) and two asserts
+  stop a coupon feature from leaving the plate again.
 
 ### Changed
 

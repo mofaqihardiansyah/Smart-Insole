@@ -19,9 +19,9 @@ tangan).
 | Lebar pinggang (arch) | 70 | Profil tapak |
 | Alas EVA | 5 | §07 struktur lapisan |
 | Cover EVA | 2 | §07 struktur lapisan |
-| Sensor FSR 402 | Ø 12,7 × 0,5 area aktif | §02 BOM |
-| Pocket sensor | 14 × 14, dalam 2 | §07 langkah 3 |
-| Channel kabel | lebar 3,5; dalam 1,5 (+ relief 1,5 di cover) | §07 langkah 3 menyebut 3 × 1–2; dilebarkan karena bundel Ø 3,2 |
+| Sensor FSR 402 | badan film ±20; area aktif Ø 12,7–14,7 × 0,5 | §02 BOM; ukur sendiri, revisi sensor berbeda |
+| Ceruk sensor | badan + 1,5–2, dalam 1 | §07 langkah 3: 1 mm, maksimum 2 mm |
+| Parit kabel | lebar 3–3,5; dalam 2–2,5 di alas | §07 langkah 3; tanpa relief di cover |
 | Posisi `F` forefoot | 20–25 % dari ujung depan → `x = 209,25` | §07 langkah 2, diambil 22,5 % |
 | Posisi `M` midfoot | 50–55 % dari ujung depan → `x = 128,25` | diambil 52,5 % |
 | Posisi `H` heel | 80–85 % dari ujung depan → `x = 47,25` | diambil 82,5 % |
@@ -80,8 +80,58 @@ boleh disisipkan di tengah tanpa membangun ulang semua gambar.
 | ESP32-WROOM-32 DevKit | 51,5 × 25,5 × 11 | termasuk pin header |
 | TP4056 berproteksi | 25 × 19 × 2 | modul + chip |
 | LiPo 3,7 V 600 mAh | 40 × 30 × 5 | kemasan tipikal |
-| Buzzer aktif | Ø 9,5 × 6 | tipe 3,3–5 V |
+| Buzzer aktif | Ø 9,5 × 6 | opsional; sistem tetap jalan tanpanya |
 | PCB bolong pembagi | 20 × 20 × 1,6 | §05 langkah 3 |
+
+## Kotak cetak 3D (pengganti pouch kain)
+
+Berkas model: `case.scad`. Skrip bangun dan periksa: `build-case.sh`
+(hasil di `cetak/`, render di `render/case-*.png`).
+
+Dimensi komponen di bawah adalah **hasil pengukuran 2026-11-16**, bukan
+asumsi. Ukur ulang dengan jangka sorong sebelum memesan cetak; satu angka
+berubah berarti ekspor ulang 30 detik selama belum dipesan.
+
+| Komponen | Panjang | Lebar | Tebal | Catatan |
+| --- | --- | --- | --- | --- |
+| ESP32-WROOM-32 DevKit | 50 | 27 | 11 | termasuk pin header dan pin menonjol |
+| Baterai YCX 503040 | 40 | 29 | 5,5 | 5 mm nominal + selotip dan pembungkus |
+| TP4056 Type-C | 20 | 13 | 5 | rumah soket USB-C paling menonjol |
+| Papan bolong potongan | 36 | 26 | 1,6 (+6 sisi resistor) | tidak perlu 3 × 4 cm; 2,6 × 3,6 cm cukup untuk 3 resistor + soket |
+| Rumah kabel USB-C | — | — | 10 × 6 | ukuran slot, bukan ukuran port |
+
+| Parameter kotak | FDM | Resin (SLA) |
+| --- | --- | --- |
+| Dinding `WALL` | 2,5 | 2,0 |
+| Jarak main `CLEAR_SLIDE` | 0,30 / sisi | 0,15 / sisi |
+| Lubang sekrup `SCREW_D` | 2,5 (M3 langsung) | 4,0 (insert heat-set) |
+| Rongga | 68 × 68 × 18 | sama |
+| Dimensi luar | 73 × 73 (tebal 20,5 + tutup 3) | 72 × 72 |
+| Berat tercetak | ± 45 g per kotak | ± 55 g (pejal) |
+
+Fitur dalam yang menentukan hasil: bos sekrup Ø 7 di koridor tengah, curb
+baterai 2 mm dengan takik jari 14 mm, empat pad dudukan ESP32 setinggi 2,5 mm
+dengan bibir penahan 3,5 mm, empat pad TP4056 setinggi 1,5 mm dengan bibir
+2,5 mm, alur band elastis 44 × 4 × 0,8 mm di muka luar, tiga ventilasi Ø 2,5
+di atas jangkauan band, dan takik congkel Ø 6 mm di tepi atas dinding bawah.
+
+Dua soket USB punya tinggi berbeda karena dudukannya berbeda: ESP32 di
+`WALL + 2,5 + 1,6 + 1,5 = 8,1` mm, TP4056 di `WALL + 1,5 + 1,6 + 1,5 = 7,1` mm.
+
+**Pin pemandu dihapus.** Lubang pin Ø 2,8 mm tidak muat di bibir selebar
+2,5 mm: tepi luarnya menembus dinding luar tutup 0,15 mm. Lidah tutup berupa
+cincin penuh keliling 268 mm sudah memandu posisi, jadi pin hanya mengulang
+fungsi yang sama. Kalau nanti dipasang lagi, `USE_PINS = true` dan `PIN_D`
+harus 2,0 mm supaya lubangnya masuk dinding; ada `assert` yang menjaga itu.
+
+Penutup memakai **pas-cerat** (`CLEAR_PRESS` 0,15 mm) pada lidah 1,5 mm,
+ditahan dua pin pemandu. Sekrup tidak wajib: band elastis menekan kotak ke
+arah kaki, dan tekanan itu yang menahan tutup. Lubang sekrup tetap ada
+sebagai cadangan kalau tutup terasa longgar.
+
+Tidak ada alur kabel khusus di dalam rongga. Kabel masuk lewat slot
+5 × 4 mm di dinding bawah, melewati ruang bebas ± 5 mm di atas tumpukan
+papan, dan dikunci setitik lem tembak di mulut slot.
 
 ## Asumsi yang harus disebut di laporan
 
