@@ -7,6 +7,51 @@ summary line per month.
 
 ## Done
 
+- **2026-11-19 — Panduan perakitan ditulis ulang untuk kondisi nyata + dua versi isi kotak (working tree).**
+  `docs/hardware-build-guide.html` diganti seluruhnya: 2.391 baris / 68 subjudul
+  menjadi 1.522 baris / 16 subjudul, dengan detail teknis dilipat di `<details>`
+  (10 blok) sehingga isi terlihat 1.076 baris. Struktur baru: §00 status nyata
+  (pocket koin Rp1000, parit belum, soldering belum), §01 jalur cepat 8 fase,
+  §02 meja kerja satu tabel, §03–§11 fase 1–8 plus kaki kedua, §12
+  troubleshooting, §13 perawatan, lampiran A–F (diagram kabel, kalibrasi, BOM,
+  keselamatan, arsip pouch kain, model 3D).
+  Dua versi isi kotak ditulis lengkap: **A** dengan papan bolong 26 × 36 mm
+  (3 resistor + header 5 pin, 11 titik solder) dan **B** tanpa papan (tiga
+  bundel resistor inline), dengan tabel sambungan yang sama (GPIO 34/35/32,
+  rel 3V3, rel GND, B±/OUT±) dan batas ruang hasil hitung model (3,0 mm di atas
+  pin ESP32, 1,4 mm di atas tumpukan papan).
+  Fase 1 (parit) dan fase 3 (tanam) ditulis untuk keadaan sekarang: aturan shim
+  kedalaman 1,2–2 mm dan aturan pemusatan di pocket 24 mm.
+  Verifikasi: tag seimbang, 20 section, 12 tabel konsisten, semua anchor TOC
+  resolve, penanda `legend:start` utuh dan `annotate.py check` lulus (10 gambar,
+  5 komponen), 16 `img` lampiran ada termasuk 6 render `case-*.png`, render
+  Chrome headless 1440 px dan 375 px.
+  Penyederhanaan bahasa pada hari yang sama: 18 istilah teknis diganti kata
+  sehari-hari di bagian 00–13 (`parit` 29×, `pocket` 17×, `takik` 16×, `bibir`
+  10×, `header` 9×, `bos` 8×, `lidah` 7×, `shim` 7×, `node` 7×, dan seterusnya)
+  sehingga tidak ada lagi istilah itu di jalur kerja; label "Gerbang fase"
+  menjadi "Syarat lulus fase". Ditambah **Lampiran G · Kamus istilah** (26
+  entri), kotak "enam istilah yang paling sering" di §00, dan catatan di bawah
+  tabel legenda bahwa nama di tabel memakai istilah teknis. Tabel legenda yang
+  dihasilkan `legend.json` tidak diubah karena nama komponen juga tercetak di
+  dalam 10 render. (working tree)
+
+- **2026-11-19 — Panduan build diselaraskan dengan kotak pouch PETG (working tree).**
+  §08 `docs/hardware-build-guide.html` ditulis ulang: kotak cetak 3D sebagai jalur
+  utama (rongga 68 × 68 × 18, luar 73 × 73 × 20,5, tutup 3 mm, terpasang 23,5),
+  urutan cetak dengan kupon uji lebih dulu, tabel dimensi (slot USB 12 × 6 dan
+  10 × 6, slot kabel 5 × 4, alur band 44 mm, takik congkel, lidah 1,5 mm), denah
+  rongga dengan rentang koordinat, dan perakitan 9 langkah. Jalur kain dipadatkan
+  jadi subbagian "Versi kain". Lampiran 3D mendapat subbagian "Kotak cetak 3D"
+  dengan enam render `case-*.png` yang sebelumnya tidak dipakai (Gambar 13–18;
+  posisi pakai jadi 19–20), plus catatan bahwa baris legenda 9/10/13–14 tetap
+  menggambarkan pouch kain karena tabelnya ditulis dari `legend.json`. Angka kain
+  yang tertinggal dibersihkan di hero, meta, §00, §02 (neoprene/webbing diganti
+  filamen PETG dan band elastis), §09, §11, §12, §13, §14; glosarium menambah
+  empat istilah. Verifikasi: 16 `img` lampiran semuanya ada, tidak ada nomor
+  gambar ganda, tag seimbang, dan `neoprene`/`65 × 80`/`10 × 8 × 3` hanya tersisa
+  di konteks versi kain.
+
 - **2026-11-17 — Kotak pouch cetak 3D: model, STL siap cetak, pemeriksa mesh.**
   Berkas baru `docs/3d/case.scad` (parameter FDM/resin, gerbang `assert`
   dimensi dan tata letak), `docs/3d/check-stl.py` (manifold, tertutup, jumlah
@@ -609,10 +654,12 @@ summary line per month.
 
 ## In progress
 
-- **Perakitan insole & pouch** — dua alas EVA 28 cm sudah dipotong dan tiga titik
-  sensor ditandai (6,3 / 14,7 / 23,1 cm); pouch Fox kuning sudah kuat dengan
-  mulut terbuka. Sisa: solder ekor FSR, ceruk dan parit, cover, isi pouch,
-  strap, kalibrasi. Urutannya di §00 `docs/hardware-build-guide.html`.
+- **Perakitan insole & kotak** — dua alas EVA 28 cm sudah dipotong dan tiga
+  pocket per alas dicetak dengan koin Rp1000 (Ø ± 24 mm, dalam 1–2 mm); cover
+  2 mm sudah dipotong; kotak PETG sudah tercetak; papan bolong, solder, timah,
+  heat shrink 3 mm, dan resistor 10 kΩ sudah ada. Sisa: parit dan takik, solder
+  ekor FSR, tanam sensor, cover, isi kotak (versi A atau B), band, kalibrasi.
+  Urutannya di §00 `docs/hardware-build-guide.html`.
 
 - **Web live check** — RTDB already carries fresh data (`readings/latest` plus
   80 history rows); the dashboard needs a refresh to confirm it leaves `error`

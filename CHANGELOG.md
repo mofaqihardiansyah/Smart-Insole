@@ -7,6 +7,32 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- **Build guide rewritten around the current state of the hardware**, with two
+  electronics variants. `docs/hardware-build-guide.html` drops from 2,391 to
+  1,522 lines and from 68 to 16 `h3` headings: one screen per phase, deep
+  explanations folded into `<details>` (10 blocks).
+  - §00 records the real state (three EVA pockets per sole cut with a Rp1000
+    coin, Ø ≈ 24 mm, 1–2 mm deep; cable channels not cut; nothing soldered yet)
+    and maps eight phases with one gate each.
+  - §03–§05 carry the new steps for this state: channel 3–3.5 × 2–2.5 mm, tail
+    notch 6 mm, and two rules for the 24 mm pockets — a shim rule (depth ≤ 1.2 mm
+    needs none; 1.2–2 mm needs a Ø 20 disc sanded to depth − 0.5) and a centring
+    rule, because the 24 mm pocket leaves ± 2.5 mm of play around the sensor.
+  - §07 documents both variants end to end, sharing one wiring table:
+    **A** with a 26 × 36 mm perfboard (3 × 10 kΩ + 5-pin header, ~11 joints) and
+    **B** without a board (three inline resistor bundles, ~9 joints), plus the
+    model-derived headroom limits (3.0 mm above the ESP32 pins, 1.4 mm above the
+    battery/pcb stack).
+  - Appendices A–F keep the wiring diagram, calibration, full BOM, safety, the
+    fabric-pouch archive, and the 3D appendix with its generated legend.
+  - **Plain-language pass**: 18 technical terms are replaced in sections 00–13
+    (`parit` → alur kabel, `pocket` → ceruk, `takik` → celah, `shim` → ganjal,
+    `header` → soket pin, `bos` → tiang sekrup, `lidah` → tepi masuk, and more),
+    the gate label becomes "Syarat lulus fase", and a new **Lampiran G · Kamus
+    istilah** (26 entries) plus a six-term callout in §00 explain the rest. The
+    generated legend table keeps its technical names because `annotate.py` also
+    draws those names into the ten renders.
+
 - **Printed case for the ankle electronics** (`docs/3d/case.scad`,
   `docs/3d/build-case.sh`, `docs/3d/check-stl.py`). Parametric OpenSCAD model
   driven by measured part sizes (ESP32 50 × 27 × 11, battery 40 × 29 × 5.5,
@@ -192,6 +218,26 @@ All notable changes to this project are documented here. The format follows
   memakai jalur DFN/DM yang sama alih-alih salinannya. Hasilnya tidak berubah.
 - `AGENTS.md` diperbarui dengan aturan frekuensi commit: hindari commit berlebihan
   untuk perubahan-perubahan kecil; kumpulkan ke dalam satu commit besar saat diminta.
+- **`docs/hardware-build-guide.html` §08 ditulis ulang untuk kotak pouch PETG yang
+  sudah dicetak**, bukan pouch kain. Bagian ini sekarang memuat rongga 68 × 68 ×
+  18 mm, badan 73 × 73 × 20,5 mm, tutup 3 mm (terpasang 23,5 mm), tabel dimensi
+  slot USB 12 × 6 / 10 × 6, slot kabel 5 × 4, alur band 44 mm, takik congkel, lidah
+  pas-cerat, urutan cetak (kupon dulu, lalu empat bagian), denah rongga dengan
+  rentang koordinat tiap komponen, dan tiga jebakan pemasangan. Jalur pouch kain
+  dipadatkan menjadi subbagian "Versi kain (kalau belum bisa cetak)".
+- Angka pouch kain yang tertinggal di hero, §00, §02, §09, §11, §12, §13, dan §14
+  diselaraskan: status "sudah selesai" menyebut kotak tercetak, BOM memakai
+  filamen PETG ± 110 g dan band elastis 20–40 mm (baris webbing 25 mm dihapus),
+  uji pouch menguji tutup/band/congkel alih-alih beban sambungan kain,
+  troubleshooting menambah tutup terangkat, bos sekrup retak, soket USB tidak
+  sejajar, dan band meluncur, perawatan menambah batas suhu PETG, dan jadwal
+  memakai "cetak kotak + kupon". Biaya cetak ditandai belum masuk tabel.
+- Lampiran 3D mendapat subbagian **"Kotak cetak 3D"** dengan enam render yang
+  sudah ada (`case-iso`, `case-atas`, `case-potong-x`, `case-lid`,
+  `case-congkel`, `case-uji`), tabel fitur, dan catatan bahwa baris legenda 9,
+  10, 13–14 tetap menggambarkan pouch kain karena tabel itu ditulis otomatis dari
+  `legend.json`. Gambar 13–18 baru; posisi pakai bergeser menjadi 19–20.
+- Glosarium menambah istilah pouch, pas-cerat, takik congkel, dan kupon uji.
 
 ### Added
 
