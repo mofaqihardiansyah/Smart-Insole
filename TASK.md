@@ -7,6 +7,15 @@ summary line per month.
 
 ## Done
 
+- **2026-11-19 — Rangkuman referensi eksternal per fase perakitan (working tree).**
+  `docs/referensi-eksternal.md` baru: 13 panduan luar diringkas satu per satu
+  (isi, yang diambil proyek ini, batasnya) dan dipetakan ke delapan fase lewat
+  tabel peta cepat, ditambah tiga pencarian YouTube, tabel sumber yang sengaja
+  tidak dipakai, dan templat sitasi APA untuk sumber web. Semua 16 tautan
+  diperiksa HTTP 200 hari itu. Baris indeks ditambahkan di `docs/README.md`.
+  Verifikasi: 0 tautan relatif rusak, 16/16 tautan luar hidup,
+  `git diff --check` bersih.
+
 - **2026-11-19 — Panduan perakitan ditulis ulang untuk kondisi nyata + dua versi isi kotak (working tree).**
   `docs/hardware-build-guide.html` diganti seluruhnya: 2.391 baris / 68 subjudul
   menjadi 1.522 baris / 16 subjudul, dengan detail teknis dilipat di `<details>`

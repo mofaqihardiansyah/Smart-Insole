@@ -92,6 +92,17 @@ All notable changes to this project are documented here. The format follows
   BOM first. §05 also warns that heat shrink must be on hand before soldering,
   because the sleeve goes onto the wire before the joint is made.
 
+- **`docs/referensi-eksternal.md` — external references for the build**, because
+  the build guide explains what to do but not always why. Thirteen sources
+  (Adafruit FSR and soldering, SparkFun wire/divider/ADC/LiPo charger, Interlink
+  datasheet and integration guide, Random Nerd ESP32 ADC/pinout/deep sleep,
+  Espressif core install, Simplify3D PETG, Adafruit LiPo safety, Wikipedia FSR)
+  are each summarised with what the guide takes from it, its limits, and the
+  phase it belongs to; a quick-map table sends a stuck reader to one source
+  instead of five. Also includes YouTube search scopes instead of unverifiable
+  video IDs, a "deliberately not used" table, and an APA web-citation template.
+  All 16 links return HTTP 200 on 2026-11-19.
+
 ### Fixed
 
 - **Six design defects in the printed case**, each found by checking numbers

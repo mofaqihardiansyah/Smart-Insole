@@ -22,6 +22,7 @@ pelatihan.
 | [`daftar-pustaka.md`](daftar-pustaka.md) | Daftar pustaka APA 7 terverifikasi: 23 entri, sumber ekspor Mendeley grup TA, plus catatan koreksi metadata |
 | [`guidebook.html`](guidebook.html) | Guidebook lengkap proyek: teori, metode, cara kerja firmware & web, tech stack, kontrak data, validasi, troubleshooting |
 | [`hardware-build-guide.html`](hardware-build-guide.html) | Panduan perakitan hardware langkah demi langkah, dengan lampiran model 3D (Gambar 5–9) |
+| [`referensi-eksternal.md`](referensi-eksternal.md) | Rangkuman 13 panduan luar (Adafruit, SparkFun, Interlink, Espressif, Random Nerd, Simplify3D) yang dipetakan ke delapan fase perakitan, plus pencarian video |
 | [`3d/params.md`](3d/params.md) | Sumber angka model 3D insole & pouch: dimensi, posisi sensor, asumsi yang dipakai |
 | [`PRD.md`](PRD.md) | Product Requirement Documentation: masalah, pengguna, ruang lingkup, dan metrik keberhasilan |
 | [`TRD.md`](TRD.md) | Technical Requirement Documentation: stack, arsitektur, dan kebutuhan non-fungsional |
